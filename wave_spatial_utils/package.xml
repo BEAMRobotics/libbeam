@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>wave_spatial_utils</name>
+  <version>1.0.0</version>
+  <description> Spatial utilities package for the autonomoose project </description>
+
+  <maintainer email="michael.smart@uwaterloo.ca">Michael Smart</maintainer>
+
+    <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+</package>
