@@ -1,0 +1,26 @@
+
+sudo: required
+cache:
+  - apt
+
+# Specify what combinations of Ubuntu/ROS we want to build
+# Limited to what is available on Travis VMs.
+language: generic
+matrix:
+  allow_failures:
+    - env: CHECK_COMMIT_FORMAT=ON
+  include:
+    - name: "Xenial kinetic"
+      dist: xenial
+      env: ROS_DISTRO=kinetic
+
+################################################################################
+env:
+  global:
+    - CI_SOURCE_PATH=$(pwd)
+
+# Check installation script
+script:
+  - cd $CI_SOURCE_PATH
+  - ls
+  - bash ./scripts/install.bash
