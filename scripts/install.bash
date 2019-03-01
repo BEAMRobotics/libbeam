@@ -36,33 +36,8 @@ source $INSTALL_SCRIPTS/identify_environment.bash
 : ${SYMLINKS_REPO_DIR:=$REPO_DIR}
 
 
-read_args()
-{
-    ARG_NO_MENU=
-    ARG_LINK=
-    ARG_UNLINK=
-    for arg in "$@"; do
-        case $arg in
-            -y)
-                ARG_NO_MENU="true";;
-            -l)
-                ARG_LINK="true";;
-            -u)
-                ARG_UNLINK="true";;
-        esac
-    done
-}
-
 main()
 {
-    if [ -n "$ARG_LINK" ]; then
-        link_routine
-        exit
-    elif [ -n "$ARG_UNLINK" ]; then
-        unlink_routine
-        exit
-    fi
-
     install_routine $1
 }
 
@@ -73,19 +48,19 @@ install_routine()
         menu
     fi
 
-    cd "$SCRIPTS_DIR"
+    # source catkin setup script
+    source $INSTALL_SCRIPTS/catkin_setup.bash
+    
     unlink_routine
     catkin_clean
 
     # submodule_init
 
     bash $INSTALL_SCRIPTS/ros_install.bash
-    bash $INSTALL_SCRIPTS/create_catkin_workspace.bash
+    create_catkin_ws
 
     link_routine
     bash $INSTALL_SCRIPTS/rosdeps_install.bash
-
-    env_setup
 
     # Import functions to install required dependencies
     source $INSTALL_SCRIPTS/beam_dependencies_install.bash
