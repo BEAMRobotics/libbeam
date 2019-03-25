@@ -1,0 +1,15 @@
+<package format="2">
+  <name>libbeam</name>
+  <version>0.1.0</version>
+  <description>libbeam</description>
+
+  <maintainer email="nick@beamrobotics.io">Nick Charron</maintainer>
+  <maintainer email="steve@beamrobotics.io">Steve Phillips</maintainer>
+  <license>BEAM Proprietary</license>
+
+  <!-- This file lets catkin build this non-catkin package-->
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
