@@ -78,10 +78,13 @@ ConfigStatus ConfigParser::loadParam(const ConfigParamBase &param) {
 }
 
 ConfigStatus ConfigParser::load(const std::string &config_file) {
-    // pre-check
-    if (file_exists(config_file) == false) {
-        LOG_ERROR("File not found: %s", config_file.c_str());
-        return ConfigStatus::FileError;
+    FILE *file;
+    
+    if ((file = fopen(config_file.c_str(), "r"))) {
+        fclose(file);
+    } else {
+      LOG_ERROR("File not found: %s", config_file.c_str());
+      return ConfigStatus::FileError;
     }
 
     // load and parse file
