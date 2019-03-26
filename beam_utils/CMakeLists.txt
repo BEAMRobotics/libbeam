@@ -8,4 +8,5 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/config.cpp
     src/math.cpp
     src/time.cpp
-    src/angles.cpp)
+    src/angles.cpp
+    )
