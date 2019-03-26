@@ -1,0 +1,132 @@
+# libbeam - Beam Robotics' internal library
+# Copyright (c) 2019, BEAM Robotics, Inc., All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, is not permitted without the express permission of BEAM
+# Robotics.
+
+# Config file for beam package: find libbeam and its dependencies
+#
+# This script exports a beam::<module> target for each found module of libbeam.
+# The beam::beam target includes all available modules.
+#
+# For example, to link "my_target" against the geometry and matching modules,
+# and all of their dependencies, call:
+#
+#     find_package(beam REQUIRED geometry matching)
+#     target_link_libaries(my_target beam::geometry beam::matching)
+#
+# Note that this command is sufficient to add all required libraries, include
+# directories, and other compile flags to the target.
+#
+# This file defines the following variables:
+#
+# beam_FOUND: True if beam and required depdendencies successfully found.
+#             BEAM_FOUND is also set.
+#
+# BEAM_VERSION: The version number found
+
+@PACKAGE_INIT@
+
+# Prints a failure message and exits, setting BEAM_FOUND=FALSE
+# Arguments are printed at the end of the message.
+MACRO(BEAM_FAIL)
+    # Check variables set by find_package() depending on its QUIET and REQUIRED
+    # options, and print a different type of message accordingly
+    IF(beam_FIND_REQUIRED)
+        MESSAGE(FATAL_ERROR "Failed to find libbeam: " ${ARGN})
+    ELSEIF(NOT beam_FIND_QUIETLY)
+        MESSAGE(WARNING "Failed to find libbeam: " ${ARGN})
+    ENDIF()
+
+    # Tell FIND_PACKAGE that this package should be considered "not found"
+    SET(beam_FOUND FALSE)
+    # Set this all-caps version only as a courtesy to users, who may be
+    # mistakenly (but understandably) expecting this convention
+    SET(BEAM_FOUND FALSE)
+    RETURN()
+ENDMACRO(BEAM_FAIL)
+
+# Checks if a target and all its INTERFACE_LINK_LIBRARIES exist, and sets VAR
+# with the result. If MESSAGE_MODE is given, prints that type of message for
+# each nonexistent dep (unless in QUIET mode).
+FUNCTION(BEAM_CHECK_DEPS VAR TARGET MESSAGE_MODE)
+    SET(${VAR} TRUE PARENT_SCOPE)
+    IF(NOT TARGET ${TARGET})
+        SET(${VAR} FALSE PARENT_SCOPE)
+    ELSE()
+        GET_TARGET_PROPERTY(link_libraries ${TARGET} INTERFACE_LINK_LIBRARIES)
+        FOREACH(lib IN LISTS link_libraries)
+            IF(NOT TARGET ${lib})
+                SET(${VAR} FALSE)
+                IF(MESSAGE_MODE AND NOT beam_FIND_QUIETLY)
+                    MESSAGE(${MESSAGE_MODE}
+                            "Missing ${lib}, required for ${TARGET}")
+                ENDIF()
+            ENDIF()
+        ENDFOREACH()
+    ENDIF()
+ENDFUNCTION(BEAM_CHECK_DEPS)
+
+SET(BEAM_VERSION @BEAM_PACKAGE_VERSION@)
+SET_AND_CHECK(BEAM_EXTRA_CMAKE_DIR
+    "${CMAKE_CURRENT_LIST_DIR}/@BEAM_EXTRA_CMAKE_DIR@")
+
+# Find dependencies which *may* be used by beam targets
+# These are not REQUIRED here, but are checked later for each libbeam component
+LIST(APPEND CMAKE_MODULE_PATH "${BEAM_EXTRA_CMAKE_DIR}")
+FIND_PACKAGE(Eigen3 3.2.92 QUIET)
+FIND_PACKAGE(Boost 1.54.0 QUIET)
+FIND_PACKAGE(PCL 1.8 QUIET)
+FIND_PACKAGE(kindr QUIET)
+FIND_PACKAGE(OpenCV 3.2.0 QUIET)
+FIND_PACKAGE(yaml-cpp QUIET)
+FIND_PACKAGE(Ceres 1.12 QUIET)
+
+# Where dependencies do not provide imported targets, define them
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportEigen3.cmake)
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportBoost.cmake)
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportPCL.cmake)
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportKindr.cmake)
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportYaml-cpp.cmake)
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportCeres.cmake)
+
+# This file contains definitions of IMPORTED targets
+INCLUDE("${CMAKE_CURRENT_LIST_DIR}/beamTargets.cmake")
+
+# Check that for each component in beamTargets (even non-requested ones), its
+# dependencies are found. If not, print a warning in non-quiet mode (since they
+# must have been there at build time, something is up).
+GET_TARGET_PROPERTY(built_components beam::beam INTERFACE_LINK_LIBRARIES)
+MESSAGE(STATUS "built_components ${built_components}")
+SET(BEAM_FOUND_COMPONENTS "")
+FOREACH(target IN LISTS built_components)
+    BEAM_CHECK_DEPS(${target}_FOUND ${target} WARNING)
+
+    # Build up a list of found components
+    STRING(REGEX REPLACE "^.*::" "" unprefixed_name ${target})
+    LIST(APPEND BEAM_FOUND_COMPONENTS ${unprefixed_name})
+ENDFOREACH()
+
+# Check that requested components, including their dependencies, are found.
+# Fail if a REQUIRED component is not found.
+FOREACH(c IN LISTS beam_FIND_COMPONENTS)
+    IF(NOT beam::${c}_FOUND)
+        # Explictly set false, in case this component isn't in beamTargets
+        SET(beam::${c}_FOUND FALSE)
+        IF(beam_FIND_REQUIRED_${c})
+            BEAM_FAIL("beam::${c} not found")
+        ENDIF()
+    ENDIF()
+ENDFOREACH()
+
+# Everything worked out ok!
+STRING(REPLACE ";" ", " BEAM_FOUND_COMPONENTS_STRING "${BEAM_FOUND_COMPONENTS}")
+MESSAGE(STATUS "Found libbeam ${BEAM_VERSION}: ${CMAKE_CURRENT_LIST_DIR}"
+    " with components: ${BEAM_FOUND_COMPONENTS_STRING}")
+
+# beam_FOUND, with exact case, is the variable set and used by FIND_PACKAGE().
+# Setting it here is redundant, but is done for clarity. The second variable is
+# provided only as a courtesy to users who may expect all-caps names.
+SET(beam_FOUND TRUE)
+SET(BEAM_FOUND TRUE)
