@@ -22,8 +22,8 @@ namespace beam {
 /** @addtogroup utils
  *  @{ */
 
-#ifndef EIGEN_TYPEDEF
-#define EIGEN_TYPEDEF
+#ifndef BEAM_EIGEN_TYPEDEF
+#define BEAM_EIGEN_TYPEDEF
 typedef Eigen::Vector2d Vec2;
 typedef Eigen::Vector3d Vec3;
 typedef Eigen::Vector4d Vec4;
@@ -41,7 +41,7 @@ typedef Eigen::MatrixXd MatX;
 typedef Eigen::Affine3d Affine3;
 
 typedef Eigen::Quaterniond Quaternion;
-#endif
+#endif //BEAM_EIGEN_TYPEDEF
 
 /**
  * Eigen vector comparator
