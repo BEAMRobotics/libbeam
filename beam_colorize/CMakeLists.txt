@@ -4,6 +4,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     catkin::catkin
     PCL::PCL
+    catkin::catkin
   SOURCES
     src/Colorizer.cpp
     src/Projection.cpp
