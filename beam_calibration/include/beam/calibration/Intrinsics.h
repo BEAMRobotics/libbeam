@@ -1,34 +1,32 @@
 #pragma once
 
-
 namespace beam_calibration {
 
+/**
+ * @brief Enum class for different types of intrinsic calibrations
+ */
+enum class IntrinsicsType { PINHOLE = 0, FISHEYE, LADYBUG };
+
+/**
+ * @brief Abstract class for calibrations
+ */
+class Intrinsics {
+public:
   /**
-   * @brief Enum class for different types of intrinsic calibrations
+   * @brief Default constructor
    */
-  enum class IntrinsicsType { PINHOLE = 0, FISHEYE, LADYBUG };
+  Intrinsics() = default;
 
   /**
-   * @brief Abstract class for calibrations
+   * @brief Default destructor
    */
-  class Intrinsics {
-  public:
-    /**
-     * @brief Default constructor
-     */
-    Intrinsics() = default;
+  virtual ~Intrinsics() = default;
 
-    /**
-     * @brief Default destructor
-     */
-    virtual ~Intrinsics() = default;
-
-    /**
-     * @brief Pure virtual method for returning type of intrinsics
-     * @return
-     */
-    virtual IntrinsicsType GetType() const = 0;
-
-  };
+  /**
+   * @brief Pure virtual method for returning type of intrinsics
+   * @return
+   */
+  virtual IntrinsicsType GetType() const = 0;
+};
 
 } // namespace beam_calibration

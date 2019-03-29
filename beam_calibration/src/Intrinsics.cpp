@@ -4,4 +4,4 @@ namespace beam_calibration {
 
 // Common code will go here
 
-} // namespace beam_calibrations
+} // namespace beam_calibration

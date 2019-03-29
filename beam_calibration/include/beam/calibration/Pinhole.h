@@ -31,7 +31,8 @@ public:
 
   /**
    * @brief Get the type of intrinsic
-   * @return Returns type as one of intrinsics specified in the enum IntrinsicsType
+   * @return Returns type as one of intrinsics specified in the enum
+   * IntrinsicsType
    */
   IntrinsicsType GetType() const override { return IntrinsicsType::PINHOLE; };
 
@@ -99,7 +100,8 @@ public:
   beam::Vec2 ProjectPoint(beam::Vec3 X);
 
   /**
-   * @brief Method for projecting a point in homographic form into an image plane
+   * @brief Method for projecting a point in homographic form into an image
+   * plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
    */
@@ -108,7 +110,8 @@ public:
   /**
    * @brief Method for projecting a point into an image plane where the image is
    * distorted.
-   * See: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+   * See:
+   * https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
    * @return Returns image coordinates after point has been projected into image
    * plane.
    */
@@ -117,14 +120,14 @@ public:
   /**
    * @brief Method for projecting a point in homographic form into an image
    * plane where the image is distorted.
-   * See: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+   * See:
+   * https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
    * @return Returns image coordinates after point has been projected into image
    * plane.
    */
   beam::Vec2 ProjectDistortedPoint(beam::Vec4 X);
 
 private:
-
   /**
    * @brief This applies the projection for to images that are not distorted
    * @return Returns image coordinates after point has been projected into image
@@ -144,8 +147,7 @@ private:
   beam::Vec2 tan_coeffs_;
   beam::VecX rad_coeffs_;
   bool is_full_ = false, is_rad_distortion_valid_ = false,
-  is_tan_distortion_valid_ = false;
-
+       is_tan_distortion_valid_ = false;
 };
 
-} // namespace beam_calibrations
+} // namespace beam_calibration

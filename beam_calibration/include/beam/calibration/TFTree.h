@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 #include "beam/utils/math.hpp"
+#include <string>
 #include <tf2/buffer_core.h>
-
 
 namespace beam_calibration {
 
