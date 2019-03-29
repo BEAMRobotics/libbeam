@@ -63,6 +63,7 @@ install_routine()
     # Install dependencies
     install_cmake
     install_Catch2
+    install_eigen3
     #install_ceres
     install_pcl
     install_geographiclib
