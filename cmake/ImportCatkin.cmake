@@ -6,5 +6,5 @@ IF(catkin_FOUND AND NOT TARGET catkin::catkin)
   ADD_LIBRARY(catkin::catkin INTERFACE IMPORTED)
   SET_PROPERTY(TARGET catkin::catkin PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES "${catkin_INCLUDE_DIRS}")
-  target_link_libraries(catkin::catkin INTERFACE ${catkin_LIBRARIES})
+    #target_link_libraries(catkin::catkin INTERFACE ${catkin_LIBRARIES})
 ENDIF()

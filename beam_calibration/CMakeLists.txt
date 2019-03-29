@@ -6,7 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     catkin::catkin
     Eigen3::Eigen
   SOURCES
-    #src/TFTree.cpp
+    src/TFTree.cpp
     src/Intrinsics.cpp
     src/Pinhole.cpp
     #src/Ladybug.cpp
