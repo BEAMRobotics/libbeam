@@ -1,7 +1,11 @@
 
 sudo: required
 cache:
-  - apt
+  apt: true
+  ccache: true
+  directories:
+    - $HOME/.ccache
+    - /tmp/beam_dependencies
 
 # Specify what combinations of Ubuntu/ROS we want to build
 # Limited to what is available on Travis VMs.
@@ -18,6 +22,7 @@ matrix:
 env:
   global:
     - CI_SOURCE_PATH=$(pwd)
+    - CONTINUOUS_INTEGRATION='True'
 
 # Check installation script
 script:
