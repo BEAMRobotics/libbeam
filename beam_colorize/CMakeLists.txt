@@ -1,12 +1,8 @@
 PROJECT(beam_colorize)
 
-find_package(catkin REQUIRED
-  COMPONENTS
-    sensor_msgs
-)
-
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
+    catkin::catkin
     PCL::PCL
   SOURCES
     src/Colorizer.cpp
