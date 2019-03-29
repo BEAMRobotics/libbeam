@@ -64,6 +64,7 @@ INSTALL(TARGETS beam EXPORT beamTargets)
 # not supported. Thus modules must be listed after their dependencies, for now.
 ADD_SUBDIRECTORY(beam_utils)
 ADD_SUBDIRECTORY(beam_calibration)
+ADD_SUBDIRECTORY(beam_colorize)
 #ADD_SUBDIRECTORY(beam_geometry)
 #ADD_SUBDIRECTORY(beam_containers)
 #ADD_SUBDIRECTORY(beam_benchmark)
