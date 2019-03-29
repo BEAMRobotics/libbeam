@@ -108,12 +108,12 @@ MACRO(BEAM_CHECK_MODULE NAME)
     ENDIF()
 
     # Check that each of the given DEPENDS (if any) exists as a target
-    FOREACH(dep IN LISTS BEAM_COMPONENT_DEPENDS)
+    #[[FOREACH(dep IN LISTS BEAM_COMPONENT_DEPENDS)
         IF(NOT TARGET ${dep})
             MESSAGE(STATUS "Not building ${NAME}: Requires ${dep}")
             RETURN()
         ENDIF()
-    ENDFOREACH()
+    ENDFOREACH()]]
 
     MESSAGE(STATUS "Building ${NAME}")
 
