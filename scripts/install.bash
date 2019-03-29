@@ -61,8 +61,10 @@ install_routine()
     # Ensure wget is available
     sudo apt-get install -qq wget  > /dev/null
     # Install dependencies
+    install_cmake
+    install_Catch2
     #install_ceres
-    #install_pcl
+    install_pcl
     install_geographiclib
     #install_gtsam
     #install_libwave
