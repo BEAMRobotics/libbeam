@@ -37,6 +37,33 @@ public:
   IntrinsicsType GetType() const override { return IntrinsicsType::PINHOLE; };
 
   /**
+   * @brief Method for adding the frame id
+   * @param frame_id frame associated with the intrinsics calibration object
+   */
+  void AddFrameId(std::string frame_id) override;
+
+  /**
+   * @brief Method for returning the frame id of an intrinsics
+   * calibration object
+   * @return Returns frame id
+   */
+  std::string GetFrameId() override;
+
+  /**
+   * @brief Method for adding the image dimensions
+   * @param img_dims dimensions of the images taken by the camera associated
+   * with this intrinsics object: [height, width]^T
+   */
+  void AddImgDims(beam::Vec2 img_dims) override;
+
+  /**
+   * @brief Method for getting the image dimensions
+   * @return img_dims dimensions of the images taken by the camera associated
+   * with this intrinsics object: [height, width]^T
+   */
+  beam::Vec2 GetImgDims() override;
+
+  /**
    * @brief Method for returning K matrix
    * @return intrinsics matrix K_
    */
@@ -143,6 +170,8 @@ private:
   beam::Vec2 ApplyDistortedProjection(beam::Vec3 X);
 
   // Variables for storing intrinsic information
+  std::string frame_id_;
+  beam::Vec2 img_dims_;
   beam::Mat3 K_;
   beam::Vec2 tan_coeffs_;
   beam::VecX rad_coeffs_;

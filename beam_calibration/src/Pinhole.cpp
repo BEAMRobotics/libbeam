@@ -10,13 +10,35 @@ Pinhole::Pinhole(double fx, double fy, double cx, double cy) {
 }
 
 Pinhole::Pinhole(beam::Mat3 K) {
-  K_ = K;
-  is_full_ = true;
+  if(K(0,0)!=0 && K(0,1)==0 && K(0,2)!=0 && K(1,0)==0 && K(1,1)!=0 && K(1,2)!=0
+    && K(2,0)==0 && K(2,1)==0 && K(2,2)==1){
+      K_ = K;
+      is_full_ = true;
+  } else {
+    LOG_ERROR("Invalid projection matrix (K) input.");
+  }
+}
+
+void Pinhole::AddFrameId(std::string frame_id){
+  frame_id_ = frame_id;
+}
+
+std::string Pinhole::GetFrameId(){
+  return frame_id_;
+}
+
+void Pinhole::AddImgDims(beam::Vec2 img_dims) {
+  img_dims_ = img_dims;
+}
+
+beam::Vec2 Pinhole::GetImgDims() {
+  return img_dims_;
 }
 
 beam::Mat3 Pinhole::GetK() {
   if (!is_full_) {
     LOG_ERROR("Intrinsics matrix empty.");
+    throw std::invalid_argument{"no intrinsics matrix"};
   }
   return K_;
 }
@@ -39,10 +61,11 @@ bool Pinhole::IsFull() {
 
 void Pinhole::AddTanDist(beam::Vec2 tan_coeffs) {
   tan_coeffs_ = tan_coeffs;
-  is_rad_distortion_valid_ = true;
+  is_tan_distortion_valid_ = true;
 }
 
 void Pinhole::AddRadDist(beam::VecX rad_coeffs) {
+  is_rad_distortion_valid_ = false;
   int rad_coeffs_size = rad_coeffs.size();
   if (rad_coeffs_size < 3 || rad_coeffs_size > 6) {
     LOG_ERROR("Invalid number of radial distortion coefficients. Input: %d, "
@@ -50,7 +73,7 @@ void Pinhole::AddRadDist(beam::VecX rad_coeffs) {
               rad_coeffs_size, 3, 6);
   } else {
     rad_coeffs_ = rad_coeffs;
-    is_tan_distortion_valid_ = true;
+    is_rad_distortion_valid_ = true;
   }
 }
 
@@ -58,6 +81,7 @@ beam::Vec2 Pinhole::GetTanDist() {
   if (!is_tan_distortion_valid_) {
     LOG_ERROR("No tangential distortion coefficients available.");
     beam::Vec2 null_vec;
+    throw std::invalid_argument{"invalid/non-existing pinhole tangential distortion param"};
     return null_vec;
   } else {
     return tan_coeffs_;
@@ -68,6 +92,7 @@ beam::VecX Pinhole::GetRadDist() {
   if (!is_rad_distortion_valid_) {
     LOG_ERROR("No radial distortion coefficients available.");
     beam::Vec2 null_vec;
+    throw std::invalid_argument{"invalid/non-existing pinhole radial distortion param"};
     return null_vec;
   } else {
     return rad_coeffs_;
@@ -80,6 +105,7 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec3 X) {
     img_coords = this->ApplyProjection(X);
   } else {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
+    throw std::invalid_argument{"no intrinsics matrix"};
   }
   return img_coords;
 }
@@ -102,11 +128,12 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec4 X) {
     img_coords = this->ApplyProjection(XX);
   } else if (!is_full_) {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
+    throw std::invalid_argument{"no intrinsics matrix"};
   } else {
     LOG_ERROR("invalid entry, cannot project point: the point is not in "
               "homographic form, ");
+    throw std::invalid_argument{"invalid point"};
   }
-
   return img_coords;
 }
 
@@ -117,10 +144,13 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 X) {
     img_coords = this->ApplyDistortedProjection(X);
   } else if (!is_full_) {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
+    throw std::invalid_argument{"no intrinsics matrix"};
   } else if (!is_rad_distortion_valid_) {
     LOG_ERROR("No radial distortion parameters, cannot project point.");
+    throw std::invalid_argument{"invalid/non-existing pinhole radial distortion param"};
   } else if (!is_tan_distortion_valid_) {
     LOG_ERROR("No tangential distortion parameters, cannot project point.");
+    throw std::invalid_argument{"invalid/non-existing pinhole tangential distortion param"};
   }
   return img_coords;
 }
@@ -144,13 +174,17 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 X) {
     img_coords = this->ApplyDistortedProjection(XX);
   } else if (!is_full_) {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
+    throw std::invalid_argument{"no intrinsics matrix"};
   } else if (!is_rad_distortion_valid_) {
     LOG_ERROR("No radial distortion parameters, cannot project point.");
+    throw std::invalid_argument{"invalid/non-existing pinhole radial distortion param"};
   } else if (!is_tan_distortion_valid_) {
     LOG_ERROR("No tangential distortion parameters, cannot project point.");
+    throw std::invalid_argument{"invalid/non-existing pinhole tangential distortion param"};
   } else {
     LOG_ERROR("invalid entry, cannot project point: the point is not in "
               "homographic form, ");
+    throw std::invalid_argument{"invalid point"};
   }
   return img_coords;
 }

@@ -10,18 +10,19 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
     Catch2::Catch2
   SOURCES
-    src/TFTree.cpp
+    src/TfTree.cpp
     src/Intrinsics.cpp
     src/Pinhole.cpp
     #src/Ladybug.cpp
     #src/Fisheye.cpp
-    #tests/pinhole_test.cpp
 )
 
 # tests
 add_executable(${PROJECT_NAME}_tests
   tests/pinhole_test.cpp
+  src/main.cpp
 )
+
 
 target_include_directories(${PROJECT_NAME}_tests
   PUBLIC
