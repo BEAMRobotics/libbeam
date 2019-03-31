@@ -20,9 +20,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 # tests
 add_executable(${PROJECT_NAME}_tests
   tests/pinhole_test.cpp
-  src/main.cpp
 )
-
 
 target_include_directories(${PROJECT_NAME}_tests
   PUBLIC
@@ -31,4 +29,17 @@ target_include_directories(${PROJECT_NAME}_tests
 target_link_libraries(${PROJECT_NAME}_tests
   ${PROJECT_NAME}
   Catch2::Catch2
+)
+
+# Dummy files
+add_executable(${PROJECT_NAME}_main
+  src/main.cpp
+)
+target_include_directories(${PROJECT_NAME}_main
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_main
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
 )
