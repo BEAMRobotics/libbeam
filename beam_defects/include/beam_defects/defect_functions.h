@@ -1,6 +1,6 @@
 #pragma once
 
-#include "beam_defects/Defect.h"
+#include <boost/smart_ptr.hpp>
 
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
