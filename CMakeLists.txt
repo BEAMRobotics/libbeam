@@ -35,7 +35,8 @@ OPTION(EXPORT_BUILD
 FIND_PACKAGE(Eigen3 3.2.92 REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system filesystem)
 FIND_PACKAGE(PCL 1.8 COMPONENTS
-    common filters registration kdtree search io visualization)
+    common filters registration kdtree search io visualization
+    surface segmentation)
 FIND_PACKAGE(kindr)
 FIND_PACKAGE(OpenCV 3.2.0)
 FIND_PACKAGE(yaml-cpp REQUIRED)
@@ -43,6 +44,7 @@ FIND_PACKAGE(Ceres 1.11)
 FIND_PACKAGE(GTSAM)
 FIND_PACKAGE(GeographicLib 1.49)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs)
+FIND_PACKAGE(Catch2 REQUIRED)
 
 # Where dependencies do not provide IMPORTED targets, define them
 INCLUDE(cmake/ImportEigen3.cmake)
@@ -51,6 +53,7 @@ INCLUDE(cmake/ImportPCL.cmake)
 INCLUDE(cmake/ImportKindr.cmake)
 INCLUDE(cmake/ImportYaml-cpp.cmake)
 INCLUDE(cmake/ImportCeres.cmake)
+INCLUDE(cmake/ImportCatkin.cmake)
 
 # Add a special "beam" target including all modules
 # The BEAM_ADD_LIBRARY helper in BeamHelpers.cmake will add each module to this
@@ -62,6 +65,7 @@ INSTALL(TARGETS beam EXPORT beamTargets)
 # not supported. Thus modules must be listed after their dependencies, for now.
 ADD_SUBDIRECTORY(beam_utils)
 ADD_SUBDIRECTORY(beam_colorize)
+ADD_SUBDIRECTORY(beam_defects)
 #ADD_SUBDIRECTORY(beam_geometry)
 #ADD_SUBDIRECTORY(beam_containers)
 #ADD_SUBDIRECTORY(beam_benchmark)
