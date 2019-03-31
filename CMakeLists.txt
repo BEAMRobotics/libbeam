@@ -35,7 +35,8 @@ OPTION(EXPORT_BUILD
 FIND_PACKAGE(Eigen3 3.2.92 REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system filesystem)
 FIND_PACKAGE(PCL 1.8 COMPONENTS
-    common filters registration kdtree search io visualization)
+    common filters registration kdtree search io visualization
+    surface segmentation)
 FIND_PACKAGE(kindr)
 FIND_PACKAGE(OpenCV 3.2.0)
 FIND_PACKAGE(yaml-cpp REQUIRED)
@@ -65,6 +66,7 @@ INSTALL(TARGETS beam EXPORT beamTargets)
 ADD_SUBDIRECTORY(beam_utils)
 ADD_SUBDIRECTORY(beam_calibration)
 ADD_SUBDIRECTORY(beam_colorize)
+ADD_SUBDIRECTORY(beam_defects)
 #ADD_SUBDIRECTORY(beam_geometry)
 #ADD_SUBDIRECTORY(beam_containers)
 #ADD_SUBDIRECTORY(beam_benchmark)
