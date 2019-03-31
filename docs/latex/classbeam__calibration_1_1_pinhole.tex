@@ -1,0 +1,506 @@
+\hypertarget{classbeam__calibration_1_1_pinhole}{}\section{beam\+\_\+calibration\+:\+:Pinhole Class Reference}
+\label{classbeam__calibration_1_1_pinhole}\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+
+
+Derived class for pinhole intrinsics.  
+
+
+
+
+{\ttfamily \#include $<$Pinhole.\+h$>$}
+
+
+
+Inheritance diagram for beam\+\_\+calibration\+:\+:Pinhole\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=216pt]{classbeam__calibration_1_1_pinhole__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for beam\+\_\+calibration\+:\+:Pinhole\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=216pt]{classbeam__calibration_1_1_pinhole__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__calibration_1_1_pinhole_abba8b5c4d7d467b4137802dc1221cf5c}{Pinhole} ()=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\hyperlink{classbeam__calibration_1_1_pinhole_aafd4e22eac71beed825c306981a4a59a}{Pinhole} (double fx, double fy, double cx, double cy)
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+\hyperlink{classbeam__calibration_1_1_pinhole_a63dd0e2c171429a6b6e9a69c13b273ed}{Pinhole} (\hyperlink{group__utils_ga665fed2673de952d12b19351a2bdb961}{beam\+::\+Mat3} K)
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+\hyperlink{classbeam__calibration_1_1_pinhole_a42abf55373c49f0ce0a44535498e1c33}{$\sim$\+Pinhole} () override=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\hyperlink{group__calibration_ga9abafc7bdd7c31c8fdbd4cc90df9a956}{Intrinsics\+Type} \hyperlink{classbeam__calibration_1_1_pinhole_a54dd38a3820f71a5d8b6a753d32da56f}{Get\+Type} () const override
+\begin{DoxyCompactList}\small\item\em Get the type of intrinsic. \end{DoxyCompactList}\item 
+void \hyperlink{classbeam__calibration_1_1_pinhole_ae9a7670fe65481cd2b3847d8fd07c7be}{Add\+Frame\+Id} (std\+::string frame\+\_\+id) override
+\begin{DoxyCompactList}\small\item\em Method for adding the frame id. \end{DoxyCompactList}\item 
+std\+::string \hyperlink{classbeam__calibration_1_1_pinhole_aa776bdaf5ced5d79175303ad2fa5e281}{Get\+Frame\+Id} () override
+\begin{DoxyCompactList}\small\item\em Method for returning the frame id of an intrinsics calibration object. \end{DoxyCompactList}\item 
+void \hyperlink{classbeam__calibration_1_1_pinhole_a1c4f6b9c07d9b4b99980daa540a7598e}{Add\+Img\+Dims} (\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} img\+\_\+dims) override
+\begin{DoxyCompactList}\small\item\em Method for adding the image dimensions. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} \hyperlink{classbeam__calibration_1_1_pinhole_a66f72fdaac253195585aa121a37f312e}{Get\+Img\+Dims} () override
+\begin{DoxyCompactList}\small\item\em Method for getting the image dimensions. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga665fed2673de952d12b19351a2bdb961}{beam\+::\+Mat3} \hyperlink{classbeam__calibration_1_1_pinhole_a0d004fb525f086ccc9cb46822fbe5c4e}{GetK} ()
+\begin{DoxyCompactList}\small\item\em Method for returning K matrix. \end{DoxyCompactList}\item 
+double \hyperlink{classbeam__calibration_1_1_pinhole_a75f59db7472104970ec6063989c5d2ad}{Get\+Fy} ()
+\begin{DoxyCompactList}\small\item\em Method for returning y focal length. \end{DoxyCompactList}\item 
+double \hyperlink{classbeam__calibration_1_1_pinhole_afdf888a775d106d6a618c0a93b6f1109}{Get\+Fx} ()
+\begin{DoxyCompactList}\small\item\em Method for returning x focal length. \end{DoxyCompactList}\item 
+double \hyperlink{classbeam__calibration_1_1_pinhole_ae76ebf82800677949ba90179393eeefa}{Get\+Cx} ()
+\begin{DoxyCompactList}\small\item\em Method for returning optical center in x direction. \end{DoxyCompactList}\item 
+double \hyperlink{classbeam__calibration_1_1_pinhole_a7fcb0a42c56369c920f56251c6451b59}{Get\+Cy} ()
+\begin{DoxyCompactList}\small\item\em Method for returning optical center in y direction. \end{DoxyCompactList}\item 
+bool \hyperlink{classbeam__calibration_1_1_pinhole_a326e7bb0ae15aea808d7f11c6c706869}{Is\+Full} ()
+\begin{DoxyCompactList}\small\item\em Method for checking if the intinsic parameters have been set. \end{DoxyCompactList}\item 
+void \hyperlink{classbeam__calibration_1_1_pinhole_a6d0bc4ac42aeb376a7138065b8ca7ade}{Add\+Tan\+Dist} (\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} tan\+\_\+coeffs)
+\begin{DoxyCompactList}\small\item\em Method for adding tangential distortion parameters. \end{DoxyCompactList}\item 
+void \hyperlink{classbeam__calibration_1_1_pinhole_a6bc5e220a93ea3a2b398c5bb443e49d0}{Add\+Rad\+Dist} (\hyperlink{group__utils_gae5ba967e4b0d4b421ca30ef46f896145}{beam\+::\+VecX} rad\+\_\+coeffs)
+\begin{DoxyCompactList}\small\item\em Method for adding radial distortion parameters. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} \hyperlink{classbeam__calibration_1_1_pinhole_aee136039482aed25893c2ab37b5c00aa}{Get\+Tan\+Dist} ()
+\begin{DoxyCompactList}\small\item\em Method for getting tangential distortion parameters. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_gae5ba967e4b0d4b421ca30ef46f896145}{beam\+::\+VecX} \hyperlink{classbeam__calibration_1_1_pinhole_ac455a6e6c46e7dafa14eac53042723d2}{Get\+Rad\+Dist} ()
+\begin{DoxyCompactList}\small\item\em Method for getting radial distortion parameters. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} \hyperlink{classbeam__calibration_1_1_pinhole_a4834e766dc9c57b8c2cbc92f21173ebb}{Project\+Point} (\hyperlink{group__utils_ga7aca82b90a74cb643417801e830cd43f}{beam\+::\+Vec3} X)
+\begin{DoxyCompactList}\small\item\em Method for projecting a point into an image plane. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} \hyperlink{classbeam__calibration_1_1_pinhole_a71b497379ab57ac3952563f3e0d62e88}{Project\+Point} (\hyperlink{group__utils_gae8c630e8f7e9cdbc1a7dcc3073a99d5c}{beam\+::\+Vec4} X)
+\begin{DoxyCompactList}\small\item\em Method for projecting a point in homographic form into an image plane. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} \hyperlink{classbeam__calibration_1_1_pinhole_ade6c53821bc84a8795f5101ff49bfd36}{Project\+Distorted\+Point} (\hyperlink{group__utils_ga7aca82b90a74cb643417801e830cd43f}{beam\+::\+Vec3} X)
+\begin{DoxyCompactList}\small\item\em Method for projecting a point into an image plane where the image is distorted. See\+: \href{https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html}{\tt https\+://docs.\+opencv.\+org/2.\+4/modules/calib3d/doc/camera\+\_\+calibration\+\_\+and\+\_\+3d\+\_\+reconstruction.\+html}. \end{DoxyCompactList}\item 
+\hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2} \hyperlink{classbeam__calibration_1_1_pinhole_a101b14c95d8ca7c73c0f4de01dd6605e}{Project\+Distorted\+Point} (\hyperlink{group__utils_gae8c630e8f7e9cdbc1a7dcc3073a99d5c}{beam\+::\+Vec4} X)
+\begin{DoxyCompactList}\small\item\em Method for projecting a point in homographic form into an image plane where the image is distorted. See\+: \href{https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html}{\tt https\+://docs.\+opencv.\+org/2.\+4/modules/calib3d/doc/camera\+\_\+calibration\+\_\+and\+\_\+3d\+\_\+reconstruction.\+html}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Derived class for pinhole intrinsics. 
+
+Definition at line 16 of file Pinhole.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Pinhole@{Pinhole}}
+\index{Pinhole@{Pinhole}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Pinhole()=default}{Pinhole()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+calibration\+::\+Pinhole\+::\+Pinhole (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__calibration_1_1_pinhole_abba8b5c4d7d467b4137802dc1221cf5c}{}\label{classbeam__calibration_1_1_pinhole_abba8b5c4d7d467b4137802dc1221cf5c}
+
+
+Default constructor. 
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Pinhole@{Pinhole}}
+\index{Pinhole@{Pinhole}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Pinhole(double fx, double fy, double cx, double cy)}{Pinhole(double fx, double fy, double cx, double cy)}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+calibration\+::\+Pinhole\+::\+Pinhole (
+\begin{DoxyParamCaption}
+\item[{double}]{fx, }
+\item[{double}]{fy, }
+\item[{double}]{cx, }
+\item[{double}]{cy}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_aafd4e22eac71beed825c306981a4a59a}{}\label{classbeam__calibration_1_1_pinhole_aafd4e22eac71beed825c306981a4a59a}
+
+
+constructor 
+
+
+
+Definition at line 7 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Pinhole@{Pinhole}}
+\index{Pinhole@{Pinhole}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Pinhole(beam\+::\+Mat3 K)}{Pinhole(beam::Mat3 K)}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+calibration\+::\+Pinhole\+::\+Pinhole (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Mat3}}]{K}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a63dd0e2c171429a6b6e9a69c13b273ed}{}\label{classbeam__calibration_1_1_pinhole_a63dd0e2c171429a6b6e9a69c13b273ed}
+
+
+constructor 
+
+
+
+Definition at line 12 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!````~Pinhole@{$\sim$\+Pinhole}}
+\index{````~Pinhole@{$\sim$\+Pinhole}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{$\sim$\+Pinhole() override=default}{~Pinhole() override=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+calibration\+::\+Pinhole\+::$\sim$\+Pinhole (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [default]}}\hypertarget{classbeam__calibration_1_1_pinhole_a42abf55373c49f0ce0a44535498e1c33}{}\label{classbeam__calibration_1_1_pinhole_a42abf55373c49f0ce0a44535498e1c33}
+
+
+Default constructor. 
+
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Add\+Frame\+Id@{Add\+Frame\+Id}}
+\index{Add\+Frame\+Id@{Add\+Frame\+Id}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Add\+Frame\+Id(std\+::string frame\+\_\+id) override}{AddFrameId(std::string frame_id) override}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+\_\+calibration\+::\+Pinhole\+::\+Add\+Frame\+Id (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{frame\+\_\+id}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__calibration_1_1_pinhole_ae9a7670fe65481cd2b3847d8fd07c7be}{}\label{classbeam__calibration_1_1_pinhole_ae9a7670fe65481cd2b3847d8fd07c7be}
+
+
+Method for adding the frame id. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & frame associated with the intrinsics calibration object \\
+\hline
+\end{DoxyParams}
+
+
+Implements \hyperlink{classbeam__calibration_1_1_intrinsics_a713eb2d78358185572e56d922fc3aff2}{beam\+\_\+calibration\+::\+Intrinsics}.
+
+
+
+Definition at line 22 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Add\+Img\+Dims@{Add\+Img\+Dims}}
+\index{Add\+Img\+Dims@{Add\+Img\+Dims}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Add\+Img\+Dims(beam\+::\+Vec2 img\+\_\+dims) override}{AddImgDims(beam::Vec2 img_dims) override}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+\_\+calibration\+::\+Pinhole\+::\+Add\+Img\+Dims (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Vec2}}]{img\+\_\+dims}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__calibration_1_1_pinhole_a1c4f6b9c07d9b4b99980daa540a7598e}{}\label{classbeam__calibration_1_1_pinhole_a1c4f6b9c07d9b4b99980daa540a7598e}
+
+
+Method for adding the image dimensions. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em img\+\_\+dims} & dimensions of the images taken by the camera associated with this intrinsics object\+: \mbox{[}height, width\mbox{]}$^\wedge$T \\
+\hline
+\end{DoxyParams}
+
+
+Implements \hyperlink{classbeam__calibration_1_1_intrinsics_affd89d4facbec94f8b4ad13ea658c12f}{beam\+\_\+calibration\+::\+Intrinsics}.
+
+
+
+Definition at line 30 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Add\+Rad\+Dist@{Add\+Rad\+Dist}}
+\index{Add\+Rad\+Dist@{Add\+Rad\+Dist}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Add\+Rad\+Dist(beam\+::\+Vec\+X rad\+\_\+coeffs)}{AddRadDist(beam::VecX rad_coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+\_\+calibration\+::\+Pinhole\+::\+Add\+Rad\+Dist (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+VecX}}]{rad\+\_\+coeffs}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a6bc5e220a93ea3a2b398c5bb443e49d0}{}\label{classbeam__calibration_1_1_pinhole_a6bc5e220a93ea3a2b398c5bb443e49d0}
+
+
+Method for adding radial distortion parameters. 
+
+
+
+Definition at line 67 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Add\+Tan\+Dist@{Add\+Tan\+Dist}}
+\index{Add\+Tan\+Dist@{Add\+Tan\+Dist}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Add\+Tan\+Dist(beam\+::\+Vec2 tan\+\_\+coeffs)}{AddTanDist(beam::Vec2 tan_coeffs)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+\_\+calibration\+::\+Pinhole\+::\+Add\+Tan\+Dist (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Vec2}}]{tan\+\_\+coeffs}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a6d0bc4ac42aeb376a7138065b8ca7ade}{}\label{classbeam__calibration_1_1_pinhole_a6d0bc4ac42aeb376a7138065b8ca7ade}
+
+
+Method for adding tangential distortion parameters. 
+
+
+
+Definition at line 62 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Cx@{Get\+Cx}}
+\index{Get\+Cx@{Get\+Cx}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Cx()}{GetCx()}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Cx (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_ae76ebf82800677949ba90179393eeefa}{}\label{classbeam__calibration_1_1_pinhole_ae76ebf82800677949ba90179393eeefa}
+
+
+Method for returning optical center in x direction. 
+
+\begin{DoxyReturn}{Returns}
+Cx 
+\end{DoxyReturn}
+
+
+Definition at line 50 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Cy@{Get\+Cy}}
+\index{Get\+Cy@{Get\+Cy}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Cy()}{GetCy()}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Cy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a7fcb0a42c56369c920f56251c6451b59}{}\label{classbeam__calibration_1_1_pinhole_a7fcb0a42c56369c920f56251c6451b59}
+
+
+Method for returning optical center in y direction. 
+
+\begin{DoxyReturn}{Returns}
+Cy 
+\end{DoxyReturn}
+
+
+Definition at line 52 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Frame\+Id@{Get\+Frame\+Id}}
+\index{Get\+Frame\+Id@{Get\+Frame\+Id}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Frame\+Id() override}{GetFrameId() override}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Frame\+Id (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__calibration_1_1_pinhole_aa776bdaf5ced5d79175303ad2fa5e281}{}\label{classbeam__calibration_1_1_pinhole_aa776bdaf5ced5d79175303ad2fa5e281}
+
+
+Method for returning the frame id of an intrinsics calibration object. 
+
+\begin{DoxyReturn}{Returns}
+Returns frame id 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__calibration_1_1_intrinsics_a77ed2b970f22938699a9a212eb75f7e5}{beam\+\_\+calibration\+::\+Intrinsics}.
+
+
+
+Definition at line 26 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Fx@{Get\+Fx}}
+\index{Get\+Fx@{Get\+Fx}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Fx()}{GetFx()}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Fx (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_afdf888a775d106d6a618c0a93b6f1109}{}\label{classbeam__calibration_1_1_pinhole_afdf888a775d106d6a618c0a93b6f1109}
+
+
+Method for returning x focal length. 
+
+\begin{DoxyReturn}{Returns}
+Fx 
+\end{DoxyReturn}
+
+
+Definition at line 46 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Fy@{Get\+Fy}}
+\index{Get\+Fy@{Get\+Fy}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Fy()}{GetFy()}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Fy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a75f59db7472104970ec6063989c5d2ad}{}\label{classbeam__calibration_1_1_pinhole_a75f59db7472104970ec6063989c5d2ad}
+
+
+Method for returning y focal length. 
+
+\begin{DoxyReturn}{Returns}
+Fy 
+\end{DoxyReturn}
+
+
+Definition at line 48 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Img\+Dims@{Get\+Img\+Dims}}
+\index{Get\+Img\+Dims@{Get\+Img\+Dims}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Img\+Dims() override}{GetImgDims() override}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Vec2} beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Img\+Dims (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__calibration_1_1_pinhole_a66f72fdaac253195585aa121a37f312e}{}\label{classbeam__calibration_1_1_pinhole_a66f72fdaac253195585aa121a37f312e}
+
+
+Method for getting the image dimensions. 
+
+\begin{DoxyReturn}{Returns}
+img\+\_\+dims dimensions of the images taken by the camera associated with this intrinsics object\+: \mbox{[}height, width\mbox{]}$^\wedge$T 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__calibration_1_1_intrinsics_a0084b28677b9a242e0f3d8dbaf3ea252}{beam\+\_\+calibration\+::\+Intrinsics}.
+
+
+
+Definition at line 34 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!GetK@{GetK}}
+\index{GetK@{GetK}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+K()}{GetK()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Mat3} beam\+\_\+calibration\+::\+Pinhole\+::\+GetK (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a0d004fb525f086ccc9cb46822fbe5c4e}{}\label{classbeam__calibration_1_1_pinhole_a0d004fb525f086ccc9cb46822fbe5c4e}
+
+
+Method for returning K matrix. 
+
+\begin{DoxyReturn}{Returns}
+intrinsics matrix K\+\_\+ 
+\end{DoxyReturn}
+
+
+Definition at line 38 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Rad\+Dist@{Get\+Rad\+Dist}}
+\index{Get\+Rad\+Dist@{Get\+Rad\+Dist}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Rad\+Dist()}{GetRadDist()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+VecX} beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Rad\+Dist (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_ac455a6e6c46e7dafa14eac53042723d2}{}\label{classbeam__calibration_1_1_pinhole_ac455a6e6c46e7dafa14eac53042723d2}
+
+
+Method for getting radial distortion parameters. 
+
+
+
+Definition at line 91 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Tan\+Dist@{Get\+Tan\+Dist}}
+\index{Get\+Tan\+Dist@{Get\+Tan\+Dist}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Tan\+Dist()}{GetTanDist()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Vec2} beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Tan\+Dist (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_aee136039482aed25893c2ab37b5c00aa}{}\label{classbeam__calibration_1_1_pinhole_aee136039482aed25893c2ab37b5c00aa}
+
+
+Method for getting tangential distortion parameters. 
+
+
+
+Definition at line 80 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Get\+Type@{Get\+Type}}
+\index{Get\+Type@{Get\+Type}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Get\+Type() const override}{GetType() const override}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Intrinsics\+Type} beam\+\_\+calibration\+::\+Pinhole\+::\+Get\+Type (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__calibration_1_1_pinhole_a54dd38a3820f71a5d8b6a753d32da56f}{}\label{classbeam__calibration_1_1_pinhole_a54dd38a3820f71a5d8b6a753d32da56f}
+
+
+Get the type of intrinsic. 
+
+\begin{DoxyReturn}{Returns}
+Returns type as one of intrinsics specified in the enum Intrinsics\+Type 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__calibration_1_1_intrinsics_a4e7f41934491e75c87538e5b6b0caad3}{beam\+\_\+calibration\+::\+Intrinsics}.
+
+
+
+Definition at line 43 of file Pinhole.\+h.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Is\+Full@{Is\+Full}}
+\index{Is\+Full@{Is\+Full}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Is\+Full()}{IsFull()}}]{\setlength{\rightskip}{0pt plus 5cm}bool beam\+\_\+calibration\+::\+Pinhole\+::\+Is\+Full (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a326e7bb0ae15aea808d7f11c6c706869}{}\label{classbeam__calibration_1_1_pinhole_a326e7bb0ae15aea808d7f11c6c706869}
+
+
+Method for checking if the intinsic parameters have been set. 
+
+\begin{DoxyReturn}{Returns}
+Returns true if K and distortion parameters have been assigned 
+\end{DoxyReturn}
+
+
+Definition at line 54 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Project\+Distorted\+Point@{Project\+Distorted\+Point}}
+\index{Project\+Distorted\+Point@{Project\+Distorted\+Point}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Project\+Distorted\+Point(beam\+::\+Vec3 X)}{ProjectDistortedPoint(beam::Vec3 X)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Vec2} beam\+\_\+calibration\+::\+Pinhole\+::\+Project\+Distorted\+Point (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Vec3}}]{X}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_ade6c53821bc84a8795f5101ff49bfd36}{}\label{classbeam__calibration_1_1_pinhole_ade6c53821bc84a8795f5101ff49bfd36}
+
+
+Method for projecting a point into an image plane where the image is distorted. See\+: \href{https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html}{\tt https\+://docs.\+opencv.\+org/2.\+4/modules/calib3d/doc/camera\+\_\+calibration\+\_\+and\+\_\+3d\+\_\+reconstruction.\+html}. 
+
+\begin{DoxyReturn}{Returns}
+Returns image coordinates after point has been projected into image plane. 
+\end{DoxyReturn}
+
+
+Definition at line 140 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Project\+Distorted\+Point@{Project\+Distorted\+Point}}
+\index{Project\+Distorted\+Point@{Project\+Distorted\+Point}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Project\+Distorted\+Point(beam\+::\+Vec4 X)}{ProjectDistortedPoint(beam::Vec4 X)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Vec2} beam\+\_\+calibration\+::\+Pinhole\+::\+Project\+Distorted\+Point (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Vec4}}]{X}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a101b14c95d8ca7c73c0f4de01dd6605e}{}\label{classbeam__calibration_1_1_pinhole_a101b14c95d8ca7c73c0f4de01dd6605e}
+
+
+Method for projecting a point in homographic form into an image plane where the image is distorted. See\+: \href{https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html}{\tt https\+://docs.\+opencv.\+org/2.\+4/modules/calib3d/doc/camera\+\_\+calibration\+\_\+and\+\_\+3d\+\_\+reconstruction.\+html}. 
+
+\begin{DoxyReturn}{Returns}
+Returns image coordinates after point has been projected into image plane. 
+\end{DoxyReturn}
+
+
+Definition at line 158 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Project\+Point@{Project\+Point}}
+\index{Project\+Point@{Project\+Point}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Project\+Point(beam\+::\+Vec3 X)}{ProjectPoint(beam::Vec3 X)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Vec2} beam\+\_\+calibration\+::\+Pinhole\+::\+Project\+Point (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Vec3}}]{X}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a4834e766dc9c57b8c2cbc92f21173ebb}{}\label{classbeam__calibration_1_1_pinhole_a4834e766dc9c57b8c2cbc92f21173ebb}
+
+
+Method for projecting a point into an image plane. 
+
+\begin{DoxyReturn}{Returns}
+Returns image coordinates after point has been projected into image plane. 
+\end{DoxyReturn}
+
+
+Definition at line 102 of file Pinhole.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}!Project\+Point@{Project\+Point}}
+\index{Project\+Point@{Project\+Point}!beam\+\_\+calibration\+::\+Pinhole@{beam\+\_\+calibration\+::\+Pinhole}}
+\subsubsection[{\texorpdfstring{Project\+Point(beam\+::\+Vec4 X)}{ProjectPoint(beam::Vec4 X)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf beam\+::\+Vec2} beam\+\_\+calibration\+::\+Pinhole\+::\+Project\+Point (
+\begin{DoxyParamCaption}
+\item[{{\bf beam\+::\+Vec4}}]{X}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_pinhole_a71b497379ab57ac3952563f3e0d62e88}{}\label{classbeam__calibration_1_1_pinhole_a71b497379ab57ac3952563f3e0d62e88}
+
+
+Method for projecting a point in homographic form into an image plane. 
+
+\begin{DoxyReturn}{Returns}
+Returns image coordinates after point has been projected into image plane. 
+\end{DoxyReturn}
+
+
+Definition at line 113 of file Pinhole.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+calibration/include/beam/calibration/\hyperlink{_pinhole_8h}{Pinhole.\+h}\item 
+beam\+\_\+calibration/src/\hyperlink{_pinhole_8cpp}{Pinhole.\+cpp}\end{DoxyCompactItemize}

@@ -1,0 +1,34 @@
+\hypertarget{log_8hpp}{}\section{beam\+\_\+utils/include/beam/utils/log.hpp File Reference}
+\label{log_8hpp}\index{beam\+\_\+utils/include/beam/utils/log.\+hpp@{beam\+\_\+utils/include/beam/utils/log.\+hpp}}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{log_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacebeam}{beam}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{group__utils_ga8de29f7c8bbf1a81cc6e71ac602032d3}{F\+I\+L\+E\+N\+A\+ME}~(strrchr(\+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+, \textquotesingle{}/\textquotesingle{}) ? strrchr(\+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+, \textquotesingle{}/\textquotesingle{}) + 1 \+: \+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+)
+\item 
+\#define \hyperlink{group__utils_ga187d17bb2372f3cc639923dba56dad1b}{L\+O\+G\+\_\+\+E\+R\+R\+OR}(M, ...)
+\item 
+\#define \hyperlink{group__utils_ga2ea0e9153d7e590b2b2b6c2bee498a76}{L\+O\+G\+\_\+\+I\+N\+FO}(M, ...)~fprintf(stdout, \char`\"{}\mbox{[}I\+N\+FO\mbox{]} \char`\"{} M \char`\"{}\textbackslash{}n\char`\"{}, \#\#\+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Functions to log errors and info to {\ttfamily stderr} and {\ttfamily stdout}.
+
+{\ttfamily L\+O\+G\+\_\+\+E\+R\+R\+OR} and {\ttfamily L\+O\+G\+\_\+\+I\+N\+FO} both are simple {\ttfamily fprintf()} that can be use to write message {\ttfamily M} to {\ttfamily stderr} and {\ttfamily stdout}. For example\+: 
+\begin{DoxyCode}
+\hyperlink{group__utils_ga187d17bb2372f3cc639923dba56dad1b}{LOG\_ERROR}(\textcolor{stringliteral}{"Failed to load configuration file [%s]"}, config\_file.c\_str());
+\hyperlink{group__utils_ga2ea0e9153d7e590b2b2b6c2bee498a76}{LOG\_INFO}(\textcolor{stringliteral}{"Parameter was not found! Loading defaults!"});
+\end{DoxyCode}
+ 

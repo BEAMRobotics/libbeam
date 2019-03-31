@@ -1,7 +1,13 @@
+/** @file
+ * @ingroup calibration
+ */
+
 #pragma once
 #include "beam/utils/math.hpp"
 
 namespace beam_calibration {
+/** @addtogroup calibration
+ *  @{ */
 
 /**
  * @brief Enum class for different types of intrinsic calibrations
@@ -55,8 +61,8 @@ public:
    * with this intrinsics object: [height, width]^T
    */
   virtual void AddImgDims(beam::Vec2 img_dims) = 0;
-
-
 };
+
+/** @} group calibration */
 
 } // namespace beam_calibration

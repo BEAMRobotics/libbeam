@@ -1,3 +1,11 @@
+/** @file
+ * @ingroup colorizer
+ * Includes all colorization classes / functions
+ *
+ * @defgroup colorizer
+ * Colorization classes / functions
+ */
+
 #pragma once
 
 // PCL
@@ -8,7 +16,12 @@
 #include <sensor_msgs/Image.h>
 
 namespace beam_colorize {
+/** @addtogroup colorizer
+ *  @{ */
 
+/**
+ * @brief Abstract class which different colorization methods can implement
+ */
 class Colorizer {
 public:
   Colorizer() = default;
@@ -27,5 +40,7 @@ public:
 
 private:
 };
+
+/** @} group colorizer */
 
 } // namespace beam_colorize

@@ -1,0 +1,115 @@
+\hypertarget{structbeam_1_1_config_param_base}{}\section{beam\+:\+:Config\+Param\+Base Struct Reference}
+\label{structbeam_1_1_config_param_base}\index{beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}}
+
+
+{\ttfamily \#include $<$config.\+hpp$>$}
+
+
+
+Inheritance diagram for beam\+:\+:Config\+Param\+Base\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{structbeam_1_1_config_param_base__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{structbeam_1_1_config_param_base_a9dbdaedbcc8610bd09390d570490a243}{Config\+Param\+Base} (std\+::string \hyperlink{structbeam_1_1_config_param_base_afbf349bc86d925088544d04a24c484b0}{key}, bool \hyperlink{structbeam_1_1_config_param_base_a4c73616a18786e1885265a02dbf8b9a5}{optional})
+\item 
+virtual void \hyperlink{structbeam_1_1_config_param_base_af4d235d401db493e99acf96065d36c73}{load} (const Y\+A\+M\+L\+::\+Node \&node) const =0
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \hyperlink{structbeam_1_1_config_param_base_afbf349bc86d925088544d04a24c484b0}{key}
+\begin{DoxyCompactList}\small\item\em yaml key to parse from \end{DoxyCompactList}\item 
+bool \hyperlink{structbeam_1_1_config_param_base_a4c73616a18786e1885265a02dbf8b9a5}{optional}
+\begin{DoxyCompactList}\small\item\em if true, it is not an error if the key is not found \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{structbeam_1_1_config_param_base_a876d21f911d6920231329e96a311298a}{$\sim$\+Config\+Param\+Base} ()=default
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Base class representing a parameter to be parsed in the yaml file 
+
+Definition at line 37 of file config.\+hpp.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}!Config\+Param\+Base@{Config\+Param\+Base}}
+\index{Config\+Param\+Base@{Config\+Param\+Base}!beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}}
+\subsubsection[{\texorpdfstring{Config\+Param\+Base(std\+::string key, bool optional)}{ConfigParamBase(std::string key, bool optional)}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+::\+Config\+Param\+Base\+::\+Config\+Param\+Base (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{key, }
+\item[{bool}]{optional}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structbeam_1_1_config_param_base_a9dbdaedbcc8610bd09390d570490a243}{}\label{structbeam_1_1_config_param_base_a9dbdaedbcc8610bd09390d570490a243}
+
+
+Definition at line 38 of file config.\+hpp.
+
+\index{beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}!````~Config\+Param\+Base@{$\sim$\+Config\+Param\+Base}}
+\index{````~Config\+Param\+Base@{$\sim$\+Config\+Param\+Base}!beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}}
+\subsubsection[{\texorpdfstring{$\sim$\+Config\+Param\+Base()=default}{~ConfigParamBase()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+::\+Config\+Param\+Base\+::$\sim$\+Config\+Param\+Base (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [default]}}\hypertarget{structbeam_1_1_config_param_base_a876d21f911d6920231329e96a311298a}{}\label{structbeam_1_1_config_param_base_a876d21f911d6920231329e96a311298a}
+
+
+\subsection{Member Function Documentation}
+\index{beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}!load@{load}}
+\index{load@{load}!beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}}
+\subsubsection[{\texorpdfstring{load(const Y\+A\+M\+L\+::\+Node \&node) const =0}{load(const YAML::Node &node) const =0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void beam\+::\+Config\+Param\+Base\+::load (
+\begin{DoxyParamCaption}
+\item[{const Y\+A\+M\+L\+::\+Node \&}]{node}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{structbeam_1_1_config_param_base_af4d235d401db493e99acf96065d36c73}{}\label{structbeam_1_1_config_param_base_af4d235d401db493e99acf96065d36c73}
+Parse the given node as T, and write the value into {\ttfamily destination}. \begin{DoxyNote}{Note}
+no lookup by key is performed; the node must already be correct 
+\end{DoxyNote}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Y\+A\+M\+L\+::\+Bad\+Conversion} & if node is not convertible to destination \\
+\hline
+\end{DoxyExceptions}
+
+
+Implemented in \hyperlink{classbeam_1_1_config_param_a805133e6dae35596e1383a6d223f4dc3}{beam\+::\+Config\+Param$<$ T $>$}.
+
+
+
+\subsection{Member Data Documentation}
+\index{beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}!key@{key}}
+\index{key@{key}!beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}}
+\subsubsection[{\texorpdfstring{key}{key}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string beam\+::\+Config\+Param\+Base\+::key}\hypertarget{structbeam_1_1_config_param_base_afbf349bc86d925088544d04a24c484b0}{}\label{structbeam_1_1_config_param_base_afbf349bc86d925088544d04a24c484b0}
+
+
+yaml key to parse from 
+
+
+
+Definition at line 47 of file config.\+hpp.
+
+\index{beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}!optional@{optional}}
+\index{optional@{optional}!beam\+::\+Config\+Param\+Base@{beam\+::\+Config\+Param\+Base}}
+\subsubsection[{\texorpdfstring{optional}{optional}}]{\setlength{\rightskip}{0pt plus 5cm}bool beam\+::\+Config\+Param\+Base\+::optional}\hypertarget{structbeam_1_1_config_param_base_a4c73616a18786e1885265a02dbf8b9a5}{}\label{structbeam_1_1_config_param_base_a4c73616a18786e1885265a02dbf8b9a5}
+
+
+if true, it is not an error if the key is not found 
+
+
+
+Definition at line 48 of file config.\+hpp.
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+utils/include/beam/utils/\hyperlink{config_8hpp}{config.\+hpp}\end{DoxyCompactItemize}

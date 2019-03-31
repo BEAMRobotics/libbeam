@@ -1,0 +1,184 @@
+\hypertarget{classbeam_1_1_config_parser}{}\section{beam\+:\+:Config\+Parser Class Reference}
+\label{classbeam_1_1_config_parser}\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+
+
+{\ttfamily \#include $<$config.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam_1_1_config_parser_a1f2a583c9eb00c93da60d14711b4389a}{Config\+Parser} (void)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classbeam_1_1_config_parser_a06f647e3b6a20452877dda482854fa8c}{add\+Param} (std\+::string key, T $\ast$out, bool optional=false)
+\item 
+\hyperlink{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{Config\+Status} \hyperlink{classbeam_1_1_config_parser_a347d9487325f54f158b2c6d748c38448}{get\+Yaml\+Node} (const std\+::string \&key, Y\+A\+M\+L\+::\+Node \&node)
+\item 
+\hyperlink{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{Config\+Status} \hyperlink{classbeam_1_1_config_parser_a908bfee0c4dda2fda2a6deae9edd98df}{check\+Key} (const std\+::string \&key, bool optional)
+\item 
+\hyperlink{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{Config\+Status} \hyperlink{classbeam_1_1_config_parser_a990c530e4f94f88a81d46c8fd38bbd92}{load\+Param} (const \hyperlink{structbeam_1_1_config_param_base}{Config\+Param\+Base} \&param)
+\item 
+\hyperlink{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{Config\+Status} \hyperlink{classbeam_1_1_config_parser_a28dd7f968674139ed0bbc4fcdb01f514}{load} (const std\+::string \&config\+\_\+file)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classbeam_1_1_config_parser_a4d9b8c9944779dfccae586ac3a337987}{config\+\_\+loaded}
+\item 
+Y\+A\+M\+L\+::\+Node \hyperlink{classbeam_1_1_config_parser_af7194358406b989236ad11515a19d963}{root}
+\item 
+std\+::vector$<$ std\+::shared\+\_\+ptr$<$ \hyperlink{structbeam_1_1_config_param_base}{Config\+Param\+Base} $>$ $>$ \hyperlink{classbeam_1_1_config_parser_adb1a9f52c1ee4bf974088519237dcefc}{params}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Parses yaml files for parameters of different types.
+
+Currently {\ttfamily \hyperlink{classbeam_1_1_config_parser}{Config\+Parser}} supports parsing the following data types\+:
+\begin{DoxyItemize}
+\item {\bfseries Primitives}\+: {\ttfamily bool}, {\ttfamily int}, {\ttfamily float}, {\ttfamily double}, {\ttfamily std\+::string}
+\item {\bfseries Arrays}\+: {\ttfamily std\+::vector$<$bool$>$}, {\ttfamily std\+::vector$<$int$>$}, {\ttfamily std\+::vector$<$float$>$}, {\ttfamily std\+::vector$<$double$>$}, {\ttfamily std\+::vector$<$std\+::string$>$}
+\item {\bfseries Vectors}\+: {\ttfamily Eigen\+::\+Vector2d}, {\ttfamily Eigen\+::\+Vector3d}, {\ttfamily Eigen\+::\+Vector4d}, {\ttfamily Eigen\+::\+Vector\+Xd}
+\item {\bfseries Matrices}\+: {\ttfamily Eigen\+::\+Matrix2d}, {\ttfamily Eigen\+::\+Matrix3d}, {\ttfamily Eigen\+::\+Matrix4d}, {\ttfamily Eigen\+::\+Matrix\+Xd}
+\end{DoxyItemize}
+
+\begin{DoxyNote}{Note}
+For a {\bfseries matrix} we require the yaml to have three nested keys in order for {\ttfamily \hyperlink{classbeam_1_1_config_parser}{Config\+Parser}} to operate properly. They are {\ttfamily rows}, {\ttfamily cols} and {\ttfamily data}. For example\+: 
+\begin{DoxyCode}
+1 some\_matrix:
+2   rows: 3
+3   cols: 3
+4   data: [1.1, 2.2, 3.3,
+5          4.4, 5.5, 6.6,
+6          7.7, 8.8, 9.9]
+\end{DoxyCode}
+
+\end{DoxyNote}
+For example, consider this yaml file\+: 
+\begin{DoxyCodeInclude}
+\end{DoxyCodeInclude}
+
+
+The code that parses the above is\+: 
+\begin{DoxyCodeInclude}
+\end{DoxyCodeInclude}
+
+
+\begin{DoxyRefDesc}{Todo}
+\item[\hyperlink{todo__todo000001}{Todo}]integrate unit tests into examples (see \href{http://stackoverflow.com/a/16034375/431033}{\tt http\+://stackoverflow.\+com/a/16034375/431033}) \end{DoxyRefDesc}
+
+
+Definition at line 105 of file config.\+hpp.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!Config\+Parser@{Config\+Parser}}
+\index{Config\+Parser@{Config\+Parser}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{Config\+Parser(void)}{ConfigParser(void)}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+::\+Config\+Parser\+::\+Config\+Parser (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam_1_1_config_parser_a1f2a583c9eb00c93da60d14711b4389a}{}\label{classbeam_1_1_config_parser_a1f2a583c9eb00c93da60d14711b4389a}
+Default constructor. By default it sets\+:
+
+
+\begin{DoxyItemize}
+\item {\ttfamily config\+\_\+loaded} to {\ttfamily false}
+\end{DoxyItemize}
+
+This variable is set to {\ttfamily true} once the yaml file is loaded. 
+
+Definition at line 6 of file config.\+cpp.
+
+
+
+\subsection{Member Function Documentation}
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!add\+Param@{add\+Param}}
+\index{add\+Param@{add\+Param}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{add\+Param(std\+::string key, T $\ast$out, bool optional=false)}{addParam(std::string key, T *out, bool optional=false)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ void beam\+::\+Config\+Parser\+::add\+Param (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{key, }
+\item[{T $\ast$}]{out, }
+\item[{bool}]{optional = {\ttfamily false}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classbeam_1_1_config_parser_a06f647e3b6a20452877dda482854fa8c}{}\label{classbeam_1_1_config_parser_a06f647e3b6a20452877dda482854fa8c}
+Use the variations of {\ttfamily add\+Param} to add parameters you would like to parse from the yaml file, where {\ttfamily key} is the yaml key, {\ttfamily out} is dependent on the type of parameter you want to parse to and an {\ttfamily optional} parameter to define whether {\ttfamily \hyperlink{classbeam_1_1_config_parser}{Config\+Parser}} should fail if the parameter is not found. 
+
+Definition at line 127 of file config.\+hpp.
+
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!check\+Key@{check\+Key}}
+\index{check\+Key@{check\+Key}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{check\+Key(const std\+::string \&key, bool optional)}{checkKey(const std::string &key, bool optional)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Config\+Status} beam\+::\+Config\+Parser\+::check\+Key (
+\begin{DoxyParamCaption}
+\item[{const std\+::string \&}]{key, }
+\item[{bool}]{optional}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam_1_1_config_parser_a908bfee0c4dda2fda2a6deae9edd98df}{}\label{classbeam_1_1_config_parser_a908bfee0c4dda2fda2a6deae9edd98df}
+Check whether a key is present in the yaml file 
+
+Definition at line 38 of file config.\+cpp.
+
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!get\+Yaml\+Node@{get\+Yaml\+Node}}
+\index{get\+Yaml\+Node@{get\+Yaml\+Node}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{get\+Yaml\+Node(const std\+::string \&key, Y\+A\+M\+L\+::\+Node \&node)}{getYamlNode(const std::string &key, YAML::Node &node)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Config\+Status} beam\+::\+Config\+Parser\+::get\+Yaml\+Node (
+\begin{DoxyParamCaption}
+\item[{const std\+::string \&}]{key, }
+\item[{Y\+A\+M\+L\+::\+Node \&}]{node}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam_1_1_config_parser_a347d9487325f54f158b2c6d748c38448}{}\label{classbeam_1_1_config_parser_a347d9487325f54f158b2c6d748c38448}
+Get yaml node given yaml {\ttfamily key}. The result is assigned to {\ttfamily node} if {\ttfamily key} matches anything in the config file, else {\ttfamily node} is set to {\ttfamily N\+U\+LL}. 
+
+Definition at line 10 of file config.\+cpp.
+
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!load@{load}}
+\index{load@{load}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{load(const std\+::string \&config\+\_\+file)}{load(const std::string &config_file)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Config\+Status} beam\+::\+Config\+Parser\+::load (
+\begin{DoxyParamCaption}
+\item[{const std\+::string \&}]{config\+\_\+file}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam_1_1_config_parser_a28dd7f968674139ed0bbc4fcdb01f514}{}\label{classbeam_1_1_config_parser_a28dd7f968674139ed0bbc4fcdb01f514}
+Load yaml file at {\ttfamily config\+\_\+file}. 
+
+Definition at line 80 of file config.\+cpp.
+
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!load\+Param@{load\+Param}}
+\index{load\+Param@{load\+Param}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{load\+Param(const Config\+Param\+Base \&param)}{loadParam(const ConfigParamBase &param)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Config\+Status} beam\+::\+Config\+Parser\+::load\+Param (
+\begin{DoxyParamCaption}
+\item[{const {\bf Config\+Param\+Base} \&}]{param}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam_1_1_config_parser_a990c530e4f94f88a81d46c8fd38bbd92}{}\label{classbeam_1_1_config_parser_a990c530e4f94f88a81d46c8fd38bbd92}
+Load yaml param primitive, array, vector or matrix. 
+
+Definition at line 58 of file config.\+cpp.
+
+
+
+\subsection{Member Data Documentation}
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!config\+\_\+loaded@{config\+\_\+loaded}}
+\index{config\+\_\+loaded@{config\+\_\+loaded}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{config\+\_\+loaded}{config_loaded}}]{\setlength{\rightskip}{0pt plus 5cm}bool beam\+::\+Config\+Parser\+::config\+\_\+loaded}\hypertarget{classbeam_1_1_config_parser_a4d9b8c9944779dfccae586ac3a337987}{}\label{classbeam_1_1_config_parser_a4d9b8c9944779dfccae586ac3a337987}
+
+
+Definition at line 107 of file config.\+hpp.
+
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!params@{params}}
+\index{params@{params}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{params}{params}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$std\+::shared\+\_\+ptr$<${\bf Config\+Param\+Base}$>$ $>$ beam\+::\+Config\+Parser\+::params}\hypertarget{classbeam_1_1_config_parser_adb1a9f52c1ee4bf974088519237dcefc}{}\label{classbeam_1_1_config_parser_adb1a9f52c1ee4bf974088519237dcefc}
+
+
+Definition at line 110 of file config.\+hpp.
+
+\index{beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}!root@{root}}
+\index{root@{root}!beam\+::\+Config\+Parser@{beam\+::\+Config\+Parser}}
+\subsubsection[{\texorpdfstring{root}{root}}]{\setlength{\rightskip}{0pt plus 5cm}Y\+A\+M\+L\+::\+Node beam\+::\+Config\+Parser\+::root}\hypertarget{classbeam_1_1_config_parser_af7194358406b989236ad11515a19d963}{}\label{classbeam_1_1_config_parser_af7194358406b989236ad11515a19d963}
+
+
+Definition at line 109 of file config.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+utils/include/beam/utils/\hyperlink{config_8hpp}{config.\+hpp}\item 
+beam\+\_\+utils/src/\hyperlink{config_8cpp}{config.\+cpp}\end{DoxyCompactItemize}

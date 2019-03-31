@@ -1,0 +1,20 @@
+private library for all internal software
+
+\subsection*{Example\+:}
+
+To use this library inside your program, add the following to your C\+Make\+Lists.\+txt file\+:
+
+
+\begin{DoxyCode}
+1 FIND\_PACKAGE(beam REQUIRED utils [ADD ANY OTHER MODULES NEEDED])
+2 TARGET\_LINK\_LIBRARIES($\{PROJECT\_NAME\}\_node
+3     [...]
+4     beam::beam
+5     [...]
+6 )
+\end{DoxyCode}
+
+
+Then you can include the headers in your .cpp and .hpp files, e.\+g.\+:
+
+{\ttfamily \#include $<$\hyperlink{math_8hpp}{beam/utils/math.\+hpp}$>$} 

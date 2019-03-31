@@ -1,0 +1,4 @@
+<map id="beam_colorize::Colorizer" name="beam_colorize::Colorizer">
+<area shape="rect" id="node2" href="$classbeam__colorize_1_1_projection.html" title="Class which implements Colorizer interface and provides colorization functionality using projection m..." alt="" coords="5,80,177,107"/>
+<area shape="rect" id="node3" href="$classbeam__colorize_1_1_ray_trace.html" title="Class which implements Colorizer interface and provides colorization functionality using ray tracing..." alt="" coords="202,80,373,107"/>
+</map>

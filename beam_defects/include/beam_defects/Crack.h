@@ -1,7 +1,13 @@
+/** @file
+ * @ingroup defects
+ */
+
 #pragma once
 #include "beam_defects/Defect.h"
 
 namespace beam_defects {
+/** @addtogroup defects
+ *  @{ */
 
 /**
  * @brief Derived class for crack defects
@@ -53,4 +59,5 @@ private:
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 };
 
+/** @} group defects */
 } // namespace beam_defects

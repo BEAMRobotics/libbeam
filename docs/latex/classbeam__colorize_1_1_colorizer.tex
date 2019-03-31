@@ -1,0 +1,87 @@
+\hypertarget{classbeam__colorize_1_1_colorizer}{}\section{beam\+\_\+colorize\+:\+:Colorizer Class Reference}
+\label{classbeam__colorize_1_1_colorizer}\index{beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}}
+
+
+Abstract class which different colorization methods can implement.  
+
+
+
+
+{\ttfamily \#include $<$Colorizer.\+h$>$}
+
+
+
+Inheritance diagram for beam\+\_\+colorize\+:\+:Colorizer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classbeam__colorize_1_1_colorizer__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__colorize_1_1_colorizer_a47ca25243531c7f55bbc233d8c0c8c47}{Colorizer} ()=default
+\item 
+virtual \hyperlink{classbeam__colorize_1_1_colorizer_a4fef46e74ca4cac8f9bd2f35f1f4aac9}{$\sim$\+Colorizer} ()=default
+\item 
+virtual pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z\+R\+GB $>$\+::Ptr \hyperlink{classbeam__colorize_1_1_colorizer_ab9ca2ddf55fd8782e6b31c64e85efcbc}{Colorize\+Point\+Cloud} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \&input\+\_\+cloud, const sensor\+\_\+msgs\+::\+Image \&input\+\_\+image) const =0
+\begin{DoxyCompactList}\small\item\em Method for colorizing a point cloud from an image. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Abstract class which different colorization methods can implement. 
+
+Definition at line 25 of file Colorizer.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}!Colorizer@{Colorizer}}
+\index{Colorizer@{Colorizer}!beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}}
+\subsubsection[{\texorpdfstring{Colorizer()=default}{Colorizer()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+colorize\+::\+Colorizer\+::\+Colorizer (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__colorize_1_1_colorizer_a47ca25243531c7f55bbc233d8c0c8c47}{}\label{classbeam__colorize_1_1_colorizer_a47ca25243531c7f55bbc233d8c0c8c47}
+\index{beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}!````~Colorizer@{$\sim$\+Colorizer}}
+\index{````~Colorizer@{$\sim$\+Colorizer}!beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}}
+\subsubsection[{\texorpdfstring{$\sim$\+Colorizer()=default}{~Colorizer()=default}}]{\setlength{\rightskip}{0pt plus 5cm}virtual beam\+\_\+colorize\+::\+Colorizer\+::$\sim$\+Colorizer (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}, {\ttfamily [default]}}\hypertarget{classbeam__colorize_1_1_colorizer_a4fef46e74ca4cac8f9bd2f35f1f4aac9}{}\label{classbeam__colorize_1_1_colorizer_a4fef46e74ca4cac8f9bd2f35f1f4aac9}
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}!Colorize\+Point\+Cloud@{Colorize\+Point\+Cloud}}
+\index{Colorize\+Point\+Cloud@{Colorize\+Point\+Cloud}!beam\+\_\+colorize\+::\+Colorizer@{beam\+\_\+colorize\+::\+Colorizer}}
+\subsubsection[{\texorpdfstring{Colorize\+Point\+Cloud(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$ \&input\+\_\+cloud, const sensor\+\_\+msgs\+::\+Image \&input\+\_\+image) const =0}{ColorizePointCloud(const pcl::PointCloud< pcl::PointXYZ > &input_cloud, const sensor_msgs::Image &input_image) const =0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual pcl\+::\+Point\+Cloud$<$pcl\+::\+Point\+X\+Y\+Z\+R\+GB$>$\+::Ptr beam\+\_\+colorize\+::\+Colorizer\+::\+Colorize\+Point\+Cloud (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \&}]{input\+\_\+cloud, }
+\item[{const sensor\+\_\+msgs\+::\+Image \&}]{input\+\_\+image}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{classbeam__colorize_1_1_colorizer_ab9ca2ddf55fd8782e6b31c64e85efcbc}{}\label{classbeam__colorize_1_1_colorizer_ab9ca2ddf55fd8782e6b31c64e85efcbc}
+
+
+Method for colorizing a point cloud from an image. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\+\_\+cloud} & Input point cloud in the camera frame \\
+\hline
+{\em input\+\_\+image} & Image which will be used to color point cloud \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Colored point cloud 
+\end{DoxyReturn}
+
+
+Implemented in \hyperlink{classbeam__colorize_1_1_ray_trace_a41c414265166ecb12e32d976120ce157}{beam\+\_\+colorize\+::\+Ray\+Trace}, and \hyperlink{classbeam__colorize_1_1_projection_a23a0d92d022d6a65647b4d15a462c35a}{beam\+\_\+colorize\+::\+Projection}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+colorize/include/beam/colorize/\hyperlink{_colorizer_8h}{Colorizer.\+h}\end{DoxyCompactItemize}

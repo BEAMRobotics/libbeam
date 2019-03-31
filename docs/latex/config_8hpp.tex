@@ -1,0 +1,59 @@
+\hypertarget{config_8hpp}{}\section{beam\+\_\+utils/include/beam/utils/config.hpp File Reference}
+\label{config_8hpp}\index{beam\+\_\+utils/include/beam/utils/config.\+hpp@{beam\+\_\+utils/include/beam/utils/config.\+hpp}}
+{\ttfamily \#include $<$iostream$>$}\\*
+{\ttfamily \#include $<$sstream$>$}\\*
+{\ttfamily \#include $<$string$>$}\\*
+{\ttfamily \#include $<$type\+\_\+traits$>$}\\*
+{\ttfamily \#include $<$yaml-\/cpp/yaml.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}beam/utils/log.\+hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}beam/utils/math.\+hpp\char`\"{}}\\*
+Include dependency graph for config.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{config_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=330pt]{config_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structbeam_1_1_config_param_base}{beam\+::\+Config\+Param\+Base}
+\item 
+class \hyperlink{classbeam_1_1_config_param}{beam\+::\+Config\+Param$<$ T $>$}
+\item 
+class \hyperlink{classbeam_1_1_config_parser}{beam\+::\+Config\+Parser}
+\item 
+struct \hyperlink{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_01_cols_01_4_01_4}{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$}
+\item 
+struct \hyperlink{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_011_01_4_01_4}{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, 1 $>$ $>$}
+\end{DoxyCompactItemize}
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacebeam}{beam}
+\item 
+ \hyperlink{namespace_y_a_m_l}{Y\+A\+ML}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{beam\+::\+Config\+Status} \{ \\*
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63ae0aa021e21dddbd6d8cecec71e9cf564}{beam\+::\+Config\+Status\+::\+OK} = 0, 
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63ab150e1b84c6f67e2bebfa5a682f71a37}{beam\+::\+Config\+Status\+::\+Missing\+Optional\+Key} = 1, 
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63a06344c468073b2b66824779ffa5105cc}{beam\+::\+Config\+Status\+::\+File\+Error} = -\/1, 
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63ac84999914a408f8c02b4122a49df6e00}{beam\+::\+Config\+Status\+::\+Key\+Error} = -\/2, 
+\\*
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63a33f8a28d3c790e00d94cc848895dfb51}{beam\+::\+Config\+Status\+::\+Conversion\+Error} = -\/3
+ \}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Contains a useful {\ttfamily Config\+Parser} class to simplify parsing yaml files. 

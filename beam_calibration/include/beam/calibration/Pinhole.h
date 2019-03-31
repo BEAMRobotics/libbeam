@@ -1,8 +1,14 @@
+/** @file
+ * @ingroup calibration
+ */
+
 #pragma once
 #include "beam/calibration/Intrinsics.h"
 #include "beam/utils/math.hpp"
 
 namespace beam_calibration {
+/** @addtogroup calibration
+ *  @{ */
 
 /**
  * @brief Derived class for pinhole intrinsics
@@ -178,5 +184,7 @@ private:
   bool is_full_ = false, is_rad_distortion_valid_ = false,
        is_tan_distortion_valid_ = false;
 };
+
+/** @} group calibration */
 
 } // namespace beam_calibration

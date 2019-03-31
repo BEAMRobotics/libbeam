@@ -1,0 +1,7 @@
+<map id="beam_colorize/include/beam/colorize/Colorizer.h" name="beam_colorize/include/beam/colorize/Colorizer.h">
+<area shape="rect" id="node2" href="$_projection_8h.html" title="beam_colorize/include\l/beam/colorize/Projection.h" alt="" coords="31,95,211,136"/>
+<area shape="rect" id="node4" href="$_ray_trace_8h.html" title="beam_colorize/include\l/beam/colorize/RayTrace.h" alt="" coords="253,95,431,136"/>
+<area shape="rect" id="node6" href="$_colorizer_8cpp.html" title="beam_colorize/src/Colorizer.cpp" alt="" coords="456,102,665,129"/>
+<area shape="rect" id="node3" href="$_projection_8cpp.html" title="beam_colorize/src/Projection.cpp" alt="" coords="5,184,220,211"/>
+<area shape="rect" id="node5" href="$_ray_trace_8cpp.html" title="beam_colorize/src/RayTrace.cpp" alt="" coords="244,184,459,211"/>
+</map>

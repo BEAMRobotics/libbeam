@@ -1,9 +1,13 @@
+/** @file
+ * @ingroup defects
+ */
+
 #pragma once
 
 #include <boost/smart_ptr.hpp>
 
 #include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
+//#include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
@@ -13,6 +17,8 @@
 #include <vector>
 
 namespace beam_defects {
+/** @addtogroup defects
+ *  @{ */
 
 // function to calculate dot product
 float dotProduct(const std::vector<float>& vect_A,
@@ -44,5 +50,7 @@ pcl::PointCloud<pcl::PointXYZ>
 // calculate area given a hull cloud
 float calculateHullArea(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+
+/** @} group defects */
 
 } // namespace beam_defects

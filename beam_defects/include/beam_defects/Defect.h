@@ -1,3 +1,11 @@
+/** @file
+ * @ingroup defects
+ * Includes all defects classes / functions
+ *
+ * @defgroup defects
+ * Defect functions
+ */
+
 #pragma once
 
 #include <boost/smart_ptr.hpp>
@@ -7,6 +15,8 @@
 #include <pcl/point_types.h>
 
 namespace beam_defects {
+/** @addtogroup defects
+ *  @{ */
 
 /**
  * @brief Enum class for different types of defects we might want to use
@@ -49,5 +59,7 @@ public:
 
   using Ptr = std::shared_ptr<Defect>;
 };
+
+/** @} group defects */
 
 } // namespace beam_defects

@@ -1,0 +1,74 @@
+\hypertarget{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_01_cols_01_4_01_4}{}\section{Y\+A\+ML\+:\+:convert$<$ Eigen\+:\+:Matrix$<$ Scalar, Rows, Cols $>$ $>$ Struct Template Reference}
+\label{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_01_cols_01_4_01_4}\index{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$@{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$}}
+
+
+{\ttfamily \#include $<$config.\+hpp$>$}
+
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static bool \hyperlink{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_01_cols_01_4_01_4_aaceb24ec400b99197353373ef2c29a11}{decode} (const Node \&node, Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ \&out)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename Scalar, int Rows, int Cols$>$\\*
+struct Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$}
+
+Custom conversion functions for \hyperlink{namespace_y_a_m_l}{Y\+A\+ML} -\/$>$ Eigen matrix
+
+\begin{DoxyNote}{Note}
+We require the yaml node to have three nested keys in order to parse a matrix. They are {\ttfamily rows}, {\ttfamily cols} and {\ttfamily data}.
+\end{DoxyNote}
+For example\+: 
+\begin{DoxyCode}
+1 some\_matrix:
+2   rows: 3
+3   cols: 3
+4   data: [1.1, 2.2, 3.3,
+5          4.4, 5.5, 6.6,
+6          7.7, 8.8, 9.9]
+\end{DoxyCode}
+
+
+Conversions for the following types are included in of beam\+\_\+utils\+:
+\begin{DoxyItemize}
+\item Eigen\+::\+Matrix2d
+\item Eigen\+::\+Matrix3d
+\item Eigen\+::\+Matrix4d
+\item Eigen\+::\+Matrix\+Xd 
+\end{DoxyItemize}
+
+Definition at line 174 of file config.\+hpp.
+
+
+
+\subsection{Member Function Documentation}
+\index{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$@{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$}!decode@{decode}}
+\index{decode@{decode}!Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$@{Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$}}
+\subsubsection[{\texorpdfstring{decode(const Node \&node, Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ \&out)}{decode(const Node &node, Eigen::Matrix< Scalar, Rows, Cols > &out)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Scalar , int Rows, int Cols$>$ bool Y\+A\+M\+L\+::convert$<$ Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ $>$\+::decode (
+\begin{DoxyParamCaption}
+\item[{const Node \&}]{node, }
+\item[{Eigen\+::\+Matrix$<$ Scalar, Rows, Cols $>$ \&}]{out}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_01_cols_01_4_01_4_aaceb24ec400b99197353373ef2c29a11}{}\label{struct_y_a_m_l_1_1convert_3_01_eigen_1_1_matrix_3_01_scalar_00_01_rows_00_01_cols_01_4_01_4_aaceb24ec400b99197353373ef2c29a11}
+Convert \hyperlink{namespace_y_a_m_l}{Y\+A\+ML} node to Eigen Matrix
+
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Y\+A\+M\+L\+::\+Invalid\+Node} & if nested keys not found \\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyReturn}{Returns}
+true if conversion successful 
+\end{DoxyReturn}
+
+
+Definition at line 110 of file config.\+cpp.
+
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+utils/include/beam/utils/\hyperlink{config_8hpp}{config.\+hpp}\item 
+beam\+\_\+utils/src/\hyperlink{config_8cpp}{config.\+cpp}\end{DoxyCompactItemize}

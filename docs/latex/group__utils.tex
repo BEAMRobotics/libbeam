@@ -1,0 +1,558 @@
+\hypertarget{group__utils}{}\section{Utils}
+\label{group__utils}\index{Utils@{Utils}}
+\subsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file \hyperlink{config_8hpp}{config.\+hpp}
+\item 
+file \hyperlink{log_8hpp}{log.\+hpp}
+\item 
+file \hyperlink{math_8hpp}{math.\+hpp}
+\item 
+file \hyperlink{time_8hpp}{time.\+hpp}
+\item 
+file \hyperlink{utils_8hpp}{utils.\+hpp}
+\end{DoxyCompactItemize}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structbeam_1_1_config_param_base}{beam\+::\+Config\+Param\+Base}
+\item 
+class \hyperlink{classbeam_1_1_config_param}{beam\+::\+Config\+Param$<$ T $>$}
+\item 
+class \hyperlink{classbeam_1_1_config_parser}{beam\+::\+Config\+Parser}
+\item 
+struct \hyperlink{structbeam_1_1_vec_comparator}{beam\+::\+Vec\+Comparator}
+\item 
+struct \hyperlink{structbeam_1_1_mat_comparator}{beam\+::\+Mat\+Comparator}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{group__utils_ga8de29f7c8bbf1a81cc6e71ac602032d3}{F\+I\+L\+E\+N\+A\+ME}~(strrchr(\+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+, \textquotesingle{}/\textquotesingle{}) ? strrchr(\+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+, \textquotesingle{}/\textquotesingle{}) + 1 \+: \+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+)
+\item 
+\#define \hyperlink{group__utils_ga187d17bb2372f3cc639923dba56dad1b}{L\+O\+G\+\_\+\+E\+R\+R\+OR}(M, ...)
+\item 
+\#define \hyperlink{group__utils_ga2ea0e9153d7e590b2b2b6c2bee498a76}{L\+O\+G\+\_\+\+I\+N\+FO}(M, ...)~fprintf(stdout, \char`\"{}\mbox{[}I\+N\+FO\mbox{]} \char`\"{} M \char`\"{}\textbackslash{}n\char`\"{}, \#\#\+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+)
+\item 
+\#define \hyperlink{group__utils_ga9f2375aee996fb13eecdf9eab8aceb6e}{B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef Eigen\+::\+Vector2d \hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2}
+\item 
+typedef Eigen\+::\+Vector3d \hyperlink{group__utils_ga7aca82b90a74cb643417801e830cd43f}{beam\+::\+Vec3}
+\item 
+typedef Eigen\+::\+Vector4d \hyperlink{group__utils_gae8c630e8f7e9cdbc1a7dcc3073a99d5c}{beam\+::\+Vec4}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 5, 1 $>$ \hyperlink{group__utils_gabd17e53e0e9320ff4dcbad3b0e591928}{beam\+::\+Vec5}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 6, 1 $>$ \hyperlink{group__utils_ga9f18e27181a175dfd15dc192a7d417d1}{beam\+::\+Vec6}
+\item 
+typedef Eigen\+::\+Vector\+Xd \hyperlink{group__utils_gae5ba967e4b0d4b421ca30ef46f896145}{beam\+::\+VecX}
+\item 
+typedef Eigen\+::\+Matrix2d \hyperlink{group__utils_gaa647b85b058c8a50386a3da8dd719e3d}{beam\+::\+Mat2}
+\item 
+typedef Eigen\+::\+Matrix3d \hyperlink{group__utils_ga665fed2673de952d12b19351a2bdb961}{beam\+::\+Mat3}
+\item 
+typedef Eigen\+::\+Matrix4d \hyperlink{group__utils_ga06979ede648a91a7e5465980784ebb1b}{beam\+::\+Mat4}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 5, 5 $>$ \hyperlink{group__utils_ga34f1d113f166129c5b89fe92c5a07e02}{beam\+::\+Mat5}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 6, 6 $>$ \hyperlink{group__utils_gac42e2f9ad085d2fcc34875015c43cecc}{beam\+::\+Mat6}
+\item 
+typedef Eigen\+::\+Matrix\+Xd \hyperlink{group__utils_gaf1ee9917aef6e6cf513d29f8c7d2eeee}{beam\+::\+MatX}
+\item 
+typedef Eigen\+::\+Affine3d \hyperlink{group__utils_ga609e7e934806a61b3cb511b893f799ce}{beam\+::\+Affine3}
+\item 
+typedef Eigen\+::\+Quaterniond \hyperlink{group__utils_gab34e0dc5bdfa343eebf793fdc084a07f}{beam\+::\+Quaternion}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{beam\+::\+Config\+Status} \{ \\*
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63ae0aa021e21dddbd6d8cecec71e9cf564}{beam\+::\+Config\+Status\+::\+OK} = 0, 
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63ab150e1b84c6f67e2bebfa5a682f71a37}{beam\+::\+Config\+Status\+::\+Missing\+Optional\+Key} = 1, 
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63a06344c468073b2b66824779ffa5105cc}{beam\+::\+Config\+Status\+::\+File\+Error} = -\/1, 
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63ac84999914a408f8c02b4122a49df6e00}{beam\+::\+Config\+Status\+::\+Key\+Error} = -\/2, 
+\\*
+\hyperlink{group__utils_gga6b948c6f49abd3a3de95390efacfba63a33f8a28d3c790e00d94cc848895dfb51}{beam\+::\+Config\+Status\+::\+Conversion\+Error} = -\/3
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{group__utils_ga1709c3968d710a88b5cc6b034358ff4b}{beam\+::randi} (int ub, int lb)
+\item 
+double \hyperlink{group__utils_gaf3391ec0a035372eb7fa27646aa97018}{beam\+::randf} (double ub, double lb)
+\item 
+int \hyperlink{group__utils_gacf5e889cd118230c90c1618324b47644}{beam\+::fltcmp} (double f1, double f2, double threshold=0.\+0001)
+\item 
+double \hyperlink{group__utils_ga78b63ada78026ee09e93e996a6da095b}{beam\+::median} (std\+::vector$<$ double $>$ v)
+\item 
+void \hyperlink{group__utils_ga1c462df8889ae3641889e12d7491e995}{beam\+::vec2mat} (std\+::vector$<$ double $>$ x, int rows, int cols, MatX \&y)
+\item 
+void \hyperlink{group__utils_gac7f5f2ea3f1feec3cedfc2b0f61aff90}{beam\+::mat2vec} (MatX A, std\+::vector$<$ double $>$ \&x)
+\item 
+int \hyperlink{group__utils_ga986bd09d39d65902c831209a1f311819}{beam\+::euler2rot} (Vec3 euler, int euler\+\_\+seq, Mat3 \&R)
+\item 
+int \hyperlink{group__utils_ga87a6d391d78520ba96a429f65d06bb84}{beam\+::euler2quat} (Vec3 euler, int euler\+\_\+seq, Quaternion \&q)
+\item 
+int \hyperlink{group__utils_ga15d4558557dc0197de74a7ae56daa53f}{beam\+::quat2euler} (Quaternion q, int euler\+\_\+seq, Vec3 \&euler)
+\item 
+int \hyperlink{group__utils_ga99cfa04b1c384ead4ae82b4cc4843a5c}{beam\+::quat2rot} (Quaternion q, Mat3 \&R)
+\item 
+void \hyperlink{group__utils_ga5fe56de851463d297a144a0eb5e7e1b2}{beam\+::enu2nwu} (const Vec3 \&enu, Vec3 \&nwu)
+\item 
+void \hyperlink{group__utils_ga6e0ef288576925f8c79fd3284743e86c}{beam\+::ned2enu} (const Vec3 \&ned, Vec3 \&enu)
+\item 
+void \hyperlink{group__utils_ga82aa198fb08b86d9b4fb0854e09acdca}{beam\+::ned2nwu} (const Quaternion \&ned, Quaternion \&enu)
+\item 
+void \hyperlink{group__utils_gaec5283955c5b5122e00b7fb38b1d69c5}{beam\+::nwu2enu} (const Vec3 \&nwu, Vec3 \&enu)
+\item 
+void \hyperlink{group__utils_ga7f2d193025c27530e4736c9fabba6aeb}{beam\+::nwu2ned} (const Quaternion \&nwu, Quaternion \&ned)
+\item 
+void \hyperlink{group__utils_gacd46e4e0d954431486c743882f04b1a3}{beam\+::nwu2edn} (const Vec3 \&nwu, Vec3 \&edn)
+\item 
+void \hyperlink{group__utils_gaaebadeacafd2b1816dab04b0db7147f6}{beam\+::tic} (struct timespec $\ast$tic)
+\item 
+float \hyperlink{group__utils_gabe4bc58525b5b33ead190307009c9335}{beam\+::toc} (struct timespec $\ast$tic)
+\item 
+float \hyperlink{group__utils_gab928984bd87de1db648f2b349fdeac74}{beam\+::mtoc} (struct timespec $\ast$tic)
+\item 
+double \hyperlink{group__utils_gab7f144a34f327358efbe5c08af63fdb7}{beam\+::time\+\_\+now} (void)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Utility functions 
+
+\subsection{Macro Definition Documentation}
+\index{Utils@{Utils}!B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF@{B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF}}
+\index{B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF@{B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF}{BEAM_EIGEN_TYPEDEF}}]{\setlength{\rightskip}{0pt plus 5cm}\#define B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF}\hypertarget{group__utils_ga9f2375aee996fb13eecdf9eab8aceb6e}{}\label{group__utils_ga9f2375aee996fb13eecdf9eab8aceb6e}
+
+
+Definition at line 25 of file math.\+hpp.
+
+\index{Utils@{Utils}!F\+I\+L\+E\+N\+A\+ME@{F\+I\+L\+E\+N\+A\+ME}}
+\index{F\+I\+L\+E\+N\+A\+ME@{F\+I\+L\+E\+N\+A\+ME}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{F\+I\+L\+E\+N\+A\+ME}{FILENAME}}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+I\+L\+E\+N\+A\+ME~(strrchr(\+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+, \textquotesingle{}/\textquotesingle{}) ? strrchr(\+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+, \textquotesingle{}/\textquotesingle{}) + 1 \+: \+\_\+\+\_\+\+F\+I\+L\+E\+\_\+\+\_\+)}\hypertarget{group__utils_ga8de29f7c8bbf1a81cc6e71ac602032d3}{}\label{group__utils_ga8de29f7c8bbf1a81cc6e71ac602032d3}
+
+
+Definition at line 21 of file log.\+hpp.
+
+\index{Utils@{Utils}!L\+O\+G\+\_\+\+E\+R\+R\+OR@{L\+O\+G\+\_\+\+E\+R\+R\+OR}}
+\index{L\+O\+G\+\_\+\+E\+R\+R\+OR@{L\+O\+G\+\_\+\+E\+R\+R\+OR}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{L\+O\+G\+\_\+\+E\+R\+R\+OR}{LOG_ERROR}}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\+O\+G\+\_\+\+E\+R\+R\+OR(
+\begin{DoxyParamCaption}
+\item[{}]{M, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga187d17bb2372f3cc639923dba56dad1b}{}\label{group__utils_ga187d17bb2372f3cc639923dba56dad1b}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+fprintf(              \(\backslash\)
+      stderr, \textcolor{stringliteral}{"[ERROR] [%s:%d] "} M \textcolor{stringliteral}{"\(\backslash\)n"}, \hyperlink{group__utils_ga8de29f7c8bbf1a81cc6e71ac602032d3}{FILENAME}, \_\_LINE\_\_, ##\_\_VA\_ARGS\_\_)
+\end{DoxyCode}
+
+
+Definition at line 24 of file log.\+hpp.
+
+\index{Utils@{Utils}!L\+O\+G\+\_\+\+I\+N\+FO@{L\+O\+G\+\_\+\+I\+N\+FO}}
+\index{L\+O\+G\+\_\+\+I\+N\+FO@{L\+O\+G\+\_\+\+I\+N\+FO}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{L\+O\+G\+\_\+\+I\+N\+FO}{LOG_INFO}}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\+O\+G\+\_\+\+I\+N\+FO(
+\begin{DoxyParamCaption}
+\item[{}]{M, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)~fprintf(stdout, \char`\"{}\mbox{[}I\+N\+FO\mbox{]} \char`\"{} M \char`\"{}\textbackslash{}n\char`\"{}, \#\#\+\_\+\+\_\+\+V\+A\+\_\+\+A\+R\+G\+S\+\_\+\+\_\+)}\hypertarget{group__utils_ga2ea0e9153d7e590b2b2b6c2bee498a76}{}\label{group__utils_ga2ea0e9153d7e590b2b2b6c2bee498a76}
+
+
+Definition at line 28 of file log.\+hpp.
+
+
+
+\subsection{Typedef Documentation}
+\index{Utils@{Utils}!Affine3@{Affine3}}
+\index{Affine3@{Affine3}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Affine3}{Affine3}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Affine3d {\bf beam\+::\+Affine3}}\hypertarget{group__utils_ga609e7e934806a61b3cb511b893f799ce}{}\label{group__utils_ga609e7e934806a61b3cb511b893f799ce}
+
+
+Definition at line 40 of file math.\+hpp.
+
+\index{Utils@{Utils}!Mat2@{Mat2}}
+\index{Mat2@{Mat2}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Mat2}{Mat2}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix2d {\bf beam\+::\+Mat2}}\hypertarget{group__utils_gaa647b85b058c8a50386a3da8dd719e3d}{}\label{group__utils_gaa647b85b058c8a50386a3da8dd719e3d}
+
+
+Definition at line 33 of file math.\+hpp.
+
+\index{Utils@{Utils}!Mat3@{Mat3}}
+\index{Mat3@{Mat3}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Mat3}{Mat3}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix3d {\bf beam\+::\+Mat3}}\hypertarget{group__utils_ga665fed2673de952d12b19351a2bdb961}{}\label{group__utils_ga665fed2673de952d12b19351a2bdb961}
+
+
+Definition at line 34 of file math.\+hpp.
+
+\index{Utils@{Utils}!Mat4@{Mat4}}
+\index{Mat4@{Mat4}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Mat4}{Mat4}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix4d {\bf beam\+::\+Mat4}}\hypertarget{group__utils_ga06979ede648a91a7e5465980784ebb1b}{}\label{group__utils_ga06979ede648a91a7e5465980784ebb1b}
+
+
+Definition at line 35 of file math.\+hpp.
+
+\index{Utils@{Utils}!Mat5@{Mat5}}
+\index{Mat5@{Mat5}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Mat5}{Mat5}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix$<$double, 5, 5$>$ {\bf beam\+::\+Mat5}}\hypertarget{group__utils_ga34f1d113f166129c5b89fe92c5a07e02}{}\label{group__utils_ga34f1d113f166129c5b89fe92c5a07e02}
+
+
+Definition at line 36 of file math.\+hpp.
+
+\index{Utils@{Utils}!Mat6@{Mat6}}
+\index{Mat6@{Mat6}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Mat6}{Mat6}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix$<$double, 6, 6$>$ {\bf beam\+::\+Mat6}}\hypertarget{group__utils_gac42e2f9ad085d2fcc34875015c43cecc}{}\label{group__utils_gac42e2f9ad085d2fcc34875015c43cecc}
+
+
+Definition at line 37 of file math.\+hpp.
+
+\index{Utils@{Utils}!MatX@{MatX}}
+\index{MatX@{MatX}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{MatX}{MatX}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix\+Xd {\bf beam\+::\+MatX}}\hypertarget{group__utils_gaf1ee9917aef6e6cf513d29f8c7d2eeee}{}\label{group__utils_gaf1ee9917aef6e6cf513d29f8c7d2eeee}
+
+
+Definition at line 38 of file math.\+hpp.
+
+\index{Utils@{Utils}!Quaternion@{Quaternion}}
+\index{Quaternion@{Quaternion}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Quaternion}{Quaternion}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Quaterniond {\bf beam\+::\+Quaternion}}\hypertarget{group__utils_gab34e0dc5bdfa343eebf793fdc084a07f}{}\label{group__utils_gab34e0dc5bdfa343eebf793fdc084a07f}
+
+
+Definition at line 42 of file math.\+hpp.
+
+\index{Utils@{Utils}!Vec2@{Vec2}}
+\index{Vec2@{Vec2}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Vec2}{Vec2}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Vector2d {\bf beam\+::\+Vec2}}\hypertarget{group__utils_ga6112bda54e53755ab14060144285c6b0}{}\label{group__utils_ga6112bda54e53755ab14060144285c6b0}
+
+
+Definition at line 26 of file math.\+hpp.
+
+\index{Utils@{Utils}!Vec3@{Vec3}}
+\index{Vec3@{Vec3}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Vec3}{Vec3}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Vector3d {\bf beam\+::\+Vec3}}\hypertarget{group__utils_ga7aca82b90a74cb643417801e830cd43f}{}\label{group__utils_ga7aca82b90a74cb643417801e830cd43f}
+
+
+Definition at line 27 of file math.\+hpp.
+
+\index{Utils@{Utils}!Vec4@{Vec4}}
+\index{Vec4@{Vec4}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Vec4}{Vec4}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Vector4d {\bf beam\+::\+Vec4}}\hypertarget{group__utils_gae8c630e8f7e9cdbc1a7dcc3073a99d5c}{}\label{group__utils_gae8c630e8f7e9cdbc1a7dcc3073a99d5c}
+
+
+Definition at line 28 of file math.\+hpp.
+
+\index{Utils@{Utils}!Vec5@{Vec5}}
+\index{Vec5@{Vec5}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Vec5}{Vec5}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix$<$double, 5, 1$>$ {\bf beam\+::\+Vec5}}\hypertarget{group__utils_gabd17e53e0e9320ff4dcbad3b0e591928}{}\label{group__utils_gabd17e53e0e9320ff4dcbad3b0e591928}
+
+
+Definition at line 29 of file math.\+hpp.
+
+\index{Utils@{Utils}!Vec6@{Vec6}}
+\index{Vec6@{Vec6}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Vec6}{Vec6}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Matrix$<$double, 6, 1$>$ {\bf beam\+::\+Vec6}}\hypertarget{group__utils_ga9f18e27181a175dfd15dc192a7d417d1}{}\label{group__utils_ga9f18e27181a175dfd15dc192a7d417d1}
+
+
+Definition at line 30 of file math.\+hpp.
+
+\index{Utils@{Utils}!VecX@{VecX}}
+\index{VecX@{VecX}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{VecX}{VecX}}]{\setlength{\rightskip}{0pt plus 5cm}typedef Eigen\+::\+Vector\+Xd {\bf beam\+::\+VecX}}\hypertarget{group__utils_gae5ba967e4b0d4b421ca30ef46f896145}{}\label{group__utils_gae5ba967e4b0d4b421ca30ef46f896145}
+
+
+Definition at line 31 of file math.\+hpp.
+
+
+
+\subsection{Enumeration Type Documentation}
+\index{Utils@{Utils}!Config\+Status@{Config\+Status}}
+\index{Config\+Status@{Config\+Status}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{Config\+Status}{ConfigStatus}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf beam\+::\+Config\+Status}\hspace{0.3cm}{\ttfamily [strong]}}\hypertarget{group__utils_ga6b948c6f49abd3a3de95390efacfba63}{}\label{group__utils_ga6b948c6f49abd3a3de95390efacfba63}
+Return codes for \hyperlink{classbeam_1_1_config_parser}{Config\+Parser} methods \begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{OK@{OK}!Utils@{Utils}}\index{Utils@{Utils}!OK@{OK}}\item[{\em 
+OK\hypertarget{group__utils_gga6b948c6f49abd3a3de95390efacfba63ae0aa021e21dddbd6d8cecec71e9cf564}{}\label{group__utils_gga6b948c6f49abd3a3de95390efacfba63ae0aa021e21dddbd6d8cecec71e9cf564}
+}]Success. \index{Missing\+Optional\+Key@{Missing\+Optional\+Key}!Utils@{Utils}}\index{Utils@{Utils}!Missing\+Optional\+Key@{Missing\+Optional\+Key}}\item[{\em 
+Missing\+Optional\+Key\hypertarget{group__utils_gga6b948c6f49abd3a3de95390efacfba63ab150e1b84c6f67e2bebfa5a682f71a37}{}\label{group__utils_gga6b948c6f49abd3a3de95390efacfba63ab150e1b84c6f67e2bebfa5a682f71a37}
+}]key not found, but parameter is optional \index{File\+Error@{File\+Error}!Utils@{Utils}}\index{Utils@{Utils}!File\+Error@{File\+Error}}\item[{\em 
+File\+Error\hypertarget{group__utils_gga6b948c6f49abd3a3de95390efacfba63a06344c468073b2b66824779ffa5105cc}{}\label{group__utils_gga6b948c6f49abd3a3de95390efacfba63a06344c468073b2b66824779ffa5105cc}
+}]Success. \index{Key\+Error@{Key\+Error}!Utils@{Utils}}\index{Utils@{Utils}!Key\+Error@{Key\+Error}}\item[{\em 
+Key\+Error\hypertarget{group__utils_gga6b948c6f49abd3a3de95390efacfba63ac84999914a408f8c02b4122a49df6e00}{}\label{group__utils_gga6b948c6f49abd3a3de95390efacfba63ac84999914a408f8c02b4122a49df6e00}
+}]key not found, parameter is not optional \index{Conversion\+Error@{Conversion\+Error}!Utils@{Utils}}\index{Utils@{Utils}!Conversion\+Error@{Conversion\+Error}}\item[{\em 
+Conversion\+Error\hypertarget{group__utils_gga6b948c6f49abd3a3de95390efacfba63a33f8a28d3c790e00d94cc848895dfb51}{}\label{group__utils_gga6b948c6f49abd3a3de95390efacfba63a33f8a28d3c790e00d94cc848895dfb51}
+}]Invalid value for conversion e.\+g. wrong-\/size list for vector, missing key \textquotesingle{}rows\textquotesingle{}, \textquotesingle{}cols\textquotesingle{} or \textquotesingle{}data\textquotesingle{} (for matrix) \end{description}
+\end{Desc}
+
+
+Definition at line 25 of file config.\+hpp.
+
+
+
+\subsection{Function Documentation}
+\index{Utils@{Utils}!enu2nwu@{enu2nwu}}
+\index{enu2nwu@{enu2nwu}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{enu2nwu(const Vec3 \&enu, Vec3 \&nwu)}{enu2nwu(const Vec3 &enu, Vec3 &nwu)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::enu2nwu (
+\begin{DoxyParamCaption}
+\item[{const {\bf Vec3} \&}]{enu, }
+\item[{{\bf Vec3} \&}]{nwu}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga5fe56de851463d297a144a0eb5e7e1b2}{}\label{group__utils_ga5fe56de851463d297a144a0eb5e7e1b2}
+E\+NU to N\+WU coordinate system 
+
+Definition at line 237 of file math.\+cpp.
+
+\index{Utils@{Utils}!euler2quat@{euler2quat}}
+\index{euler2quat@{euler2quat}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{euler2quat(\+Vec3 euler, int euler\+\_\+seq, Quaternion \&q)}{euler2quat(Vec3 euler, int euler_seq, Quaternion &q)}}]{\setlength{\rightskip}{0pt plus 5cm}int beam\+::euler2quat (
+\begin{DoxyParamCaption}
+\item[{{\bf Vec3}}]{euler, }
+\item[{int}]{euler\+\_\+seq, }
+\item[{{\bf Quaternion} \&}]{q}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga87a6d391d78520ba96a429f65d06bb84}{}\label{group__utils_ga87a6d391d78520ba96a429f65d06bb84}
+Convert euler angle to quaternion 
+
+Definition at line 113 of file math.\+cpp.
+
+\index{Utils@{Utils}!euler2rot@{euler2rot}}
+\index{euler2rot@{euler2rot}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{euler2rot(\+Vec3 euler, int euler\+\_\+seq, Mat3 \&\+R)}{euler2rot(Vec3 euler, int euler_seq, Mat3 &R)}}]{\setlength{\rightskip}{0pt plus 5cm}int beam\+::euler2rot (
+\begin{DoxyParamCaption}
+\item[{{\bf Vec3}}]{euler, }
+\item[{int}]{euler\+\_\+seq, }
+\item[{{\bf Mat3} \&}]{R}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga986bd09d39d65902c831209a1f311819}{}\label{group__utils_ga986bd09d39d65902c831209a1f311819}
+Convert euler angle to rotation matrix 
+
+Definition at line 68 of file math.\+cpp.
+
+\index{Utils@{Utils}!fltcmp@{fltcmp}}
+\index{fltcmp@{fltcmp}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{fltcmp(double f1, double f2, double threshold=0.\+0001)}{fltcmp(double f1, double f2, double threshold=0.0001)}}]{\setlength{\rightskip}{0pt plus 5cm}int beam\+::fltcmp (
+\begin{DoxyParamCaption}
+\item[{double}]{f1, }
+\item[{double}]{f2, }
+\item[{double}]{threshold = {\ttfamily 0.0001}}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gacf5e889cd118230c90c1618324b47644}{}\label{group__utils_gacf5e889cd118230c90c1618324b47644}
+Compares two floating point numbers {\ttfamily f1} and {\ttfamily f2} with an error threshold defined by {\ttfamily threshold}. \begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item {\ttfamily 0}\+: If {\ttfamily f1} == {\ttfamily f2} or the difference is less then {\ttfamily threshold}
+\item {\ttfamily 1}\+: If {\ttfamily f1} $>$ {\ttfamily f2}
+\item {\ttfamily -\/1}\+: If {\ttfamily f1} $<$ {\ttfamily f2} 
+\end{DoxyItemize}
+\end{DoxyReturn}
+
+
+Definition at line 15 of file math.\+cpp.
+
+\index{Utils@{Utils}!mat2vec@{mat2vec}}
+\index{mat2vec@{mat2vec}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{mat2vec(\+Mat\+X A, std\+::vector$<$ double $>$ \&x)}{mat2vec(MatX A, std::vector< double > &x)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::mat2vec (
+\begin{DoxyParamCaption}
+\item[{{\bf MatX}}]{A, }
+\item[{std\+::vector$<$ double $>$ \&}]{x}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gac7f5f2ea3f1feec3cedfc2b0f61aff90}{}\label{group__utils_gac7f5f2ea3f1feec3cedfc2b0f61aff90}
+Reshapes a matrix to a vector 
+
+Definition at line 60 of file math.\+cpp.
+
+\index{Utils@{Utils}!median@{median}}
+\index{median@{median}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{median(std\+::vector$<$ double $>$ v)}{median(std::vector< double > v)}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+::median (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ double $>$}]{v}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga78b63ada78026ee09e93e996a6da095b}{}\label{group__utils_ga78b63ada78026ee09e93e996a6da095b}
+\begin{DoxyReturn}{Returns}
+the median of {\ttfamily v}. 
+\end{DoxyReturn}
+
+
+Definition at line 25 of file math.\+cpp.
+
+\index{Utils@{Utils}!mtoc@{mtoc}}
+\index{mtoc@{mtoc}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{mtoc(struct timespec $\ast$tic)}{mtoc(struct timespec *tic)}}]{\setlength{\rightskip}{0pt plus 5cm}float beam\+::mtoc (
+\begin{DoxyParamCaption}
+\item[{struct timespec $\ast$}]{tic}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gab928984bd87de1db648f2b349fdeac74}{}\label{group__utils_gab928984bd87de1db648f2b349fdeac74}
+
+
+Definition at line 21 of file time.\+cpp.
+
+\index{Utils@{Utils}!ned2enu@{ned2enu}}
+\index{ned2enu@{ned2enu}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{ned2enu(const Vec3 \&ned, Vec3 \&enu)}{ned2enu(const Vec3 &ned, Vec3 &enu)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::ned2enu (
+\begin{DoxyParamCaption}
+\item[{const {\bf Vec3} \&}]{ned, }
+\item[{{\bf Vec3} \&}]{enu}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga6e0ef288576925f8c79fd3284743e86c}{}\label{group__utils_ga6e0ef288576925f8c79fd3284743e86c}
+N\+ED to E\+NU coordinate system 
+
+Definition at line 245 of file math.\+cpp.
+
+\index{Utils@{Utils}!ned2nwu@{ned2nwu}}
+\index{ned2nwu@{ned2nwu}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{ned2nwu(const Quaternion \&ned, Quaternion \&enu)}{ned2nwu(const Quaternion &ned, Quaternion &enu)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::ned2nwu (
+\begin{DoxyParamCaption}
+\item[{const {\bf Quaternion} \&}]{ned, }
+\item[{{\bf Quaternion} \&}]{enu}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga82aa198fb08b86d9b4fb0854e09acdca}{}\label{group__utils_ga82aa198fb08b86d9b4fb0854e09acdca}
+N\+ED to N\+WU coordinate system 
+
+Definition at line 253 of file math.\+cpp.
+
+\index{Utils@{Utils}!nwu2edn@{nwu2edn}}
+\index{nwu2edn@{nwu2edn}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{nwu2edn(const Vec3 \&nwu, Vec3 \&edn)}{nwu2edn(const Vec3 &nwu, Vec3 &edn)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::nwu2edn (
+\begin{DoxyParamCaption}
+\item[{const {\bf Vec3} \&}]{nwu, }
+\item[{{\bf Vec3} \&}]{edn}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gacd46e4e0d954431486c743882f04b1a3}{}\label{group__utils_gacd46e4e0d954431486c743882f04b1a3}
+N\+WU to E\+DN coordinate system 
+
+Definition at line 275 of file math.\+cpp.
+
+\index{Utils@{Utils}!nwu2enu@{nwu2enu}}
+\index{nwu2enu@{nwu2enu}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{nwu2enu(const Vec3 \&nwu, Vec3 \&enu)}{nwu2enu(const Vec3 &nwu, Vec3 &enu)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::nwu2enu (
+\begin{DoxyParamCaption}
+\item[{const {\bf Vec3} \&}]{nwu, }
+\item[{{\bf Vec3} \&}]{enu}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gaec5283955c5b5122e00b7fb38b1d69c5}{}\label{group__utils_gaec5283955c5b5122e00b7fb38b1d69c5}
+N\+WU to E\+NU coordinate system 
+
+Definition at line 260 of file math.\+cpp.
+
+\index{Utils@{Utils}!nwu2ned@{nwu2ned}}
+\index{nwu2ned@{nwu2ned}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{nwu2ned(const Quaternion \&nwu, Quaternion \&ned)}{nwu2ned(const Quaternion &nwu, Quaternion &ned)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::nwu2ned (
+\begin{DoxyParamCaption}
+\item[{const {\bf Quaternion} \&}]{nwu, }
+\item[{{\bf Quaternion} \&}]{ned}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga7f2d193025c27530e4736c9fabba6aeb}{}\label{group__utils_ga7f2d193025c27530e4736c9fabba6aeb}
+N\+WU to N\+ED coordinate system 
+
+Definition at line 268 of file math.\+cpp.
+
+\index{Utils@{Utils}!quat2euler@{quat2euler}}
+\index{quat2euler@{quat2euler}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{quat2euler(\+Quaternion q, int euler\+\_\+seq, Vec3 \&euler)}{quat2euler(Quaternion q, int euler_seq, Vec3 &euler)}}]{\setlength{\rightskip}{0pt plus 5cm}int beam\+::quat2euler (
+\begin{DoxyParamCaption}
+\item[{{\bf Quaternion}}]{q, }
+\item[{int}]{euler\+\_\+seq, }
+\item[{{\bf Vec3} \&}]{euler}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga15d4558557dc0197de74a7ae56daa53f}{}\label{group__utils_ga15d4558557dc0197de74a7ae56daa53f}
+Convert quaternion to euler angles 
+
+Definition at line 160 of file math.\+cpp.
+
+\index{Utils@{Utils}!quat2rot@{quat2rot}}
+\index{quat2rot@{quat2rot}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{quat2rot(\+Quaternion q, Mat3 \&\+R)}{quat2rot(Quaternion q, Mat3 &R)}}]{\setlength{\rightskip}{0pt plus 5cm}int beam\+::quat2rot (
+\begin{DoxyParamCaption}
+\item[{{\bf Quaternion}}]{q, }
+\item[{{\bf Mat3} \&}]{R}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga99cfa04b1c384ead4ae82b4cc4843a5c}{}\label{group__utils_ga99cfa04b1c384ead4ae82b4cc4843a5c}
+Convert quaternion to rotation matrix 
+
+Definition at line 195 of file math.\+cpp.
+
+\index{Utils@{Utils}!randf@{randf}}
+\index{randf@{randf}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{randf(double ub, double lb)}{randf(double ub, double lb)}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+::randf (
+\begin{DoxyParamCaption}
+\item[{double}]{ub, }
+\item[{double}]{lb}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gaf3391ec0a035372eb7fa27646aa97018}{}\label{group__utils_gaf3391ec0a035372eb7fa27646aa97018}
+Generates random float with a upper bound {\ttfamily ub} and lower bound {\ttfamily lb} using a uniform random distribution. 
+
+Definition at line 10 of file math.\+cpp.
+
+\index{Utils@{Utils}!randi@{randi}}
+\index{randi@{randi}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{randi(int ub, int lb)}{randi(int ub, int lb)}}]{\setlength{\rightskip}{0pt plus 5cm}int beam\+::randi (
+\begin{DoxyParamCaption}
+\item[{int}]{ub, }
+\item[{int}]{lb}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga1709c3968d710a88b5cc6b034358ff4b}{}\label{group__utils_ga1709c3968d710a88b5cc6b034358ff4b}
+Generates random integer with a upper bound {\ttfamily ub} and lower bound {\ttfamily lb} using a uniform random distribution. 
+
+Definition at line 6 of file math.\+cpp.
+
+\index{Utils@{Utils}!tic@{tic}}
+\index{tic@{tic}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{tic(struct timespec $\ast$tic)}{tic(struct timespec *tic)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::tic (
+\begin{DoxyParamCaption}
+\item[{struct timespec $\ast$}]{tic}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gaaebadeacafd2b1816dab04b0db7147f6}{}\label{group__utils_gaaebadeacafd2b1816dab04b0db7147f6}
+Similar to how matlab\textquotesingle{}s tic and toc work, {\ttfamily \hyperlink{group__utils_gaaebadeacafd2b1816dab04b0db7147f6}{tic()}} starts the timer where the variable {\ttfamily t} stores the start time, when {\ttfamily \hyperlink{group__utils_gabe4bc58525b5b33ead190307009c9335}{toc()}} is called it returns the time difference in seconds. {\ttfamily \hyperlink{group__utils_gab928984bd87de1db648f2b349fdeac74}{mtoc()}} returns the time difference in milli-\/seconds. 
+
+Definition at line 6 of file time.\+cpp.
+
+\index{Utils@{Utils}!time\+\_\+now@{time\+\_\+now}}
+\index{time\+\_\+now@{time\+\_\+now}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{time\+\_\+now(void)}{time_now(void)}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+::time\+\_\+now (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gab7f144a34f327358efbe5c08af63fdb7}{}\label{group__utils_gab7f144a34f327358efbe5c08af63fdb7}
+\begin{DoxyReturn}{Returns}
+the time since epoch in seconds. 
+\end{DoxyReturn}
+
+
+Definition at line 25 of file time.\+cpp.
+
+\index{Utils@{Utils}!toc@{toc}}
+\index{toc@{toc}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{toc(struct timespec $\ast$tic)}{toc(struct timespec *tic)}}]{\setlength{\rightskip}{0pt plus 5cm}float beam\+::toc (
+\begin{DoxyParamCaption}
+\item[{struct timespec $\ast$}]{tic}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_gabe4bc58525b5b33ead190307009c9335}{}\label{group__utils_gabe4bc58525b5b33ead190307009c9335}
+
+
+Definition at line 10 of file time.\+cpp.
+
+\index{Utils@{Utils}!vec2mat@{vec2mat}}
+\index{vec2mat@{vec2mat}!Utils@{Utils}}
+\subsubsection[{\texorpdfstring{vec2mat(std\+::vector$<$ double $>$ x, int rows, int cols, Mat\+X \&y)}{vec2mat(std::vector< double > x, int rows, int cols, MatX &y)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+::vec2mat (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ double $>$}]{x, }
+\item[{int}]{rows, }
+\item[{int}]{cols, }
+\item[{{\bf MatX} \&}]{y}
+\end{DoxyParamCaption}
+)}\hypertarget{group__utils_ga1c462df8889ae3641889e12d7491e995}{}\label{group__utils_ga1c462df8889ae3641889e12d7491e995}
+Reshapes a vector {\ttfamily x} to matrix {\ttfamily y} of size {\ttfamily rows} and {\ttfamily cols} 
+
+Definition at line 44 of file math.\+cpp.
+

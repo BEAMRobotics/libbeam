@@ -1,0 +1,210 @@
+\hypertarget{group__defects}{}\section{Defects}
+\label{group__defects}\index{Defects@{Defects}}
+\subsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file \hyperlink{_crack_8h}{Crack.\+h}
+\item 
+file \hyperlink{_defect_8h}{Defect.\+h}
+\item 
+file \hyperlink{defect__functions_8h}{defect\+\_\+functions.\+h}
+\item 
+file \hyperlink{_delam_8h}{Delam.\+h}
+\item 
+file \hyperlink{_spall_8h}{Spall.\+h}
+\end{DoxyCompactItemize}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{classbeam__defects_1_1_crack}{beam\+\_\+defects\+::\+Crack}
+\begin{DoxyCompactList}\small\item\em Derived class for crack defects. \end{DoxyCompactList}\item 
+class \hyperlink{classbeam__defects_1_1_defect}{beam\+\_\+defects\+::\+Defect}
+\begin{DoxyCompactList}\small\item\em Abstract class for defects. \end{DoxyCompactList}\item 
+class \hyperlink{classbeam__defects_1_1_delam}{beam\+\_\+defects\+::\+Delam}
+\begin{DoxyCompactList}\small\item\em Derived class for delamination defects. \end{DoxyCompactList}\item 
+class \hyperlink{classbeam__defects_1_1_spall}{beam\+\_\+defects\+::\+Spall}
+\begin{DoxyCompactList}\small\item\em Derived class for spall defects. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{group__defects_gae379b271bd5fb7ce92afe1abee917249}{beam\+\_\+defects\+::\+Defect\+Type} \{ \hyperlink{group__defects_ggae379b271bd5fb7ce92afe1abee917249a2e6d9801a7e8f255fd21bb5c34d946ae}{beam\+\_\+defects\+::\+Defect\+Type\+::\+C\+R\+A\+CK} = 0, 
+\hyperlink{group__defects_ggae379b271bd5fb7ce92afe1abee917249a984e578f1440f286e334efcf3917a453}{beam\+\_\+defects\+::\+Defect\+Type\+::\+S\+P\+A\+LL}, 
+\hyperlink{group__defects_ggae379b271bd5fb7ce92afe1abee917249ad2a63853778c868ba1eb01a8be651669}{beam\+\_\+defects\+::\+Defect\+Type\+::\+D\+E\+L\+AM}
+ \}\begin{DoxyCompactList}\small\item\em Enum class for different types of defects we might want to use. \end{DoxyCompactList}
+\item 
+enum \hyperlink{group__defects_gaed38c449f8cba57f35d1af04496a0711}{beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity} \{ \\*
+\hyperlink{group__defects_ggaed38c449f8cba57f35d1af04496a0711ab50339a10e1de285ac99d4c3990b8693}{beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity\+::\+N\+O\+NE} = 0, 
+\hyperlink{group__defects_ggaed38c449f8cba57f35d1af04496a0711af8589806bbf66241917092b2a6e18c6f}{beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity\+::\+L\+I\+G\+HT}, 
+\hyperlink{group__defects_ggaed38c449f8cba57f35d1af04496a0711ac87f3be66ffc3c0d4249f1c2cc5f3cce}{beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity\+::\+M\+E\+D\+I\+UM}, 
+\hyperlink{group__defects_ggaed38c449f8cba57f35d1af04496a0711a47b0e31408d6208bb828e0b8fa50b3ce}{beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity\+::\+S\+E\+V\+E\+RE}, 
+\\*
+\hyperlink{group__defects_ggaed38c449f8cba57f35d1af04496a0711a6e09e99bef75bdd960bfcf7723422b00}{beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity\+::\+V\+E\+R\+Y\+\_\+\+S\+E\+V\+E\+RE}
+ \}\begin{DoxyCompactList}\small\item\em Enum class for defect severity based on O\+S\+IM guidelines. \end{DoxyCompactList}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+float \hyperlink{group__defects_ga5b7a4f073fbd3207f691f74f63434760}{beam\+\_\+defects\+::dot\+Product} (const std\+::vector$<$ float $>$ \&vect\+\_\+A, const std\+::vector$<$ float $>$ \&vect\+\_\+B)
+\item 
+std\+::vector$<$ float $>$ \hyperlink{group__defects_gacd54112957db923dfdbe7c0ef41bb462}{beam\+\_\+defects\+::cross\+Product} (const std\+::vector$<$ float $>$ \&vect\+\_\+A, const std\+::vector$<$ float $>$ \&vect\+\_\+B)
+\item 
+float \hyperlink{group__defects_ga08560ea24958bd0c8ff074c2cb15c946}{beam\+\_\+defects\+::vector\+Length} (const std\+::vector$<$ float $>$ \&vect\+\_\+A)
+\item 
+std\+::vector$<$ float $>$ \hyperlink{group__defects_ga1f650bbe03aace0d1b8a53291f6f41ed}{beam\+\_\+defects\+::normalize\+Vector} (const std\+::vector$<$ float $>$ \&vect\+\_\+A)
+\item 
+pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \hyperlink{group__defects_ga748f611e9ef5f651b856652b0cb5ed7e}{beam\+\_\+defects\+::calculate\+Hull} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud)
+\item 
+std\+::vector$<$ float $>$ \hyperlink{group__defects_gafee51f4fea21e59f8574542070c232ec}{beam\+\_\+defects\+::plane\+Normal\+Vector} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud)
+\item 
+pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \hyperlink{group__defects_ga66ab589a0ee34e37b51df5fed01576c6}{beam\+\_\+defects\+::project2\+Plane} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud, const std\+::vector$<$ float $>$ \&plane\+\_\+norm\+\_\+vect)
+\item 
+float \hyperlink{group__defects_ga2f624f208e79c917731b7bba9c202a71}{beam\+\_\+defects\+::calculate\+Hull\+Area} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{classbeam__defects_1_1_defect}{Defect} functions 
+
+\subsection{Enumeration Type Documentation}
+\index{Defects@{Defects}!Defect\+O\+S\+I\+M\+Severity@{Defect\+O\+S\+I\+M\+Severity}}
+\index{Defect\+O\+S\+I\+M\+Severity@{Defect\+O\+S\+I\+M\+Severity}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{Defect\+O\+S\+I\+M\+Severity}{DefectOSIMSeverity}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf beam\+\_\+defects\+::\+Defect\+O\+S\+I\+M\+Severity}\hspace{0.3cm}{\ttfamily [strong]}}\hypertarget{group__defects_gaed38c449f8cba57f35d1af04496a0711}{}\label{group__defects_gaed38c449f8cba57f35d1af04496a0711}
+
+
+Enum class for defect severity based on O\+S\+IM guidelines. 
+
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{N\+O\+NE@{N\+O\+NE}!Defects@{Defects}}\index{Defects@{Defects}!N\+O\+NE@{N\+O\+NE}}\item[{\em 
+N\+O\+NE\hypertarget{group__defects_ggaed38c449f8cba57f35d1af04496a0711ab50339a10e1de285ac99d4c3990b8693}{}\label{group__defects_ggaed38c449f8cba57f35d1af04496a0711ab50339a10e1de285ac99d4c3990b8693}
+}]\index{L\+I\+G\+HT@{L\+I\+G\+HT}!Defects@{Defects}}\index{Defects@{Defects}!L\+I\+G\+HT@{L\+I\+G\+HT}}\item[{\em 
+L\+I\+G\+HT\hypertarget{group__defects_ggaed38c449f8cba57f35d1af04496a0711af8589806bbf66241917092b2a6e18c6f}{}\label{group__defects_ggaed38c449f8cba57f35d1af04496a0711af8589806bbf66241917092b2a6e18c6f}
+}]\index{M\+E\+D\+I\+UM@{M\+E\+D\+I\+UM}!Defects@{Defects}}\index{Defects@{Defects}!M\+E\+D\+I\+UM@{M\+E\+D\+I\+UM}}\item[{\em 
+M\+E\+D\+I\+UM\hypertarget{group__defects_ggaed38c449f8cba57f35d1af04496a0711ac87f3be66ffc3c0d4249f1c2cc5f3cce}{}\label{group__defects_ggaed38c449f8cba57f35d1af04496a0711ac87f3be66ffc3c0d4249f1c2cc5f3cce}
+}]\index{S\+E\+V\+E\+RE@{S\+E\+V\+E\+RE}!Defects@{Defects}}\index{Defects@{Defects}!S\+E\+V\+E\+RE@{S\+E\+V\+E\+RE}}\item[{\em 
+S\+E\+V\+E\+RE\hypertarget{group__defects_ggaed38c449f8cba57f35d1af04496a0711a47b0e31408d6208bb828e0b8fa50b3ce}{}\label{group__defects_ggaed38c449f8cba57f35d1af04496a0711a47b0e31408d6208bb828e0b8fa50b3ce}
+}]\index{V\+E\+R\+Y\+\_\+\+S\+E\+V\+E\+RE@{V\+E\+R\+Y\+\_\+\+S\+E\+V\+E\+RE}!Defects@{Defects}}\index{Defects@{Defects}!V\+E\+R\+Y\+\_\+\+S\+E\+V\+E\+RE@{V\+E\+R\+Y\+\_\+\+S\+E\+V\+E\+RE}}\item[{\em 
+V\+E\+R\+Y\+\_\+\+S\+E\+V\+E\+RE\hypertarget{group__defects_ggaed38c449f8cba57f35d1af04496a0711a6e09e99bef75bdd960bfcf7723422b00}{}\label{group__defects_ggaed38c449f8cba57f35d1af04496a0711a6e09e99bef75bdd960bfcf7723422b00}
+}]\end{description}
+\end{Desc}
+
+
+Definition at line 29 of file Defect.\+h.
+
+\index{Defects@{Defects}!Defect\+Type@{Defect\+Type}}
+\index{Defect\+Type@{Defect\+Type}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{Defect\+Type}{DefectType}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf beam\+\_\+defects\+::\+Defect\+Type}\hspace{0.3cm}{\ttfamily [strong]}}\hypertarget{group__defects_gae379b271bd5fb7ce92afe1abee917249}{}\label{group__defects_gae379b271bd5fb7ce92afe1abee917249}
+
+
+Enum class for different types of defects we might want to use. 
+
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{C\+R\+A\+CK@{C\+R\+A\+CK}!Defects@{Defects}}\index{Defects@{Defects}!C\+R\+A\+CK@{C\+R\+A\+CK}}\item[{\em 
+C\+R\+A\+CK\hypertarget{group__defects_ggae379b271bd5fb7ce92afe1abee917249a2e6d9801a7e8f255fd21bb5c34d946ae}{}\label{group__defects_ggae379b271bd5fb7ce92afe1abee917249a2e6d9801a7e8f255fd21bb5c34d946ae}
+}]\index{S\+P\+A\+LL@{S\+P\+A\+LL}!Defects@{Defects}}\index{Defects@{Defects}!S\+P\+A\+LL@{S\+P\+A\+LL}}\item[{\em 
+S\+P\+A\+LL\hypertarget{group__defects_ggae379b271bd5fb7ce92afe1abee917249a984e578f1440f286e334efcf3917a453}{}\label{group__defects_ggae379b271bd5fb7ce92afe1abee917249a984e578f1440f286e334efcf3917a453}
+}]\index{D\+E\+L\+AM@{D\+E\+L\+AM}!Defects@{Defects}}\index{Defects@{Defects}!D\+E\+L\+AM@{D\+E\+L\+AM}}\item[{\em 
+D\+E\+L\+AM\hypertarget{group__defects_ggae379b271bd5fb7ce92afe1abee917249ad2a63853778c868ba1eb01a8be651669}{}\label{group__defects_ggae379b271bd5fb7ce92afe1abee917249ad2a63853778c868ba1eb01a8be651669}
+}]\end{description}
+\end{Desc}
+
+
+Definition at line 24 of file Defect.\+h.
+
+
+
+\subsection{Function Documentation}
+\index{Defects@{Defects}!calculate\+Hull@{calculate\+Hull}}
+\index{calculate\+Hull@{calculate\+Hull}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{calculate\+Hull(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$\+::\+Ptr \&input\+\_\+cloud)}{calculateHull(const pcl::PointCloud< pcl::PointXYZ >::Ptr &input_cloud)}}]{\setlength{\rightskip}{0pt plus 5cm}pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ beam\+\_\+defects\+::calculate\+Hull (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&}]{input\+\_\+cloud}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_ga748f611e9ef5f651b856652b0cb5ed7e}{}\label{group__defects_ga748f611e9ef5f651b856652b0cb5ed7e}
+
+
+Definition at line 40 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!calculate\+Hull\+Area@{calculate\+Hull\+Area}}
+\index{calculate\+Hull\+Area@{calculate\+Hull\+Area}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{calculate\+Hull\+Area(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$\+::\+Ptr \&input\+\_\+cloud)}{calculateHullArea(const pcl::PointCloud< pcl::PointXYZ >::Ptr &input_cloud)}}]{\setlength{\rightskip}{0pt plus 5cm}float beam\+\_\+defects\+::calculate\+Hull\+Area (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&}]{input\+\_\+cloud}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_ga2f624f208e79c917731b7bba9c202a71}{}\label{group__defects_ga2f624f208e79c917731b7bba9c202a71}
+
+
+Definition at line 137 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!cross\+Product@{cross\+Product}}
+\index{cross\+Product@{cross\+Product}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{cross\+Product(const std\+::vector$<$ float $>$ \&vect\+\_\+\+A, const std\+::vector$<$ float $>$ \&vect\+\_\+\+B)}{crossProduct(const std::vector< float > &vect_A, const std::vector< float > &vect_B)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$ float $>$ beam\+\_\+defects\+::cross\+Product (
+\begin{DoxyParamCaption}
+\item[{const std\+::vector$<$ float $>$ \&}]{vect\+\_\+A, }
+\item[{const std\+::vector$<$ float $>$ \&}]{vect\+\_\+B}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_gacd54112957db923dfdbe7c0ef41bb462}{}\label{group__defects_gacd54112957db923dfdbe7c0ef41bb462}
+
+
+Definition at line 12 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!dot\+Product@{dot\+Product}}
+\index{dot\+Product@{dot\+Product}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{dot\+Product(const std\+::vector$<$ float $>$ \&vect\+\_\+\+A, const std\+::vector$<$ float $>$ \&vect\+\_\+\+B)}{dotProduct(const std::vector< float > &vect_A, const std::vector< float > &vect_B)}}]{\setlength{\rightskip}{0pt plus 5cm}float beam\+\_\+defects\+::dot\+Product (
+\begin{DoxyParamCaption}
+\item[{const std\+::vector$<$ float $>$ \&}]{vect\+\_\+A, }
+\item[{const std\+::vector$<$ float $>$ \&}]{vect\+\_\+B}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_ga5b7a4f073fbd3207f691f74f63434760}{}\label{group__defects_ga5b7a4f073fbd3207f691f74f63434760}
+
+
+Definition at line 6 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!normalize\+Vector@{normalize\+Vector}}
+\index{normalize\+Vector@{normalize\+Vector}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{normalize\+Vector(const std\+::vector$<$ float $>$ \&vect\+\_\+\+A)}{normalizeVector(const std::vector< float > &vect_A)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$ float $>$ beam\+\_\+defects\+::normalize\+Vector (
+\begin{DoxyParamCaption}
+\item[{const std\+::vector$<$ float $>$ \&}]{vect\+\_\+A}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_ga1f650bbe03aace0d1b8a53291f6f41ed}{}\label{group__defects_ga1f650bbe03aace0d1b8a53291f6f41ed}
+
+
+Definition at line 29 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!plane\+Normal\+Vector@{plane\+Normal\+Vector}}
+\index{plane\+Normal\+Vector@{plane\+Normal\+Vector}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{plane\+Normal\+Vector(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$\+::\+Ptr \&input\+\_\+cloud)}{planeNormalVector(const pcl::PointCloud< pcl::PointXYZ >::Ptr &input_cloud)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$ float $>$ beam\+\_\+defects\+::plane\+Normal\+Vector (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&}]{input\+\_\+cloud}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_gafee51f4fea21e59f8574542070c232ec}{}\label{group__defects_gafee51f4fea21e59f8574542070c232ec}
+
+
+Definition at line 53 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!project2\+Plane@{project2\+Plane}}
+\index{project2\+Plane@{project2\+Plane}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{project2\+Plane(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$\+::\+Ptr \&input\+\_\+cloud, const std\+::vector$<$ float $>$ \&plane\+\_\+norm\+\_\+vect)}{project2Plane(const pcl::PointCloud< pcl::PointXYZ >::Ptr &input_cloud, const std::vector< float > &plane_norm_vect)}}]{\setlength{\rightskip}{0pt plus 5cm}pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ beam\+\_\+defects\+::project2\+Plane (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&}]{input\+\_\+cloud, }
+\item[{const std\+::vector$<$ float $>$ \&}]{plane\+\_\+norm\+\_\+vect}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_ga66ab589a0ee34e37b51df5fed01576c6}{}\label{group__defects_ga66ab589a0ee34e37b51df5fed01576c6}
+
+
+Definition at line 79 of file defect\+\_\+functions.\+cpp.
+
+\index{Defects@{Defects}!vector\+Length@{vector\+Length}}
+\index{vector\+Length@{vector\+Length}!Defects@{Defects}}
+\subsubsection[{\texorpdfstring{vector\+Length(const std\+::vector$<$ float $>$ \&vect\+\_\+\+A)}{vectorLength(const std::vector< float > &vect_A)}}]{\setlength{\rightskip}{0pt plus 5cm}float beam\+\_\+defects\+::vector\+Length (
+\begin{DoxyParamCaption}
+\item[{const std\+::vector$<$ float $>$ \&}]{vect\+\_\+A}
+\end{DoxyParamCaption}
+)}\hypertarget{group__defects_ga08560ea24958bd0c8ff074c2cb15c946}{}\label{group__defects_ga08560ea24958bd0c8ff074c2cb15c946}
+
+
+Definition at line 22 of file defect\+\_\+functions.\+cpp.
+

@@ -1,0 +1,48 @@
+\hypertarget{defect__functions_8h}{}\section{beam\+\_\+defects/include/beam\+\_\+defects/defect\+\_\+functions.h File Reference}
+\label{defect__functions_8h}\index{beam\+\_\+defects/include/beam\+\_\+defects/defect\+\_\+functions.\+h@{beam\+\_\+defects/include/beam\+\_\+defects/defect\+\_\+functions.\+h}}
+{\ttfamily \#include $<$boost/smart\+\_\+ptr.\+hpp$>$}\\*
+{\ttfamily \#include $<$pcl/sample\+\_\+consensus/method\+\_\+types.\+h$>$}\\*
+{\ttfamily \#include $<$pcl/segmentation/extract\+\_\+clusters.\+h$>$}\\*
+{\ttfamily \#include $<$pcl/segmentation/sac\+\_\+segmentation.\+h$>$}\\*
+{\ttfamily \#include $<$pcl/surface/concave\+\_\+hull.\+h$>$}\\*
+{\ttfamily \#include $<$cmath$>$}\\*
+{\ttfamily \#include $<$typeinfo$>$}\\*
+{\ttfamily \#include $<$vector$>$}\\*
+Include dependency graph for defect\+\_\+functions.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{defect__functions_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{defect__functions_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacebeam__defects}{beam\+\_\+defects}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+float \hyperlink{group__defects_ga5b7a4f073fbd3207f691f74f63434760}{beam\+\_\+defects\+::dot\+Product} (const std\+::vector$<$ float $>$ \&vect\+\_\+A, const std\+::vector$<$ float $>$ \&vect\+\_\+B)
+\item 
+std\+::vector$<$ float $>$ \hyperlink{group__defects_gacd54112957db923dfdbe7c0ef41bb462}{beam\+\_\+defects\+::cross\+Product} (const std\+::vector$<$ float $>$ \&vect\+\_\+A, const std\+::vector$<$ float $>$ \&vect\+\_\+B)
+\item 
+float \hyperlink{group__defects_ga08560ea24958bd0c8ff074c2cb15c946}{beam\+\_\+defects\+::vector\+Length} (const std\+::vector$<$ float $>$ \&vect\+\_\+A)
+\item 
+std\+::vector$<$ float $>$ \hyperlink{group__defects_ga1f650bbe03aace0d1b8a53291f6f41ed}{beam\+\_\+defects\+::normalize\+Vector} (const std\+::vector$<$ float $>$ \&vect\+\_\+A)
+\item 
+pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \hyperlink{group__defects_ga748f611e9ef5f651b856652b0cb5ed7e}{beam\+\_\+defects\+::calculate\+Hull} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud)
+\item 
+std\+::vector$<$ float $>$ \hyperlink{group__defects_gafee51f4fea21e59f8574542070c232ec}{beam\+\_\+defects\+::plane\+Normal\+Vector} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud)
+\item 
+pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \hyperlink{group__defects_ga66ab589a0ee34e37b51df5fed01576c6}{beam\+\_\+defects\+::project2\+Plane} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud, const std\+::vector$<$ float $>$ \&plane\+\_\+norm\+\_\+vect)
+\item 
+float \hyperlink{group__defects_ga2f624f208e79c917731b7bba9c202a71}{beam\+\_\+defects\+::calculate\+Hull\+Area} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::Ptr \&input\+\_\+cloud)
+\end{DoxyCompactItemize}
