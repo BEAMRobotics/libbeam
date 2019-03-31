@@ -2,6 +2,7 @@ PROJECT(beam_colorize)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
+    catkin::catkin
     PCL::PCL
     catkin::catkin
   SOURCES
