@@ -17,29 +17,31 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     #src/Fisheye.cpp
 )
 
-# tests
-add_executable(${PROJECT_NAME}_tests
+################ tests ##################
+add_executable(${PROJECT_NAME}_intrinsic_tests
   tests/pinhole_test.cpp
 )
 
-target_include_directories(${PROJECT_NAME}_tests
+target_include_directories(${PROJECT_NAME}_intrinsic_tests
   PUBLIC
     include
 )
-target_link_libraries(${PROJECT_NAME}_tests
+target_link_libraries(${PROJECT_NAME}_intrinsic_tests
   ${PROJECT_NAME}
   Catch2::Catch2
 )
 
-# Dummy files
-add_executable(${PROJECT_NAME}_main
-  src/main.cpp
+add_executable(${PROJECT_NAME}_extrinsics_tests
+  tests/TfTree_test.cpp
 )
-target_include_directories(${PROJECT_NAME}_main
+
+target_include_directories(${PROJECT_NAME}_extrinsics_tests
   PUBLIC
     include
 )
-target_link_libraries(${PROJECT_NAME}_main
+target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   ${PROJECT_NAME}
+  Catch2::Catch2
   ${catkin_LIBRARIES}
 )
+#######################################

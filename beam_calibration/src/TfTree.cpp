@@ -6,12 +6,13 @@
 
 namespace beam_calibration {
 
-void TfTree::AddTransform(Eigen::Affine3d &TAnew, std::string &from_frame,
-                          std::string &to_frame, std::string &calib_date) {
+void TfTree::AddTransform(Eigen::Affine3d &TAnew, std::string &to_frame,
+                          std::string &from_frame, std::string &calib_date) {
   geometry_msgs::TransformStamped T = tf2::eigenToTransform(TAnew);
   T.header.seq = 1;
   T.header.frame_id = from_frame;
   T.child_frame_id = to_frame;
+  SetCalibrationDate(calib_date);
 
   bool transform_valid = Tree_.setTransform(T, "TfTree", true);
   if(!transform_valid){
@@ -21,8 +22,8 @@ void TfTree::AddTransform(Eigen::Affine3d &TAnew, std::string &from_frame,
   }
 }
 
-Eigen::Affine3d TfTree::GetTransform(std::string &from_frame,
-                                     std::string &to_frame) {
+Eigen::Affine3d TfTree::GetTransform(std::string &to_frame,
+                                     std::string &from_frame) {
   std::string *transform_error;
   ros::Time time0(0);
   bool can_transform =
