@@ -1,0 +1,135 @@
+\hypertarget{classbeam__defects_1_1_defect}{}\section{beam\+\_\+defects\+:\+:Defect Class Reference}
+\label{classbeam__defects_1_1_defect}\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+
+
+Abstract class for defects.  
+
+
+
+
+{\ttfamily \#include $<$Defect.\+h$>$}
+
+
+
+Inheritance diagram for beam\+\_\+defects\+:\+:Defect\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classbeam__defects_1_1_defect__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+using \hyperlink{classbeam__defects_1_1_defect_a0a7708c6cd92ac482d45ef606d598325}{Ptr} = std\+::shared\+\_\+ptr$<$ \hyperlink{classbeam__defects_1_1_defect}{Defect} $>$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__defects_1_1_defect_a3554dc33d88356193000174580bcc41a}{Defect} ()=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+virtual \hyperlink{classbeam__defects_1_1_defect_aae70bb9ef052129a6bfc6b6d0de373b9}{$\sim$\+Defect} ()=default
+\begin{DoxyCompactList}\small\item\em Default destructor. \end{DoxyCompactList}\item 
+virtual double \hyperlink{classbeam__defects_1_1_defect_aa7c24d68d22e6d47dc1b9e8a9ad94c56}{Get\+Size} ()=0
+\begin{DoxyCompactList}\small\item\em Pure virtual method for returning the size of a defect. \end{DoxyCompactList}\item 
+virtual \hyperlink{group__defects_gae379b271bd5fb7ce92afe1abee917249}{Defect\+Type} \hyperlink{classbeam__defects_1_1_defect_aab237fd856c7ace882ead216c81574e6}{Get\+Type} () const =0
+\begin{DoxyCompactList}\small\item\em Pure virtual method for returning type of defect. \end{DoxyCompactList}\item 
+virtual \hyperlink{group__defects_gaed38c449f8cba57f35d1af04496a0711}{Defect\+O\+S\+I\+M\+Severity} \hyperlink{classbeam__defects_1_1_defect_a74824cc5cdb9d301d72089585ed8f1f2}{Get\+O\+S\+I\+M\+Severity} ()=0
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Abstract class for defects. 
+
+Definition at line 34 of file Defect.\+h.
+
+
+
+\subsection{Member Typedef Documentation}
+\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}!Ptr@{Ptr}}
+\index{Ptr@{Ptr}!beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+\subsubsection[{\texorpdfstring{Ptr}{Ptr}}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf beam\+\_\+defects\+::\+Defect\+::\+Ptr} =  std\+::shared\+\_\+ptr$<${\bf Defect}$>$}\hypertarget{classbeam__defects_1_1_defect_a0a7708c6cd92ac482d45ef606d598325}{}\label{classbeam__defects_1_1_defect_a0a7708c6cd92ac482d45ef606d598325}
+
+
+Definition at line 60 of file Defect.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}!Defect@{Defect}}
+\index{Defect@{Defect}!beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+\subsubsection[{\texorpdfstring{Defect()=default}{Defect()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+defects\+::\+Defect\+::\+Defect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__defects_1_1_defect_a3554dc33d88356193000174580bcc41a}{}\label{classbeam__defects_1_1_defect_a3554dc33d88356193000174580bcc41a}
+
+
+Default constructor. 
+
+\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}!````~Defect@{$\sim$\+Defect}}
+\index{````~Defect@{$\sim$\+Defect}!beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+\subsubsection[{\texorpdfstring{$\sim$\+Defect()=default}{~Defect()=default}}]{\setlength{\rightskip}{0pt plus 5cm}virtual beam\+\_\+defects\+::\+Defect\+::$\sim$\+Defect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}, {\ttfamily [default]}}\hypertarget{classbeam__defects_1_1_defect_aae70bb9ef052129a6bfc6b6d0de373b9}{}\label{classbeam__defects_1_1_defect_aae70bb9ef052129a6bfc6b6d0de373b9}
+
+
+Default destructor. 
+
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}!Get\+O\+S\+I\+M\+Severity@{Get\+O\+S\+I\+M\+Severity}}
+\index{Get\+O\+S\+I\+M\+Severity@{Get\+O\+S\+I\+M\+Severity}!beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+\subsubsection[{\texorpdfstring{Get\+O\+S\+I\+M\+Severity()=0}{GetOSIMSeverity()=0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual {\bf Defect\+O\+S\+I\+M\+Severity} beam\+\_\+defects\+::\+Defect\+::\+Get\+O\+S\+I\+M\+Severity (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{classbeam__defects_1_1_defect_a74824cc5cdb9d301d72089585ed8f1f2}{}\label{classbeam__defects_1_1_defect_a74824cc5cdb9d301d72089585ed8f1f2}
+
+
+Implemented in \hyperlink{classbeam__defects_1_1_crack_a55b689875191ba9049134456d4d2889b}{beam\+\_\+defects\+::\+Crack}, \hyperlink{classbeam__defects_1_1_delam_a185b2cb8f43376dda9a1c87a41e18829}{beam\+\_\+defects\+::\+Delam}, and \hyperlink{classbeam__defects_1_1_spall_a96f74134abee749d37cf750119098c4c}{beam\+\_\+defects\+::\+Spall}.
+
+\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}!Get\+Size@{Get\+Size}}
+\index{Get\+Size@{Get\+Size}!beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+\subsubsection[{\texorpdfstring{Get\+Size()=0}{GetSize()=0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual double beam\+\_\+defects\+::\+Defect\+::\+Get\+Size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{classbeam__defects_1_1_defect_aa7c24d68d22e6d47dc1b9e8a9ad94c56}{}\label{classbeam__defects_1_1_defect_aa7c24d68d22e6d47dc1b9e8a9ad94c56}
+
+
+Pure virtual method for returning the size of a defect. 
+
+\begin{DoxyReturn}{Returns}
+Returns size of defect 
+\end{DoxyReturn}
+
+
+Implemented in \hyperlink{classbeam__defects_1_1_crack_a140c08ad86be9062cf4c9b0bfe686d67}{beam\+\_\+defects\+::\+Crack}, \hyperlink{classbeam__defects_1_1_delam_a9a44051492d76e180e85e31724acc26a}{beam\+\_\+defects\+::\+Delam}, and \hyperlink{classbeam__defects_1_1_spall_a84f5aaa8ced3ae1c61eb8f77e540c466}{beam\+\_\+defects\+::\+Spall}.
+
+\index{beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}!Get\+Type@{Get\+Type}}
+\index{Get\+Type@{Get\+Type}!beam\+\_\+defects\+::\+Defect@{beam\+\_\+defects\+::\+Defect}}
+\subsubsection[{\texorpdfstring{Get\+Type() const =0}{GetType() const =0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual {\bf Defect\+Type} beam\+\_\+defects\+::\+Defect\+::\+Get\+Type (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{classbeam__defects_1_1_defect_aab237fd856c7ace882ead216c81574e6}{}\label{classbeam__defects_1_1_defect_aab237fd856c7ace882ead216c81574e6}
+
+
+Pure virtual method for returning type of defect. 
+
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Implemented in \hyperlink{classbeam__defects_1_1_crack_a1f6ede9707c63376e6d409b388770c07}{beam\+\_\+defects\+::\+Crack}, \hyperlink{classbeam__defects_1_1_delam_a098488b1a71796df7e9a6d0eb5eaeeea}{beam\+\_\+defects\+::\+Delam}, and \hyperlink{classbeam__defects_1_1_spall_a98572b81bfd78594f1e497758946aaa1}{beam\+\_\+defects\+::\+Spall}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+defects/include/beam\+\_\+defects/\hyperlink{_defect_8h}{Defect.\+h}\end{DoxyCompactItemize}

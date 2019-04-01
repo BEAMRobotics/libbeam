@@ -1,0 +1,108 @@
+\hypertarget{classbeam_1_1_config_param}{}\section{beam\+:\+:Config\+Param$<$ T $>$ Class Template Reference}
+\label{classbeam_1_1_config_param}\index{beam\+::\+Config\+Param$<$ T $>$@{beam\+::\+Config\+Param$<$ T $>$}}
+
+
+{\ttfamily \#include $<$config.\+hpp$>$}
+
+
+
+Inheritance diagram for beam\+:\+:Config\+Param$<$ T $>$\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{classbeam_1_1_config_param__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for beam\+:\+:Config\+Param$<$ T $>$\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{classbeam_1_1_config_param__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam_1_1_config_param_aaa594f071a53dfda2294c758d46a7330}{Config\+Param} (std\+::string \hyperlink{structbeam_1_1_config_param_base_afbf349bc86d925088544d04a24c484b0}{key}, T $\ast$destination, bool \hyperlink{structbeam_1_1_config_param_base_a4c73616a18786e1885265a02dbf8b9a5}{optional}=false)
+\item 
+void \hyperlink{classbeam_1_1_config_param_a805133e6dae35596e1383a6d223f4dc3}{load} (const Y\+A\+M\+L\+::\+Node \&node) const override
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+T $\ast$ \hyperlink{classbeam_1_1_config_param_a1f5a1becff7e710e61bbc0dac8289ce8}{data} = nullptr
+\begin{DoxyCompactList}\small\item\em where we will store the parsed value \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename T$>$\\*
+class beam\+::\+Config\+Param$<$ T $>$}
+
+Represents a parameter to be parsed in the yaml file 
+
+Definition at line 56 of file config.\+hpp.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+::\+Config\+Param@{beam\+::\+Config\+Param}!Config\+Param@{Config\+Param}}
+\index{Config\+Param@{Config\+Param}!beam\+::\+Config\+Param@{beam\+::\+Config\+Param}}
+\subsubsection[{\texorpdfstring{Config\+Param(std\+::string key, T $\ast$destination, bool optional=false)}{ConfigParam(std::string key, T *destination, bool optional=false)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ {\bf beam\+::\+Config\+Param}$<$ T $>$\+::{\bf Config\+Param} (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{key, }
+\item[{T $\ast$}]{destination, }
+\item[{bool}]{optional = {\ttfamily false}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classbeam_1_1_config_param_aaa594f071a53dfda2294c758d46a7330}{}\label{classbeam_1_1_config_param_aaa594f071a53dfda2294c758d46a7330}
+
+
+Definition at line 58 of file config.\+hpp.
+
+
+
+\subsection{Member Function Documentation}
+\index{beam\+::\+Config\+Param@{beam\+::\+Config\+Param}!load@{load}}
+\index{load@{load}!beam\+::\+Config\+Param@{beam\+::\+Config\+Param}}
+\subsubsection[{\texorpdfstring{load(const Y\+A\+M\+L\+::\+Node \&node) const override}{load(const YAML::Node &node) const override}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ void {\bf beam\+::\+Config\+Param}$<$ T $>$\+::load (
+\begin{DoxyParamCaption}
+\item[{const Y\+A\+M\+L\+::\+Node \&}]{node}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam_1_1_config_param_a805133e6dae35596e1383a6d223f4dc3}{}\label{classbeam_1_1_config_param_a805133e6dae35596e1383a6d223f4dc3}
+Parse the given node as T, and write the value into {\ttfamily destination}. \begin{DoxyNote}{Note}
+no lookup by key is performed; the node must already be correct 
+\end{DoxyNote}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Y\+A\+M\+L\+::\+Bad\+Conversion} & if node is not convertible to destination \\
+\hline
+\end{DoxyExceptions}
+
+
+Implements \hyperlink{structbeam_1_1_config_param_base_af4d235d401db493e99acf96065d36c73}{beam\+::\+Config\+Param\+Base}.
+
+
+
+Definition at line 65 of file config.\+hpp.
+
+
+
+\subsection{Member Data Documentation}
+\index{beam\+::\+Config\+Param@{beam\+::\+Config\+Param}!data@{data}}
+\index{data@{data}!beam\+::\+Config\+Param@{beam\+::\+Config\+Param}}
+\subsubsection[{\texorpdfstring{data}{data}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ T$\ast$ {\bf beam\+::\+Config\+Param}$<$ T $>$\+::data = nullptr\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{classbeam_1_1_config_param_a1f5a1becff7e710e61bbc0dac8289ce8}{}\label{classbeam_1_1_config_param_a1f5a1becff7e710e61bbc0dac8289ce8}
+
+
+where we will store the parsed value 
+
+
+
+Definition at line 70 of file config.\+hpp.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+utils/include/beam/utils/\hyperlink{config_8hpp}{config.\+hpp}\end{DoxyCompactItemize}

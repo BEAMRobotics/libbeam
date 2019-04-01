@@ -1,0 +1,101 @@
+\hypertarget{classbeam__colorize_1_1_ray_trace}{}\section{beam\+\_\+colorize\+:\+:Ray\+Trace Class Reference}
+\label{classbeam__colorize_1_1_ray_trace}\index{beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}}
+
+
+Class which implements \hyperlink{classbeam__colorize_1_1_colorizer}{Colorizer} interface and provides colorization functionality using ray tracing.  
+
+
+
+
+{\ttfamily \#include $<$Ray\+Trace.\+h$>$}
+
+
+
+Inheritance diagram for beam\+\_\+colorize\+:\+:Ray\+Trace\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{classbeam__colorize_1_1_ray_trace__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for beam\+\_\+colorize\+:\+:Ray\+Trace\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{classbeam__colorize_1_1_ray_trace__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__colorize_1_1_ray_trace_aec8057d228e016bb430f62bde570ef0e}{Ray\+Trace} ()=default
+\item 
+\hyperlink{classbeam__colorize_1_1_ray_trace_a485d3ab719933747688e248835db1abb}{$\sim$\+Ray\+Trace} ()=default
+\item 
+pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z\+R\+GB $>$\+::Ptr \hyperlink{classbeam__colorize_1_1_ray_trace_a41c414265166ecb12e32d976120ce157}{Colorize\+Point\+Cloud} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \&input\+\_\+cloud, const sensor\+\_\+msgs\+::\+Image \&input\+\_\+image) const override
+\begin{DoxyCompactList}\small\item\em Method for colorizing a point cloud from an image. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class which implements \hyperlink{classbeam__colorize_1_1_colorizer}{Colorizer} interface and provides colorization functionality using ray tracing. 
+
+Definition at line 17 of file Ray\+Trace.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}!Ray\+Trace@{Ray\+Trace}}
+\index{Ray\+Trace@{Ray\+Trace}!beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}}
+\subsubsection[{\texorpdfstring{Ray\+Trace()=default}{RayTrace()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+colorize\+::\+Ray\+Trace\+::\+Ray\+Trace (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__colorize_1_1_ray_trace_aec8057d228e016bb430f62bde570ef0e}{}\label{classbeam__colorize_1_1_ray_trace_aec8057d228e016bb430f62bde570ef0e}
+\index{beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}!````~Ray\+Trace@{$\sim$\+Ray\+Trace}}
+\index{````~Ray\+Trace@{$\sim$\+Ray\+Trace}!beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}}
+\subsubsection[{\texorpdfstring{$\sim$\+Ray\+Trace()=default}{~RayTrace()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+colorize\+::\+Ray\+Trace\+::$\sim$\+Ray\+Trace (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__colorize_1_1_ray_trace_a485d3ab719933747688e248835db1abb}{}\label{classbeam__colorize_1_1_ray_trace_a485d3ab719933747688e248835db1abb}
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}!Colorize\+Point\+Cloud@{Colorize\+Point\+Cloud}}
+\index{Colorize\+Point\+Cloud@{Colorize\+Point\+Cloud}!beam\+\_\+colorize\+::\+Ray\+Trace@{beam\+\_\+colorize\+::\+Ray\+Trace}}
+\subsubsection[{\texorpdfstring{Colorize\+Point\+Cloud(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$ \&input\+\_\+cloud, const sensor\+\_\+msgs\+::\+Image \&input\+\_\+image) const override}{ColorizePointCloud(const pcl::PointCloud< pcl::PointXYZ > &input_cloud, const sensor_msgs::Image &input_image) const override}}]{\setlength{\rightskip}{0pt plus 5cm}pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z\+R\+GB $>$\+::Ptr beam\+\_\+colorize\+::\+Ray\+Trace\+::\+Colorize\+Point\+Cloud (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \&}]{input\+\_\+cloud, }
+\item[{const sensor\+\_\+msgs\+::\+Image \&}]{input\+\_\+image}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__colorize_1_1_ray_trace_a41c414265166ecb12e32d976120ce157}{}\label{classbeam__colorize_1_1_ray_trace_a41c414265166ecb12e32d976120ce157}
+
+
+Method for colorizing a point cloud from an image. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\+\_\+cloud} & Input point cloud in the camera frame \\
+\hline
+{\em input\+\_\+image} & Image which will be used to color point cloud \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Colored point cloud 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__colorize_1_1_colorizer_ab9ca2ddf55fd8782e6b31c64e85efcbc}{beam\+\_\+colorize\+::\+Colorizer}.
+
+
+
+Definition at line 5 of file Ray\+Trace.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+colorize/include/beam/colorize/\hyperlink{_ray_trace_8h}{Ray\+Trace.\+h}\item 
+beam\+\_\+colorize/src/\hyperlink{_ray_trace_8cpp}{Ray\+Trace.\+cpp}\end{DoxyCompactItemize}

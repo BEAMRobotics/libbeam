@@ -1,0 +1,165 @@
+\hypertarget{classbeam__defects_1_1_delam}{}\section{beam\+\_\+defects\+:\+:Delam Class Reference}
+\label{classbeam__defects_1_1_delam}\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+
+
+Derived class for delamination defects.  
+
+
+
+
+{\ttfamily \#include $<$Delam.\+h$>$}
+
+
+
+Inheritance diagram for beam\+\_\+defects\+:\+:Delam\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=193pt]{classbeam__defects_1_1_delam__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for beam\+\_\+defects\+:\+:Delam\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=193pt]{classbeam__defects_1_1_delam__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__defects_1_1_delam_a1a108358cf5f4d07cbe4ad3b7ac00997}{Delam} ()=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\hyperlink{classbeam__defects_1_1_delam_a985ea836e28343406faa18c173b106c7}{Delam} (pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::\hyperlink{classbeam__defects_1_1_defect_a0a7708c6cd92ac482d45ef606d598325}{Ptr} pc)
+\begin{DoxyCompactList}\small\item\em Construct with a point cloud. \end{DoxyCompactList}\item 
+\hyperlink{classbeam__defects_1_1_delam_aef2a99b590cef7c0b400695ca14533cf}{$\sim$\+Delam} () override=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\hyperlink{group__defects_gae379b271bd5fb7ce92afe1abee917249}{Defect\+Type} \hyperlink{classbeam__defects_1_1_delam_a098488b1a71796df7e9a6d0eb5eaeeea}{Get\+Type} () const override
+\begin{DoxyCompactList}\small\item\em Get the type of defect. \end{DoxyCompactList}\item 
+double \hyperlink{classbeam__defects_1_1_delam_a9a44051492d76e180e85e31724acc26a}{Get\+Size} () override
+\begin{DoxyCompactList}\small\item\em Get the size of the defect. \end{DoxyCompactList}\item 
+\hyperlink{group__defects_gaed38c449f8cba57f35d1af04496a0711}{Defect\+O\+S\+I\+M\+Severity} \hyperlink{classbeam__defects_1_1_delam_a185b2cb8f43376dda9a1c87a41e18829}{Get\+O\+S\+I\+M\+Severity} () override
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Derived class for delamination defects. 
+
+Definition at line 15 of file Delam.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}!Delam@{Delam}}
+\index{Delam@{Delam}!beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+\subsubsection[{\texorpdfstring{Delam()=default}{Delam()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+defects\+::\+Delam\+::\+Delam (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__defects_1_1_delam_a1a108358cf5f4d07cbe4ad3b7ac00997}{}\label{classbeam__defects_1_1_delam_a1a108358cf5f4d07cbe4ad3b7ac00997}
+
+
+Default constructor. 
+
+\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}!Delam@{Delam}}
+\index{Delam@{Delam}!beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+\subsubsection[{\texorpdfstring{Delam(pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$\+::\+Ptr pc)}{Delam(pcl::PointCloud< pcl::PointXYZ >::Ptr pc)}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+defects\+::\+Delam\+::\+Delam (
+\begin{DoxyParamCaption}
+\item[{pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$\+::{\bf Ptr}}]{pc}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [explicit]}}\hypertarget{classbeam__defects_1_1_delam_a985ea836e28343406faa18c173b106c7}{}\label{classbeam__defects_1_1_delam_a985ea836e28343406faa18c173b106c7}
+
+
+Construct with a point cloud. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pc} & \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 6 of file Delam.\+cpp.
+
+\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}!````~Delam@{$\sim$\+Delam}}
+\index{````~Delam@{$\sim$\+Delam}!beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+\subsubsection[{\texorpdfstring{$\sim$\+Delam() override=default}{~Delam() override=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+defects\+::\+Delam\+::$\sim$\+Delam (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [default]}}\hypertarget{classbeam__defects_1_1_delam_aef2a99b590cef7c0b400695ca14533cf}{}\label{classbeam__defects_1_1_delam_aef2a99b590cef7c0b400695ca14533cf}
+
+
+Default constructor. 
+
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}!Get\+O\+S\+I\+M\+Severity@{Get\+O\+S\+I\+M\+Severity}}
+\index{Get\+O\+S\+I\+M\+Severity@{Get\+O\+S\+I\+M\+Severity}!beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+\subsubsection[{\texorpdfstring{Get\+O\+S\+I\+M\+Severity() override}{GetOSIMSeverity() override}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Defect\+O\+S\+I\+M\+Severity} beam\+\_\+defects\+::\+Delam\+::\+Get\+O\+S\+I\+M\+Severity (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__defects_1_1_delam_a185b2cb8f43376dda9a1c87a41e18829}{}\label{classbeam__defects_1_1_delam_a185b2cb8f43376dda9a1c87a41e18829}
+
+
+Implements \hyperlink{classbeam__defects_1_1_defect_a74824cc5cdb9d301d72089585ed8f1f2}{beam\+\_\+defects\+::\+Defect}.
+
+
+
+Definition at line 28 of file Delam.\+cpp.
+
+\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}!Get\+Size@{Get\+Size}}
+\index{Get\+Size@{Get\+Size}!beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+\subsubsection[{\texorpdfstring{Get\+Size() override}{GetSize() override}}]{\setlength{\rightskip}{0pt plus 5cm}double beam\+\_\+defects\+::\+Delam\+::\+Get\+Size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__defects_1_1_delam_a9a44051492d76e180e85e31724acc26a}{}\label{classbeam__defects_1_1_delam_a9a44051492d76e180e85e31724acc26a}
+
+
+Get the size of the defect. 
+
+\begin{DoxyReturn}{Returns}
+Returns the size of the defect in whatever units are relevant for this class of defect 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__defects_1_1_defect_aa7c24d68d22e6d47dc1b9e8a9ad94c56}{beam\+\_\+defects\+::\+Defect}.
+
+
+
+Definition at line 8 of file Delam.\+cpp.
+
+\index{beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}!Get\+Type@{Get\+Type}}
+\index{Get\+Type@{Get\+Type}!beam\+\_\+defects\+::\+Delam@{beam\+\_\+defects\+::\+Delam}}
+\subsubsection[{\texorpdfstring{Get\+Type() const override}{GetType() const override}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Defect\+Type} beam\+\_\+defects\+::\+Delam\+::\+Get\+Type (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__defects_1_1_delam_a098488b1a71796df7e9a6d0eb5eaeeea}{}\label{classbeam__defects_1_1_delam_a098488b1a71796df7e9a6d0eb5eaeeea}
+
+
+Get the type of defect. 
+
+\begin{DoxyReturn}{Returns}
+Returns type as one of defects specified in the enum Defect\+Type 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__defects_1_1_defect_aab237fd856c7ace882ead216c81574e6}{beam\+\_\+defects\+::\+Defect}.
+
+
+
+Definition at line 37 of file Delam.\+h.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+defects/include/beam\+\_\+defects/\hyperlink{_delam_8h}{Delam.\+h}\item 
+beam\+\_\+defects/src/\hyperlink{_delam_8cpp}{Delam.\+cpp}\end{DoxyCompactItemize}

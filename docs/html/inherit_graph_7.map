@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classbeam__defects_1_1_defect.html" title="Abstract class for defects. " alt="" coords="5,56,156,83"/>
+<area shape="rect" id="node2" href="$classbeam__defects_1_1_crack.html" title="Derived class for crack defects. " alt="" coords="206,5,353,32"/>
+<area shape="rect" id="node3" href="$classbeam__defects_1_1_delam.html" title="Derived class for delamination defects. " alt="" coords="204,56,355,83"/>
+<area shape="rect" id="node4" href="$classbeam__defects_1_1_spall.html" title="Derived class for spall defects. " alt="" coords="209,107,350,133"/>
+</map>

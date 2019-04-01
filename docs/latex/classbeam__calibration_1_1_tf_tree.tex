@@ -1,0 +1,120 @@
+\hypertarget{classbeam__calibration_1_1_tf_tree}{}\section{beam\+\_\+calibration\+:\+:Tf\+Tree Class Reference}
+\label{classbeam__calibration_1_1_tf_tree}\index{beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}}
+
+
+Class for managing extrinsic transformation tree using the tf2 library.  
+
+
+
+
+{\ttfamily \#include $<$Tf\+Tree.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__calibration_1_1_tf_tree_aec864eabffcbeb3c0e914d3a90b2e671}{Tf\+Tree} ()=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\hyperlink{classbeam__calibration_1_1_tf_tree_a99292e90192a114388933b1d04346151}{$\sim$\+Tf\+Tree} ()=default
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+void \hyperlink{classbeam__calibration_1_1_tf_tree_a25115497d8169ffec43a204770ca3436}{Add\+Transform} (Eigen\+::\+Affine3d \&Tnew, std\+::string \&to\+\_\+frame, std\+::string \&from\+\_\+frame, std\+::string \&calib\+\_\+date)
+\begin{DoxyCompactList}\small\item\em Method for adding a transformation using an Affine3d. \end{DoxyCompactList}\item 
+Eigen\+::\+Affine3d \hyperlink{classbeam__calibration_1_1_tf_tree_a4cc7847b4fa5a728327759446df7f14c}{Get\+Transform} (std\+::string \&to\+\_\+frame, std\+::string \&from\+\_\+frame)
+\begin{DoxyCompactList}\small\item\em Method for retrieving a transformation. \end{DoxyCompactList}\item 
+std\+::string \hyperlink{classbeam__calibration_1_1_tf_tree_aa8ea53149a8bc97ebf11d86448db17d5}{Get\+Calibration\+Date} ()
+\begin{DoxyCompactList}\small\item\em Method for retrieving the date that the calibration was done. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class for managing extrinsic transformation tree using the tf2 library. 
+
+Definition at line 21 of file Tf\+Tree.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}!Tf\+Tree@{Tf\+Tree}}
+\index{Tf\+Tree@{Tf\+Tree}!beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}}
+\subsubsection[{\texorpdfstring{Tf\+Tree()=default}{TfTree()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+calibration\+::\+Tf\+Tree\+::\+Tf\+Tree (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__calibration_1_1_tf_tree_aec864eabffcbeb3c0e914d3a90b2e671}{}\label{classbeam__calibration_1_1_tf_tree_aec864eabffcbeb3c0e914d3a90b2e671}
+
+
+Default constructor. 
+
+\index{beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}!````~Tf\+Tree@{$\sim$\+Tf\+Tree}}
+\index{````~Tf\+Tree@{$\sim$\+Tf\+Tree}!beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}}
+\subsubsection[{\texorpdfstring{$\sim$\+Tf\+Tree()=default}{~TfTree()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+calibration\+::\+Tf\+Tree\+::$\sim$\+Tf\+Tree (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__calibration_1_1_tf_tree_a99292e90192a114388933b1d04346151}{}\label{classbeam__calibration_1_1_tf_tree_a99292e90192a114388933b1d04346151}
+
+
+Default constructor. 
+
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}!Add\+Transform@{Add\+Transform}}
+\index{Add\+Transform@{Add\+Transform}!beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}}
+\subsubsection[{\texorpdfstring{Add\+Transform(\+Eigen\+::\+Affine3d \&\+Tnew, std\+::string \&to\+\_\+frame, std\+::string \&from\+\_\+frame, std\+::string \&calib\+\_\+date)}{AddTransform(Eigen::Affine3d &Tnew, std::string &to_frame, std::string &from_frame, std::string &calib_date)}}]{\setlength{\rightskip}{0pt plus 5cm}void beam\+\_\+calibration\+::\+Tf\+Tree\+::\+Add\+Transform (
+\begin{DoxyParamCaption}
+\item[{Eigen\+::\+Affine3d \&}]{Tnew, }
+\item[{std\+::string \&}]{to\+\_\+frame, }
+\item[{std\+::string \&}]{from\+\_\+frame, }
+\item[{std\+::string \&}]{calib\+\_\+date}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_tf_tree_a25115497d8169ffec43a204770ca3436}{}\label{classbeam__calibration_1_1_tf_tree_a25115497d8169ffec43a204770ca3436}
+
+
+Method for adding a transformation using an Affine3d. 
+
+
+
+Definition at line 9 of file Tf\+Tree.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}!Get\+Calibration\+Date@{Get\+Calibration\+Date}}
+\index{Get\+Calibration\+Date@{Get\+Calibration\+Date}!beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}}
+\subsubsection[{\texorpdfstring{Get\+Calibration\+Date()}{GetCalibrationDate()}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string beam\+\_\+calibration\+::\+Tf\+Tree\+::\+Get\+Calibration\+Date (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_tf_tree_aa8ea53149a8bc97ebf11d86448db17d5}{}\label{classbeam__calibration_1_1_tf_tree_aa8ea53149a8bc97ebf11d86448db17d5}
+
+
+Method for retrieving the date that the calibration was done. 
+
+\begin{DoxyReturn}{Returns}
+Return calibration date 
+\end{DoxyReturn}
+
+
+Definition at line 48 of file Tf\+Tree.\+cpp.
+
+\index{beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}!Get\+Transform@{Get\+Transform}}
+\index{Get\+Transform@{Get\+Transform}!beam\+\_\+calibration\+::\+Tf\+Tree@{beam\+\_\+calibration\+::\+Tf\+Tree}}
+\subsubsection[{\texorpdfstring{Get\+Transform(std\+::string \&to\+\_\+frame, std\+::string \&from\+\_\+frame)}{GetTransform(std::string &to_frame, std::string &from_frame)}}]{\setlength{\rightskip}{0pt plus 5cm}Eigen\+::\+Affine3d beam\+\_\+calibration\+::\+Tf\+Tree\+::\+Get\+Transform (
+\begin{DoxyParamCaption}
+\item[{std\+::string \&}]{to\+\_\+frame, }
+\item[{std\+::string \&}]{from\+\_\+frame}
+\end{DoxyParamCaption}
+)}\hypertarget{classbeam__calibration_1_1_tf_tree_a4cc7847b4fa5a728327759446df7f14c}{}\label{classbeam__calibration_1_1_tf_tree_a4cc7847b4fa5a728327759446df7f14c}
+
+
+Method for retrieving a transformation. 
+
+\begin{DoxyReturn}{Returns}
+Return the transformation requested as Affine3d object 
+\end{DoxyReturn}
+
+
+Definition at line 25 of file Tf\+Tree.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+calibration/include/beam/calibration/\hyperlink{_tf_tree_8h}{Tf\+Tree.\+h}\item 
+beam\+\_\+calibration/src/\hyperlink{_tf_tree_8cpp}{Tf\+Tree.\+cpp}\end{DoxyCompactItemize}

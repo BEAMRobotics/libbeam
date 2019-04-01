@@ -1,0 +1,109 @@
+\hypertarget{math_8hpp}{}\section{beam\+\_\+utils/include/beam/utils/math.hpp File Reference}
+\label{math_8hpp}\index{beam\+\_\+utils/include/beam/utils/math.\+hpp@{beam\+\_\+utils/include/beam/utils/math.\+hpp}}
+{\ttfamily \#include $<$iostream$>$}\\*
+{\ttfamily \#include $<$vector$>$}\\*
+{\ttfamily \#include $<$Eigen/\+Dense$>$}\\*
+{\ttfamily \#include $<$Eigen/\+Geometry$>$}\\*
+Include dependency graph for math.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{math_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{math_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structbeam_1_1_vec_comparator}{beam\+::\+Vec\+Comparator}
+\item 
+struct \hyperlink{structbeam_1_1_mat_comparator}{beam\+::\+Mat\+Comparator}
+\end{DoxyCompactItemize}
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacebeam}{beam}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{group__utils_ga9f2375aee996fb13eecdf9eab8aceb6e}{B\+E\+A\+M\+\_\+\+E\+I\+G\+E\+N\+\_\+\+T\+Y\+P\+E\+D\+EF}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef Eigen\+::\+Vector2d \hyperlink{group__utils_ga6112bda54e53755ab14060144285c6b0}{beam\+::\+Vec2}
+\item 
+typedef Eigen\+::\+Vector3d \hyperlink{group__utils_ga7aca82b90a74cb643417801e830cd43f}{beam\+::\+Vec3}
+\item 
+typedef Eigen\+::\+Vector4d \hyperlink{group__utils_gae8c630e8f7e9cdbc1a7dcc3073a99d5c}{beam\+::\+Vec4}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 5, 1 $>$ \hyperlink{group__utils_gabd17e53e0e9320ff4dcbad3b0e591928}{beam\+::\+Vec5}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 6, 1 $>$ \hyperlink{group__utils_ga9f18e27181a175dfd15dc192a7d417d1}{beam\+::\+Vec6}
+\item 
+typedef Eigen\+::\+Vector\+Xd \hyperlink{group__utils_gae5ba967e4b0d4b421ca30ef46f896145}{beam\+::\+VecX}
+\item 
+typedef Eigen\+::\+Matrix2d \hyperlink{group__utils_gaa647b85b058c8a50386a3da8dd719e3d}{beam\+::\+Mat2}
+\item 
+typedef Eigen\+::\+Matrix3d \hyperlink{group__utils_ga665fed2673de952d12b19351a2bdb961}{beam\+::\+Mat3}
+\item 
+typedef Eigen\+::\+Matrix4d \hyperlink{group__utils_ga06979ede648a91a7e5465980784ebb1b}{beam\+::\+Mat4}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 5, 5 $>$ \hyperlink{group__utils_ga34f1d113f166129c5b89fe92c5a07e02}{beam\+::\+Mat5}
+\item 
+typedef Eigen\+::\+Matrix$<$ double, 6, 6 $>$ \hyperlink{group__utils_gac42e2f9ad085d2fcc34875015c43cecc}{beam\+::\+Mat6}
+\item 
+typedef Eigen\+::\+Matrix\+Xd \hyperlink{group__utils_gaf1ee9917aef6e6cf513d29f8c7d2eeee}{beam\+::\+MatX}
+\item 
+typedef Eigen\+::\+Affine3d \hyperlink{group__utils_ga609e7e934806a61b3cb511b893f799ce}{beam\+::\+Affine3}
+\item 
+typedef Eigen\+::\+Quaterniond \hyperlink{group__utils_gab34e0dc5bdfa343eebf793fdc084a07f}{beam\+::\+Quaternion}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{group__utils_ga1709c3968d710a88b5cc6b034358ff4b}{beam\+::randi} (int ub, int lb)
+\item 
+double \hyperlink{group__utils_gaf3391ec0a035372eb7fa27646aa97018}{beam\+::randf} (double ub, double lb)
+\item 
+int \hyperlink{group__utils_gacf5e889cd118230c90c1618324b47644}{beam\+::fltcmp} (double f1, double f2, double threshold=0.\+0001)
+\item 
+double \hyperlink{group__utils_ga78b63ada78026ee09e93e996a6da095b}{beam\+::median} (std\+::vector$<$ double $>$ v)
+\item 
+void \hyperlink{group__utils_ga1c462df8889ae3641889e12d7491e995}{beam\+::vec2mat} (std\+::vector$<$ double $>$ x, int rows, int cols, MatX \&y)
+\item 
+void \hyperlink{group__utils_gac7f5f2ea3f1feec3cedfc2b0f61aff90}{beam\+::mat2vec} (MatX A, std\+::vector$<$ double $>$ \&x)
+\item 
+int \hyperlink{group__utils_ga986bd09d39d65902c831209a1f311819}{beam\+::euler2rot} (Vec3 euler, int euler\+\_\+seq, Mat3 \&R)
+\item 
+int \hyperlink{group__utils_ga87a6d391d78520ba96a429f65d06bb84}{beam\+::euler2quat} (Vec3 euler, int euler\+\_\+seq, Quaternion \&q)
+\item 
+int \hyperlink{group__utils_ga15d4558557dc0197de74a7ae56daa53f}{beam\+::quat2euler} (Quaternion q, int euler\+\_\+seq, Vec3 \&euler)
+\item 
+int \hyperlink{group__utils_ga99cfa04b1c384ead4ae82b4cc4843a5c}{beam\+::quat2rot} (Quaternion q, Mat3 \&R)
+\item 
+void \hyperlink{group__utils_ga5fe56de851463d297a144a0eb5e7e1b2}{beam\+::enu2nwu} (const Vec3 \&enu, Vec3 \&nwu)
+\item 
+void \hyperlink{group__utils_ga6e0ef288576925f8c79fd3284743e86c}{beam\+::ned2enu} (const Vec3 \&ned, Vec3 \&enu)
+\item 
+void \hyperlink{group__utils_ga82aa198fb08b86d9b4fb0854e09acdca}{beam\+::ned2nwu} (const Quaternion \&ned, Quaternion \&enu)
+\item 
+void \hyperlink{group__utils_gaec5283955c5b5122e00b7fb38b1d69c5}{beam\+::nwu2enu} (const Vec3 \&nwu, Vec3 \&enu)
+\item 
+void \hyperlink{group__utils_ga7f2d193025c27530e4736c9fabba6aeb}{beam\+::nwu2ned} (const Quaternion \&nwu, Quaternion \&ned)
+\item 
+void \hyperlink{group__utils_gacd46e4e0d954431486c743882f04b1a3}{beam\+::nwu2edn} (const Vec3 \&nwu, Vec3 \&edn)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Utility mathematical functions that do not fit anywhere else.
+
+The type definitions are shorthands for declaring {\ttfamily Eigen\+::\+Vector}, {\ttfamily Eigen\+::\+Matrix} and {\ttfamily Eigen\+::\+Quaternion} objects. At current we assume all slam code development will be using double precision floating points. 

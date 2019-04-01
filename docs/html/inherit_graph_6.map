@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classbeam__colorize_1_1_colorizer.html" title="Abstract class which different colorization methods can implement. " alt="" coords="5,31,172,57"/>
+<area shape="rect" id="node2" href="$classbeam__colorize_1_1_projection.html" title="Class which implements Colorizer interface and provides colorization functionality using projection m..." alt="" coords="220,5,392,32"/>
+<area shape="rect" id="node3" href="$classbeam__colorize_1_1_ray_trace.html" title="Class which implements Colorizer interface and provides colorization functionality using ray tracing..." alt="" coords="221,56,391,83"/>
+</map>

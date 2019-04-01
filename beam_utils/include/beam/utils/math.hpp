@@ -17,13 +17,12 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-
 namespace beam {
 /** @addtogroup utils
  *  @{ */
 
 #ifndef BEAM_EIGEN_TYPEDEF
-#define BEAM_EIGEN_TYPEDEF
+#  define BEAM_EIGEN_TYPEDEF
 typedef Eigen::Vector2d Vec2;
 typedef Eigen::Vector3d Vec3;
 typedef Eigen::Vector4d Vec4;
@@ -41,26 +40,26 @@ typedef Eigen::MatrixXd MatX;
 typedef Eigen::Affine3d Affine3;
 
 typedef Eigen::Quaterniond Quaternion;
-#endif //BEAM_EIGEN_TYPEDEF
+#endif // BEAM_EIGEN_TYPEDEF
 
 /**
  * Eigen vector comparator
  */
 struct VecComparator {
-    bool operator()(const VecX &a, const VecX &b) const {
-        return std::lexicographical_compare(
-          a.data(), a.data() + a.size(), b.data(), b.data() + b.size());
-    }
+  bool operator()(const VecX& a, const VecX& b) const {
+    return std::lexicographical_compare(a.data(), a.data() + a.size(), b.data(),
+                                        b.data() + b.size());
+  }
 };
 
 /**
  * Eigen matrix comparator
  */
 struct MatComparator {
-    bool operator()(const MatX &a, const MatX &b) const {
-        return std::lexicographical_compare(
-          a.data(), a.data() + a.size(), b.data(), b.data() + b.size());
-    }
+  bool operator()(const MatX& a, const MatX& b) const {
+    return std::lexicographical_compare(a.data(), a.data() + a.size(), b.data(),
+                                        b.data() + b.size());
+  }
 };
 
 /** Generates random integer with a upper bound `ub` and lower bound `lb` using
@@ -84,42 +83,42 @@ int fltcmp(double f1, double f2, double threshold = 0.0001);
 double median(std::vector<double> v);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
-void vec2mat(std::vector<double> x, int rows, int cols, MatX &y);
+void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
 
 /** Reshapes a matrix to a vector*/
-void mat2vec(MatX A, std::vector<double> &x);
+void mat2vec(MatX A, std::vector<double>& x);
 
 /** Convert euler angle to rotation matrix **/
-int euler2rot(Vec3 euler, int euler_seq, Mat3 &R);
+int euler2rot(Vec3 euler, int euler_seq, Mat3& R);
 
 /** Convert euler angle to quaternion **/
-int euler2quat(Vec3 euler, int euler_seq, Quaternion &q);
+int euler2quat(Vec3 euler, int euler_seq, Quaternion& q);
 
 /** Convert quaternion to euler angles **/
-int quat2euler(Quaternion q, int euler_seq, Vec3 &euler);
+int quat2euler(Quaternion q, int euler_seq, Vec3& euler);
 
 /** Convert quaternion to rotation matrix **/
-int quat2rot(Quaternion q, Mat3 &R);
+int quat2rot(Quaternion q, Mat3& R);
 
 /** ENU to NWU coordinate system **/
-void enu2nwu(const Vec3 &enu, Vec3 &nwu);
+void enu2nwu(const Vec3& enu, Vec3& nwu);
 
 /** NED to ENU coordinate system **/
-void ned2enu(const Vec3 &ned, Vec3 &enu);
+void ned2enu(const Vec3& ned, Vec3& enu);
 
 /** NED to NWU coordinate system **/
-void ned2nwu(const Quaternion &ned, Quaternion &enu);
+void ned2nwu(const Quaternion& ned, Quaternion& enu);
 
 /** NWU to ENU coordinate system **/
-void nwu2enu(const Vec3 &nwu, Vec3 &enu);
+void nwu2enu(const Vec3& nwu, Vec3& enu);
 
 /** NWU to NED coordinate system **/
-void nwu2ned(const Quaternion &nwu, Quaternion &ned);
+void nwu2ned(const Quaternion& nwu, Quaternion& ned);
 
 /** NWU to EDN coordinate system **/
-void nwu2edn(const Vec3 &nwu, Vec3 &edn);
+void nwu2edn(const Vec3& nwu, Vec3& edn);
 
 /** @} group utils */
-}  // namespace beam
+} // namespace beam
 
-#endif  // BEAM_UTILS_MATH_HPP
+#endif // BEAM_UTILS_MATH_HPP

@@ -34,7 +34,7 @@ OPTION(EXPORT_BUILD
 # Require Eigen 3.2.92, also called 3.3 beta-1, since it's in xenial
 FIND_PACKAGE(Eigen3 3.2.92 REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system filesystem)
-FIND_PACKAGE(PCL 1.8 COMPONENTS
+FIND_PACKAGE(PCL 1.8 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
     surface segmentation)
 FIND_PACKAGE(kindr)
@@ -63,20 +63,10 @@ INSTALL(TARGETS beam EXPORT beamTargets)
 # Add each module to the project
 # Modules with missing dependencies are not built, and circular dependencies are
 # not supported. Thus modules must be listed after their dependencies, for now.
-ADD_SUBDIRECTORY(beam_utils)
 ADD_SUBDIRECTORY(beam_calibration)
 ADD_SUBDIRECTORY(beam_colorize)
 ADD_SUBDIRECTORY(beam_defects)
-#ADD_SUBDIRECTORY(beam_geometry)
-#ADD_SUBDIRECTORY(beam_containers)
-#ADD_SUBDIRECTORY(beam_benchmark)
-#ADD_SUBDIRECTORY(beam_controls)
-#ADD_SUBDIRECTORY(beam_kinematics)
-#ADD_SUBDIRECTORY(beam_matching)
-#ADD_SUBDIRECTORY(beam_vision)
-#ADD_SUBDIRECTORY(beam_optimization)
-#ADD_SUBDIRECTORY(beam_gtsam)
-#ADD_SUBDIRECTORY(beam_geography)
+ADD_SUBDIRECTORY(beam_utils)
 
 # Documentation
 SET(BEAM_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

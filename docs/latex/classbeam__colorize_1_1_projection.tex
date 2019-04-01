@@ -1,0 +1,101 @@
+\hypertarget{classbeam__colorize_1_1_projection}{}\section{beam\+\_\+colorize\+:\+:Projection Class Reference}
+\label{classbeam__colorize_1_1_projection}\index{beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}}
+
+
+Class which implements \hyperlink{classbeam__colorize_1_1_colorizer}{Colorizer} interface and provides colorization functionality using projection methods.  
+
+
+
+
+{\ttfamily \#include $<$Projection.\+h$>$}
+
+
+
+Inheritance diagram for beam\+\_\+colorize\+:\+:Projection\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=209pt]{classbeam__colorize_1_1_projection__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for beam\+\_\+colorize\+:\+:Projection\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=209pt]{classbeam__colorize_1_1_projection__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classbeam__colorize_1_1_projection_a7f1eea1ad6db0d40278b79c622d09b9b}{Projection} ()=default
+\item 
+\hyperlink{classbeam__colorize_1_1_projection_a5bc4fa859a4c029f429f0250ac8711f8}{$\sim$\+Projection} () override=default
+\item 
+pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z\+R\+GB $>$\+::Ptr \hyperlink{classbeam__colorize_1_1_projection_a23a0d92d022d6a65647b4d15a462c35a}{Colorize\+Point\+Cloud} (const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \&input\+\_\+cloud, const sensor\+\_\+msgs\+::\+Image \&input\+\_\+image) const override
+\begin{DoxyCompactList}\small\item\em Method for colorizing a point cloud from an image. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class which implements \hyperlink{classbeam__colorize_1_1_colorizer}{Colorizer} interface and provides colorization functionality using projection methods. 
+
+Definition at line 16 of file Projection.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}!Projection@{Projection}}
+\index{Projection@{Projection}!beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}}
+\subsubsection[{\texorpdfstring{Projection()=default}{Projection()=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+colorize\+::\+Projection\+::\+Projection (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{classbeam__colorize_1_1_projection_a7f1eea1ad6db0d40278b79c622d09b9b}{}\label{classbeam__colorize_1_1_projection_a7f1eea1ad6db0d40278b79c622d09b9b}
+\index{beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}!````~Projection@{$\sim$\+Projection}}
+\index{````~Projection@{$\sim$\+Projection}!beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}}
+\subsubsection[{\texorpdfstring{$\sim$\+Projection() override=default}{~Projection() override=default}}]{\setlength{\rightskip}{0pt plus 5cm}beam\+\_\+colorize\+::\+Projection\+::$\sim$\+Projection (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [default]}}\hypertarget{classbeam__colorize_1_1_projection_a5bc4fa859a4c029f429f0250ac8711f8}{}\label{classbeam__colorize_1_1_projection_a5bc4fa859a4c029f429f0250ac8711f8}
+
+
+\subsection{Member Function Documentation}
+\index{beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}!Colorize\+Point\+Cloud@{Colorize\+Point\+Cloud}}
+\index{Colorize\+Point\+Cloud@{Colorize\+Point\+Cloud}!beam\+\_\+colorize\+::\+Projection@{beam\+\_\+colorize\+::\+Projection}}
+\subsubsection[{\texorpdfstring{Colorize\+Point\+Cloud(const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z $>$ \&input\+\_\+cloud, const sensor\+\_\+msgs\+::\+Image \&input\+\_\+image) const override}{ColorizePointCloud(const pcl::PointCloud< pcl::PointXYZ > &input_cloud, const sensor_msgs::Image &input_image) const override}}]{\setlength{\rightskip}{0pt plus 5cm}pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+Y\+Z\+R\+GB $>$\+::Ptr beam\+\_\+colorize\+::\+Projection\+::\+Colorize\+Point\+Cloud (
+\begin{DoxyParamCaption}
+\item[{const pcl\+::\+Point\+Cloud$<$ pcl\+::\+Point\+X\+YZ $>$ \&}]{input\+\_\+cloud, }
+\item[{const sensor\+\_\+msgs\+::\+Image \&}]{input\+\_\+image}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}\hypertarget{classbeam__colorize_1_1_projection_a23a0d92d022d6a65647b4d15a462c35a}{}\label{classbeam__colorize_1_1_projection_a23a0d92d022d6a65647b4d15a462c35a}
+
+
+Method for colorizing a point cloud from an image. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\+\_\+cloud} & Input point cloud in the camera frame \\
+\hline
+{\em input\+\_\+image} & Image which will be used to color point cloud \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Colored point cloud 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{classbeam__colorize_1_1_colorizer_ab9ca2ddf55fd8782e6b31c64e85efcbc}{beam\+\_\+colorize\+::\+Colorizer}.
+
+
+
+Definition at line 30 of file Projection.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+beam\+\_\+colorize/include/beam/colorize/\hyperlink{_projection_8h}{Projection.\+h}\item 
+beam\+\_\+colorize/src/\hyperlink{_projection_8cpp}{Projection.\+cpp}\end{DoxyCompactItemize}

@@ -8,15 +8,14 @@
 #define BEAM_UTILS_CONFIG_HPP
 
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <type_traits>
 
 #include <yaml-cpp/yaml.h>
 
-#include "beam/utils/math.hpp"
 #include "beam/utils/log.hpp"
-
+#include "beam/utils/math.hpp"
 
 namespace beam {
 /** @addtogroup utils
@@ -24,52 +23,51 @@ namespace beam {
 
 /** Return codes for ConfigParser methods */
 enum class ConfigStatus {
-    OK = 0,                  ///< Success
-    MissingOptionalKey = 1,  ///< key not found, but parameter is optional
-    // Note: errors are != ConfigStatus::OK
-    FileError = -1,      ///< Success
-    KeyError = -2,       ///< key not found, parameter is not optional
-    ConversionError = -3 /**< Invalid value for conversion
-                           * e.g. wrong-size list for vector, missing
-                           * key 'rows', 'cols' or 'data' (for matrix) */
+  OK = 0,                 ///< Success
+  MissingOptionalKey = 1, ///< key not found, but parameter is optional
+  // Note: errors are != ConfigStatus::OK
+  FileError = -1,      ///< Success
+  KeyError = -2,       ///< key not found, parameter is not optional
+  ConversionError = -3 /**< Invalid value for conversion
+                        * e.g. wrong-size list for vector, missing
+                        * key 'rows', 'cols' or 'data' (for matrix) */
 };
 
 /** Base class representing a parameter to be parsed in the yaml file */
 struct ConfigParamBase {
-    ConfigParamBase(std::string key, bool optional)
-        : key{std::move(key)}, optional{optional} {};
+  ConfigParamBase(std::string key, bool optional)
+      : key{std::move(key)}, optional{optional} {};
 
+  /** Parse the given node as T, and write the value into `destination`.
+   * @note no lookup by key is performed; the node must already be correct
+   * @throws YAML::BadConversion if node is not convertible to destination
+   */
+  virtual void load(const YAML::Node& node) const = 0;
 
-    /** Parse the given node as T, and write the value into `destination`.
-     * @note no lookup by key is performed; the node must already be correct
-     * @throws YAML::BadConversion if node is not convertible to destination
-     */
-    virtual void load(const YAML::Node &node) const = 0;
+  std::string key; //!< yaml key to parse from
+  bool optional;   //!< if true, it is not an error if the key is not found
 
-    std::string key;  //!< yaml key to parse from
-    bool optional;    //!< if true, it is not an error if the key is not found
-
- protected:
-    ~ConfigParamBase() = default;  // disallow deletion through pointer to base
+protected:
+  ~ConfigParamBase() = default; // disallow deletion through pointer to base
 };
 
 /** Represents a parameter to be parsed in the yaml file */
 template <typename T>
 class ConfigParam : public ConfigParamBase {
- public:
-    ConfigParam(std::string key, T *destination, bool optional = false)
-        : ConfigParamBase{std::move(key), optional}, data{destination} {}
+public:
+  ConfigParam(std::string key, T* destination, bool optional = false)
+      : ConfigParamBase{std::move(key), optional}, data{destination} {}
 
-    /** Parse the given node as T, and write the value into `destination`.
-     * @note no lookup by key is performed; the node must already be correct
-     * @throws YAML::BadConversion if node is not convertible to destination
-     */
-    void load(const YAML::Node &node) const override {
-        *(this->data) = node.as<T>();
-    }
+  /** Parse the given node as T, and write the value into `destination`.
+   * @note no lookup by key is performed; the node must already be correct
+   * @throws YAML::BadConversion if node is not convertible to destination
+   */
+  void load(const YAML::Node& node) const override {
+    *(this->data) = node.as<T>();
+  }
 
- protected:
-    T *data = nullptr;  //!< where we will store the parsed value
+protected:
+  T* data = nullptr; //!< where we will store the parsed value
 };
 
 /** Parses yaml files for parameters of different types.
@@ -105,51 +103,49 @@ class ConfigParam : public ConfigParamBase {
  * http://stackoverflow.com/a/16034375/431033)
  */
 class ConfigParser {
- public:
-    bool config_loaded;
+public:
+  bool config_loaded;
 
-    YAML::Node root;
-    std::vector<std::shared_ptr<ConfigParamBase>> params;
+  YAML::Node root;
+  std::vector<std::shared_ptr<ConfigParamBase>> params;
 
-    /** Default constructor. By default it sets:
-     *
-     * - `config_loaded` to `false`
-     *
-     * This variable is set to `true` once the yaml file is loaded.
-     */
-    ConfigParser(void);
+  /** Default constructor. By default it sets:
+   *
+   * - `config_loaded` to `false`
+   *
+   * This variable is set to `true` once the yaml file is loaded.
+   */
+  ConfigParser(void);
 
-    /** Use the variations of `addParam` to add parameters you would like to
-     * parse from the yaml file, where `key` is the yaml key, `out` is
-     * dependent on the type of parameter you want to parse to and an
-     * `optional` parameter to define whether `ConfigParser` should fail if the
-     * parameter is not found.
-     */
-    template <typename T>
-    void addParam(std::string key, T *out, bool optional = false) {
-        auto ptr =
-          std::make_shared<ConfigParam<T>>(std::move(key), out, optional);
-        this->params.push_back(ptr);
-    }
+  /** Use the variations of `addParam` to add parameters you would like to
+   * parse from the yaml file, where `key` is the yaml key, `out` is
+   * dependent on the type of parameter you want to parse to and an
+   * `optional` parameter to define whether `ConfigParser` should fail if the
+   * parameter is not found.
+   */
+  template <typename T>
+  void addParam(std::string key, T* out, bool optional = false) {
+    auto ptr = std::make_shared<ConfigParam<T>>(std::move(key), out, optional);
+    this->params.push_back(ptr);
+  }
 
-    /** Get yaml node given yaml `key`. The result is assigned to `node` if
-     * `key` matches anything in the config file, else `node` is set to `NULL`.
-     */
-    ConfigStatus getYamlNode(const std::string &key, YAML::Node &node);
+  /** Get yaml node given yaml `key`. The result is assigned to `node` if
+   * `key` matches anything in the config file, else `node` is set to `NULL`.
+   */
+  ConfigStatus getYamlNode(const std::string& key, YAML::Node& node);
 
-    /** Check whether a key is present in the yaml file */
-    ConfigStatus checkKey(const std::string &key, bool optional);
+  /** Check whether a key is present in the yaml file */
+  ConfigStatus checkKey(const std::string& key, bool optional);
 
-    /** Load yaml param primitive, array, vector or matrix. */
-    ConfigStatus loadParam(const ConfigParamBase &param);
+  /** Load yaml param primitive, array, vector or matrix. */
+  ConfigStatus loadParam(const ConfigParamBase& param);
 
-    /** Load yaml file at `config_file`. */
-    ConfigStatus load(const std::string &config_file);
+  /** Load yaml file at `config_file`. */
+  ConfigStatus load(const std::string& config_file);
 };
 
 /** @} group utils */
-}  // namespace beam
-
+} // namespace beam
 
 namespace YAML {
 
@@ -176,13 +172,12 @@ namespace YAML {
  */
 template <typename Scalar, int Rows, int Cols>
 struct convert<Eigen::Matrix<Scalar, Rows, Cols>> {
-    /** Convert YAML node to Eigen Matrix
-     *
-     * @throws YAML::InvalidNode if nested keys not found
-     * @returns true if conversion successful
-     */
-    static bool decode(const Node &node,
-                       Eigen::Matrix<Scalar, Rows, Cols> &out);
+  /** Convert YAML node to Eigen Matrix
+   *
+   * @throws YAML::InvalidNode if nested keys not found
+   * @returns true if conversion successful
+   */
+  static bool decode(const Node& node, Eigen::Matrix<Scalar, Rows, Cols>& out);
 };
 
 /** Custom conversion functions for YAML -> Eigen vector
@@ -200,10 +195,10 @@ struct convert<Eigen::Matrix<Scalar, Rows, Cols>> {
  */
 template <typename Scalar, int Rows>
 struct convert<Eigen::Matrix<Scalar, Rows, 1>> {
-    /** Convert YAML node to Eigen Matrix
-     * @returns true if conversion successful
-     */
-    static bool decode(const Node &node, Eigen::Matrix<Scalar, Rows, 1> &out);
+  /** Convert YAML node to Eigen Matrix
+   * @returns true if conversion successful
+   */
+  static bool decode(const Node& node, Eigen::Matrix<Scalar, Rows, 1>& out);
 };
 
 // Explicit instantiations: include these in the compiled beam_utils library
@@ -217,6 +212,6 @@ template struct convert<beam::Vec3>;
 template struct convert<beam::Vec4>;
 template struct convert<beam::VecX>;
 
-}  // namespace YAML
+} // namespace YAML
 
-#endif  // BEAM_UTILS_CONFIG_HPP
+#endif // BEAM_UTILS_CONFIG_HPP
