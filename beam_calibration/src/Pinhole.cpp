@@ -10,20 +10,21 @@ Pinhole::Pinhole(double fx, double fy, double cx, double cy) {
 }
 
 Pinhole::Pinhole(beam::Mat3 K) {
-  if(K(0,0)!=0 && K(0,1)==0 && K(0,2)!=0 && K(1,0)==0 && K(1,1)!=0 && K(1,2)!=0
-    && K(2,0)==0 && K(2,1)==0 && K(2,2)==1){
-      K_ = K;
-      is_full_ = true;
+  if (K(0, 0) != 0 && K(0, 1) == 0 && K(0, 2) != 0 && K(1, 0) == 0 &&
+      K(1, 1) != 0 && K(1, 2) != 0 && K(2, 0) == 0 && K(2, 1) == 0 &&
+      K(2, 2) == 1) {
+    K_ = K;
+    is_full_ = true;
   } else {
     LOG_ERROR("Invalid projection matrix (K) input.");
   }
 }
 
-void Pinhole::AddFrameId(std::string frame_id){
+void Pinhole::AddFrameId(std::string frame_id) {
   frame_id_ = frame_id;
 }
 
-std::string Pinhole::GetFrameId(){
+std::string Pinhole::GetFrameId() {
   return frame_id_;
 }
 
@@ -43,13 +44,21 @@ beam::Mat3 Pinhole::GetK() {
   return K_;
 }
 
-double Pinhole::GetFx() { return K_(0, 0); }
+double Pinhole::GetFx() {
+  return K_(0, 0);
+}
 
-double Pinhole::GetFy() { return K_(1, 1); }
+double Pinhole::GetFy() {
+  return K_(1, 1);
+}
 
-double Pinhole::GetCx() { return K_(0, 2); }
+double Pinhole::GetCx() {
+  return K_(0, 2);
+}
 
-double Pinhole::GetCy() { return K_(1, 2); }
+double Pinhole::GetCy() {
+  return K_(1, 2);
+}
 
 bool Pinhole::IsFull() {
   if (is_full_) {
@@ -81,7 +90,8 @@ beam::Vec2 Pinhole::GetTanDist() {
   if (!is_tan_distortion_valid_) {
     LOG_ERROR("No tangential distortion coefficients available.");
     beam::Vec2 null_vec;
-    throw std::invalid_argument{"invalid/non-existing pinhole tangential distortion param"};
+    throw std::invalid_argument{
+        "invalid/non-existing pinhole tangential distortion param"};
     return null_vec;
   } else {
     return tan_coeffs_;
@@ -92,7 +102,8 @@ beam::VecX Pinhole::GetRadDist() {
   if (!is_rad_distortion_valid_) {
     LOG_ERROR("No radial distortion coefficients available.");
     beam::Vec2 null_vec;
-    throw std::invalid_argument{"invalid/non-existing pinhole radial distortion param"};
+    throw std::invalid_argument{
+        "invalid/non-existing pinhole radial distortion param"};
     return null_vec;
   } else {
     return rad_coeffs_;
@@ -147,10 +158,12 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 X) {
     throw std::invalid_argument{"no intrinsics matrix"};
   } else if (!is_rad_distortion_valid_) {
     LOG_ERROR("No radial distortion parameters, cannot project point.");
-    throw std::invalid_argument{"invalid/non-existing pinhole radial distortion param"};
+    throw std::invalid_argument{
+        "invalid/non-existing pinhole radial distortion param"};
   } else if (!is_tan_distortion_valid_) {
     LOG_ERROR("No tangential distortion parameters, cannot project point.");
-    throw std::invalid_argument{"invalid/non-existing pinhole tangential distortion param"};
+    throw std::invalid_argument{
+        "invalid/non-existing pinhole tangential distortion param"};
   }
   return img_coords;
 }
@@ -177,10 +190,12 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 X) {
     throw std::invalid_argument{"no intrinsics matrix"};
   } else if (!is_rad_distortion_valid_) {
     LOG_ERROR("No radial distortion parameters, cannot project point.");
-    throw std::invalid_argument{"invalid/non-existing pinhole radial distortion param"};
+    throw std::invalid_argument{
+        "invalid/non-existing pinhole radial distortion param"};
   } else if (!is_tan_distortion_valid_) {
     LOG_ERROR("No tangential distortion parameters, cannot project point.");
-    throw std::invalid_argument{"invalid/non-existing pinhole tangential distortion param"};
+    throw std::invalid_argument{
+        "invalid/non-existing pinhole tangential distortion param"};
   } else {
     LOG_ERROR("invalid entry, cannot project point: the point is not in "
               "homographic form, ");
@@ -215,15 +230,9 @@ beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3 X) {
   k1 = rad_coeffs_(0, 0);
   k2 = rad_coeffs_(1, 0);
   k3 = rad_coeffs_(2, 0);
-  if (rad_coeffs_.size() > 3) {
-    k4 = rad_coeffs_(3, 0);
-  }
-  if (rad_coeffs_.size() > 4) {
-    k5 = rad_coeffs_(4, 0);
-  }
-  if (rad_coeffs_.size() > 5) {
-    k6 = rad_coeffs_(5, 0);
-  }
+  if (rad_coeffs_.size() > 3) { k4 = rad_coeffs_(3, 0); }
+  if (rad_coeffs_.size() > 4) { k5 = rad_coeffs_(4, 0); }
+  if (rad_coeffs_.size() > 5) { k6 = rad_coeffs_(5, 0); }
 
   p1 = tan_coeffs_(0, 0);
   p2 = tan_coeffs_(1, 0);
