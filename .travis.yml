@@ -29,8 +29,9 @@ script:
   - cd $CI_SOURCE_PATH
   - ls
   - bash ./scripts/install.bash
-  - cd $HOME/catkin_ws/build/libbeam/
-  - ./beam_calibration/beam_calibration_extrinsics_tests
-  - ./beam_calibration/beam_calibration_intrinsic_tests
-  - ./beam_defects/beam_defects_delam_tests
-  - ./beam_defects/beam_defects_spall_tests
+  - cd $HOME/catkin_ws/build/libbeam/beam_calibration
+  - ./beam_calibration_extrinsics_tests
+  - ./beam_calibration_intrinsic_tests
+  - cd $HOME/catkin_ws/build/libbeam/beam_defects
+  - ./beam_defects_delam_tests
+  - ./beam_defects_spall_tests
