@@ -58,5 +58,5 @@ target_link_libraries(${PROJECT_NAME}_spall_tests
   PCL::PCL
 )
 file(COPY tests/test_data
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
 )
