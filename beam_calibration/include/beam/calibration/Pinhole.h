@@ -22,11 +22,19 @@ public:
 
   /**
    * @brief constructor
+   * @param fx focal length in x diretion
+   * @param fy focal length in y diretion
+   * @param cx optical center in x diretion
+   * @param cy optical center in y diretion
    */
   Pinhole(double fx, double fy, double cx, double cy);
 
   /**
    * @brief constructor
+   * @param K intrinsics matrix:
+   * K = fx  0 cx
+   *     0  fy cy
+   *     0   0  1
    */
   Pinhole(beam::Mat3 K);
 
@@ -107,11 +115,15 @@ public:
 
   /**
    * @brief Method for adding tangential distortion parameters
+   * @param tan_coeffs vector of length two with the tangential distortion
+   * coefficients
    */
   void AddTanDist(beam::Vec2 tan_coeffs);
 
   /**
    * @brief Method for adding radial distortion parameters
+   * @param rad_coeffs vector of length 3 to 6 with the radial distortion
+   * coefficients
    */
   void AddRadDist(beam::VecX rad_coeffs);
 
@@ -129,6 +141,7 @@ public:
    * @brief Method for projecting a point into an image plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
+   * @param X point to be projected. Not in homographic form
    */
   beam::Vec2 ProjectPoint(beam::Vec3 X);
 
@@ -137,6 +150,7 @@ public:
    * plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
+   * @param X point to be projected. In homographic form
    */
   beam::Vec2 ProjectPoint(beam::Vec4 X);
 
@@ -147,6 +161,7 @@ public:
    * https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
    * @return Returns image coordinates after point has been projected into image
    * plane.
+   * @param X point to be projected. Not in homographic form
    */
   beam::Vec2 ProjectDistortedPoint(beam::Vec3 X);
 
@@ -157,6 +172,7 @@ public:
    * https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
    * @return Returns image coordinates after point has been projected into image
    * plane.
+   * @param X point to be projected. In homographic form
    */
   beam::Vec2 ProjectDistortedPoint(beam::Vec4 X);
 
@@ -165,6 +181,7 @@ private:
    * @brief This applies the projection for to images that are not distorted
    * @return Returns image coordinates after point has been projected into image
    * plane.
+   * @param X point to be projected. Not in homographic form
    */
   beam::Vec2 ApplyProjection(beam::Vec3 X);
 
@@ -172,6 +189,7 @@ private:
    * @brief This applies the projection for to images that are not distorted
    * @return Returns image coordinates after point has been projected into image
    * plane.
+   * @param X point to be projected. Not in homographic form
    */
   beam::Vec2 ApplyDistortedProjection(beam::Vec3 X);
 
