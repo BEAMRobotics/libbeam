@@ -45,3 +45,17 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   ${catkin_LIBRARIES}
 )
 #######################################
+
+############# Debug files #############
+add_executable(${PROJECT_NAME}_debug
+  src/debug.cpp
+)
+target_include_directories(${PROJECT_NAME}_debug
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_debug
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+#######################################
