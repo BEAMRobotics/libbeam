@@ -118,6 +118,12 @@ void nwu2ned(const Quaternion& nwu, Quaternion& ned);
 /** NWU to EDN coordinate system **/
 void nwu2edn(const Vec3& nwu, Vec3& edn);
 
+/**
+ * Round a matrix values to a certain precision.
+ * precision = 100 would round to the second decimal point (i.e. 1.126 = 1.13)
+ **/
+MatX RoundMatrix(const MatX& M, int& precision);
+
 /** @} group utils */
 } // namespace beam
 
