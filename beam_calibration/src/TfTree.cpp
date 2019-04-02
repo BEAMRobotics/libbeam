@@ -17,7 +17,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     LOG_ERROR("Cannot add transform from frame %s to %s. Frame already exists",
               from_frame.c_str(), to_frame.c_str());
   } else {
-    geometry_msgs::TransformStamped T = tf2::eigenToTransform(TAnew);
+    geometry_msgs::TransformStamped T = tf2::eigenToTransform(TAnew.inverse());
     T.header.seq = 1;
     T.header.frame_id = from_frame;
     T.child_frame_id = to_frame;
@@ -41,7 +41,7 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
 
   if (can_transform) {
     geometry_msgs::TransformStamped T_target_source;
-    T_target_source = Tree_.lookupTransform(from_frame, to_frame, time0);
+    T_target_source = Tree_.lookupTransform(to_frame, from_frame, time0);
     TA_target_source = tf2::transformToEigen(T_target_source);
   } else {
     throw std::runtime_error{"Cannot look up transform."};

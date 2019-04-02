@@ -31,6 +31,7 @@ int main() {
   beam::Mat4 T_X1_HVLP2 = TA_X1_HVLP2.matrix();
   std::cout << "T_X1_HVLP: \n" << TA_X1_HVLP.matrix() << "\n";
   std::cout << "T_X1_HVLP2: \n" << TA_X1_HVLP2.matrix() << "\n";
+  std::cout << "TA_X1_HVLP.matrix().inverse(): \n" << TA_X1_HVLP.matrix().inverse() << "\n";
 
   //
   // std::string to_frame2 = "X1";

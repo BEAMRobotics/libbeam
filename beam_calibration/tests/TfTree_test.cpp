@@ -9,13 +9,15 @@ TEST_CASE("Test Tree building and retrieving") {
   Eigen::Affine3d TA_BASELINK_HVLP, TA_X1_HVLP, TA_BASELINK_X1_calc,
       TA_BASELINK_X1_lookup;
 
-  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100, 0.00000, 1.00000,
-      0.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.35200, 0.00000, 0.00000,
-      0.00000, 1.00000;
+  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100,
+                     0.00000, 1.00000, 0.00000, 0.00000,
+                     0.00000, 0.00000, 1.00000, 0.35200,
+                     0.00000, 0.00000, 0.00000, 1.00000;
 
-  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800, 0.00000, 1.00000, 0.00000,
-      0.00000, 1.00000, 0.00000, 0.00000, -0.0400, 0.00000, 0.00000, 0.00000,
-      1.00000;
+  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800,
+               0.00000, 1.00000, 0.00000, 0.00000,
+               1.00000, 0.00000, 0.00000, -0.0400,
+               0.00000, 0.00000, 0.00000,  1.00000;
 
   TA_BASELINK_HVLP.matrix() = T_BASELINK_HVLP;
   TA_X1_HVLP.matrix() = T_X1_HVLP;
@@ -30,15 +32,17 @@ TEST_CASE("Test Tree building and retrieving") {
 
   std::string to_frame3 = "BASELINK";
   std::string from_frame3 = "X1";
-  TA_BASELINK_X1_calc = TA_BASELINK_HVLP * TA_X1_HVLP.inverse();
+  TA_BASELINK_X1_calc.matrix() = TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
   TA_BASELINK_X1_lookup = Tree.GetTransform(to_frame3, from_frame3);
-  int round_precision = 100000;
-  REQUIRE(TA_BASELINK_HVLP.matrix() ==
-          beam::RoundMatrix(Tree.GetTransform(to_frame1, from_frame1).matrix(),
-                            round_precision));
+  int round_precision = 10000000;
   REQUIRE(TA_X1_HVLP.matrix() ==
           beam::RoundMatrix(Tree.GetTransform(to_frame2, from_frame2).matrix(),
                             round_precision));
+  REQUIRE(TA_BASELINK_HVLP.matrix() ==
+          beam::RoundMatrix(Tree.GetTransform(to_frame1, from_frame1).matrix(),
+                            round_precision));
+  REQUIRE(beam::RoundMatrix(TA_BASELINK_X1_calc.matrix(), round_precision) ==
+          beam::RoundMatrix(TA_BASELINK_X1_lookup.matrix(), round_precision));
   REQUIRE(Tree.GetCalibrationDate() == calib_date);
   REQUIRE_THROWS(Tree.AddTransform(TA_BASELINK_X1_calc, to_frame3, from_frame3,
                                    calib_date));
