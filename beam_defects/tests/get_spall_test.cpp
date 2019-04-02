@@ -18,7 +18,7 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
-  reader.read("~/catkin_ws/src/libbeam/beam_defects/test_data/cloud_cluster_0.pcd", *cloud);
+  reader.read("$HOME/catkin_ws/src/libbeam/beam_defects/test_data/cloud_cluster_0.pcd", *cloud);
 
   // Instantiate the defect object with point cloud
   beam_defects::Spall spall{cloud};
