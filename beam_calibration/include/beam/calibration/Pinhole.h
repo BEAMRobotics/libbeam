@@ -27,7 +27,7 @@ public:
    * @param cx optical center in x diretion
    * @param cy optical center in y diretion
    */
-  Pinhole(double fx, double fy, double cx, double cy);
+  Pinhole(double &fx, double &fy, double &cx, double &cy);
 
   /**
    * @brief constructor
@@ -36,7 +36,7 @@ public:
    *     0  fy cy
    *     0   0  1
    */
-  Pinhole(beam::Mat3 K);
+  Pinhole(beam::Mat3 &K);
 
   /**
    * @brief Default constructor
@@ -54,7 +54,7 @@ public:
    * @brief Method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
-  void AddFrameId(std::string frame_id) override;
+  void AddFrameId(std::string &frame_id) override;
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -68,7 +68,7 @@ public:
    * @param img_dims dimensions of the images taken by the camera associated
    * with this intrinsics object: [height, width]^T
    */
-  void AddImgDims(beam::Vec2 img_dims) override;
+  void AddImgDims(beam::Vec2 &img_dims) override;
 
   /**
    * @brief Method for getting the image dimensions
@@ -118,7 +118,7 @@ public:
    * @param tan_coeffs vector of length two with the tangential distortion
    * coefficients
    */
-  void AddTanDist(beam::Vec2 tan_coeffs);
+  void AddTanDist(beam::Vec2 &tan_coeffs);
 
   /**
    * @brief Method for adding radial distortion parameters
@@ -143,7 +143,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 ProjectPoint(beam::Vec3 X);
+  beam::Vec2 ProjectPoint(beam::Vec3 &X);
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -152,7 +152,7 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  beam::Vec2 ProjectPoint(beam::Vec4 X);
+  beam::Vec2 ProjectPoint(beam::Vec4 &X);
 
   /**
    * @brief Method for projecting a point into an image plane where the image is
@@ -163,7 +163,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 ProjectDistortedPoint(beam::Vec3 X);
+  beam::Vec2 ProjectDistortedPoint(beam::Vec3 &X);
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -174,7 +174,7 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  beam::Vec2 ProjectDistortedPoint(beam::Vec4 X);
+  beam::Vec2 ProjectDistortedPoint(beam::Vec4 &X);
 
 private:
   /**
@@ -183,7 +183,7 @@ private:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 ApplyProjection(beam::Vec3 X);
+  beam::Vec2 ApplyProjection(beam::Vec3 &X);
 
   /**
    * @brief This applies the projection for to images that are not distorted
@@ -191,7 +191,7 @@ private:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 ApplyDistortedProjection(beam::Vec3 X);
+  beam::Vec2 ApplyDistortedProjection(beam::Vec3 &X);
 
   // Variables for storing intrinsic information
   std::string frame_id_;

@@ -46,7 +46,7 @@ public:
    * @brief Pure virtual method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
-  virtual void AddFrameId(std::string frame_id) = 0;
+  virtual void AddFrameId(std::string &frame_id) = 0;
 
   /**
    * @brief Pure virtual method for getting the image dimensions
@@ -60,7 +60,7 @@ public:
    * @param img_dims dimensions of the images taken by the camera associated
    * with this intrinsics object: [height, width]^T
    */
-  virtual void AddImgDims(beam::Vec2 img_dims) = 0;
+  virtual void AddImgDims(beam::Vec2 &img_dims) = 0;
 };
 
 /** @} group calibration */

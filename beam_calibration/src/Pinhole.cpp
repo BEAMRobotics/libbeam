@@ -4,12 +4,12 @@
 
 namespace beam_calibration {
 
-Pinhole::Pinhole(double fx, double fy, double cx, double cy) {
+Pinhole::Pinhole(double &fx, double &fy, double &cx, double &cy) {
   K_ << fx, 0, cx, 0, fy, cy, 0, 0, 1;
   is_full_ = true;
 }
 
-Pinhole::Pinhole(beam::Mat3 K) {
+Pinhole::Pinhole(beam::Mat3 &K) {
   if (K(0, 0) != 0 && K(0, 1) == 0 && K(0, 2) != 0 && K(1, 0) == 0 &&
       K(1, 1) != 0 && K(1, 2) != 0 && K(2, 0) == 0 && K(2, 1) == 0 &&
       K(2, 2) == 1) {
@@ -20,7 +20,7 @@ Pinhole::Pinhole(beam::Mat3 K) {
   }
 }
 
-void Pinhole::AddFrameId(std::string frame_id) {
+void Pinhole::AddFrameId(std::string &frame_id) {
   frame_id_ = frame_id;
 }
 
@@ -28,7 +28,7 @@ std::string Pinhole::GetFrameId() {
   return frame_id_;
 }
 
-void Pinhole::AddImgDims(beam::Vec2 img_dims) {
+void Pinhole::AddImgDims(beam::Vec2 &img_dims) {
   img_dims_ = img_dims;
 }
 
@@ -68,7 +68,7 @@ bool Pinhole::IsFull() {
   }
 }
 
-void Pinhole::AddTanDist(beam::Vec2 tan_coeffs) {
+void Pinhole::AddTanDist(beam::Vec2 &tan_coeffs) {
   tan_coeffs_ = tan_coeffs;
   is_tan_distortion_valid_ = true;
 }
@@ -81,6 +81,7 @@ void Pinhole::AddRadDist(beam::VecX rad_coeffs) {
               "Min %d, Max: %d",
               rad_coeffs_size, 3, 6);
   } else {
+    // rad_coeffs_(rad_coeffs.size());
     rad_coeffs_ = rad_coeffs;
     is_rad_distortion_valid_ = true;
   }
@@ -110,7 +111,7 @@ beam::VecX Pinhole::GetRadDist() {
   }
 }
 
-beam::Vec2 Pinhole::ProjectPoint(beam::Vec3 X) {
+beam::Vec2 Pinhole::ProjectPoint(beam::Vec3 &X) {
   beam::Vec2 img_coords;
   if (is_full_) {
     img_coords = this->ApplyProjection(X);
@@ -121,7 +122,7 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec3 X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ProjectPoint(beam::Vec4 X) {
+beam::Vec2 Pinhole::ProjectPoint(beam::Vec4 &X) {
   beam::Vec2 img_coords;
   beam::Vec3 XX;
   bool homographic_form;
@@ -148,7 +149,7 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec4 X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 X) {
+beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 &X) {
   beam::Vec2 img_coords;
 
   if (is_full_ && is_rad_distortion_valid_ && is_tan_distortion_valid_) {
@@ -168,7 +169,7 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 X) {
+beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 &X) {
   beam::Vec2 img_coords;
   beam::Vec3 XX;
 
@@ -204,7 +205,7 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ApplyProjection(beam::Vec3 X) {
+beam::Vec2 Pinhole::ApplyProjection(beam::Vec3 &X) {
   beam::Vec2 coords;
   beam::Vec3 x_proj;
   // project point
@@ -215,7 +216,7 @@ beam::Vec2 Pinhole::ApplyProjection(beam::Vec3 X) {
   return coords;
 }
 
-beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3 X) {
+beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3 &X) {
   beam::Vec2 coords;
   beam::Vec3 x_proj;
   double x, y, xx, yy, r2, fx, fy, cx, cy, k1, k2, k3, k4 = 0, k5 = 0, k6 = 0,
