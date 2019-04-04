@@ -2,8 +2,8 @@
 #include <beam/utils/log.hpp>
 #include <beam/utils/math.hpp>
 #include <fstream>
-#include <geometry_msgs/TransformStamped.h>
 #include <iostream>
+#include <geometry_msgs/TransformStamped.h>
 #include <nlohmann/json.hpp>
 #include <tf2_eigen/tf2_eigen.h>
 
@@ -15,7 +15,7 @@ void TfTree::LoadJSON(std::string& file_location) {
   LOG_INFO("Loading file: %s", file_location.c_str());
 
   json J;
-  int transform_counter = 0, value_counter = 0;
+  int calibration_counter = 0, value_counter = 0;
   std::string type, date, method, to_frame, from_frame;
   beam::Mat4 T;
   Eigen::Affine3d TA;
@@ -30,7 +30,7 @@ void TfTree::LoadJSON(std::string& file_location) {
   if (type != "extrinsic_calibration") {
     LOG_ERROR("Attempting to create TfTree with invalid json type. Type: %s",
               type.c_str());
-    throw std::runtime_error{
+    throw std::invalid_argument{
         "Attempting to create TfTree with invalid json type"};
     return;
   }
@@ -42,7 +42,7 @@ void TfTree::LoadJSON(std::string& file_location) {
   LOG_INFO("Method: %s", method.c_str());
 
   for (const auto& calibration : J["calibrations"]) {
-    transform_counter++;
+    calibration_counter++;
     value_counter = 0;
     int i = 0, j = 0;
 
@@ -61,13 +61,13 @@ void TfTree::LoadJSON(std::string& file_location) {
     }
     if (value_counter != 16) {
       LOG_ERROR("Invalid transform matrix in .json file.");
-      throw std::runtime_error{"Invalid transform matrix in .json file."};
+      throw std::invalid_argument{"Invalid transform matrix in .json file."};
       return;
     }
     TA.matrix() = T;
     AddTransform(TA, to_frame, from_frame);
   }
-  LOG_INFO("Saved %d transforms", transform_counter);
+  LOG_INFO("Saved %d transforms", calibration_counter);
 }
 
 void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
@@ -87,7 +87,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     T.child_frame_id = to_frame;
     bool transform_valid = Tree_.setTransform(T, "TfTree", true);
     if (!transform_valid) {
-      throw std::runtime_error{"Cannot add transform. Transform invalid."};
+      throw std::invalid_argument{"Cannot add transform. Transform invalid."};
       LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
                 from_frame.c_str(), to_frame.c_str());
     }

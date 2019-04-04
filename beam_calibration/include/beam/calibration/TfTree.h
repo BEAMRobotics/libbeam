@@ -58,7 +58,7 @@ public:
    * @brief Method for setting the date that the calibration was done
    * @param Calibration date
    */
-  void SetCalibrationDate(std::string& calibraiton_date);
+  void SetCalibrationDate(std::string& calibration_date);
 
 private:
   tf2::BufferCore Tree_;

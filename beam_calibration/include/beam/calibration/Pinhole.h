@@ -51,6 +51,12 @@ public:
   IntrinsicsType GetType() const override { return IntrinsicsType::PINHOLE; };
 
   /**
+   * @brief Method for loading a pinhole calibration from a .json file
+   * @param file_location absolute path to json file
+   */
+  void LoadJSON(std::string &file_location);
+
+  /**
    * @brief Method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
@@ -76,6 +82,12 @@ public:
    * with this intrinsics object: [height, width]^T
    */
   beam::Vec2 GetImgDims() override;
+
+  /**
+   * @brief Method for adding K matrix
+   * @param K intrinsics matrix
+   */
+  void AddK(beam::Mat3 K);
 
   /**
    * @brief Method for returning K matrix
@@ -106,6 +118,18 @@ public:
    * @return Cy
    */
   double GetCy();
+
+  /**
+   * @brief Method for retrieving the date that the calibration was done
+   * @return Return calibration date
+   */
+  std::string GetCalibrationDate();
+
+  /**
+   * @brief Method for setting the date that the calibration was done
+   * @param Calibration date
+   */
+  void SetCalibrationDate(std::string& calibration_date);
 
   /**
    * @brief Method for checking if the intinsic parameters have been set
@@ -194,13 +218,13 @@ private:
   beam::Vec2 ApplyDistortedProjection(beam::Vec3 &X);
 
   // Variables for storing intrinsic information
-  std::string frame_id_;
+  std::string frame_id_, calibration_date_;
+  bool is_full_ = false, is_rad_distortion_valid_ = false,
+       is_tan_distortion_valid_ = false, is_calibration_date_set_ = false;
   beam::Vec2 img_dims_;
   beam::Mat3 K_;
   beam::Vec2 tan_coeffs_;
   beam::VecX rad_coeffs_;
-  bool is_full_ = false, is_rad_distortion_valid_ = false,
-       is_tan_distortion_valid_ = false;
 };
 
 /** @} group calibration */
