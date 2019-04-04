@@ -1,0 +1,20 @@
+{
+  "type": "Standard",
+  "name": "SlamLoader",
+  "icon": ":/CC/plugin/SlamLoader/images/icon.png",
+  "description": "Plugin for loading SLAM results from ROBEN",
+  "authors": [
+    {
+      "name": "Steve Phillips",
+      "email": "sjphilli@uwaterloo.ca"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Steve Phillips",
+      "email": "sjphilli@uwaterloo.ca"
+    }
+  ],
+  "references": [
+  ]
+}
