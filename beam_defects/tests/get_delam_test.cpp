@@ -44,8 +44,8 @@ TEST_CASE("Delam (xy-plane) size calculation and LIGHT OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0.1,0,0});
   cloud->points.push_back(pcl::PointXYZ{0.2,0,0});
   cloud->points.push_back(pcl::PointXYZ{0.25,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.2,0,0.1});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0.1});
+  cloud->points.push_back(pcl::PointXYZ{0.2,0.1,0});
+  cloud->points.push_back(pcl::PointXYZ{0.1,0.1,0});
 
   beam_defects::Delam delam{cloud};
 
