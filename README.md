@@ -1,4 +1,6 @@
 # libbeam
+[![Build Status](https://travis-ci.com/BEAMRobotics/libbeam.svg?token=zshhVvp9R3DJ7YGGYs6z&branch=master)](https://travis-ci.com/BEAMRobotics/libbeam)
+
 private library for all internal software
 
 ## Example:
