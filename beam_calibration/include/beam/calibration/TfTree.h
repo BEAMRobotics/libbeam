@@ -34,7 +34,7 @@ public:
    * @brief Method for loading a tf tree from a .json file
    * @param file_location absolute path to json file
    */
-  void LoadJSON(std::string &file_location);
+  void LoadJSON(std::string& file_location);
 
   /**
    * @brief Method for adding a transformation using an Affine3d
@@ -58,10 +58,9 @@ public:
    * @brief Method for setting the date that the calibration was done
    * @param Calibration date
    */
-  void SetCalibrationDate(std::string &calibraiton_date);
-  
-private:
+  void SetCalibrationDate(std::string& calibraiton_date);
 
+private:
   tf2::BufferCore Tree_;
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;

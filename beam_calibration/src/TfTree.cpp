@@ -1,17 +1,17 @@
 #include "beam/calibration/TfTree.h"
 #include <beam/utils/log.hpp>
 #include <beam/utils/math.hpp>
-#include <geometry_msgs/TransformStamped.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <nlohmann/json.hpp>
-#include <iostream>
 #include <fstream>
+#include <geometry_msgs/TransformStamped.h>
+#include <iostream>
+#include <nlohmann/json.hpp>
+#include <tf2_eigen/tf2_eigen.h>
 
 using json = nlohmann::json;
 
 namespace beam_calibration {
 
-void TfTree::LoadJSON(std::string &file_location) {
+void TfTree::LoadJSON(std::string& file_location) {
   LOG_INFO("Loading file: %s", file_location.c_str());
 
   json J;
@@ -26,31 +26,40 @@ void TfTree::LoadJSON(std::string &file_location) {
   type = J["type"];
   date = J["date"];
   method = J["method"];
+
+  if (type != "extrinsic_calibration") {
+    LOG_ERROR("Attempting to create TfTree with invalid json type. Type: %s",
+              type.c_str());
+    throw std::runtime_error{
+        "Attempting to create TfTree with invalid json type"};
+    return;
+  }
+
   SetCalibrationDate(date);
 
   LOG_INFO("Type: %s", type.c_str());
   LOG_INFO("Date: %s", date.c_str());
   LOG_INFO("Method: %s", method.c_str());
 
-  for (const auto& transform : J["transforms"]){
+  for (const auto& calibration : J["calibrations"]) {
     transform_counter++;
     value_counter = 0;
     int i = 0, j = 0;
 
-    to_frame = transform["to_frame"];
-    from_frame = transform["from_frame"];
+    to_frame = calibration["to_frame"];
+    from_frame = calibration["from_frame"];
 
-    for (const auto& value : transform["transform"]){
+    for (const auto& value : calibration["transform"]) {
       value_counter++;
-      T(i,j) = value.get<double>();
-      if(j==3){
+      T(i, j) = value.get<double>();
+      if (j == 3) {
         i++;
-        j=0;
+        j = 0;
       } else {
         j++;
       }
     }
-    if(value_counter != 16){
+    if (value_counter != 16) {
       LOG_ERROR("Invalid transform matrix in .json file.");
       throw std::runtime_error{"Invalid transform matrix in .json file."};
       return;
@@ -64,7 +73,7 @@ void TfTree::LoadJSON(std::string &file_location) {
 void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
                           std::string& from_frame) {
   ros::Time time0(0);
-  std::string *transform_error(new std::string);
+  std::string* transform_error(new std::string);
   bool transform_exists =
       Tree_.canTransform(to_frame, from_frame, time0, transform_error);
   if (transform_exists) {
@@ -88,7 +97,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
 Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
                                      std::string& from_frame) {
   Eigen::Affine3d TA_target_source;
-  std::string *transform_error(new std::string);
+  std::string* transform_error(new std::string);
   ros::Time time0(0);
   bool can_transform =
       Tree_.canTransform(to_frame, from_frame, time0, transform_error);
