@@ -57,6 +57,22 @@ target_link_libraries(${PROJECT_NAME}_spall_tests
   Catch2::Catch2
   PCL::PCL
 )
+
+# crack tests
+add_executable(${PROJECT_NAME}_crack_tests
+  tests/get_crack_test.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_crack_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_crack_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+  PCL::PCL
+)
+
 file(COPY tests/test_data
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )
