@@ -2,18 +2,17 @@
 #include <catch2/catch.hpp>
 #include <pcl/io/pcd_io.h>
 
-#include "beam_defects/Spall.h"
+#include "beam_defects/Crack.h"
 
-// SPALL TESTS
+// DELAMINATION TESTS
 
-TEST_CASE("Spall defect type is returned", "[GetType]") {
-  beam_defects::Spall spall{};
+TEST_CASE("Crack defect type is returned", "[GetType]") {
+  beam_defects::Crack crack{};
 
-  REQUIRE(spall.GetType() == beam_defects::DefectType::SPALL);
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::NONE);
+  REQUIRE(crack.GetType() == beam_defects::DefectType::CRACK);
 }
 
-TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
+TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
@@ -21,19 +20,12 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   reader.read("test_data/cloud_cluster_0.pcd", *cloud);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Spall spall{cloud};
+  beam_defects::Crack crack{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.493669));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(crack.GetSize() == Approx(1.479398));
 }
 
-TEST_CASE("No spall returns size of 0") {
-  beam_defects::Spall spall;
-
-  REQUIRE(spall.GetSize() == Approx(0));
-}
-
-TEST_CASE("Spall (xy-plane) size calculation and LIGHT OSIM check") {
+TEST_CASE("Crack (xy-plane) size calculation and LIGHT OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 6;
   cloud->height = 1;
@@ -47,13 +39,12 @@ TEST_CASE("Spall (xy-plane) size calculation and LIGHT OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0.2,0.1,0});
   cloud->points.push_back(pcl::PointXYZ{0.1,0.1,0});
 
-  beam_defects::Spall spall{cloud};
+  beam_defects::Crack crack{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.0175));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::LIGHT);
+  REQUIRE(crack.GetSize() == Approx(0.269258));
 }
 
-TEST_CASE("Spall (xz-plane) size calculation and MEDIUM OSIM check") {
+TEST_CASE("Crack (xz-plane) size calculation and MEDIUM OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 11;
   cloud->height = 1;
@@ -71,13 +62,13 @@ TEST_CASE("Spall (xz-plane) size calculation and MEDIUM OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0,0,0.3});
   cloud->points.push_back(pcl::PointXYZ{0,0,0.2});
   cloud->points.push_back(pcl::PointXYZ{0,0,0.1});
-  beam_defects::Spall spall{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.0425));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
+  beam_defects::Crack crack{cloud};
+
+  REQUIRE(crack.GetSize() == Approx(0.460977));
 }
 
-TEST_CASE("Spall (yz-plane) size calculation and SEVERE OSIM check") {
+TEST_CASE("Crack (yz-plane) size calculation and SEVERE OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 22;
   cloud->height = 1;
@@ -107,8 +98,7 @@ TEST_CASE("Spall (yz-plane) size calculation and SEVERE OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0,-0.2,0});
   cloud->points.push_back(pcl::PointXYZ{0,-0.1,0});
 
-  beam_defects::Spall spall{cloud};
+  beam_defects::Crack crack{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.1));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(crack.GetSize() == Approx(1.00499));
 }

@@ -11,6 +11,8 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
+#include <pcl/point_types.h>
+#include <pcl/common/common.h>
 
 #include <cmath>
 #include <typeinfo>
@@ -49,6 +51,10 @@ pcl::PointCloud<pcl::PointXYZ>
 
 // calculate area given a hull cloud
 float calculateHullArea(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+
+// calculate maximum length from a hull cloud
+float calculateMaxLength(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 /** @} group defects */

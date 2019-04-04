@@ -148,4 +148,16 @@ float calculateHullArea(
   return area;
 }
 
+// calculate maximum length from a hull cloud
+float calculateMaxLength(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+  pcl::PointXYZ minPt, maxPt;
+  pcl::getMinMax3D (*input_cloud, minPt, maxPt);
+  double dx = maxPt.x - minPt.x;
+  double dy = maxPt.y - minPt.y;
+  double length = std::sqrt(pow(dx,2) + pow(dy,2));
+
+  return length;
+}
+
 } // namespace beam_defects
