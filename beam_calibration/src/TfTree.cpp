@@ -72,6 +72,12 @@ void TfTree::LoadJSON(std::string& file_location) {
 
 void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
                           std::string& from_frame) {
+  if(!beam::IsTransformationMatrix(TAnew.matrix())){
+    throw std::runtime_error{"Invalid transformation matrix"};
+    LOG_ERROR("Invalid transformation matrix input.");
+    return;
+  }
+
   ros::Time time0(0);
   std::string* transform_error(new std::string);
   bool transform_exists =
