@@ -144,9 +144,6 @@ public:
   ConfigStatus load(const std::string& config_file);
 };
 
-/** @} group utils */
-} // namespace beam
-
 namespace YAML {
 
 /** Custom conversion functions for YAML -> Eigen matrix
@@ -213,5 +210,8 @@ template struct convert<beam::Vec4>;
 template struct convert<beam::VecX>;
 
 } // namespace YAML
+
+/** @} group utils */
+} // namespace beam
 
 #endif // BEAM_UTILS_CONFIG_HPP
