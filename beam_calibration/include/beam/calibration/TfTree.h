@@ -7,9 +7,15 @@
  */
 
 #pragma once
-#include "beam/utils/math.hpp"
-#include <string>
+
 #include <tf2/buffer_core.h>
+#include <beam/utils/log.hpp>
+#include <beam/utils/math.hpp>
+#include <fstream>
+#include <iostream>
+#include <geometry_msgs/TransformStamped.h>
+#include <nlohmann/json.hpp>
+#include <tf2_eigen/tf2_eigen.h>
 
 namespace beam_calibration {
 /** @addtogroup calibration

@@ -13,7 +13,7 @@ TEST_CASE("Test constructors and return funcitons") {
   beam_calibration::Pinhole calib2(K);
 
   REQUIRE(calib.GetType() == beam_calibration::IntrinsicsType::PINHOLE);
-  REQUIRE(calib.IsFull() == true);
+  REQUIRE(calib.IsKFull() == true);
   REQUIRE(calib.GetK() == K);
   REQUIRE(calib.GetFx() == fx);
   REQUIRE(calib.GetFy() == fy);
@@ -21,7 +21,7 @@ TEST_CASE("Test constructors and return funcitons") {
   REQUIRE(calib.GetCy() == cy);
 
   REQUIRE(calib2.GetK() == K);
-  REQUIRE(calib2.IsFull() == true);
+  REQUIRE(calib2.IsKFull() == true);
   REQUIRE(calib2.GetFx() == fx);
   REQUIRE(calib2.GetFy() == fy);
   REQUIRE(calib2.GetCx() == cx);
@@ -31,13 +31,13 @@ TEST_CASE("Test constructors and return funcitons") {
        0, fy, cy,
        0, 0, 2;
   beam_calibration::Pinhole calib3(K);
-  REQUIRE(calib3.IsFull() == false);
+  REQUIRE(calib3.IsKFull() == false);
 
   K << fx, 0, cx,
        0, 0, cy,
        0, 0, 1;
   beam_calibration::Pinhole calib5(K);
-  REQUIRE(calib5.IsFull() == false);
+  REQUIRE(calib5.IsKFull() == false);
 }
 
 TEST_CASE("Test distortion i/o"){
@@ -58,19 +58,19 @@ TEST_CASE("Test distortion i/o"){
   beam::VecX rad_coeffs7(7);
   rad_coeffs7 << 3, 4, 5, 6, 7, 8, 9;
 
-  calib.AddTanDist(tan_coeffs);
+  calib.SetTanDist(tan_coeffs);
   REQUIRE(calib.GetTanDist() == tan_coeffs);
 
   REQUIRE_THROWS(calib.GetRadDist());
-  calib.AddRadDist(rad_coeffs2);
+  calib.SetRadDist(rad_coeffs2);
   REQUIRE_THROWS(calib.GetRadDist());
-  calib.AddRadDist(rad_coeffs3);
+  calib.SetRadDist(rad_coeffs3);
   REQUIRE(calib.GetRadDist() == rad_coeffs3);
-  calib.AddRadDist(rad_coeffs4);
+  calib.SetRadDist(rad_coeffs4);
   REQUIRE(calib.GetRadDist() == rad_coeffs4);
-  calib.AddRadDist(rad_coeffs6);
+  calib.SetRadDist(rad_coeffs6);
   REQUIRE(calib.GetRadDist() == rad_coeffs6);
-  calib.AddRadDist(rad_coeffs7);
+  calib.SetRadDist(rad_coeffs7);
   REQUIRE_THROWS(calib.GetRadDist());
 }
 
@@ -92,8 +92,8 @@ TEST_CASE("Test projection functions"){
   beam::Vec4 point_homo_invalid;
   point_homo_invalid << 1, 2, 3, 2;
 
-  calib.AddTanDist(tan_coeffs);
-  calib.AddRadDist(rad_coeffs);
+  calib.SetTanDist(tan_coeffs);
+  calib.SetRadDist(rad_coeffs);
 
   REQUIRE_NOTHROW(calib.ProjectPoint(point));
   REQUIRE_NOTHROW(calib.ProjectPoint(point_homo));

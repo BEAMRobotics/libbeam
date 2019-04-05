@@ -1,9 +1,4 @@
 #include "beam/calibration/Pinhole.h"
-#include <beam/utils/log.hpp>
-#include <beam/utils/math.hpp>
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include <iostream>
 
 using json = nlohmann::json;
 
@@ -11,7 +6,7 @@ namespace beam_calibration {
 
 Pinhole::Pinhole(double& fx, double& fy, double& cx, double& cy) {
   K_ << fx, 0, cx, 0, fy, cy, 0, 0, 1;
-  is_full_ = true;
+  is_K_full_ = true;
 }
 
 Pinhole::Pinhole(beam::Mat3& K) {
@@ -19,7 +14,7 @@ Pinhole::Pinhole(beam::Mat3& K) {
       K(1, 1) != 0 && K(1, 2) != 0 && K(2, 0) == 0 && K(2, 1) == 0 &&
       K(2, 2) == 1) {
     K_ = K;
-    is_full_ = true;
+    is_K_full_ = true;
   } else {
     LOG_ERROR("Invalid projection matrix (K) input.");
   }
@@ -113,15 +108,15 @@ void Pinhole::LoadJSON(std::string& file_location) {
   }
 
   // build object
-  AddFrameId(frame_id);
-  AddImgDims(img_dims);
-  AddK(K);
+  SetFrameId(frame_id);
+  SetImgDims(img_dims);
+  SetK(K);
   SetCalibrationDate(date);
-  AddTanDist(tan_coeffs);
-  AddRadDist(rad_coeffs);
+  SetTanDist(tan_coeffs);
+  SetRadDist(rad_coeffs);
 }
 
-void Pinhole::AddFrameId(std::string& frame_id) {
+void Pinhole::SetFrameId(std::string& frame_id) {
   frame_id_ = frame_id;
 }
 
@@ -129,7 +124,7 @@ std::string Pinhole::GetFrameId() {
   return frame_id_;
 }
 
-void Pinhole::AddImgDims(beam::Vec2& img_dims) {
+void Pinhole::SetImgDims(beam::Vec2& img_dims) {
   img_dims_ = img_dims;
 }
 
@@ -137,20 +132,20 @@ beam::Vec2 Pinhole::GetImgDims() {
   return img_dims_;
 }
 
-void Pinhole::AddK(beam::Mat3 K){
-  if (is_full_)
+void Pinhole::SetK(beam::Mat3 K){
+  if (is_K_full_)
   {
     LOG_ERROR("Cannot add camera matrix, value already exists.");
     throw std::runtime_error{"Cannot add camera matrix, value already exists."};
     return;
   } else {
     K_ = K;
-    is_full_ = true;
+    is_K_full_ = true;
   }
 }
 
 beam::Mat3 Pinhole::GetK() {
-  if (!is_full_) {
+  if (!is_K_full_) {
     LOG_ERROR("Intrinsics matrix empty.");
     throw std::invalid_argument{"no intrinsics matrix"};
   }
@@ -186,20 +181,20 @@ std::string Pinhole::GetCalibrationDate() {
   return calibration_date_;
 }
 
-bool Pinhole::IsFull() {
-  if (is_full_) {
+bool Pinhole::IsKFull() {
+  if (is_K_full_) {
     return true;
   } else {
     return false;
   }
 }
 
-void Pinhole::AddTanDist(beam::Vec2& tan_coeffs) {
+void Pinhole::SetTanDist(beam::Vec2& tan_coeffs) {
   tan_coeffs_ = tan_coeffs;
   is_tan_distortion_valid_ = true;
 }
 
-void Pinhole::AddRadDist(beam::VecX rad_coeffs) {
+void Pinhole::SetRadDist(beam::VecX rad_coeffs) {
   is_rad_distortion_valid_ = false;
   int rad_coeffs_size = rad_coeffs.size();
   if (rad_coeffs_size < 3 || rad_coeffs_size > 6) {
@@ -239,7 +234,7 @@ beam::VecX Pinhole::GetRadDist() {
 
 beam::Vec2 Pinhole::ProjectPoint(beam::Vec3& X) {
   beam::Vec2 img_coords;
-  if (is_full_) {
+  if (is_K_full_) {
     img_coords = this->ApplyProjection(X);
   } else {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
@@ -262,9 +257,9 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec4& X) {
     homographic_form = false;
   }
 
-  if (is_full_ && homographic_form) {
+  if (is_K_full_ && homographic_form) {
     img_coords = this->ApplyProjection(XX);
-  } else if (!is_full_) {
+  } else if (!is_K_full_) {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
     throw std::invalid_argument{"no intrinsics matrix"};
   } else {
@@ -278,9 +273,9 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec4& X) {
 beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3& X) {
   beam::Vec2 img_coords;
 
-  if (is_full_ && is_rad_distortion_valid_ && is_tan_distortion_valid_) {
+  if (is_K_full_ && is_rad_distortion_valid_ && is_tan_distortion_valid_) {
     img_coords = this->ApplyDistortedProjection(X);
-  } else if (!is_full_) {
+  } else if (!is_K_full_) {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
     throw std::invalid_argument{"no intrinsics matrix"};
   } else if (!is_rad_distortion_valid_) {
@@ -309,10 +304,10 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4& X) {
     homographic_form = false;
   }
 
-  if (is_full_ && homographic_form && is_rad_distortion_valid_ &&
+  if (is_K_full_ && homographic_form && is_rad_distortion_valid_ &&
       is_tan_distortion_valid_) {
     img_coords = this->ApplyDistortedProjection(XX);
-  } else if (!is_full_) {
+  } else if (!is_K_full_) {
     LOG_ERROR("Intrinsics matrix empty, cannot project point.");
     throw std::invalid_argument{"no intrinsics matrix"};
   } else if (!is_rad_distortion_valid_) {

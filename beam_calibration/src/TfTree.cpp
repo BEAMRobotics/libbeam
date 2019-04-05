@@ -1,11 +1,4 @@
 #include "beam/calibration/TfTree.h"
-#include <beam/utils/log.hpp>
-#include <beam/utils/math.hpp>
-#include <fstream>
-#include <iostream>
-#include <geometry_msgs/TransformStamped.h>
-#include <nlohmann/json.hpp>
-#include <tf2_eigen/tf2_eigen.h>
 
 using json = nlohmann::json;
 
@@ -79,9 +72,9 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   }
 
   ros::Time time0(0);
-  std::string* transform_error(new std::string);
+  std::string transform_error;
   bool transform_exists =
-      Tree_.canTransform(to_frame, from_frame, time0, transform_error);
+      Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
     LOG_ERROR("Cannot add transform from frame %s to %s. Frame already exists",
@@ -103,10 +96,10 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
 Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
                                      std::string& from_frame) {
   Eigen::Affine3d TA_target_source;
-  std::string* transform_error(new std::string);
+  std::string transform_error;
   ros::Time time0(0);
   bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, time0, transform_error);
+      Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
 
   if (can_transform) {
     geometry_msgs::TransformStamped T_target_source;
@@ -116,7 +109,7 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
     throw std::runtime_error{"Cannot look up transform."};
     LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
               "Message: %s",
-              from_frame.c_str(), to_frame.c_str(), transform_error->c_str());
+              from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
   }
   return TA_target_source;
 }

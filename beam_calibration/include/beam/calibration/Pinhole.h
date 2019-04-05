@@ -4,7 +4,11 @@
 
 #pragma once
 #include "beam/calibration/Intrinsics.h"
-#include "beam/utils/math.hpp"
+#include <beam/utils/log.hpp>
+#include <beam/utils/math.hpp>
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <iostream>
 
 namespace beam_calibration {
 /** @addtogroup calibration
@@ -60,7 +64,7 @@ public:
    * @brief Method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
-  void AddFrameId(std::string &frame_id) override;
+  void SetFrameId(std::string &frame_id) override;
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -74,7 +78,7 @@ public:
    * @param img_dims dimensions of the images taken by the camera associated
    * with this intrinsics object: [height, width]^T
    */
-  void AddImgDims(beam::Vec2 &img_dims) override;
+  void SetImgDims(beam::Vec2 &img_dims) override;
 
   /**
    * @brief Method for getting the image dimensions
@@ -87,7 +91,7 @@ public:
    * @brief Method for adding K matrix
    * @param K intrinsics matrix
    */
-  void AddK(beam::Mat3 K);
+  void SetK(beam::Mat3 K);
 
   /**
    * @brief Method for returning K matrix
@@ -135,21 +139,21 @@ public:
    * @brief Method for checking if the intinsic parameters have been set
    * @return Returns true if K and distortion parameters have been assigned
    */
-  bool IsFull();
+  bool IsKFull();
 
   /**
    * @brief Method for adding tangential distortion parameters
    * @param tan_coeffs vector of length two with the tangential distortion
    * coefficients
    */
-  void AddTanDist(beam::Vec2 &tan_coeffs);
+  void SetTanDist(beam::Vec2 &tan_coeffs);
 
   /**
    * @brief Method for adding radial distortion parameters
    * @param rad_coeffs vector of length 3 to 6 with the radial distortion
    * coefficients
    */
-  void AddRadDist(beam::VecX rad_coeffs);
+  void SetRadDist(beam::VecX rad_coeffs);
 
   /**
    * @brief Method for getting tangential distortion parameters
@@ -219,7 +223,7 @@ private:
 
   // Variables for storing intrinsic information
   std::string frame_id_, calibration_date_;
-  bool is_full_ = false, is_rad_distortion_valid_ = false,
+  bool is_K_full_ = false, is_rad_distortion_valid_ = false,
        is_tan_distortion_valid_ = false, is_calibration_date_set_ = false;
   beam::Vec2 img_dims_;
   beam::Mat3 K_;
