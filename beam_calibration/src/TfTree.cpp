@@ -1,15 +1,85 @@
 #include "beam/calibration/TfTree.h"
 #include <beam/utils/log.hpp>
 #include <beam/utils/math.hpp>
+#include <fstream>
+#include <iostream>
 #include <geometry_msgs/TransformStamped.h>
+#include <nlohmann/json.hpp>
 #include <tf2_eigen/tf2_eigen.h>
+
+using json = nlohmann::json;
 
 namespace beam_calibration {
 
+void TfTree::LoadJSON(std::string& file_location) {
+  LOG_INFO("Loading file: %s", file_location.c_str());
+
+  json J;
+  int calibration_counter = 0, value_counter = 0;
+  std::string type, date, method, to_frame, from_frame;
+  beam::Mat4 T;
+  Eigen::Affine3d TA;
+
+  std::ifstream file(file_location);
+  file >> J;
+
+  type = J["type"];
+  date = J["date"];
+  method = J["method"];
+
+  if (type != "extrinsic_calibration") {
+    LOG_ERROR("Attempting to create TfTree with invalid json type. Type: %s",
+              type.c_str());
+    throw std::invalid_argument{
+        "Attempting to create TfTree with invalid json type"};
+    return;
+  }
+
+  SetCalibrationDate(date);
+
+  LOG_INFO("Type: %s", type.c_str());
+  LOG_INFO("Date: %s", date.c_str());
+  LOG_INFO("Method: %s", method.c_str());
+
+  for (const auto& calibration : J["calibrations"]) {
+    calibration_counter++;
+    value_counter = 0;
+    int i = 0, j = 0;
+
+    to_frame = calibration["to_frame"];
+    from_frame = calibration["from_frame"];
+
+    for (const auto& value : calibration["transform"]) {
+      value_counter++;
+      T(i, j) = value.get<double>();
+      if (j == 3) {
+        i++;
+        j = 0;
+      } else {
+        j++;
+      }
+    }
+    if (value_counter != 16) {
+      LOG_ERROR("Invalid transform matrix in .json file.");
+      throw std::invalid_argument{"Invalid transform matrix in .json file."};
+      return;
+    }
+    TA.matrix() = T;
+    AddTransform(TA, to_frame, from_frame);
+  }
+  LOG_INFO("Saved %d transforms", calibration_counter);
+}
+
 void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
-                          std::string& from_frame, std::string& calib_date) {
+                          std::string& from_frame) {
+  if(!beam::IsTransformationMatrix(TAnew.matrix())){
+    throw std::runtime_error{"Invalid transformation matrix"};
+    LOG_ERROR("Invalid transformation matrix input.");
+    return;
+  }
+
   ros::Time time0(0);
-  std::string *transform_error(new std::string);
+  std::string* transform_error(new std::string);
   bool transform_exists =
       Tree_.canTransform(to_frame, from_frame, time0, transform_error);
   if (transform_exists) {
@@ -21,10 +91,9 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     T.header.seq = 1;
     T.header.frame_id = from_frame;
     T.child_frame_id = to_frame;
-    SetCalibrationDate(calib_date);
     bool transform_valid = Tree_.setTransform(T, "TfTree", true);
     if (!transform_valid) {
-      throw std::runtime_error{"Cannot add transform. Transform invalid."};
+      throw std::invalid_argument{"Cannot add transform. Transform invalid."};
       LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
                 from_frame.c_str(), to_frame.c_str());
     }
@@ -34,7 +103,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
 Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
                                      std::string& from_frame) {
   Eigen::Affine3d TA_target_source;
-  std::string *transform_error(new std::string);
+  std::string* transform_error(new std::string);
   ros::Time time0(0);
   bool can_transform =
       Tree_.canTransform(to_frame, from_frame, time0, transform_error);
@@ -52,8 +121,8 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
   return TA_target_source;
 }
 
-void TfTree::SetCalibrationDate(std::string& calibraiton_date) {
-  calibraiton_date_ = calibraiton_date;
+void TfTree::SetCalibrationDate(std::string& calibration_date) {
+  calibration_date_ = calibration_date;
   is_calibration_date_set_ = true;
 }
 
@@ -62,7 +131,7 @@ std::string TfTree::GetCalibrationDate() {
     throw std::runtime_error{"cannot retrieve calibration date, value not set"};
     LOG_ERROR("cannot retrieve calibration date, value not set.");
   }
-  return calibraiton_date_;
+  return calibration_date_;
 }
 
 } // namespace beam_calibration

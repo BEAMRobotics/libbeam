@@ -99,3 +99,35 @@ TEST_CASE("Test projection functions"){
   REQUIRE_NOTHROW(calib.ProjectPoint(point_homo));
   REQUIRE_THROWS(calib.ProjectPoint(point_homo_invalid));
 }
+
+TEST_CASE("Testing LoadJSON function"){
+  beam_calibration::Pinhole F1;
+  int round_precision = 10000000;
+
+  std::string filename = "F1.json";
+  std::string file_location = __FILE__;
+  file_location.erase(file_location.end() - 16, file_location.end());
+  file_location += "test_data/";
+  file_location += filename;
+  F1.LoadJSON(file_location);
+
+  beam::Mat3 K;
+  beam::Vec2 tan_coeffs, img_dims;
+  beam::Vec3 rad_coeffs;
+
+  std::string date = "2018_12_20";
+  K << 2338.485520924695, 0,  1002.8381839138167,
+       0, 2333.0927287230647, 784.1498440053573,
+       0, 0, 1;
+  tan_coeffs << -0.0005326294604360527, -0.0004378797791316729;
+  rad_coeffs << -0.2294924671994032, 0.18008566892263364, 0;
+  img_dims << 2048, 1536;
+
+  REQUIRE(date == F1.GetCalibrationDate());
+  REQUIRE(beam::RoundMatrix(K, round_precision) ==
+          beam::RoundMatrix(F1.GetK(), round_precision));
+  REQUIRE(beam::RoundMatrix(tan_coeffs, round_precision) ==
+          beam::RoundMatrix(F1.GetTanDist(), round_precision));
+  REQUIRE(beam::RoundMatrix(img_dims, round_precision) ==
+          beam::RoundMatrix(F1.GetImgDims(), round_precision));
+}

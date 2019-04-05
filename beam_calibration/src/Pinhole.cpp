@@ -1,15 +1,20 @@
 #include "beam/calibration/Pinhole.h"
 #include <beam/utils/log.hpp>
 #include <beam/utils/math.hpp>
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <iostream>
+
+using json = nlohmann::json;
 
 namespace beam_calibration {
 
-Pinhole::Pinhole(double &fx, double &fy, double &cx, double &cy) {
+Pinhole::Pinhole(double& fx, double& fy, double& cx, double& cy) {
   K_ << fx, 0, cx, 0, fy, cy, 0, 0, 1;
   is_full_ = true;
 }
 
-Pinhole::Pinhole(beam::Mat3 &K) {
+Pinhole::Pinhole(beam::Mat3& K) {
   if (K(0, 0) != 0 && K(0, 1) == 0 && K(0, 2) != 0 && K(1, 0) == 0 &&
       K(1, 1) != 0 && K(1, 2) != 0 && K(2, 0) == 0 && K(2, 1) == 0 &&
       K(2, 2) == 1) {
@@ -20,7 +25,103 @@ Pinhole::Pinhole(beam::Mat3 &K) {
   }
 }
 
-void Pinhole::AddFrameId(std::string &frame_id) {
+void Pinhole::LoadJSON(std::string& file_location) {
+  LOG_INFO("Loading file: %s", file_location.c_str());
+
+  json J;
+  int counter = 0, image_width, image_height;
+  std::string type, date, method, frame_id, distortion_model;
+  beam::Vec2 tan_coeffs, img_dims;
+  beam::VecX rad_coeffs;
+  beam::Mat3 K;
+
+  std::ifstream file(file_location);
+  file >> J;
+
+  type = J["type"];
+  date = J["date"];
+  method = J["method"];
+
+  if (type != "pinhole_calibration") {
+    LOG_ERROR(
+        "Attempting to create Pinhole object with invalid json type. Type: %s",
+        type.c_str());
+    throw std::invalid_argument{
+        "Attempting to create Pinhole object invalid json type"};
+    return;
+  }
+
+  SetCalibrationDate(date);
+
+  LOG_INFO("Type: %s", type.c_str());
+  LOG_INFO("Date: %s", date.c_str());
+  LOG_INFO("Method: %s", method.c_str());
+
+  for (const auto& calib : J["calibration"]) {
+    int i = 0, j = 0;
+
+    image_width = calib["image_width"].get<int>();
+    image_height = calib["image_height"].get<int>();
+    img_dims <<  image_width, image_height;
+    frame_id = calib["frame_id"];
+
+    for (const auto& Kij : calib["camera_matrix"]) {
+      counter++;
+      K(i, j) = Kij.get<double>();
+      if (j == 2) {
+        i++;
+        j = 0;
+      } else {
+        j++;
+      }
+    }
+    if (counter != 9) {
+      LOG_ERROR("Invalid camera_matrix in .json file.");
+      throw std::invalid_argument{"Invalid camera_matrix in .json file."};
+      return;
+    }
+
+    distortion_model = calib["distortion_model"];
+    if(distortion_model != "radtan"){
+      LOG_ERROR("Invalid distortion model in json file. Model: %s",
+                distortion_model.c_str());
+      throw std::invalid_argument{"Invalid distortion model in json file."};
+      return;
+    }
+
+    std::vector<double> rad_tmp;
+    for (const auto& value : calib["rad_coeffs"]) {
+      rad_tmp.push_back(value.get<double>());
+    }
+
+    rad_coeffs.resize(rad_tmp.size());
+    for (uint8_t k = 0; k<rad_tmp.size(); k++){
+      rad_coeffs(k) = rad_tmp[k];
+    }
+
+    counter = 0;
+    for (const auto& value : calib["tan_coeffs"]) {
+      if(counter !=2){
+        tan_coeffs(counter, 1) = value.get<double>();
+      } else {
+        LOG_ERROR("Too many tangential coefficients in json file");
+        throw std::invalid_argument{"Too many tangential coefficients in json file"};
+        return;
+      }
+      counter++;
+    }
+  }
+
+  // build object
+  AddFrameId(frame_id);
+  AddImgDims(img_dims);
+  AddK(K);
+  SetCalibrationDate(date);
+  AddTanDist(tan_coeffs);
+  AddRadDist(rad_coeffs);
+}
+
+void Pinhole::AddFrameId(std::string& frame_id) {
   frame_id_ = frame_id;
 }
 
@@ -28,12 +129,24 @@ std::string Pinhole::GetFrameId() {
   return frame_id_;
 }
 
-void Pinhole::AddImgDims(beam::Vec2 &img_dims) {
+void Pinhole::AddImgDims(beam::Vec2& img_dims) {
   img_dims_ = img_dims;
 }
 
 beam::Vec2 Pinhole::GetImgDims() {
   return img_dims_;
+}
+
+void Pinhole::AddK(beam::Mat3 K){
+  if (is_full_)
+  {
+    LOG_ERROR("Cannot add camera matrix, value already exists.");
+    throw std::runtime_error{"Cannot add camera matrix, value already exists."};
+    return;
+  } else {
+    K_ = K;
+    is_full_ = true;
+  }
 }
 
 beam::Mat3 Pinhole::GetK() {
@@ -60,6 +173,19 @@ double Pinhole::GetCy() {
   return K_(1, 2);
 }
 
+void Pinhole::SetCalibrationDate(std::string& calibration_date) {
+  calibration_date_ = calibration_date;
+  is_calibration_date_set_ = true;
+}
+
+std::string Pinhole::GetCalibrationDate() {
+  if (!is_calibration_date_set_) {
+    throw std::runtime_error{"cannot retrieve calibration date, value not set"};
+    LOG_ERROR("cannot retrieve calibration date, value not set.");
+  }
+  return calibration_date_;
+}
+
 bool Pinhole::IsFull() {
   if (is_full_) {
     return true;
@@ -68,7 +194,7 @@ bool Pinhole::IsFull() {
   }
 }
 
-void Pinhole::AddTanDist(beam::Vec2 &tan_coeffs) {
+void Pinhole::AddTanDist(beam::Vec2& tan_coeffs) {
   tan_coeffs_ = tan_coeffs;
   is_tan_distortion_valid_ = true;
 }
@@ -111,7 +237,7 @@ beam::VecX Pinhole::GetRadDist() {
   }
 }
 
-beam::Vec2 Pinhole::ProjectPoint(beam::Vec3 &X) {
+beam::Vec2 Pinhole::ProjectPoint(beam::Vec3& X) {
   beam::Vec2 img_coords;
   if (is_full_) {
     img_coords = this->ApplyProjection(X);
@@ -122,7 +248,7 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec3 &X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ProjectPoint(beam::Vec4 &X) {
+beam::Vec2 Pinhole::ProjectPoint(beam::Vec4& X) {
   beam::Vec2 img_coords;
   beam::Vec3 XX;
   bool homographic_form;
@@ -149,7 +275,7 @@ beam::Vec2 Pinhole::ProjectPoint(beam::Vec4 &X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 &X) {
+beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3& X) {
   beam::Vec2 img_coords;
 
   if (is_full_ && is_rad_distortion_valid_ && is_tan_distortion_valid_) {
@@ -169,7 +295,7 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec3 &X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 &X) {
+beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4& X) {
   beam::Vec2 img_coords;
   beam::Vec3 XX;
 
@@ -205,7 +331,7 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4 &X) {
   return img_coords;
 }
 
-beam::Vec2 Pinhole::ApplyProjection(beam::Vec3 &X) {
+beam::Vec2 Pinhole::ApplyProjection(beam::Vec3& X) {
   beam::Vec2 coords;
   beam::Vec3 x_proj;
   // project point
@@ -216,7 +342,7 @@ beam::Vec2 Pinhole::ApplyProjection(beam::Vec3 &X) {
   return coords;
 }
 
-beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3 &X) {
+beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3& X) {
   beam::Vec2 coords;
   beam::Vec3 x_proj;
   double x, y, xx, yy, r2, fx, fy, cx, cy, k1, k2, k3, k4 = 0, k5 = 0, k6 = 0,

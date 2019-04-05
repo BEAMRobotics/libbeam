@@ -287,4 +287,41 @@ MatX RoundMatrix(const MatX& M, int& precision) {
   return Mround;
 }
 
+bool IsTransformationMatrix(Eigen::Matrix4d T){
+  Eigen::Matrix3d R = T.block(0, 0, 3, 3);
+  bool homoFormValid, tValid;
+
+  // check translation for infinity or nan
+  if (std::isinf(T(0, 3)) || std::isinf(T(1, 3)) || std::isinf(T(2, 3)) ||
+      std::isnan(T(0, 3)) || std::isnan(T(1, 3)) || std::isnan(T(2, 3))) {
+    tValid = 0;
+  } else {
+    tValid = 1;
+  }
+
+  // check that bottom row is [0 0 0 1]
+  if (T(3, 0) == 0 && T(3, 1) == 0 && T(3, 2) == 0 && T(3, 3) == 1) {
+    homoFormValid = 1;
+  } else {
+    homoFormValid = 0;
+  }
+
+  if (homoFormValid && tValid && IsRotationMatrix(R)) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+bool IsRotationMatrix(Eigen::Matrix3d R){
+  Eigen::Matrix3d shouldBeIdentity = R * R.transpose();
+  double detR = R.determinant();
+
+  if (shouldBeIdentity.isIdentity() && detR == 1) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 } // namespace beam

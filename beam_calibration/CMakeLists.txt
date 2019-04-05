@@ -7,8 +7,10 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::utils
     catkin::catkin
     #${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
     Eigen3::Eigen
     Catch2::Catch2
+    nlohmann_json::nlohmann_json
   SOURCES
     src/TfTree.cpp
     src/Intrinsics.cpp
@@ -43,6 +45,7 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   ${PROJECT_NAME}
   Catch2::Catch2
   ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 #######################################
 

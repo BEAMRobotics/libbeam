@@ -119,10 +119,22 @@ void nwu2ned(const Quaternion& nwu, Quaternion& ned);
 void nwu2edn(const Vec3& nwu, Vec3& edn);
 
 /**
- * Round a matrix values to a certain precision.
- * precision = 100 would round to the second decimal point (i.e. 1.126 = 1.13)
+ * @brief Round a matrix values to a certain precision.
+ * @param precision = 100 would round to the second decimal point (i.e. 1.126 = 1.13)
  **/
 MatX RoundMatrix(const MatX& M, int& precision);
+
+/**
+  * @brief check if a matrix is a valid transformation matrix
+  * @param T tranformation
+  **/
+bool IsTransformationMatrix(Eigen::Matrix4d T);
+
+/**
+  * @brief check if a matrix is a valid rotation matrix
+  * @param R rotation matrix
+  **/
+bool IsRotationMatrix(Eigen::Matrix3d R);
 
 /** @} group utils */
 } // namespace beam
