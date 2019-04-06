@@ -314,10 +314,11 @@ bool IsTransformationMatrix(Eigen::Matrix4d T){
 }
 
 bool IsRotationMatrix(Eigen::Matrix3d R){
-  Eigen::Matrix3d shouldBeIdentity = R * R.transpose();
+  int precision = 100;
+  Eigen::Matrix3d shouldBeIdentity = RoundMatrix(R * R.transpose(), precision);
   double detR = R.determinant();
-
-  if (shouldBeIdentity.isIdentity() && detR == 1) {
+  double detRRound = std::round(detR*precision)/precision;
+  if (shouldBeIdentity.isIdentity() && detRRound == 1) {
     return 1;
   } else {
     return 0;

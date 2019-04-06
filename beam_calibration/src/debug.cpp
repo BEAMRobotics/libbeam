@@ -31,7 +31,7 @@ int main() {
   std::cout << "T_X1_HVLP2: \n" << TA_X1_HVLP2.matrix() << "\n";
   */
 
-  /*
+
   beam_calibration::TfTree Tree;
   beam::Mat4 T_BASELINK_HVLP, T_X1_HVLP;
   Eigen::Affine3d TA_BASELINK_HVLP, TA_X1_HVLP,
@@ -51,14 +51,15 @@ int main() {
   TA_X1_HVLP.matrix() = T_X1_HVLP;
 
   // Load Tree from json
-  std::string filename = "extrinsics.json";
+  std::string filename = "extrinsics_full.json";
   std::string file_location = __FILE__;
   file_location.erase(file_location.end() - 13, file_location.end());
   file_location += "tests/test_data/";
   file_location += filename;
   Tree.LoadJSON(file_location);
-  */
 
+
+/*
   beam_calibration::Pinhole F1;
   std::string filename = "F1.json";
   std::string file_location = __FILE__;
@@ -66,4 +67,5 @@ int main() {
   file_location += "tests/test_data/";
   file_location += filename;
   F1.LoadJSON(file_location);
+*/
 }
