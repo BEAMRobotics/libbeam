@@ -65,7 +65,7 @@ void TfTree::LoadJSON(std::string& file_location) {
 
 void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
                           std::string& from_frame) {
-  if(!beam::IsTransformationMatrix(TAnew.matrix())){
+  if (!beam::IsTransformationMatrix(TAnew.matrix())) {
     throw std::runtime_error{"Invalid transformation matrix"};
     LOG_ERROR("Invalid transformation matrix input.");
     return;
@@ -79,17 +79,20 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
     LOG_ERROR("Cannot add transform from frame %s to %s. Frame already exists",
               from_frame.c_str(), to_frame.c_str());
+    return;
+  }
+
+  std::string parent;
+  bool parent_exists = Tree_._getParent(to_frame, time0, parent);
+  if (parent_exists) {
+    LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
+             "has a parent (%s). Adding inverse of inputted transform.",
+             from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
+             parent.c_str());
+    Eigen::Affine3d TAnew_inverse = TAnew.inverse();
+    SetTransform(TAnew_inverse, from_frame, to_frame);
   } else {
-    geometry_msgs::TransformStamped T = tf2::eigenToTransform(TAnew.inverse());
-    T.header.seq = 1;
-    T.header.frame_id = from_frame;
-    T.child_frame_id = to_frame;
-    bool transform_valid = Tree_.setTransform(T, "TfTree", true);
-    if (!transform_valid) {
-      throw std::invalid_argument{"Cannot add transform. Transform invalid."};
-      LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
-                from_frame.c_str(), to_frame.c_str());
-    }
+    SetTransform(TAnew, to_frame, from_frame);
   }
 }
 
@@ -125,6 +128,20 @@ std::string TfTree::GetCalibrationDate() {
     LOG_ERROR("cannot retrieve calibration date, value not set.");
   }
   return calibration_date_;
+}
+
+void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
+                          std::string& from_frame) {
+  geometry_msgs::TransformStamped Tgeo = tf2::eigenToTransform(TA.inverse());
+  Tgeo.header.seq = 1;
+  Tgeo.header.frame_id = from_frame;
+  Tgeo.child_frame_id = to_frame;
+  bool transform_valid = Tree_.setTransform(Tgeo, "TfTree", true);
+  if (!transform_valid) {
+    throw std::invalid_argument{"Cannot add transform. Transform invalid."};
+    LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
+              from_frame.c_str(), to_frame.c_str());
+  }
 }
 
 } // namespace beam_calibration
