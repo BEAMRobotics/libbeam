@@ -38,7 +38,7 @@ FIND_PACKAGE(PCL 1.8 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
     surface segmentation)
 FIND_PACKAGE(kindr)
-FIND_PACKAGE(OpenCV 3.2.0)
+FIND_PACKAGE(OpenCV 3.2.0 REQUIRED COMPONENTS)
 FIND_PACKAGE(yaml-cpp REQUIRED)
 FIND_PACKAGE(Ceres 1.11)
 FIND_PACKAGE(GTSAM)
@@ -55,6 +55,7 @@ INCLUDE(cmake/ImportKindr.cmake)
 INCLUDE(cmake/ImportYaml-cpp.cmake)
 INCLUDE(cmake/ImportCeres.cmake)
 INCLUDE(cmake/ImportCatkin.cmake)
+INCLUDE(cmake/ImportOpenCV.cmake)
 
 # Add a special "beam" target including all modules
 # The BEAM_ADD_LIBRARY helper in BeamHelpers.cmake will add each module to this
