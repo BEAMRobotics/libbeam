@@ -43,7 +43,7 @@ FIND_PACKAGE(yaml-cpp REQUIRED)
 FIND_PACKAGE(Ceres 1.11)
 FIND_PACKAGE(GTSAM)
 FIND_PACKAGE(GeographicLib 1.49)
-FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime)
+FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime cv_bridge)
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json  3.2.0 REQUIRED)
 

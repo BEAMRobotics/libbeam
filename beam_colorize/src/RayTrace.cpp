@@ -2,10 +2,15 @@
 
 namespace beam_colorize {
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud(
-    const pcl::PointCloud<pcl::PointXYZ>& input_cloud,
-    const sensor_msgs::Image& input_image) const {
+RayTrace::RayTrace() {
+  image_distored_ = true;
+  image_initialized_ = false;
+  point_cloud_initialized_ = false;
+  intrinsics_initialized_ = false;
+  transform_set_ = false;
+}
 
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   return pcl::PointCloud<pcl::PointXYZRGB>::Ptr();
 }
 

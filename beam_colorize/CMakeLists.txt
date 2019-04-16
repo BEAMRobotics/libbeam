@@ -13,14 +13,15 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ############# Debug files #############
-add_executable(${PROJECT_NAME}_debug
-  src/debug.cpp
+add_executable(${PROJECT_NAME}_example
+  src/example.cpp
 )
-target_include_directories(${PROJECT_NAME}_debug
+target_include_directories(${PROJECT_NAME}_example
   PUBLIC
     include
+    ${OpenCV_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME}_debug
+target_link_libraries(${PROJECT_NAME}_example
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
