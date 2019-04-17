@@ -99,3 +99,48 @@ TEST_CASE("Test loading tree from .json"){
   REQUIRE(beam::RoundMatrix(T_BASELINK_X1, round_precision) ==
           beam::RoundMatrix(T_BASELINK_X1_JSON, round_precision));
 }
+
+TEST_CASE("Testing multiple parent case"){
+  beam_calibration::TfTree Tree1, Tree2;
+  beam::Mat4 T_HVLP_BASELINK, T_X1_HVLP, T_X1_IMU1;
+  Eigen::Affine3d TA_HVLP_BASELINK, TA_X1_HVLP, TA_X1_IMU1, TA_IMU1_X1, T;
+
+  T_HVLP_BASELINK << 1.00000, 0.00000, 0.00000, -0.2100,
+                     0.00000, 1.00000, 0.00000, 0.00000,
+                     0.00000, 0.00000, 1.00000, -0.35200,
+                     0.00000, 0.00000, 0.00000, 1.00000;
+
+  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800,
+               0.00000, 1.00000, 0.00000, 0.00000,
+               1.00000, 0.00000, 0.00000, -0.0400,
+               0.00000, 0.00000, 0.00000,  1.00000;
+
+  T_X1_IMU1 << 0.00000,   0.00000,  -1.00000,  0.00000,
+              -1.00000,   0.00000,   0.00000,  0.00000,
+               0.00000,   1.00000,   0.00000,  -0.0900,
+               0.00000,   0.00000,   0.00000,  1.00000;
+
+   TA_HVLP_BASELINK.matrix() = T_HVLP_BASELINK;
+   TA_X1_HVLP.matrix() = T_X1_HVLP;
+   TA_X1_IMU1.matrix() = T_X1_IMU1;
+   TA_IMU1_X1 = TA_X1_IMU1.inverse();
+   std::string to_frame1 = "HVLP";
+   std::string from_frame1 = "BASELINK";
+   std::string to_frame2 = "X1";
+   std::string from_frame2 = "HVLP";
+   std::string to_frame3 = "X1";
+   std::string from_frame3 = "IMU1";
+
+   Tree1.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
+   Tree1.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
+   REQUIRE_NOTHROW(T = Tree1.GetTransform(to_frame2, from_frame1));
+   Tree1.AddTransform(TA_X1_IMU1, to_frame3, from_frame3);
+   REQUIRE_NOTHROW(T = Tree1.GetTransform(to_frame2, from_frame1));
+   //
+   // Tree2.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
+   // Tree2.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
+   // REQUIRE_NOTHROW(T = Tree2.GetTransform(to_frame2, from_frame1));
+   // Tree2.AddTransform(TA_IMU1_X1, from_frame3, to_frame3);
+   // REQUIRE_NOTHROW(T = Tree2.GetTransform(to_frame2, from_frame1));
+   // REQUIRE_NOTHROW(T = Tree2.GetTransform(from_frame1, from_frame3));
+}

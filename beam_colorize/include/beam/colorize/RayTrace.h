@@ -16,13 +16,15 @@ namespace beam_colorize {
  */
 class RayTrace : public Colorizer {
 public:
-  RayTrace() = default;
+  RayTrace();
 
   ~RayTrace() = default;
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud(const pcl::PointCloud<pcl::PointXYZ>& input_cloud,
-                         const sensor_msgs::Image& input_image) const override;
+  /**
+   * @brief Method for colorizing a point cloud
+   * @return Colored point cloud pointer
+   */
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
 private:
 };

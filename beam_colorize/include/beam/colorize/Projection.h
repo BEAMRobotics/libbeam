@@ -15,29 +15,18 @@ namespace beam_colorize {
  */
 class Projection : public Colorizer {
 public:
-  Projection() = default;
+  Projection();
 
   ~Projection() override = default;
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud(const pcl::PointCloud<pcl::PointXYZ>& input_cloud,
-                         const sensor_msgs::Image& input_image) const override;
+  /**
+   * @brief Method for colorizing a point cloud
+   * @return Colored point cloud pointer
+   */
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
 private:
-  /**
-   * Projects point in camera coordinate system into the natural rectified
-   * image.
-   * @param cam
-   * @param x
-   * @param y
-   * @param z
-   * @return
-   */
-  std::pair<double, double> XYZToUVRect(int cam, double x, double y,
-                                        double z) const;
 };
-
 /** @} group colorizer */
-
 
 } // namespace beam_colorize

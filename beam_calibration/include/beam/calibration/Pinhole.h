@@ -91,13 +91,13 @@ public:
    * @brief Method for adding K matrix
    * @param K intrinsics matrix
    */
-  void SetK(beam::Mat3 K);
+  void SetK(beam::Mat3 K) override;
 
   /**
    * @brief Method for returning K matrix
    * @return intrinsics matrix K_
    */
-  beam::Mat3 GetK();
+  beam::Mat3 GetK() override;
 
   /**
    * @brief Method for returning y focal length

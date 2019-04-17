@@ -67,6 +67,10 @@ public:
   void SetCalibrationDate(std::string& calibration_date);
 
 private:
+
+  void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
+                    std::string& from_frame);
+
   tf2::BufferCore Tree_;
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;
