@@ -31,5 +31,5 @@ double wrapTo180(double euler_angle);
 /** Wraps `euler_angle` to 360 degrees **/
 double wrapTo360(double euler_angle);
 
-}  // namespace wave
+}  // namespace beam
 #endif  // BEAM_UTILS_ANGLES_HPP
