@@ -16,6 +16,9 @@ namespace beam {
 /** @addtogroup utils
  *  @{ */
 
+typedef std::chrono::steady_clock Clock;
+typedef std::chrono::time_point<Clock> TimePoint;
+
 /**
  * @brief Simple timer object
  */
