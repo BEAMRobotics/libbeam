@@ -31,24 +31,7 @@ int main() {
   std::cout << "T_X1_HVLP2: \n" << TA_X1_HVLP2.matrix() << "\n";
   */
 
-
   beam_calibration::TfTree Tree;
-  beam::Mat4 T_BASELINK_HVLP, T_X1_HVLP;
-  Eigen::Affine3d TA_BASELINK_HVLP, TA_X1_HVLP,
-                  TA_BASELINK_HVLP_JSON, TA_X1_HVLP_JSON;
-
-  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100,
-                     0.00000, 1.00000, 0.00000, 0.00000,
-                     0.00000, 0.00000, 1.00000, 0.35200,
-                     0.00000, 0.00000, 0.00000, 1.00000;
-
-  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800,
-               0.00000, 1.00000, 0.00000, 0.00000,
-               1.00000, 0.00000, 0.00000, -0.0400,
-               0.00000, 0.00000, 0.00000,  1.00000;
-
-  TA_BASELINK_HVLP.matrix() = T_BASELINK_HVLP;
-  TA_X1_HVLP.matrix() = T_X1_HVLP;
 
   // Load Tree from json
   std::string filename = "extrinsics_full.json";
@@ -58,6 +41,32 @@ int main() {
   file_location += filename;
   Tree.LoadJSON(file_location);
 
+  // Lookup all transforms
+  std::vector<std::string> frames1, frames2;
+  frames1.push_back("BASELINK");
+  frames1.push_back("HVLP");
+  frames1.push_back("VVLP");
+  frames1.push_back("IMU1");
+  frames1.push_back("IMU2");
+  frames1.push_back("X1");
+  frames1.push_back("F1");
+  frames1.push_back("F2");
+  frames1.push_back("F3");
+  frames1.push_back("GPS");
+  frames2 = frames1;
+
+  for(uint8_t i = 0; i<frames1.size(); i++){
+    for(uint8_t j = 0; j<frames2.size(); j++){
+      Eigen::Affine3d TA;
+      std::cout << "T_" << frames1[i] << "_" << frames1[j] << ":\n";
+      try {
+        TA = Tree.GetTransform(frames1[i], frames2[j]);
+        std::cout << TA.matrix() << "\n\n";
+      } catch (const std::exception &e){
+        std::cout << "Cannot get transform." << std::endl;
+      }
+    }
+  }
 
 /*
   beam_calibration::Pinhole F1;
