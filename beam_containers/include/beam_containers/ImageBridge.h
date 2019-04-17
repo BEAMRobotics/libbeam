@@ -13,14 +13,14 @@
 #include <string>
 #include <opencv2/opencv.hpp>
 
-// Declare some templates:
-using Clock = std::chrono::steady_clock;
-using TimePoint = std::chrono::time_point<Clock>;
-
 namespace beam_containers {
 /** @addtogroup containers
  *  @{ */
 
+// Declare some templates:
+using Clock = std::chrono::steady_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+  
 /**
 * @brief class for bridge type image container
 */
