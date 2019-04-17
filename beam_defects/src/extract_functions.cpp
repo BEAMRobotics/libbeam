@@ -1,5 +1,8 @@
 #include "beam_defects/extract_functions.h"
 
+//typedef <pcl::PointCloud<pcl::PointXYZ> PointCloud;
+//typedef std::vector<PointCloud> PointCloudVec;
+
 namespace beam_defects {
 // function to extract cracks
 // return type is a vector of crack objects
@@ -13,8 +16,7 @@ std::vector<beam_defects::Crack> GetCracks(const pcl::PointCloud<beam_containers
 
   std::vector<beam_defects::Crack> crack_vector;
   for (auto& cloud : cloud_vector) {
-    beam_defects::Crack temp = beam_defects::Crack(cloud);
-    crack_vector.push_back(temp);
+    crack_vector.push_back(beam_defects::Crack(cloud));
   }
 
   return crack_vector;
@@ -23,14 +25,36 @@ std::vector<beam_defects::Crack> GetCracks(const pcl::PointCloud<beam_containers
 // function to extract spalls
 // return type is a vector of spall objects
 std::vector<beam_defects::Spall> GetSpalls(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud){
+  auto cloud_filtered = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  *cloud_filtered = IsolateSpallPoints(input_cloud);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  copyPointCloud(*cloud_filtered, *cloud_xyz);
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector = GetExtractedClouds(cloud_xyz);
+
   std::vector<beam_defects::Spall> spall_vector;
+  for (auto& cloud : cloud_vector) {
+    spall_vector.push_back(beam_defects::Spall(cloud));
+  }
+
   return spall_vector;
 };
 
 // function to extract delams
 // return type is a vector of delam objects
 std::vector<beam_defects::Delam> GetDelams(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud){
+  auto cloud_filtered = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  *cloud_filtered = IsolateDelamPoints(input_cloud);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  copyPointCloud(*cloud_filtered, *cloud_xyz);
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector = GetExtractedClouds(cloud_xyz);
+
   std::vector<beam_defects::Delam> delam_vector;
+  for (auto& cloud : cloud_vector) {
+    delam_vector.push_back(beam_defects::Delam(cloud));
+  }
+
   return delam_vector;
 };
 
@@ -52,8 +76,41 @@ pcl::PointCloud<beam_containers::PointBridge> IsolateCrackPoints(const pcl::Poin
   return *cloud_filtered;
 };
 
-//typedef <pcl::PointCloud<pcl::PointXYZ> PointCloud;
-//typedef std::vector<PointCloud> PointCloudVec;
+// function to isolate spall points only
+pcl::PointCloud<beam_containers::PointBridge> IsolateSpallPoints(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud){
+  auto cloud_filtered = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
+  pcl::ExtractIndices<beam_containers::PointBridge> extract;
+
+  for (unsigned int i = 0; i < input_cloud->points.size (); ++i){
+    if(input_cloud->points[i].spall >= 0.9){
+        inliers->indices.push_back(i);
+      }
+  }
+  extract.setInputCloud(input_cloud);
+  extract.setIndices(inliers);
+  extract.filter(*cloud_filtered);
+
+  return *cloud_filtered;
+};
+
+// function to isolate delam points only
+pcl::PointCloud<beam_containers::PointBridge> IsolateDelamPoints(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud){
+  auto cloud_filtered = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
+  pcl::ExtractIndices<beam_containers::PointBridge> extract;
+
+  for (unsigned int i = 0; i < input_cloud->points.size (); ++i){
+    if(input_cloud->points[i].delam >= 0.9){
+        inliers->indices.push_back(i);
+      }
+  }
+  extract.setInputCloud(input_cloud);
+  extract.setIndices(inliers);
+  extract.filter(*cloud_filtered);
+
+  return *cloud_filtered;
+};
 
 // Extract cloud groups using euclidian segmentation
 std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud){
@@ -72,8 +129,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> GetExtractedClouds(const pcl::P
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> defect_cloud;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    // auto cloud_cluster = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    auto cloud_cluster = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit){
       cloud_cluster->points.push_back (input_cloud->points[*pit]);
     }

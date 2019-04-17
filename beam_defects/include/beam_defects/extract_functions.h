@@ -39,5 +39,11 @@ std::vector<beam_defects::Delam> GetDelams(const pcl::PointCloud<beam_containers
 // function to isolate crack points only
 pcl::PointCloud<beam_containers::PointBridge> IsolateCrackPoints(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud);
 
+// function to isolate spall points only
+pcl::PointCloud<beam_containers::PointBridge> IsolateSpallPoints(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud);
+
+// function to isolate delam points only
+pcl::PointCloud<beam_containers::PointBridge> IsolateDelamPoints(const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud);
+
 // Extract cloud groups using euclidian segmentation
-std::vector<pcl::PointCloud<pcl::PointXYZ>> GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
