@@ -3,6 +3,8 @@
 #include "beam_defects/Delam.h"
 #include "beam_defects/Spall.h"
 
+#include "beam_defects/extract_functions.h"
+
 #include <pcl/io/pcd_io.h>
 
 #include <iostream>
