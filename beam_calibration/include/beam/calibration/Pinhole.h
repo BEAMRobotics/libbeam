@@ -204,6 +204,11 @@ public:
    */
   beam::Vec2 ProjectDistortedPoint(beam::Vec4 &X);
 
+  /**
+   * @brief Overload for pushing to output streams
+   */
+  friend std::ostream& operator<< (std::ostream& out, Pinhole& pinhole);
+
 private:
   /**
    * @brief This applies the projection for to images that are not distorted
