@@ -2,7 +2,7 @@
  * @ingroup containers
  * Image data container for bridge type inspections
  *
- * @defgroup images
+ * @defgroup containers
  * Custom data containers for inspection specific objects. E.g., Image
  * containers with defect masks, special point types for pcl point clouds.
  */
@@ -230,6 +230,6 @@ private:
   bool bgr_is_distorted_ = false, ir_is_distorted_ = false;
 };
 
-/** @} group images */
+/** @} group containers */
 
 }  // namespace beam_containers
