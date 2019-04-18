@@ -16,6 +16,8 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <beam/utils/time.hpp>
+#include <unsupported/Eigen/MatrixFunctions>
 
 namespace beam {
 /** @addtogroup utils
@@ -120,21 +122,64 @@ void nwu2edn(const Vec3& nwu, Vec3& edn);
 
 /**
  * @brief Round a matrix values to a certain precision.
- * @param precision = 100 would round to the second decimal point (i.e. 1.126 = 1.13)
+ * @param precision = 100 would round to the second decimal point (i.e. 1.126
+ *= 1.13)
  **/
 MatX RoundMatrix(const MatX& M, int& precision);
 
 /**
-  * @brief check if a matrix is a valid transformation matrix
-  * @param T tranformation
-  **/
+ * @brief check if a matrix is a valid transformation matrix
+ * @param T tranformation
+ **/
 bool IsTransformationMatrix(Eigen::Matrix4d T);
 
 /**
-  * @brief check if a matrix is a valid rotation matrix
-  * @param R rotation matrix
-  **/
+ * @brief check if a matrix is a valid rotation matrix
+ * @param R rotation matrix
+ **/
 bool IsRotationMatrix(Eigen::Matrix3d R);
+
+/**
+ * @brief Convert from rotation matrix to its associated Lie Algebra
+ * @param R rotation matrix
+ * @return 3x1 vector representing R in Lie Algebra space
+ **/
+beam::Vec3 RToLieAlgebra(const beam::Mat3 R);
+
+/**
+ * @brief Convert from Lie Algebra to its associated rotation matrix
+ * @param eps rotation in Lie Algebra space
+ * @return rotation matrix
+ **/
+beam::Mat3 LieAlgebraToR(const beam::Vec3 eps);
+
+/**
+ * @brief Linear interpolation of transformations using a method in Tim
+ *Barfoot's State Estimation textbook
+ * @param m1 first transformation matrix
+ * @param m2 second transformation matrix
+ * @param t1 time point of first transform
+ * @param t2 time point of second transform
+ * @param t time point that you want to interpolate at
+ * @return interpolated transformation matrix
+ **/
+beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
+                                const beam::Mat4& m2, const beam::TimePoint& t2,
+                                const beam::TimePoint& t);
+
+/**
+ * @brief Perform inverse of skew symmetric transform
+ * @param M 3x3 skew symmetric matrix
+ * @return 3x1 vector
+ **/
+beam::Vec3 invSkewTransform(const beam::Mat3 M);
+
+/**
+ * @brief Perform skew symmetric transform
+ * @param V 3x1 vector
+ * @return 3x3 skew symmetric matrix
+ **/
+beam::Mat3 skewTransform(const beam::Vec3 V);
 
 /** @} group utils */
 } // namespace beam
