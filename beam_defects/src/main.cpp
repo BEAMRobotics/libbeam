@@ -27,7 +27,8 @@ int main() {
   }
 
   // Example code for extracting defects and their size
-  std::vector<beam_defects::Delam> delam_vector_ = beam_defects::GetDelams(cloud);
+  float threshold = 0.9;
+  std::vector<beam_defects::Delam> delam_vector_ = beam_defects::GetDelams(cloud, threshold);
 
   for (auto& defect : delam_vector_) {
     std::cout << "Delam size is: " << defect.GetSize() << "m^2" <<std::endl;
