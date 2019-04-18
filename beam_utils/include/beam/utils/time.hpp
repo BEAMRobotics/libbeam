@@ -9,8 +9,11 @@
 #define BEAM_UTILS_TIME_HPP
 
 #include <chrono>
+#include <string>
+#include <iostream>
 #include <ctime>
 #include <sys/time.h>
+#include <beam/utils/log.hpp>
 
 namespace beam {
 /** @addtogroup utils
@@ -18,6 +21,25 @@ namespace beam {
 
 typedef std::chrono::steady_clock Clock;
 typedef std::chrono::time_point<Clock> TimePoint;
+
+/**
+ * @brief Simple way to output the timepoint using LOG_INFO
+ * @param time_point
+ * @param output_text
+ */
+void LogTimePoint(const TimePoint time_point, const std::string output_text) {
+  LOG_INFO("%s %f", output_text.c_str(), (double) time_point.time_since_epoch().count());
+}
+
+/**
+ * @brief Simple way to output the timepoint using cout
+ * @param time_point
+ * @param output_text
+ */
+ void OutputTimePoint(const TimePoint time_point, const std::string output_text) {
+   std::cout << output_text.c_str()
+             << time_point.time_since_epoch().count() << "\n";
+ }
 
 /**
  * @brief Simple timer object
