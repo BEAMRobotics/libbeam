@@ -2,6 +2,7 @@ PROJECT(beam_defects)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
+    beam::containers
     beam::utils
     catkin::catkin
     #${catkin_LIBRARIES}
@@ -14,6 +15,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Delam.cpp
     src/Spall.cpp
     src/defect_functions.cpp
+    src/extract_functions.cpp
 )
 
 # beam_defects dummy code for testing library
