@@ -287,7 +287,7 @@ MatX RoundMatrix(const MatX& M, int& precision) {
   return Mround;
 }
 
-bool IsTransformationMatrix(Eigen::Matrix4d T){
+bool IsTransformationMatrix(Eigen::Matrix4d T) {
   Eigen::Matrix3d R = T.block(0, 0, 3, 3);
   bool homoFormValid, tValid;
 
@@ -313,16 +313,70 @@ bool IsTransformationMatrix(Eigen::Matrix4d T){
   }
 }
 
-bool IsRotationMatrix(Eigen::Matrix3d R){
+bool IsRotationMatrix(Eigen::Matrix3d R) {
   int precision = 100;
   Eigen::Matrix3d shouldBeIdentity = RoundMatrix(R * R.transpose(), precision);
   double detR = R.determinant();
-  double detRRound = std::round(detR*precision)/precision;
+  double detRRound = std::round(detR * precision) / precision;
   if (shouldBeIdentity.isIdentity() && detRRound == 1) {
     return 1;
   } else {
     return 0;
   }
+}
+
+Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d R) {
+  return invSkewTransform(R.log());
+}
+
+Eigen::Matrix3d LieAlgebraToR(const Eigen::Vector3d eps) {
+  return skewTransform(eps).exp();
+}
+
+beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
+                                const beam::Mat4& m2, const beam::TimePoint& t2,
+                                const beam::TimePoint& t) {
+  double w2 = 1.0 * (t - t1) / (t2 - t1);
+
+  beam::Mat4 T1 = m1;
+  beam::Mat4 T2 = m2;
+  beam::Mat4 T;
+
+  beam::Mat3 R1 = T1.block<3, 3>(0, 0);
+  beam::Mat3 R2 = T2.block<3, 3>(0, 0);
+  beam::Mat3 R = (R2 * R1.transpose()).pow(w2) * R1;
+
+  beam::Vec4 tr1 = T1.rightCols<1>();
+  beam::Vec4 tr2 = T2.rightCols<1>();
+  beam::Vec4 tr = (1 - w2) * tr1 + w2 * tr2;
+
+  T.setIdentity();
+  T.block<3, 3>(0, 0) = R;
+  T.rightCols<1>() = tr;
+
+  return T;
+}
+
+beam::Vec3 invSkewTransform(const beam::Mat3 M) {
+  Eigen::Vector3d V;
+  V(0) = M(2, 1);
+  V(1) = M(0, 2);
+  V(2) = M(1, 0);
+  return V;
+}
+
+beam::Mat3 skewTransform(const beam::Vec3 V) {
+  beam::Mat3 M;
+  M(0, 0) = 0;
+  M(0, 1) = -V(2, 0);
+  M(0, 2) = V(1, 0);
+  M(1, 0) = V(2, 0);
+  M(1, 1) = 0;
+  M(1, 2) = -V(0, 0);
+  M(2, 0) = -V(1, 0);
+  M(2, 1) = V(0, 0);
+  M(2, 2) = 0;
+  return M;
 }
 
 } // namespace beam

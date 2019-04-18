@@ -8,13 +8,70 @@
 #ifndef BEAM_UTILS_TIME_HPP
 #define BEAM_UTILS_TIME_HPP
 
+#include <beam/utils/log.hpp>
 #include <chrono>
 #include <ctime>
+#include <iostream>
+#include <ros/ros.h>
+#include <ros/time.h>
+#include <std_msgs/Header.h>
+#include <string>
 #include <sys/time.h>
 
 namespace beam {
 /** @addtogroup utils
  *  @{ */
+
+typedef std::chrono::steady_clock Clock;
+typedef std::chrono::time_point<Clock> TimePoint;
+
+/**
+ * @brief Simple way to output the timepoint using LOG_INFO
+ * @param time_point
+ * @param output_text
+ */
+inline void LogTimePoint(const TimePoint time_point, const std::string output_text) {
+  LOG_INFO("%s %f", output_text.c_str(),
+           (double)time_point.time_since_epoch().count());
+}
+
+/**
+ * @brief Simple way to output the timepoint using cout
+ * @param time_point
+ * @param output_text
+ */
+inline void OutputTimePoint(const TimePoint time_point,
+                     const std::string output_text) {
+  std::cout << output_text.c_str() << time_point.time_since_epoch().count()
+            << "\n";
+}
+
+/**
+ * @brief convert ROS time to a chrono time point
+ * @param hdr header from a ROS message
+ * @return TimePoint
+ */
+inline TimePoint rosTimeToChrono(const std_msgs::Header& hdr) {
+  std::chrono::seconds secs(hdr.stamp.sec);
+  std::chrono::nanoseconds nsecs(hdr.stamp.nsec);
+  auto dur = secs + nsecs;
+  return TimePoint(dur);
+}
+
+/**
+ * @brief convert chrono time point to ROS time
+ * @param time_point
+ * @return ROS time
+ */
+inline ros::Time chronoToRosTime(const TimePoint& time_point) {
+  uint32_t seconds, nanoseconds;
+  seconds = std::round(time_point.time_since_epoch().count() / 1000000000);
+  double tmp = time_point.time_since_epoch().count() -
+               std::round(time_point.time_since_epoch().count());
+  nanoseconds = std::round(tmp * 1000000000);
+  ros::Time ros_time(seconds, nanoseconds);
+  return ros_time;
+}
 
 /**
  * @brief Simple timer object

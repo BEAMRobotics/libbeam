@@ -375,4 +375,13 @@ beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3& X) {
   return coords;
 }
 
+std::ostream& operator<<(std::ostream& out, Pinhole& pinhole){
+  out << "Calibration date: " << pinhole.GetCalibrationDate() << std::endl;
+  out << "Frame ID: " << pinhole.GetFrameId() << std::endl;
+  out << "Image center: [cx, cy] = [" << pinhole.GetCx() << ", " << pinhole.GetCy() << "]." << std::endl;
+  out << "Focal length: [fx, fy] = [" << pinhole.GetFx() << ", " << pinhole.GetFy() << "]." << std::endl;
+  out << "Image dimensions: [w, h] = [" << pinhole.GetImgDims()[0] << ", " << pinhole.GetImgDims()[1] << "]." << std::endl;
+  return out;
+}
+
 } // namespace beam_calibration

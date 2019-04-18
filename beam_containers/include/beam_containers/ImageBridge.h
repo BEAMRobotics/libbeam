@@ -2,7 +2,7 @@
  * @ingroup containers
  * Image data container for bridge type inspections
  *
- * @defgroup images
+ * @defgroup containers
  * Custom data containers for inspection specific objects. E.g., Image
  * containers with defect masks, special point types for pcl point clouds.
  */
@@ -12,15 +12,12 @@
 #include <chrono>
 #include <string>
 #include <opencv2/opencv.hpp>
+#include <beam/utils/time.hpp>
 
 namespace beam_containers {
 /** @addtogroup containers
  *  @{ */
 
-// Declare some templates:
-using Clock = std::chrono::steady_clock;
-using TimePoint = std::chrono::time_point<Clock>;
-  
 /**
 * @brief class for bridge type image container
 */
@@ -160,7 +157,7 @@ public:
    * @brief Method for setting the time stamp associated with the image
    * @param time_stamp
    */
-  void SetTimePoint(TimePoint& time_stamp){
+  void SetTimePoint(beam::TimePoint& time_stamp){
     time_stamp_ = time_stamp;
   }
 
@@ -168,7 +165,7 @@ public:
    * @brief Method for getting the time stamp associated with the image
    * @return time_stamp_
    */
-  TimePoint GetTimePoint(){
+  beam::TimePoint GetTimePoint(){
     return time_stamp_;
   }
 
@@ -228,11 +225,11 @@ public:
 private:
   cv::Mat bgr_image_, bgr_mask_, ir_image_, ir_mask_;
   std::string bgr_mask_method_, ir_mask_method_, bag_name_;
-  TimePoint time_stamp_;
+  beam::TimePoint time_stamp_;
   int image_seq_;
   bool bgr_is_distorted_ = false, ir_is_distorted_ = false;
 };
 
-/** @} group images */
+/** @} group containers */
 
 }  // namespace beam_containers
