@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
       OpenCV::OpenCV
       PCL::PCL
       beam::utils
+      nlohmann_json::nlohmann_json
     SOURCES
       src/includes.cpp
     )
