@@ -1,4 +1,4 @@
-#include "beam/colorize/Projection.h"
+#include "beam_colorize/Projection.h"
 
 namespace beam_colorize {
 

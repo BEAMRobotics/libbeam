@@ -1,4 +1,4 @@
-#include "beam/colorize/RayTrace.h"
+#include "beam_colorize/RayTrace.h"
 
 namespace beam_colorize {
 

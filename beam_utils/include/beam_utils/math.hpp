@@ -16,7 +16,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <beam/utils/time.hpp>
+#include <beam_utils/time.hpp>
 #include <unsupported/Eigen/MatrixFunctions>
 
 namespace beam {

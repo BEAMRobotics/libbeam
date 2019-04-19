@@ -8,7 +8,7 @@
 #ifndef BEAM_UTILS_TIME_HPP
 #define BEAM_UTILS_TIME_HPP
 
-#include <beam/utils/log.hpp>
+#include <beam_utils/log.hpp>
 #include <chrono>
 #include <ctime>
 #include <iostream>

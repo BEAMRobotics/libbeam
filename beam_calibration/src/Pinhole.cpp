@@ -1,4 +1,4 @@
-#include "beam/calibration/Pinhole.h"
+#include "beam_calibration/Pinhole.h"
 
 using json = nlohmann::json;
 

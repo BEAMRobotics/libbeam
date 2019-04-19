@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <beam/utils/time.hpp>
+#include <beam_utils/time.hpp>
 #include <fstream>
 #include <string>
 #include <Eigen/Dense>

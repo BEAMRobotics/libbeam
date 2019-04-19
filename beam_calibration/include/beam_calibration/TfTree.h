@@ -9,8 +9,8 @@
 #pragma once
 
 #include <tf2/buffer_core.h>
-#include <beam/utils/log.hpp>
-#include <beam/utils/math.hpp>
+#include <beam_utils/log.hpp>
+#include <beam_utils/math.hpp>
 #include <fstream>
 #include <iostream>
 #include <geometry_msgs/TransformStamped.h>

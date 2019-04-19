@@ -1,4 +1,4 @@
-#include "beam/calibration/Intrinsics.h"
+#include "beam_calibration/Intrinsics.h"
 
 namespace beam_calibration {
 

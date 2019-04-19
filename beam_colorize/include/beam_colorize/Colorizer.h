@@ -12,8 +12,8 @@
 #include <boost/make_shared.hpp>
 
 // libbeam
-#include "beam/calibration/Intrinsics.h"
-#include <beam/utils/log.hpp>
+#include "beam_calibration/Intrinsics.h"
+#include <beam_utils/log.hpp>
 
 // PCL
 #include <pcl/common/transforms.h>

@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
-#include "beam/calibration/TfTree.h"
-#include "beam/utils/math.hpp"
+#include "beam_calibration/TfTree.h"
+#include "beam_utils/math.hpp"
 #include <catch2/catch.hpp>
 #include <boost/filesystem.hpp>
 
