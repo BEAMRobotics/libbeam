@@ -62,7 +62,7 @@ int main() {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   beam_colorize::Projection projector;
-  bool image_distorted = false;
+  bool image_distorted = true;
   projector.SetPointCloud(cloud);
   projector.SetImage(image);
   projector.SetIntrinsics(F1);

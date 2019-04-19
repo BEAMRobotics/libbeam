@@ -6,7 +6,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
     catkin::catkin
-    #${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     Eigen3::Eigen
     Catch2::Catch2
