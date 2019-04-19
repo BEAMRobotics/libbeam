@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <tf2/buffer_core.h>
 #include <beam/utils/log.hpp>
 #include <beam/utils/math.hpp>
 #include <fstream>
-#include <iostream>
 #include <geometry_msgs/TransformStamped.h>
+#include <iostream>
 #include <nlohmann/json.hpp>
+#include <tf2/buffer_core.h>
 #include <tf2_eigen/tf2_eigen.h>
 
 namespace beam_calibration {
@@ -49,10 +49,27 @@ public:
                     std::string& from_frame);
 
   /**
+   * @brief Method for adding transform via TransformStamped
+   * @param msg
+   */
+  void AddTransform(geometry_msgs::TransformStamped msg);
+
+  /**
    * @brief Method for retrieving a transformation
    * @return Return the transformation requested as Affine3d object
    */
   Eigen::Affine3d GetTransform(std::string& to_frame, std::string& from_frame);
+
+  /**
+   * @brief Method for looking up dynamic transform
+   * @param to_frame
+   * @param from_frame
+   * @param lookup_time
+   * @return Transform Stamped
+   */
+  geometry_msgs::TransformStamped GetTransform(std::string& to_frame,
+                                               std::string& from_frame,
+                                               ros::Time lookup_time);
 
   /**
    * @brief Method for retrieving the date that the calibration was done
@@ -67,11 +84,10 @@ public:
   void SetCalibrationDate(std::string& calibration_date);
 
 private:
-
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                     std::string& from_frame);
 
-  tf2::BufferCore Tree_;
+  tf2::BufferCore Tree_{ros::Duration(1000)};
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;
 };

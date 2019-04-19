@@ -77,9 +77,6 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
       Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
-    LOG_ERROR("Cannot add transform from frame %s to %s. Frame already exists",
-              from_frame.c_str(), to_frame.c_str());
-    return;
   }
 
   std::string parent;
@@ -94,6 +91,10 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   } else {
     SetTransform(TAnew, to_frame, from_frame);
   }
+}
+
+void TfTree::AddTransform(geometry_msgs::TransformStamped msg) {
+  Tree_.setTransform(msg, "0");
 }
 
 Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
@@ -115,6 +116,14 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
               from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
   }
   return TA_target_source;
+}
+
+geometry_msgs::TransformStamped TfTree::GetTransform(std::string& to_frame,
+                                                     std::string& from_frame,
+                                                     ros::Time lookup_time) {
+  geometry_msgs::TransformStamped transform_msg =
+      Tree_.lookupTransform(to_frame, from_frame, lookup_time);
+  return transform_msg;
 }
 
 void TfTree::SetCalibrationDate(std::string& calibration_date) {
