@@ -360,16 +360,13 @@ beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3& X) {
   p2 = tan_coeffs_(1, 0);
 
   // project point
-  x_proj = K_ * X;
-  x = x_proj(0, 0) / x_proj(2, 0);
-  y = x_proj(1, 0) / x_proj(2, 0);
+  x = X(0, 0) / X(2, 0);
+  y = X(1, 0) / X(2, 0);
   r2 = x * x + y * y;
-  xx = x * ((1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2) /
-            (1 + k4 * r2 + k5 * r2 * r2 + k6 * r2 * r2 * r2)) +
-       2 * x * y + p2 * (r2 + 2 * x * x);
-  yy = y * ((1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2) /
-            (1 + k4 * r2 + k5 * r2 * r2 + k6 * r2 * r2 * r2)) +
-       p1 * (r2 + 2 * y * y) + 2 * p2 * x * y;
+  double quotient = (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2) /
+                    (1 + k4 * r2 + k5 * r2 * r2 + k6 * r2 * r2 * r2);
+  xx = x * quotient + 2 * p1 * x * y + p2 * (r2 + 2 * x * x);
+  yy = y * quotient + p1 * (r2 + 2 * y * y) + 2 * p2 * x * y;
   coords(0, 0) = fx * xx + cx;
   coords(1, 0) = fy * yy + cy;
   return coords;
