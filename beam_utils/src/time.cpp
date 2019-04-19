@@ -1,4 +1,4 @@
-#include "beam/utils/time.hpp"
+#include "beam_utils/time.hpp"
 
 namespace beam {
 

@@ -1,4 +1,4 @@
-#include "beam/colorize/Colorizer.h"
+#include "beam_colorize/Colorizer.h"
 
 namespace beam_colorize {
 

@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include "beam/utils/math.hpp"
-#include "beam/calibration/Pinhole.h"
+#include "beam_utils/math.hpp"
+#include "beam_calibration/Pinhole.h"
 
 TEST_CASE("Test constructors and return funcitons") {
   double fx = 1, fy = 2, cx = 3, cy = 4;

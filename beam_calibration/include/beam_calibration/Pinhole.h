@@ -3,9 +3,9 @@
  */
 
 #pragma once
-#include "beam/calibration/Intrinsics.h"
-#include <beam/utils/log.hpp>
-#include <beam/utils/math.hpp>
+#include "beam_calibration/Intrinsics.h"
+#include <beam_utils/log.hpp>
+#include <beam_utils/math.hpp>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>

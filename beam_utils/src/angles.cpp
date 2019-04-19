@@ -1,4 +1,4 @@
-#include "beam/utils/angles.hpp"
+#include "beam_utils/angles.hpp"
 
 namespace beam {
 

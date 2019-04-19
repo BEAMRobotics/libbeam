@@ -1,6 +1,6 @@
-#include "beam/calibration/TfTree.h"
-#include "beam/calibration/Pinhole.h"
-#include "beam/utils/math.hpp"
+#include "beam_calibration/TfTree.h"
+#include "beam_calibration/Pinhole.h"
+#include "beam_utils/math.hpp"
 #include <boost/filesystem.hpp>
 
 int main() {

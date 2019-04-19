@@ -1,4 +1,4 @@
-#include "beam/utils/math.hpp"
+#include "beam_utils/math.hpp"
 
 namespace beam {
 
