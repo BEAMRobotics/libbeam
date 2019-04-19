@@ -233,7 +233,7 @@ private:
   beam::Vec2 img_dims_;
   beam::Mat3 K_;
   beam::Vec2 tan_coeffs_;
-  beam::VecX rad_coeffs_;
+  beam::VecX rad_coeffs_ = Eigen::VectorXd::Random(3);
 };
 
 /** @} group calibration */
