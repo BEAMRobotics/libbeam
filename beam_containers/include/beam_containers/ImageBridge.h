@@ -241,71 +241,43 @@ public:
    * @param path_to_json
    */
   void LoadFromJSON(std::string path_to_json) {
-
-    std::cout << path_to_json << std::endl;
+    std::stringstream ss_json;
+    ss_json << path_to_json << "ImageBridgeInfo.json";
     nlohmann::json json_config;
-    std::cout << "Test1" << std::endl;
-    std::ifstream i(path_to_json);
-    std::cout << "Test2" << std::endl;
-
+    std::ifstream i(ss_json.str());
     i >> json_config;
-    std::cout << "Test3" << std::endl;
 
-    std::cout << json_config << std::endl;
-//    bag_name_ = json_config["bag_name"].get<std::string>;
-//    std::cout << bag_name_ << std::endl;
-
+    bag_name_ = json_config["bag_name"];
     bgr_is_distorted_ = json_config["bgr_is_distorted"];
-    std::cout << bgr_is_distorted_ << std::endl;
-
     bgr_mask_method_ = json_config["bgr_mask_method"];
-    std::cout << bgr_mask_method_ << std::endl;
-
     image_seq_ = json_config["image_seq"];
-    std::cout << image_seq_ << std::endl;
-
     ir_is_distorted_ = json_config["ir_is_distorted"];
-    std::cout << ir_is_distorted_ << std::endl;
-
     ir_mask_method_ = json_config["ir_mask_method"];
-    std::cout << ir_mask_method_ << std::endl;
-
     is_bgr_image_set_ = json_config["is_bgr_image_set"];
-    std::cout << is_bgr_image_set_ << std::endl;
-
     is_bgr_mask_set_ = json_config["is_bgr_mask_set"];
-    std::cout << is_bgr_mask_set_ << std::endl;
-
     is_ir_image_set_ = json_config["is_ir_image_set"];
-    std::cout << is_ir_image_set_ << std::endl;
-
     is_ir_mask_set_ = json_config["is_ir_mask_set"];
-    std::cout << is_ir_mask_set_ << std::endl;
 
     beam::TimePoint tp{std::chrono::duration_cast<beam::TimePoint::duration>(
-          std::chrono::nanoseconds(json_config["time_stamp"]))};
+        std::chrono::nanoseconds(json_config["time_stamp"]))};
     time_stamp_ = tp;
 
-    std::stringstream ss;
-    ss << path_to_json << "../BGRImage.jpg";
-    if (is_bgr_image_set_){
-      cv::Mat bgr_img = cv::imread(ss.str());
+    if (is_bgr_image_set_) {
+      cv::Mat bgr_img = cv::imread(path_to_json + std::string("BGRImage.jpg"));
       SetBGRImage(bgr_img);
     }
-    if (is_bgr_mask_set_){
-      cv::Mat bgr_mask = cv::imread("BGRMask.jpg");
+    if (is_bgr_mask_set_) {
+      cv::Mat bgr_mask = cv::imread(path_to_json + std::string("BGRMask.jpg"));
       SetBGRMask(bgr_mask);
     }
-    if(is_ir_image_set_){
-      cv::Mat ir_img = cv::imread("IRImage.jpg");
+    if (is_ir_image_set_) {
+      cv::Mat ir_img = cv::imread(path_to_json + std::string("IRImage.jpg"));
       SetIRImage(ir_img);
     }
-    if(is_ir_mask_set_){
-      cv::Mat ir_mask = cv::imread("IRMask.jpg");
+    if (is_ir_mask_set_) {
+      cv::Mat ir_mask = cv::imread(path_to_json + std::string("IRMask.jpg"));
       SetIRMask(ir_mask);
     }
-
-
   }
 
 private:
