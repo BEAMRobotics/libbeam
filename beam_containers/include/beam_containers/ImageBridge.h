@@ -219,18 +219,18 @@ public:
       cv::imwrite(output_directory + "/IRMask.jpg", ir_mask_);
     }
 
-    nlohmann::json J = {{"image_container_type:", "ImageBridge"},
-                        {"bgr_mask_method:", bgr_mask_method_},
-                        {"ir_mask_method:", ir_mask_method_},
-                        {"bag_name:", bag_name_},
-                        {"time_stamp:", time_stamp_.time_since_epoch().count()},
-                        {"image_seq:", image_seq_},
-                        {"bgr_is_distorted:", bgr_is_distorted_},
-                        {"ir_is_distorted:", ir_is_distorted_},
-                        {"is_bgr_image_set:", is_bgr_image_set_},
-                        {"is_bgr_mask_set:", is_bgr_mask_set_},
-                        {"is_ir_image_set:", is_ir_image_set_},
-                        {"is_ir_mask_set:", is_ir_mask_set_}};
+    nlohmann::json J = {{"image_container_type", "ImageBridge"},
+                        {"bgr_mask_method", bgr_mask_method_},
+                        {"ir_mask_method", ir_mask_method_},
+                        {"bag_name", bag_name_},
+                        {"time_stamp", time_stamp_.time_since_epoch().count()},
+                        {"image_seq", image_seq_},
+                        {"bgr_is_distorted", bgr_is_distorted_},
+                        {"ir_is_distorted", ir_is_distorted_},
+                        {"is_bgr_image_set", is_bgr_image_set_},
+                        {"is_bgr_mask_set", is_bgr_mask_set_},
+                        {"is_ir_image_set", is_ir_image_set_},
+                        {"is_ir_mask_set", is_ir_mask_set_}};
 
     std::ofstream file(output_directory + "/ImageBridgeInfo.json");
     file << std::setw(4) << J << std::endl;
