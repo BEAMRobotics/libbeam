@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <beam/utils/log.hpp>
-#include <beam/utils/math.hpp>
+#include <beam_utils/log.hpp>
+#include <beam_utils/math.hpp>
 #include <fstream>
 #include <geometry_msgs/TransformStamped.h>
 #include <iostream>
@@ -82,6 +82,8 @@ public:
    * @param Calibration date
    */
   void SetCalibrationDate(std::string& calibration_date);
+
+  ros::Time start_time_;
 
 private:
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
