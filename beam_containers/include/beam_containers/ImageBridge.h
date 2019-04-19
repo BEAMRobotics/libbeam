@@ -132,6 +132,29 @@ public:
   std::string GetIRMaskMethod() { return ir_mask_method_; }
 
   /**
+   * @brief Method for setting the name of the frame id of the bgr camera
+   * @param bgr_frame_id
+   */
+  void SetBGRFrameId(std::string& bgr_frame_id) { bgr_frame_id_ = bgr_frame_id; }
+
+  /**
+   * @brief Method for getting the name of the frame id of the bgr camera
+   * @return bgr_frame_id_
+   */
+  std::string GetBGRFrameId() { return bgr_frame_id_; }
+  /**
+   * @brief Method for setting the name of the frame id of the IR camera
+   * @param bgr_frame_id
+   */
+  void SetIRFrameId(std::string& ir_frame_id) { ir_frame_id_ = ir_frame_id; }
+
+  /**
+   * @brief Method for getting the name of the frame id of the IR camera
+   * @return bgr_frame_id_
+   */
+  std::string GetIRFrameId() { return ir_frame_id_; }
+
+  /**
    * @brief Method for setting the name of the bag the images were extracted
    * from
    * @param bag_name
@@ -222,6 +245,8 @@ public:
     nlohmann::json J = {{"image_container_type", "ImageBridge"},
                         {"bgr_mask_method", bgr_mask_method_},
                         {"ir_mask_method", ir_mask_method_},
+                        {"bgr_frame_id", bgr_frame_id_},
+                        {"ir_frame_id", ir_frame_id_},
                         {"bag_name", bag_name_},
                         {"time_stamp", time_stamp_.time_since_epoch().count()},
                         {"image_seq", image_seq_},
@@ -238,7 +263,8 @@ public:
 
 private:
   cv::Mat bgr_image_, bgr_mask_, ir_image_, ir_mask_;
-  std::string bgr_mask_method_, ir_mask_method_, bag_name_;
+  std::string bgr_mask_method_, ir_mask_method_, bag_name_, ir_frame_id_,
+              bgr_frame_id_;
   beam::TimePoint time_stamp_;
   int image_seq_;
   bool bgr_is_distorted_ = false, ir_is_distorted_ = false,
