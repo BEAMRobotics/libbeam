@@ -17,7 +17,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   src/TfTree.cpp
   )
 
-#[[################ tests ##################
+################ tests ##################
 add_executable(${PROJECT_NAME}_intrinsic_tests
   tests/pinhole_test.cpp
 )
@@ -42,9 +42,9 @@ target_include_directories(${PROJECT_NAME}_extrinsics_tests
 target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
-)]]
+  catkin::catkin
+  Boost::boost
+)
 #######################################
 
 ############# Debug files #############
