@@ -39,7 +39,7 @@ public:
    * @brief Pure virtual method for loading a pinhole calibration from a .json
    * @param file_location absolute path to json file
    */
-  virtual void LoadJSON(std::string &file_location) = 0;
+  virtual void LoadJSON(std::string& file_location) = 0;
 
   /**
    * @brief Pure virtual method for returning the frame id of an intrinsics
@@ -52,7 +52,7 @@ public:
    * @brief Pure virtual method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
-  virtual void SetFrameId(std::string &frame_id) = 0;
+  virtual void SetFrameId(std::string& frame_id) = 0;
 
   /**
    * @brief Pure virtual method for getting the image dimensions
@@ -78,7 +78,7 @@ public:
    * @param img_dims dimensions of the images taken by the camera associated
    * with this intrinsics object: [height, width]^T
    */
-  virtual void SetImgDims(beam::Vec2 &img_dims) = 0;
+  virtual void SetImgDims(beam::Vec2& img_dims) = 0;
 
   /**
    * @brief Method for projecting a point into an image plane
@@ -86,7 +86,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  virtual beam::Vec2 ProjectPoint(beam::Vec3 &X) = 0;
+  virtual beam::Vec2 ProjectPoint(beam::Vec3& X) = 0;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -95,7 +95,7 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  virtual beam::Vec2 ProjectPoint(beam::Vec4 &X) = 0;
+  virtual beam::Vec2 ProjectPoint(beam::Vec4& X) = 0;
 
   /**
    * @brief Method for projecting a point into an image plane where the image is
@@ -104,7 +104,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  virtual beam::Vec2 ProjectDistortedPoint(beam::Vec3 &X) = 0;
+  virtual beam::Vec2 ProjectDistortedPoint(beam::Vec3& X) = 0;
 };
 
 /** @} group calibration */

@@ -1,24 +1,23 @@
 PROJECT(beam_calibration)
 
-#include_directories(${catkin_INCLUDE_DIRS})
-
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
+  Boost::boost
+  Catch2::Catch2
     catkin::catkin
-    ${Boost_LIBRARIES}
     Eigen3::Eigen
-    Catch2::Catch2
+  Ladybug::Ladybug
     nlohmann_json::nlohmann_json
   SOURCES
-    src/TfTree.cpp
+  #src/Fisheye.cpp
     src/Intrinsics.cpp
+  src/Ladybug.cpp
     src/Pinhole.cpp
-    #src/Ladybug.cpp
-    #src/Fisheye.cpp
-)
+  src/TfTree.cpp
+  )
 
-################ tests ##################
+#[[################ tests ##################
 add_executable(${PROJECT_NAME}_intrinsic_tests
   tests/pinhole_test.cpp
 )
@@ -45,7 +44,7 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Catch2::Catch2
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-)
+)]]
 #######################################
 
 ############# Debug files #############
@@ -60,4 +59,18 @@ target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
+#######################################
+
+############# Debug files #############
+add_executable(${PROJECT_NAME}_ladybug_debug
+  src/Ladybug_main.cpp
+  )
+target_include_directories(${PROJECT_NAME}_ladybug_debug
+  PUBLIC
+  include
+  )
+target_link_libraries(${PROJECT_NAME}_ladybug_debug
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  )
 #######################################
