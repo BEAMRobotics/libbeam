@@ -74,7 +74,7 @@ namespace beam_defects {
   // Extract cloud groups using euclidian segmentation
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> GetExtractedClouds(
       const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
-    auto tree = boost::make_shared<pcl::search::KdTree<pcl::PointXYZ>>();
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree;
     tree->setInputCloud (input_cloud);
 
     std::vector<pcl::PointIndices> cluster_indices;
