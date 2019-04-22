@@ -5,7 +5,7 @@ PROJECT(beam)
 SET(BEAM_PACKAGE_VERSION 0.1.0)
 
 # Compiler settings for all targets
-SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ADD_COMPILE_OPTIONS(-Wall -Wextra -Wno-strict-overflow)
 
@@ -32,7 +32,7 @@ OPTION(EXPORT_BUILD
 
 # Find all dependencies here, and ensure they have IMPORTED targets
 # Require Eigen 3.2.92, also called 3.3 beta-1, since it's in xenial
-FIND_PACKAGE(Eigen3 3.2.92 REQUIRED)
+find_package(Eigen3 REQUIRED)
 FIND_PACKAGE(Boost 1.58.0 COMPONENTS system filesystem)
 FIND_PACKAGE(PCL 1.8 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
