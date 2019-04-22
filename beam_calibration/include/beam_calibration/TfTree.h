@@ -83,7 +83,7 @@ public:
    */
   void SetCalibrationDate(std::string& calibration_date);
 
-  ros::Time start_time_;
+  ros::Time start_time_{0};
 
 private:
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
