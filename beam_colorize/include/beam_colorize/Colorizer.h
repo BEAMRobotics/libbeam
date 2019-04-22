@@ -32,6 +32,11 @@ namespace beam_colorize {
  *  @{ */
 
 /**
+ * @brief Enum class for different types of intrinsic calibrations
+ */
+enum class ColorizerType { PROJECTION = 0, RAY_TRACE};
+
+/**
  * @brief Abstract class which different colorization methods can implement
  */
 class Colorizer {
@@ -40,6 +45,7 @@ public:
 
   virtual ~Colorizer() = default;
 
+  static std::unique_ptr<Colorizer> Create(ColorizerType type);
   /**
    * @brief Method for adding a point cloud of point type XYZ. This is required.
    * @param cloud_input Input point cloud
@@ -70,8 +76,7 @@ public:
    * @brief Method for adding the intrinsics object. This is required.
    * @param intrinsics pointer to intrinsics abstract object
    */
-  void SetIntrinsics(
-      const std::shared_ptr<beam_calibration::Intrinsics> intrinsics);
+  void SetIntrinsics(beam_calibration::Intrinsics* intrinsics);
 
   /**
    * @brief Method for adding a transformation between the image and point
@@ -97,7 +102,7 @@ public:
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
   std::shared_ptr<cv::Mat> image_;
-  std::shared_ptr<beam_calibration::Intrinsics> intrinsics_;
+  beam_calibration::Intrinsics* intrinsics_;
   Eigen::Affine3d T_C_L_;
   bool image_distored_, image_initialized_, point_cloud_initialized_,
       intrinsics_initialized_, transform_set_;

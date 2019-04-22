@@ -34,6 +34,9 @@ public:
    */
   virtual ~ImageBridge() = default;
 
+  bool IsBGRImageSet(){return is_bgr_image_set_;}
+
+  bool IsBGRMaskSet(){return is_bgr_mask_set_;}
   /**
    * @brief Method for setting the BGR image to the container
    * @param bgr_image Image with standard b-g-r color fields, no processing done
