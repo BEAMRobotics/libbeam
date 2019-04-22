@@ -71,15 +71,12 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     return;
   }
 
-  ros::Time time0(0);
+  ros::Time time0 = start_time_; //(0);
   std::string transform_error;
   bool transform_exists =
       Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
-    LOG_ERROR("Cannot add transform from frame %s to %s. Frame already exists",
-              from_frame.c_str(), to_frame.c_str());
-    return;
   }
 
   std::string parent;
@@ -96,11 +93,17 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   }
 }
 
+void TfTree::AddTransform(geometry_msgs::TransformStamped msg) {
+  if (!Tree_.setTransform(msg, "TfTree")) {
+    std::cout << "Error adding transform" << std::endl;
+  }
+}
+
 Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
                                      std::string& from_frame) {
   Eigen::Affine3d TA_target_source;
   std::string transform_error;
-  ros::Time time0(0);
+  ros::Time time0 = start_time_; //(0);
   bool can_transform =
       Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
 
@@ -115,6 +118,14 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
               from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
   }
   return TA_target_source;
+}
+
+geometry_msgs::TransformStamped TfTree::GetTransform(std::string& to_frame,
+                                                     std::string& from_frame,
+                                                     ros::Time lookup_time) {
+  geometry_msgs::TransformStamped transform_msg =
+      Tree_.lookupTransform(to_frame, from_frame, lookup_time);
+  return transform_msg;
 }
 
 void TfTree::SetCalibrationDate(std::string& calibration_date) {
@@ -136,6 +147,7 @@ void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
   Tgeo.header.seq = 1;
   Tgeo.header.frame_id = from_frame;
   Tgeo.child_frame_id = to_frame;
+  Tgeo.header.stamp = start_time_;
   bool transform_valid = Tree_.setTransform(Tgeo, "TfTree", true);
   if (!transform_valid) {
     throw std::invalid_argument{"Cannot add transform. Transform invalid."};
