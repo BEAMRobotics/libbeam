@@ -65,14 +65,14 @@ target_link_libraries(${PROJECT_NAME}_debug
 
 
 ############# Calibrater #############
-add_executable(${PROJECT_NAME}_calibrater
-  src/calibrater.cpp
+add_executable(${PROJECT_NAME}_LC_calibrater
+  src/LC_calibrater.cpp
 )
-target_include_directories(${PROJECT_NAME}_calibrater
+target_include_directories(${PROJECT_NAME}_LC_calibrater
   PUBLIC
     include
 )
-target_link_libraries(${PROJECT_NAME}_calibrater
+target_link_libraries(${PROJECT_NAME}_LC_calibrater
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
