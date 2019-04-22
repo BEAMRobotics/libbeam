@@ -1,0 +1,8 @@
+{
+  "transform_pts_to_frame": "F1_link",
+  "transform_pts_from_frame": "hvlp_link",
+  "image": "image3.jpg",
+  "intrinsics": "F1.json",
+  "extrinsics": "extrinsics_full.json",
+  "map": "map3crop.pcd"
+}

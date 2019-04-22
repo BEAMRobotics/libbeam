@@ -5,6 +5,7 @@ PROJECT(beam_calibration)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
+    beam::colorize
     catkin::catkin
     ${Boost_LIBRARIES}
     Eigen3::Eigen
@@ -57,6 +58,21 @@ target_include_directories(${PROJECT_NAME}_debug
     include
 )
 target_link_libraries(${PROJECT_NAME}_debug
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+#######################################
+
+
+############# Calibrater #############
+add_executable(${PROJECT_NAME}_calibrater
+  src/calibrater.cpp
+)
+target_include_directories(${PROJECT_NAME}_calibrater
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_calibrater
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )

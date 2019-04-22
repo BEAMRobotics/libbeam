@@ -23,17 +23,17 @@ TEST_CASE("Test Tree building and retrieving") {
   TA_BASELINK_HVLP.matrix() = T_BASELINK_HVLP;
   TA_X1_HVLP.matrix() = T_X1_HVLP;
 
-  std::string to_frame1 = "BASELINK";
-  std::string from_frame1 = "HVLP";
+  std::string to_frame1 = "base_link";
+  std::string from_frame1 = "hvlp_link";
   std::string calib_date = "2018_12_20";
   Tree.AddTransform(TA_BASELINK_HVLP, to_frame1, from_frame1);
-  std::string to_frame2 = "X1";
-  std::string from_frame2 = "HVLP";
+  std::string to_frame2 = "X1_link";
+  std::string from_frame2 = "hvlp_link";
   Tree.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
   Tree.SetCalibrationDate(calib_date);
 
-  std::string to_frame3 = "BASELINK";
-  std::string from_frame3 = "X1";
+  std::string to_frame3 = "base_link";
+  std::string from_frame3 = "X1_link";
   TA_BASELINK_X1_calc.matrix() = TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
   TA_BASELINK_X1_lookup = Tree.GetTransform(to_frame3, from_frame3);
   int round_precision = 10000000;
@@ -79,12 +79,12 @@ TEST_CASE("Test loading tree from .json"){
   Tree.LoadJSON(file_location);
 
   // look up transforms needed for tests
-  std::string to_frame1 = "BASELINK";
-  std::string from_frame1 = "HVLP";
-  std::string to_frame2 = "X1";
-  std::string from_frame2 = "HVLP";
-  std::string to_frame3 = "BASELINK";
-  std::string from_frame3 = "X1";
+  std::string to_frame1 = "base_link";
+  std::string from_frame1 = "hvlp_link";
+  std::string to_frame2 = "X1_link";
+  std::string from_frame2 = "hvlp_link";
+  std::string to_frame3 = "base_link";
+  std::string from_frame3 = "X1_link";
 
   T_BASELINK_HVLP_JSON = Tree.GetTransform(to_frame1, from_frame1).matrix();
   T_X1_HVLP_JSON = Tree.GetTransform(to_frame2, from_frame2).matrix();
@@ -124,12 +124,12 @@ TEST_CASE("Testing multiple parent case"){
    TA_X1_HVLP.matrix() = T_X1_HVLP;
    TA_X1_IMU1.matrix() = T_X1_IMU1;
    TA_IMU1_X1 = TA_X1_IMU1.inverse();
-   std::string to_frame1 = "HVLP";
-   std::string from_frame1 = "BASELINK";
-   std::string to_frame2 = "X1";
-   std::string from_frame2 = "HVLP";
-   std::string to_frame3 = "X1";
-   std::string from_frame3 = "IMU1";
+   std::string to_frame1 = "hvlp_link";
+   std::string from_frame1 = "base_link";
+   std::string to_frame2 = "X1_link";
+   std::string from_frame2 = "hvlp_link";
+   std::string to_frame3 = "X1_link";
+   std::string from_frame3 = "IMU1_link";
 
    Tree1.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
    Tree1.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
