@@ -65,7 +65,7 @@ int main() {
   bool image_distorted = true;
   projector.SetPointCloud(cloud);
   projector.SetImage(image);
-  projector.SetIntrinsics(F1);
+  projector.SetIntrinsics(F1.get());
   projector.SetDistortion(image_distorted);
   cloud_colored = projector.ColorizePointCloud();
 

@@ -35,6 +35,15 @@ public:
    */
   virtual IntrinsicsType GetType() const = 0;
 
+
+  /**
+   * @brief Factory method for instantiating intrinsics
+   * @param type Type of Vehicle to create
+   * @return
+   */
+  static std::unique_ptr<Intrinsics> Create(IntrinsicsType type);
+
+
   /**
    * @brief Pure virtual method for loading a pinhole calibration from a .json
    * @param file_location absolute path to json file

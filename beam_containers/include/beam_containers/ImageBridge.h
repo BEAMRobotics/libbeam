@@ -34,6 +34,9 @@ public:
    */
   virtual ~ImageBridge() = default;
 
+  bool IsBGRImageSet(){return is_bgr_image_set_;}
+
+  bool IsBGRMaskSet(){return is_bgr_mask_set_;}
   /**
    * @brief Method for setting the BGR image to the container
    * @param bgr_image Image with standard b-g-r color fields, no processing done
@@ -242,7 +245,7 @@ public:
    */
   void LoadFromJSON(std::string path_to_json) {
     std::stringstream ss_json;
-    ss_json << path_to_json << "ImageBridgeInfo.json";
+    ss_json << path_to_json << "/ImageBridgeInfo.json";
     nlohmann::json json_config;
     std::ifstream i(ss_json.str());
     i >> json_config;
@@ -263,19 +266,19 @@ public:
     time_stamp_ = tp;
 
     if (is_bgr_image_set_) {
-      cv::Mat bgr_img = cv::imread(path_to_json + std::string("BGRImage.jpg"));
+      cv::Mat bgr_img = cv::imread(path_to_json + std::string("/BGRImage.jpg"));
       SetBGRImage(bgr_img);
     }
     if (is_bgr_mask_set_) {
-      cv::Mat bgr_mask = cv::imread(path_to_json + std::string("BGRMask.jpg"));
+      cv::Mat bgr_mask = cv::imread(path_to_json + std::string("/BGRMask.jpg"));
       SetBGRMask(bgr_mask);
     }
     if (is_ir_image_set_) {
-      cv::Mat ir_img = cv::imread(path_to_json + std::string("IRImage.jpg"));
+      cv::Mat ir_img = cv::imread(path_to_json + std::string("/IRImage.jpg"));
       SetIRImage(ir_img);
     }
     if (is_ir_mask_set_) {
-      cv::Mat ir_mask = cv::imread(path_to_json + std::string("IRMask.jpg"));
+      cv::Mat ir_mask = cv::imread(path_to_json + std::string("/IRMask.jpg"));
       SetIRMask(ir_mask);
     }
   }

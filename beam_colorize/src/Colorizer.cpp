@@ -1,4 +1,6 @@
 #include "beam_colorize/Colorizer.h"
+#include "beam_colorize/Projection.h"
+#include "beam_colorize/RayTrace.h"
 
 namespace beam_colorize {
 
@@ -7,7 +9,7 @@ void Colorizer::SetPointCloud(
   input_point_cloud_ = cloud_input;
 
   // if transform already set, transform cloud here
-  if(transform_set_){
+  if (transform_set_) {
     pcl::transformPointCloud(*input_point_cloud_, *input_point_cloud_, T_C_L_);
   }
   point_cloud_initialized_ = true;
@@ -19,7 +21,7 @@ void Colorizer::SetPointCloud(
   pcl::copyPointCloud(*cloud_input, *input_point_cloud_);
 
   // if transform already set, transform cloud here
-  if(transform_set_){
+  if (transform_set_) {
     pcl::transformPointCloud(*input_point_cloud_, *input_point_cloud_, T_C_L_);
   }
   point_cloud_initialized_ = true;
@@ -38,8 +40,7 @@ void Colorizer::SetImage(const sensor_msgs::Image& image_input) {
   image_initialized_ = true;
 }
 
-void Colorizer::SetIntrinsics(
-    const std::shared_ptr<beam_calibration::Intrinsics> intrinsics) {
+void Colorizer::SetIntrinsics(beam_calibration::Intrinsics* intrinsics) {
   intrinsics_ = intrinsics;
   intrinsics_initialized_ = true;
 }
@@ -52,10 +53,18 @@ void Colorizer::SetTransform(const Eigen::Affine3d& T_C_L) {
   T_C_L_ = T_C_L;
 
   // if point cloud already initialized, apply transfomration now
-  if(point_cloud_initialized_){
+  if (point_cloud_initialized_) {
     pcl::transformPointCloud(*input_point_cloud_, *input_point_cloud_, T_C_L);
   }
   transform_set_ = true;
+}
+
+std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type){
+  if (type == ColorizerType::PROJECTION)
+    return std::unique_ptr<Projection>(new Projection());
+  else if (type == ColorizerType::RAY_TRACE)
+    return std::make_unique<RayTrace>();
+  else return nullptr;
 }
 
 } // namespace beam_colorize
