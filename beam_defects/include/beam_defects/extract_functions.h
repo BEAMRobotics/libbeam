@@ -45,7 +45,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateDelamPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold);
 
-// function to isolate delam points only
+// function to isolate corrosion points only
 pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold);
