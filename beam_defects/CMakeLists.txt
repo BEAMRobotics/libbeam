@@ -14,6 +14,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Crack.cpp
     src/Delam.cpp
     src/Spall.cpp
+    src/Corrosion.cpp
     src/defect_functions.cpp
     src/extract_functions.cpp
 )
