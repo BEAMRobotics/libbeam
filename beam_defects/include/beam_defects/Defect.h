@@ -21,7 +21,7 @@ namespace beam_defects {
 /**
  * @brief Enum class for different types of defects we might want to use
  */
-enum class DefectType { CRACK = 0, SPALL, DELAM };
+enum class DefectType { CRACK = 0, SPALL, DELAM, CORROSION };
 
 /**
  * @brief Enum class for defect severity based on OSIM guidelines
