@@ -328,9 +328,17 @@ beam::Vec2 Pinhole::ProjectDistortedPoint(beam::Vec4& X) {
 
 beam::Vec2 Pinhole::ApplyProjection(beam::Vec3& X) {
   beam::Vec2 coords;
-  beam::Vec3 x_proj;
-  // project point
-  x_proj = K_ * X;
+  beam::Vec3 x_proj, X_flip;
+
+  // flip the coordinate system to be consistent with opencv convention shown
+  // here: http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
+  X_flip(0,0) = -X(1,0); // x = -y
+  X_flip(1,0) = X(0,0); // y = x
+  X_flip(2,0) = X(2,0); // z = z
+
+  // project
+  x_proj = K_ * X_flip;
+
   // normalize
   coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
   coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
@@ -367,8 +375,12 @@ beam::Vec2 Pinhole::ApplyDistortedProjection(beam::Vec3& X) {
                     (1 + k4 * r2 + k5 * r2 * r2 + k6 * r2 * r2 * r2);
   xx = x * quotient + 2 * p1 * x * y + p2 * (r2 + 2 * x * x);
   yy = y * quotient + p1 * (r2 + 2 * y * y) + 2 * p2 * x * y;
-  coords(0, 0) = fx * xx + cx;
-  coords(1, 0) = fy * yy + cy;
+
+  // flip the coordinate system to be consistent with opencv convention shown
+  // here: http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
+  coords(0, 0) = (fx * (-yy) + cx);
+  coords(1, 0) = (fy * xx + cy);
+
   return coords;
 }
 

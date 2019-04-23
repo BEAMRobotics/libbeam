@@ -135,6 +135,31 @@ public:
   std::string GetIRMaskMethod() { return ir_mask_method_; }
 
   /**
+   * @brief Method for setting the name of the frame id of the bgr camera
+   * @param bgr_frame_id
+   */
+  void SetBGRFrameId(std::string& bgr_frame_id) {
+    bgr_frame_id_ = bgr_frame_id;
+  }
+
+  /**
+   * @brief Method for getting the name of the frame id of the bgr camera
+   * @return bgr_frame_id_
+   */
+  std::string GetBGRFrameId() { return bgr_frame_id_; }
+  /**
+   * @brief Method for setting the name of the frame id of the IR camera
+   * @param bgr_frame_id
+   */
+  void SetIRFrameId(std::string& ir_frame_id) { ir_frame_id_ = ir_frame_id; }
+
+  /**
+   * @brief Method for getting the name of the frame id of the IR camera
+   * @return bgr_frame_id_
+   */
+  std::string GetIRFrameId() { return ir_frame_id_; }
+
+  /**
    * @brief Method for setting the name of the bag the images were extracted
    * from
    * @param bag_name
@@ -225,6 +250,8 @@ public:
     nlohmann::json J = {{"image_container_type", "ImageBridge"},
                         {"bgr_mask_method", bgr_mask_method_},
                         {"ir_mask_method", ir_mask_method_},
+                        {"bgr_frame_id", bgr_frame_id_},
+                        {"ir_frame_id", ir_frame_id_},
                         {"bag_name", bag_name_},
                         {"time_stamp", time_stamp_.time_since_epoch().count()},
                         {"image_seq", image_seq_},
@@ -247,8 +274,8 @@ public:
     std::stringstream ss_json;
     ss_json << path_to_json << "/ImageBridgeInfo.json";
     nlohmann::json json_config;
-    std::ifstream i(ss_json.str());
-    i >> json_config;
+    std::ifstream file(path_to_json + "/ImageBridgeInfo.json");
+    file >> json_config;
 
     bag_name_ = json_config["bag_name"];
     bgr_is_distorted_ = json_config["bgr_is_distorted"];
@@ -266,26 +293,28 @@ public:
     time_stamp_ = tp;
 
     if (is_bgr_image_set_) {
-      cv::Mat bgr_img = cv::imread(path_to_json + std::string("/BGRImage.jpg"));
+      cv::Mat bgr_img = cv::imread(path_to_json + "/BGRImage.jpg");
       SetBGRImage(bgr_img);
     }
     if (is_bgr_mask_set_) {
-      cv::Mat bgr_mask = cv::imread(path_to_json + std::string("/BGRMask.jpg"));
+      cv::Mat bgr_mask =
+          cv::imread(path_to_json + "/BGRMask.jpg", cv::IMREAD_GRAYSCALE);
       SetBGRMask(bgr_mask);
     }
     if (is_ir_image_set_) {
-      cv::Mat ir_img = cv::imread(path_to_json + std::string("/IRImage.jpg"));
+      cv::Mat ir_img = cv::imread(path_to_json + "/IRImage.jpg");
       SetIRImage(ir_img);
     }
     if (is_ir_mask_set_) {
-      cv::Mat ir_mask = cv::imread(path_to_json + std::string("/IRMask.jpg"));
+      cv::Mat ir_mask = cv::imread(path_to_json + "/IRMask.jpg");
       SetIRMask(ir_mask);
     }
   }
 
 private:
   cv::Mat bgr_image_, bgr_mask_, ir_image_, ir_mask_;
-  std::string bgr_mask_method_, ir_mask_method_, bag_name_;
+  std::string bgr_mask_method_, ir_mask_method_, bag_name_, ir_frame_id_,
+      bgr_frame_id_;
   beam::TimePoint time_stamp_;
   int image_seq_;
   bool bgr_is_distorted_ = false, ir_is_distorted_ = false,
