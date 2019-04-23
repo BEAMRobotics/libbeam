@@ -72,7 +72,7 @@ std::vector<beam_defects::Delam> GetDelams(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold);
 
-// function to extract delams
+// function to extract corrosion
 // return type is a vector of delam objects
 std::vector<beam_defects::Corrosion> GetCorrosion(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
