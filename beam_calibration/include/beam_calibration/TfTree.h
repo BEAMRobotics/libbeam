@@ -52,7 +52,8 @@ public:
    * @brief Method for adding transform via TransformStamped
    * @param msg
    */
-  void AddTransform(geometry_msgs::TransformStamped msg);
+  void AddTransform(geometry_msgs::TransformStamped msg,
+                    bool is_static = false);
 
   /**
    * @brief Method for retrieving a transformation

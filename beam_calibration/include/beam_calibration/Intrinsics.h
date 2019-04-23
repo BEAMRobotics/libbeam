@@ -42,7 +42,8 @@ public:
    * @return
    */
   static std::unique_ptr<Intrinsics> Create(IntrinsicsType type);
-
+  static std::unique_ptr<Intrinsics> Create(IntrinsicsType type,
+                                            unsigned int id);
 
   /**
    * @brief Pure virtual method for loading a pinhole calibration from a .json

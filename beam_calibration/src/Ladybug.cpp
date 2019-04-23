@@ -2,7 +2,9 @@
 
 namespace beam_calibration {
 
-Ladybug::Ladybug(unsigned int id) : cam_id_(id) {}
+Ladybug::Ladybug(unsigned int id) : cam_id_(id) {
+  std::cout << "Created ladybug intrinsics object" << std::endl;
+}
 
 void Ladybug::LoadJSON(std::string& file) {
   lb_error_ = ladybugCreateContext(&lb_context_);
@@ -30,12 +32,15 @@ void Ladybug::LoadJSON(std::string& file) {
 
   // Set K matrix
   K_(0, 0) = focal_length;
-  K_(0, 2) = cx;
+  K_(0, 2) = cy;
   K_(1, 1) = focal_length;
-  K_(1, 2) = cy;
+  K_(1, 2) = cx;
   K_(2, 2) = 1;
   is_K_full_ = true;
-  frame_id_ = "ladybug_link" + std::to_string(cam_id_);
+  frame_id_ = "ladybug_cam" + std::to_string(cam_id_);
+  std::cout << "Focal length: " << focal_length << std::endl;
+  std::cout << "cx: " << cx << std::endl;
+  std::cout << "cy: " << cy << std::endl;
 }
 
 std::string Ladybug::GetFrameId() {
@@ -91,7 +96,7 @@ beam::Vec2 Ladybug::ProjectDistortedPoint(beam::Vec3& X) {
 
 beam::Vec2 Ladybug::ApplyDistortedProjection(beam::Vec3& X) {
   beam::Vec2 rectified_pixel = ProjectPoint(X);
-  beam::Vec2 distorted_pixel = UndistortPixel(rectified_pixel);
+  beam::Vec2 distorted_pixel = DistortPixel(rectified_pixel);
 
   return distorted_pixel;
 }
@@ -101,6 +106,8 @@ beam::Vec2 Ladybug::UndistortPixel(beam::Vec2 pixel_in) {
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel_in[0],
                                   pixel_in[1], &pixel_out[0], &pixel_out[1]);
   LadybugCheckError();
+  //  std::cout << "Pixel in: [" << pixel_in[0] << ", " << pixel_in[1] << "] --
+  //  Out : [" << pixel_out[0] << ", " << pixel_out[1] << "]." << std::endl;
   return pixel_out;
 }
 
@@ -122,9 +129,18 @@ bool Ladybug::PixelInImage(beam::Vec2 pixel_in) {
 
 beam::Vec2 Ladybug::ApplyProjection(beam::Vec3& X) {
   beam::Vec2 coords;
-  beam::Vec3 x_proj;
-  // project point
-  x_proj = K_ * X;
+  beam::Vec3 x_proj, X_flip;
+
+  // flip the coordinate system to be consistent with opencv convention shown
+  // here:
+  // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
+  X_flip(0, 0) = -X(1, 0); // x = -y
+  X_flip(1, 0) = X(0, 0);  // y = x
+  X_flip(2, 0) = X(2, 0);  // z = z
+
+  // project
+  x_proj = K_ * X_flip;
+
   // normalize
   coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
   coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);

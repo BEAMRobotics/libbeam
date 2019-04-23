@@ -17,4 +17,9 @@ std::unique_ptr<Intrinsics> Intrinsics::Create(IntrinsicsType type) {
   else return nullptr;
 }
 
+std::unique_ptr<Intrinsics> Intrinsics::Create(IntrinsicsType type,
+                                               unsigned int id) {
+  if (type == IntrinsicsType::LADYBUG) return std::make_unique<Ladybug>(id);
+}
+
 } // namespace beam_calibration

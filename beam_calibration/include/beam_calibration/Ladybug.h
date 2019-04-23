@@ -9,7 +9,7 @@ namespace beam_calibration {
 
 class Ladybug : public Intrinsics {
 public:
-  Ladybug(unsigned int id);
+  explicit Ladybug(unsigned int id);
 
   Ladybug() = default;
   ~Ladybug() = default;
