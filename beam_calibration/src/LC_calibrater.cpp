@@ -210,7 +210,7 @@ int main() {
   pcl::transformPointCloud(*cloud, *cloud_transformed, T_C_Map);
   projector.SetPointCloud(cloud_transformed);
   projector.SetImage(image);
-  projector.SetIntrinsics(F1);
+  projector.SetIntrinsics(F1.get());
   projector.SetDistortion(image_distorted);
   cloud_colored = projector.ColorizePointCloud();
 
