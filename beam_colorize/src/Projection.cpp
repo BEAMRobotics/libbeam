@@ -105,14 +105,18 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     if (u > 0 && v > 0 && v < vmax && u < umax) {
       color_scale = image_->at<uchar>(v, u);
       // ignore black colors, this happens at edges when images are undistored
+      //      std::cout << "Color scale = " << color_scale << std::endl;
       if (color_scale == 0) {
         continue;
       } else if (color_scale == 1) {
         defect_cloud->points[i].crack = 1;
+        counter++;
       } else if (color_scale == 2) {
         defect_cloud->points[i].delam = 1;
+        counter++;
       } else if (color_scale == 3) {
         defect_cloud->points[i].corrosion = 1;
+        counter++;
       }
     }
   }
