@@ -4,10 +4,9 @@
 
 #pragma once
 
-#define PCL_NO_PRECOMPILE
-
 #include <boost/smart_ptr.hpp>
 
+#define PCL_NO_PRECOMPILE
 #include <pcl/point_types.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
@@ -25,6 +24,7 @@
 #include "beam_defects/Crack.h"
 #include "beam_defects/Delam.h"
 #include "beam_defects/Spall.h"
+#include "beam_defects/Corrosion.h"
 
 namespace beam_defects {
 /** @addtogroup defects
@@ -42,6 +42,11 @@ pcl::PointCloud<pcl::PointXYZ> IsolateSpallPoints(
 
 // function to isolate delam points only
 pcl::PointCloud<pcl::PointXYZ> IsolateDelamPoints(
+    const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
+    const float& threshold);
+
+// function to isolate delam points only
+pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold);
 
@@ -64,6 +69,12 @@ std::vector<beam_defects::Spall> GetSpalls(
 // function to extract delams
 // return type is a vector of delam objects
 std::vector<beam_defects::Delam> GetDelams(
+    const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
+    const float& threshold);
+
+// function to extract delams
+// return type is a vector of delam objects
+std::vector<beam_defects::Corrosion> GetCorrosion(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold);
 

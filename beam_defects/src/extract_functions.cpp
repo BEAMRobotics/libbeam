@@ -53,11 +53,34 @@ namespace beam_defects {
       const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
       const float& threshold) {
     auto cloud_filtered = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
-    pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
     pcl::ExtractIndices<beam_containers::PointBridge> extract;
 
     for (unsigned int i = 0; i < input_cloud->points.size (); ++i){
       if(input_cloud->points[i].delam >= threshold){
+          inliers->indices.push_back(i);
+        }
+    }
+    extract.setInputCloud(input_cloud);
+    extract.setIndices(inliers);
+    extract.filter(*cloud_filtered);
+
+    auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    copyPointCloud(*cloud_filtered, *cloud_xyz);
+
+    return *cloud_xyz;
+  };
+
+  // function to isolate Corrosion points only
+  pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
+      const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
+      const float& threshold) {
+    auto cloud_filtered = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+    pcl::ExtractIndices<beam_containers::PointBridge> extract;
+
+    for (unsigned int i = 0; i < input_cloud->points.size (); ++i){
+      if(input_cloud->points[i].corrosion >= threshold){
           inliers->indices.push_back(i);
         }
     }
@@ -79,8 +102,8 @@ namespace beam_defects {
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance (0.05); // 5cm
-    ec.setMinClusterSize (50);
+    ec.setClusterTolerance (0.1); // 10cm
+    ec.setMinClusterSize (100);
     ec.setMaxClusterSize (50000);
     ec.setSearchMethod (tree);
     ec.setInputCloud (input_cloud);
@@ -90,13 +113,11 @@ namespace beam_defects {
     for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
     {
       auto cloud_cluster = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-      for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit){
+      for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
         cloud_cluster->points.push_back (input_cloud->points[*pit]);
-      }
 
       cloud_cluster->width = cloud_cluster->points.size ();
       cloud_cluster->height = 1;
-      cloud_cluster->is_dense = true;
 
       defect_cloud.push_back(cloud_cluster);
     }
@@ -153,6 +174,23 @@ std::vector<beam_defects::Delam> GetDelams(
   }
 
   return delam_vector;
+};
+
+// function to extract corrosion
+// return type is a vector of corrosion objects
+std::vector<beam_defects::Corrosion> GetCorrosion(
+    const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
+    const float& threshold) {
+  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  *cloud_filtered = IsolateCorrosionPoints(input_cloud, threshold);
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector = GetExtractedClouds(cloud_filtered);
+
+  std::vector<beam_defects::Corrosion> corrosion_vector;
+  for (auto& cloud : cloud_vector) {
+    corrosion_vector.push_back(beam_defects::Corrosion(cloud));
+  }
+
+  return corrosion_vector;
 };
 
 } // namespace beam_defects
