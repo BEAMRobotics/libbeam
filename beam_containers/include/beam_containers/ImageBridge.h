@@ -34,9 +34,9 @@ public:
    */
   virtual ~ImageBridge() = default;
 
-  bool IsBGRImageSet(){return is_bgr_image_set_;}
+  bool IsBGRImageSet() { return is_bgr_image_set_; }
 
-  bool IsBGRMaskSet(){return is_bgr_mask_set_;}
+  bool IsBGRMaskSet() { return is_bgr_mask_set_; }
   /**
    * @brief Method for setting the BGR image to the container
    * @param bgr_image Image with standard b-g-r color fields, no processing done
@@ -138,7 +138,9 @@ public:
    * @brief Method for setting the name of the frame id of the bgr camera
    * @param bgr_frame_id
    */
-  void SetBGRFrameId(std::string& bgr_frame_id) { bgr_frame_id_ = bgr_frame_id; }
+  void SetBGRFrameId(std::string& bgr_frame_id) {
+    bgr_frame_id_ = bgr_frame_id;
+  }
 
   /**
    * @brief Method for getting the name of the frame id of the bgr camera
@@ -293,7 +295,8 @@ public:
       SetBGRImage(bgr_img);
     }
     if (is_bgr_mask_set_) {
-      cv::Mat bgr_mask = cv::imread(path_to_json + "/BGRMask.jpg");
+      cv::Mat bgr_mask =
+          cv::imread(path_to_json + "/BGRMask.jpg", cv::IMREAD_GRAYSCALE);
       SetBGRMask(bgr_mask);
     }
     if (is_ir_image_set_) {
@@ -309,7 +312,7 @@ public:
 private:
   cv::Mat bgr_image_, bgr_mask_, ir_image_, ir_mask_;
   std::string bgr_mask_method_, ir_mask_method_, bag_name_, ir_frame_id_,
-              bgr_frame_id_;
+      bgr_frame_id_;
   beam::TimePoint time_stamp_;
   int image_seq_;
   bool bgr_is_distorted_ = false, ir_is_distorted_ = false,
