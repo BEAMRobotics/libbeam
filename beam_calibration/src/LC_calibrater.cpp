@@ -43,13 +43,13 @@ void PrintIntructions() {
       << "\n"
       << "Press right/left arrow keys to increase/decrease rotation sensitivity"
       << "\n"
-      << "Press buttons 'a/s/d' to increase translational DOF in x/y/z"
+      << "Press buttons ' a/s/d ' to increase translational DOF in x/y/z"
       << "\n"
-      << "Press buttons 'z/x/v' to decrease translational DOF in x/y/z"
+      << "Press buttons ' z/x/v ' to decrease translational DOF in x/y/z"
       << "\n"
-      << "Press buttons 'k/l/;' to increase rotational DOF about x/y/z"
+      << "Press buttons ' l/;/' ' to increase rotational DOF about x/y/z"
       << "\n"
-      << "Press buttons 'm/,/.' to decrease rotational DOF about x/y/z"
+      << "Press buttons ',/.// ' to decrease rotational DOF about x/y/z"
       << "\n"
       << "Press 'End' buttom to save final transform."
       << "\n";
@@ -96,22 +96,22 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent& event,
   } else if (event.getKeySym() == "v" && event.keyDown()) {
     trans(2, 0) = -sensitivity_t / 1000;
     update_trans = true;
-  } else if (event.getKeySym() == "k" && event.keyDown()) {
+  } else if (event.getKeySym() == "l" && event.keyDown()) {
     rot(0, 0) = sensitivity_r * PI / 180;
     update_trans = true;
-  } else if (event.getKeySym() == "l" && event.keyDown()) {
+  } else if (event.getKeySym() == "semicolon" && event.keyDown()) {
     rot(1, 0) = sensitivity_r * PI / 180;
     update_trans = true;
-  } else if (event.getKeySym() == "semicolon" && event.keyDown()) {
+  } else if (event.getKeySym() == "apostrophe" && event.keyDown()) {
     rot(2, 0) = sensitivity_r * PI / 180;
     update_trans = true;
-  } else if (event.getKeySym() == "m" && event.keyDown()) {
+  } else if (event.getKeySym() == "comma" && event.keyDown()) {
     rot(0, 0) = -sensitivity_r * PI / 180;
     update_trans = true;
-  } else if (event.getKeySym() == "comma" && event.keyDown()) {
+  } else if (event.getKeySym() == "period" && event.keyDown()) {
     rot(1, 0) = -sensitivity_r * PI / 180;
     update_trans = true;
-  } else if (event.getKeySym() == "period" && event.keyDown()) {
+  } else if (event.getKeySym() == "slash" && event.keyDown()) {
     rot(2, 0) = -sensitivity_r * PI / 180;
     update_trans = true;
   } else if (event.getKeySym() == "Up" && event.keyDown()) {
@@ -137,7 +137,7 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent& event,
     std::cout
         << "WARNING: this has overridden any previous files with that name\n";
   }
-
+  // std::cout << "event.getKeySym(): " << event.getKeySym() << "\n";
   if (update_trans) {
     Eigen::Affine3d T_tmp;
     T_tmp.matrix().setIdentity();
