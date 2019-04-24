@@ -1,12 +1,10 @@
 PROJECT(beam_calibration)
 
-#include_directories(${catkin_INCLUDE_DIRS})
-
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
+  Boost::boost
     catkin::catkin
-    ${Boost_LIBRARIES}
     Eigen3::Eigen
     Catch2::Catch2
     nlohmann_json::nlohmann_json
@@ -43,9 +41,9 @@ target_include_directories(${PROJECT_NAME}_extrinsics_tests
 target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
+  Boost::boost
+  catkin::catkin
+  )
 #######################################
 
 ############# Debug files #############
@@ -58,6 +56,6 @@ target_include_directories(${PROJECT_NAME}_debug
 )
 target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
+  catkin::catkin
 )
 #######################################
