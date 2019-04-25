@@ -23,7 +23,7 @@ namespace beam_containers {
  * @return poses Vector of poses containing timepoints and transformations
  * @param poses_file
  */
-std::vector<std::pair<beam::TimePoint, Eigen::Affine3d>>
+inline std::vector<std::pair<beam::TimePoint, Eigen::Affine3d>>
     ReadPoseFile(std::string poses_file) {
   std::ifstream file;
   std::string line;
