@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 PROJECT(beam)
 
 # Package version, used when other projects FIND_PACKAGE(beam <version>)
