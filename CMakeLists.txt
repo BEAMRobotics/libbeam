@@ -1,11 +1,11 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 PROJECT(beam)
 
 # Package version, used when other projects FIND_PACKAGE(beam <version>)
 SET(BEAM_PACKAGE_VERSION 0.1.0)
 
 # Compiler settings for all targets
-SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ADD_COMPILE_OPTIONS(-Wall -Wextra -Wno-strict-overflow)
 
