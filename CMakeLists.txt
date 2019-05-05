@@ -47,14 +47,14 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
              roscpp std_msgs cv_bridge)
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
-find_package(Ladybug)
+FIND_PACKAGE(Ladybug)
 
 # Where dependencies do not provide IMPORTED targets, define them
 INCLUDE(cmake/ImportEigen3.cmake)
 INCLUDE(cmake/ImportBoost.cmake)
 INCLUDE(cmake/ImportPCL.cmake)
 INCLUDE(cmake/ImportKindr.cmake)
-#INCLUDE(cmake/ImportYaml-cpp.cmake)
+INCLUDE(cmake/ImportYaml-cpp.cmake)
 INCLUDE(cmake/ImportCeres.cmake)
 INCLUDE(cmake/ImportCatkin.cmake)
 INCLUDE(cmake/ImportOpenCV.cmake)

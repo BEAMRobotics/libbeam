@@ -2,22 +2,22 @@ unset(Ladybug_FOUND)
 unset(Ladybug_INCLUDE_DIRS)
 unset(Ladybug_LIBRARIES)
 
-message(STATUS "Inside FindLadybug.cmake")
+message(STATUS "Trying to find Ladybug libs")
 find_path(Ladybug_INCLUDE_DIRS
   NAMES
-  ladybug.h
+    ladybug.h
   PATHS
-  /usr/include/ladybug/
-  /usr/local/include/ladybug/
-  )
+    /usr/include/ladybug/
+    /usr/local/include/ladybug/
+)
 
 find_library(Ladybug_LIBRARIES
   NAMES
-  ladybug
+    ladybug
   PATHS
-  /usr/lib/ladybug/
-  /usr/local/lib/ladybug/
-  )
+    /usr/lib/ladybug/
+    /usr/local/lib/ladybug/
+)
 
 if (Ladybug_INCLUDE_DIRS AND Ladybug_LIBRARIES)
   set(Ladybug_FOUND 1)
