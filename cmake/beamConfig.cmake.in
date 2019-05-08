@@ -96,6 +96,7 @@ INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportYaml-cpp.cmake)
 INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportCeres.cmake)
 INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportOpenCV.cmake)
 INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportCatkin.cmake)
+INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/FindLadybug.cmake)
 
 # This file contains definitions of IMPORTED targets
 INCLUDE("${CMAKE_CURRENT_LIST_DIR}/beamTargets.cmake")
