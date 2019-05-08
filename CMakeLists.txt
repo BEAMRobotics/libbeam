@@ -48,6 +48,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(Ladybug)
+INCLUDE(cmake/FindLadybug.cmake)
 message(STATUS "Ladybug found ${Ladybug_FOUND}")
 message(STATUS "Ladybug include dirs: ${Ladybug_INCLUDE_DIRS}")
 
