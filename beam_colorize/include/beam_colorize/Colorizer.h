@@ -19,7 +19,6 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-
 // OpenCV
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
@@ -34,7 +33,7 @@ namespace beam_colorize {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class ColorizerType { PROJECTION = 0, RAY_TRACE};
+enum class ColorizerType { PROJECTION = 0, RAY_TRACE };
 
 /**
  * @brief Abstract class which different colorization methods can implement

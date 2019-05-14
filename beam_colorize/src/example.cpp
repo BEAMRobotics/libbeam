@@ -1,6 +1,7 @@
 #include "beam_calibration/Pinhole.h"
 #include "beam_calibration/TfTree.h"
 #include "beam_colorize/Projection.h"
+#include "beam_colorize/RayTrace.h"
 #include "beam_utils/math.hpp"
 
 #include <boost/filesystem.hpp>
@@ -39,8 +40,8 @@ int main() {
     LOG_INFO("Opened file: %s", image_location.c_str());
   }
 
-  cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE);
-  cv::imshow("Display window", image);
+  // cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE);
+  // cv::imshow("Display window", image);
 
   // load pcd
   std::string pcd_name = "map18crop.pcd";
@@ -61,13 +62,14 @@ int main() {
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-  beam_colorize::Projection projector;
+
+  beam_colorize::RayTrace colorizer;
   bool image_distorted = true;
-  projector.SetPointCloud(cloud);
-  projector.SetImage(image);
-  projector.SetIntrinsics(F1.get());
-  projector.SetDistortion(image_distorted);
-  cloud_colored = projector.ColorizePointCloud();
+  colorizer.SetPointCloud(cloud);
+  colorizer.SetImage(image);
+  colorizer.SetIntrinsics(F1.get());
+  colorizer.SetDistortion(image_distorted);
+  cloud_colored = colorizer.ColorizePointCloud();
 
   pcl::visualization::PCLVisualizer::Ptr viewer(
       new pcl::visualization::PCLVisualizer("3D Viewer"));
