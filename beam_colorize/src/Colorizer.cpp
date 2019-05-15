@@ -59,12 +59,13 @@ void Colorizer::SetTransform(const Eigen::Affine3d& T_C_L) {
   transform_set_ = true;
 }
 
-std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type){
+std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
   if (type == ColorizerType::PROJECTION)
     return std::unique_ptr<Projection>(new Projection());
   else if (type == ColorizerType::RAY_TRACE)
-    return std::make_unique<RayTrace>();
-  else return nullptr;
+    return std::unique_ptr<RayTrace>(new RayTrace());
+  else
+    return nullptr;
 }
 
 } // namespace beam_colorize
