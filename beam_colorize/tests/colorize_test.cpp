@@ -7,6 +7,7 @@
 #include <boost/filesystem.hpp>
 
 #include <iostream>
+#include <typeinfo>
 
 #include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
@@ -66,6 +67,28 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr PerformColorization(int type) {
   cloud_colored = colorizer->ColorizePointCloud();
 
   return cloud_colored;
+}
+
+std::string GetPCDLocation() {
+  std::string pcd_location = __FILE__;
+  pcd_location.erase(pcd_location.end() - 17, pcd_location.end());
+  pcd_location += "test_data/map18crop.pcd";
+  return pcd_location;
+}
+
+std::string GetImageLocation() {
+  std::string image_location = __FILE__;
+  image_location.erase(image_location.end() - 17, image_location.end());
+  image_location += "test_data/test_img";
+  return image_location;
+}
+
+std::string GetIntrinsicsLocation() {
+  std::string intrinsics_location = __FILE__;
+  intrinsics_location.erase(intrinsics_location.end() - 17,
+                            intrinsics_location.end());
+  intrinsics_location += "test_data/F1.json";
+  return intrinsics_location;
 }
 
 TEST_CASE("Test correct projection colorization") {
@@ -142,4 +165,46 @@ TEST_CASE("Test correct raytrace colorization") {
 
   REQUIRE(percent_red > 0.95);
   REQUIRE(percent_blue > 0.95);
+}
+
+TEST_CASE("Test factory method") {
+  beam_colorize::ColorizerType PROJ = beam_colorize::ColorizerType::PROJECTION;
+  beam_colorize::ColorizerType RAY = beam_colorize::ColorizerType::RAY_TRACE;
+
+  auto projection = beam_colorize::Colorizer::Create(PROJ);
+  auto raytrace = beam_colorize::Colorizer::Create(RAY);
+
+  std::string proj_type(typeid(*projection).name());
+  std::string ray_type(typeid(*raytrace).name());
+
+  std::string proj_test = "Projection", ray_test = "RayTrace";
+
+  REQUIRE(proj_type.find(proj_test) != -1);
+  REQUIRE(ray_type.find(ray_test) != -1);
+}
+
+TEST_CASE("Test setter functions") {
+  std::string pcd_location = GetPCDLocation();
+  std::string image_location = GetImageLocation();
+  std::string intrinsics_location = GetIntrinsicsLocation();
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
+      new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *XYZ_cloud);
+  pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
+  // test image setters
+  cv::Mat image;
+  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+  // test intrinsics setters
+  std::shared_ptr<beam_calibration::Intrinsics> F1 =
+      std::make_shared<beam_calibration::Pinhole>();
+  F1->LoadJSON(intrinsics_location);
+
+  beam_colorize::Projection projection;
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_NOTHROW(projection.SetImage(image));
+  REQUIRE_NOTHROW(projection.SetIntrinsics(F1.get()));
 }
