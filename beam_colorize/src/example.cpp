@@ -62,13 +62,13 @@ int main() {
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-  beam_colorize::Projection colorizer;
+  beam_colorize::RayTrace colorizer;
   bool image_distorted = true;
   colorizer.SetPointCloud(cloud);
   colorizer.SetImage(image);
   colorizer.SetIntrinsics(F1.get());
   colorizer.SetDistortion(image_distorted);
-  cloud_colored = colorizer.ColorizePointCloud();
+  cloud_colored = colorizer.ColorizePointCloud(4);
 
   pcl::visualization::PCLVisualizer::Ptr viewer(
       new pcl::visualization::PCLVisualizer("3D Viewer"));
