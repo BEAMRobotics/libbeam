@@ -33,7 +33,7 @@ namespace beam_colorize {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class ColorizerType { PROJECTION = 0, RAY_TRACE };
+enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
 
 /**
  * @brief Abstract class which different colorization methods can implement
