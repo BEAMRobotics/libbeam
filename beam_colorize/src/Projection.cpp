@@ -14,6 +14,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
+
   if (!image_initialized_ || !point_cloud_initialized_ ||
       !intrinsics_initialized_) {
     return cloud_colored;
@@ -29,6 +30,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   uint16_t umax = image_->cols;
   uchar blue, green, red;
   int counter = 0;
+
   for (uint32_t i = 0; i < input_point_cloud_->points.size(); i++) {
     point(0, 0) = input_point_cloud_->points[i].x;
     point(1, 0) = input_point_cloud_->points[i].y;

@@ -37,19 +37,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   kdtree.setInputCloud(input_cloud);
 
   // This lambda performs ray tracing in parallel on each pixel in the image
-  uint32_t completed = 0;
-  // float total = image_->rows * image_->cols;
-  /* Optional loading bar (slows down a lot)
-  std::thread tracker([&]() {
-    int percent_completed = std::round((completed / total) * 100);
-    while (true) {
-      std::cout << "\r [" << percent_completed << '%' << "] Completed"
-                << std::flush;
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      percent_completed = std::round((completed / total) * 100);
-      if (percent_completed > 99) { break; }
-    }
-  });*/
   std::mutex mutex;
   image_->forEach<RayTrace::Pixel>(
       [&](RayTrace::Pixel& p, const int* position) -> void {
@@ -78,7 +65,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
           int idx = indices[point_idx[0]];
           // if the point is within 1cm then color it appropriately
           if (distance < 0.01) {
-            completed++;
             cloud_colored->points[idx].r = p.z;
             cloud_colored->points[idx].g = p.y;
             cloud_colored->points[idx].b = p.x;
@@ -93,7 +79,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
           }
         }
       });
-  // tracker.join();
   // count the number of points colored
   uint32_t points_colored = 0;
   for (uint32_t i = 0; i < cloud_colored->points.size(); i++) {

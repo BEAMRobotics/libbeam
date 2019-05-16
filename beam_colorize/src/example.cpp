@@ -24,11 +24,12 @@ int main() {
   F1->LoadJSON(intrinsics_location);
 
   // load Image
-  std::string image_name = "test_img.jpg";
+  std::string image_name = "image18reduced.jpg";
   std::string image_location = __FILE__;
   image_location.erase(image_location.end() - 15, image_location.end());
   image_location += "tests/test_data/";
   image_location += image_name;
+
   cv::Mat image;
   image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
 
@@ -39,8 +40,8 @@ int main() {
     LOG_INFO("Opened file: %s", image_location.c_str());
   }
 
-  // cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE);
-  // cv::imshow("Display window", image);
+  cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE);
+  cv::imshow("Display window", image);
 
   // load pcd
   std::string pcd_name = "map18crop.pcd";
@@ -61,7 +62,6 @@ int main() {
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-
   beam_colorize::Projection colorizer;
   bool image_distorted = true;
   colorizer.SetPointCloud(cloud);
