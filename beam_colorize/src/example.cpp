@@ -62,7 +62,7 @@ int main() {
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-  beam_colorize::RayTrace colorizer;
+  beam_colorize::Projection colorizer;
   bool image_distorted = true;
   colorizer.SetPointCloud(cloud);
   colorizer.SetImage(image);

@@ -16,9 +16,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
 
   if (!image_initialized_ || !point_cloud_initialized_ ||
-      !intrinsics_initialized_) {
-    return cloud_colored;
+      !intrinsics_initialized_ || input_point_cloud_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
+    return cloud_colored;
     LOG_ERROR("Colorizer not properly initialized.");
   }
 

@@ -8,7 +8,7 @@ RayTrace::RayTrace() {
   point_cloud_initialized_ = false;
   intrinsics_initialized_ = false;
   transform_set_ = false;
-  dilation_ = 1;
+  dilation_ = 3;
   max_ray_ = 20;
   hit_threshold_ = 0.01;
 }
@@ -20,9 +20,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
 
   if (!image_initialized_ || !point_cloud_initialized_ ||
-      !intrinsics_initialized_) {
-    return cloud_colored;
+      !intrinsics_initialized_ || input_point_cloud_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
+    return cloud_colored;
     LOG_ERROR("Colorizer not properly initialized.");
   }
 
