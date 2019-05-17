@@ -10,6 +10,7 @@ RayTrace::RayTrace() {
   transform_set_ = false;
   dilation_ = 3;
   max_ray_ = 20;
+  hit_threshold_ = 0.01;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
@@ -87,7 +88,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
             float distance = sqrt(point_distance[0]);
             int idx = indices[point_idx[0]];
             // if the point is within 1cm then color it appropriately
-            if (distance < 0.01) {
+            if (distance < hit_threshold_) {
               points_colored++;
               cloud_colored->points[idx].r = pixel.z;
               cloud_colored->points[idx].g = pixel.y;

@@ -43,6 +43,7 @@ public:
 private:
   uint16_t dilation_;
   uint16_t max_ray_;
+  double hit_threshold_;
   /**
    * @brief Method for removing unneccessary points in cloud
    * @return Reduced point cloud
