@@ -10,8 +10,7 @@ Projection::Projection() {
   transform_set_ = false;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-    Projection::ColorizePointCloud(int dilation) const {
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);

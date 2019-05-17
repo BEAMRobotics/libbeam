@@ -38,18 +38,19 @@ public:
    * @brief Method for colorizing a point cloud
    * @return Colored point cloud pointer
    */
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud(int dilation = -1) const override;
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
 private:
+  uint16_t dilation_;
+  uint16_t max_ray_;
   /**
    * @brief Method for removing unneccessary points in cloud
    * @return Reduced point cloud
    */
   std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-      ReduceCloud_(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-                   std::shared_ptr<cv::Mat>,
-                   beam_calibration::Intrinsics*) const;
+      ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
+                  std::shared_ptr<cv::Mat>,
+                  beam_calibration::Intrinsics*) const;
 };
 
 /** @} group colorizer */

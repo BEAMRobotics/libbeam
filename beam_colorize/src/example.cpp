@@ -68,7 +68,7 @@ int main() {
   colorizer.SetImage(image);
   colorizer.SetIntrinsics(F1.get());
   colorizer.SetDistortion(image_distorted);
-  cloud_colored = colorizer.ColorizePointCloud(4);
+  cloud_colored = colorizer.ColorizePointCloud();
 
   pcl::visualization::PCLVisualizer::Ptr viewer(
       new pcl::visualization::PCLVisualizer("3D Viewer"));

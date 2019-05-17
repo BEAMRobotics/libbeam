@@ -97,8 +97,7 @@ public:
    * @brief Pure virtual method for colorizing a point cloud
    * @return Colored point cloud pointer
    */
-  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud(int dilation = -1) const = 0;
+  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const = 0;
 
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;

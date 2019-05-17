@@ -23,8 +23,7 @@ public:
    * @brief Method for colorizing a point cloud
    * @return Colored point cloud pointer
    */
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud(int dilation = -1) const override;
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
 private:
 };
