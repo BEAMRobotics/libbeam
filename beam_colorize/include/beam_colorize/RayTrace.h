@@ -41,9 +41,6 @@ public:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
 private:
-  uint16_t dilation_;
-  uint16_t max_ray_;
-  double hit_threshold_;
   /**
    * @brief Method for removing unneccessary points in cloud
    * @return Reduced point cloud
@@ -52,6 +49,10 @@ private:
       ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
                   std::shared_ptr<cv::Mat>,
                   beam_calibration::Intrinsics*) const;
+
+protected:
+  uint16_t dilation_, max_ray_;
+  double hit_threshold_;
 };
 
 /** @} group colorizer */

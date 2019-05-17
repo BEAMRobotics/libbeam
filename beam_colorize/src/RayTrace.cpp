@@ -8,7 +8,7 @@ RayTrace::RayTrace() {
   point_cloud_initialized_ = false;
   intrinsics_initialized_ = false;
   transform_set_ = false;
-  dilation_ = 3;
+  dilation_ = 1;
   max_ray_ = 20;
   hit_threshold_ = 0.01;
 }
@@ -46,13 +46,15 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     point << input_cloud->points[i].x, input_cloud->points[i].y,
         input_cloud->points[i].z;
     beam::Vec2 coords;
-    // if (image_distored_) {
-    // coords = intrinsics_->ProjectDistortedPoint(point);
-    //} else {
-    coords = intrinsics_->ProjectPoint(point);
-    // }
+    if (image_distored_) {
+      coords = intrinsics_->ProjectDistortedPoint(point);
+    } else {
+      coords = intrinsics_->ProjectPoint(point);
+    }
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    tmp.at<cv::Vec3b>(v, u).val[0] = 255;
+    if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
+      tmp.at<cv::Vec3b>(v, u).val[0] = 255;
+    }
   }
   cv::dilate(tmp, hit_mask, cv::Mat(dilation_, dilation_, CV_8UC1),
              cv::Point(-1, -1), 1, 1, 1);
