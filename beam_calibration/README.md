@@ -4,9 +4,9 @@ This module contains the multiple different camera models and distortion models 
 
 ## Supported Models
 
-1. Pinhole Camera Model
-    * With Radial-Tangential distortion
-    * With Equidistant distortion
+1. **Pinhole Camera Model** [fx, fy, cx, cy]
+    * **With Radial-Tangential distortion** [k1, k2, k3, r1, r2]
+    * **With Equidistant distortion** [k1, k2, k3, k4]
 
 ### Example JSON calibration file
 
@@ -39,3 +39,8 @@ This module contains the multiple different camera models and distortion models 
 }
 ```
 
+## References
+
+1. J. Kannala and S. Brandt (2006). A Generic Camera Model and Calibration Method for Conventional, Wide-Angle, and Fish-Eye Lenses, IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 28, no. 8, pp. 1335-1340
+
+2. Usenko, V., Demmel, N., & Cremers, D. (2018). The Double Sphere Camera Model. 2018 International Conference on 3D Vision (3DV). doi:10.1109/3dv.2018.00069
