@@ -14,4 +14,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   return pcl::PointCloud<pcl::PointXYZRGB>::Ptr();
 }
 
+pcl::PointCloud<beam_containers::PointBridge>::Ptr
+    RayTrace::ColorizeMask() const {
+  return pcl::PointCloud<beam_containers::PointBridge>::Ptr();
+}
+
 } // namespace beam_colorize

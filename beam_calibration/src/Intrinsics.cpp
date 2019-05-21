@@ -7,6 +7,11 @@
 
 namespace beam_calibration {
 
+std::unique_ptr<Intrinsics> Intrinsics::Create(IntrinsicsType type,
+                                               unsigned int id) {
+  if (type == IntrinsicsType::LADYBUG) return std::make_unique<Ladybug>(id);
+}
+
 std::unique_ptr<Intrinsics> Intrinsics::Create(IntrinsicsType type) {
   if (type == IntrinsicsType::PINHOLE)
     return std::unique_ptr<Pinhole>(new Pinhole());

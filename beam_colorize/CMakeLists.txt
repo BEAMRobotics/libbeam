@@ -5,6 +5,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     catkin::catkin
     PCL::PCL
     beam::calibration
+    beam::containers
     OpenCV::OpenCV
   SOURCES
     src/Colorizer.cpp

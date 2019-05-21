@@ -93,8 +93,8 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   }
 }
 
-void TfTree::AddTransform(geometry_msgs::TransformStamped msg) {
-  if (!Tree_.setTransform(msg, "TfTree")) {
+void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
+  if (!Tree_.setTransform(msg, "TfTree", is_static)) {
     std::cout << "Error adding transform" << std::endl;
   }
 }
