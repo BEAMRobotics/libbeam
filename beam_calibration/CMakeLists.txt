@@ -10,13 +10,15 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     nlohmann_json::nlohmann_json
   SOURCES
     src/TfTree.cpp
-    src/Intrinsics.cpp
-    src/Pinhole.cpp
-    #src/Ladybug.cpp
-    #src/Fisheye.cpp
+    src/CameraModel.cpp
+    src/DistortionModel.cpp
+    src/PinholeCamera.cpp
+    src/RadTanDistortion.cpp
+
 )
 
 ################ tests ##################
+#[[
 add_executable(${PROJECT_NAME}_intrinsic_tests
   tests/pinhole_test.cpp
 )
@@ -43,12 +45,12 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Catch2::Catch2
   Boost::boost
   catkin::catkin
-  )
+  )]]
 #######################################
 
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_debug
-  src/debug.cpp
+  src/_debug.cpp
 )
 target_include_directories(${PROJECT_NAME}_debug
   PUBLIC
@@ -59,3 +61,4 @@ target_link_libraries(${PROJECT_NAME}_debug
   catkin::catkin
 )
 #######################################
+

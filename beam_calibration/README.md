@@ -1,3 +1,16 @@
+# beam_calibration
+
+This module contains the multiple different camera models and distortion models used for BEAMRobotics.
+
+## Supported Models
+
+1. Pinhole Camera Model
+    * With Radial-Tangential distortion
+    * With Equidistant distortion
+
+### Example JSON calibration file
+
+```
 {
   "camera_type": "pinhole",
   "date": "2018_12_20",
@@ -24,3 +37,5 @@
     }
   ]
 }
+```
+
