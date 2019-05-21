@@ -12,7 +12,20 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Projection.cpp
     src/RayTrace.cpp
 )
-
+################ tests ##################
+add_executable(${PROJECT_NAME}_tests
+  tests/colorize_test.cpp
+)
+target_include_directories(${PROJECT_NAME}_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+  nlohmann_json::nlohmann_json
+  Boost::boost
+)
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_example
   src/example.cpp
