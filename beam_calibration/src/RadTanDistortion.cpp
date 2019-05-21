@@ -2,7 +2,9 @@
 
 namespace beam_calibration {
 
-RadTanDistortion::RadTanDistortion(beam::VecX coeffs) {}
+RadTanDistortion::RadTanDistortion(beam::VecX coeffs) {
+  SetCoefficients(coeffs);
+}
 
 beam::Vec2 RadTanDistortion::Distort(beam::Vec2& X) {}
 

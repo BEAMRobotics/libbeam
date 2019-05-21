@@ -68,8 +68,7 @@ std::unique_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   }
 
   std::unique_ptr<beam_calibration::DistortionModel> distortion =
-      beam_calibration::DistortionModel::Create(dist_type);
-  distortion->SetCoefficients(coeffs);
+      beam_calibration::DistortionModel::Create(dist_type, coeffs);
 
   std::unique_ptr<CameraModel> camera = beam_calibration::CameraModel::Create(
       cam_type, intrinsics, std::move(distortion), image_height, image_width,

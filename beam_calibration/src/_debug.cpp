@@ -17,5 +17,4 @@ int main() {
   intrinsics_location += intrinsics_name;
 
   auto camera = beam_calibration::CameraModel::LoadJSON(intrinsics_location);
-  std::cout << camera->GetDistortion().GetCoefficients() << std::endl;
 }

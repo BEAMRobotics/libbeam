@@ -48,7 +48,7 @@ public:
 
   /**
    * @brief Factory method for camera models
-   * @param type Type of Vehicle to create
+   * @param type Type of model to create
    * @return
    */
   static std::unique_ptr<CameraModel>

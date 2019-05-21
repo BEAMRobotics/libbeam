@@ -2,10 +2,11 @@
 #include "beam_calibration/RadTanDistortion.h"
 
 namespace beam_calibration {
-std::unique_ptr<DistortionModel> DistortionModel::Create(DistortionType type) {
+std::unique_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
+                                                         beam::VecX coeffs) {
   if (type == beam_calibration::DistortionType::RADTAN) {
     return std::unique_ptr<beam_calibration::RadTanDistortion>(
-        new RadTanDistortion());
+        new RadTanDistortion(coeffs));
   } else {
     return nullptr;
   }

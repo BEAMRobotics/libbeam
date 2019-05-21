@@ -4,9 +4,15 @@ This module contains the multiple different camera models and distortion models 
 
 ## Supported Models
 
-1. **Pinhole Camera Model** [fx, fy, cx, cy]
-    * **With Radial-Tangential distortion** [k1, k2, k3, r1, r2]
-    * **With Equidistant distortion** [k1, k2, k3, k4]
+1. **Pinhole Camera Model** Intrinsics: [fx, fy, cx, cy]
+    * **With Radial-Tangential distortion** Coefficients: [k1, k2, k3, r1, r2]
+    * **With Equidistant distortion** Coefficients: [k1, k2, k3, k4]
+
+2. **Ladybug Camera Model** 
+
+3. **Extended Unified Camera Model** 
+
+2. **Double Sphere Camera Model** 
 
 ### Example JSON calibration file
 
