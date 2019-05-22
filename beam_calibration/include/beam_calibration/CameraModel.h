@@ -16,7 +16,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { PINHOLE = 0, LADYBUG };
+enum class CameraType { PINHOLE = 0 };
 /**
  * @brief Abstract class for camera models
  */

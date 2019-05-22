@@ -1,4 +1,5 @@
 #include "beam_calibration/DistortionModel.h"
+#include "beam_calibration/LadybugDistortion.h"
 #include "beam_calibration/RadTanDistortion.h"
 
 namespace beam_calibration {
@@ -11,6 +12,9 @@ std::unique_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
     beam::VecX zeros = beam::VecX::Zero(5);
     return std::unique_ptr<beam_calibration::RadTanDistortion>(
         new RadTanDistortion(zeros));
+  } else if (type == beam_calibration::DistortionType::LADYBUG) {
+    return std::unique_ptr<beam_calibration::LadybugDistortion>(
+        new LadybugDistortion());
   } else {
     return nullptr;
   }

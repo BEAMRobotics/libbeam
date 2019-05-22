@@ -14,7 +14,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of distortion models
  */
-enum class DistortionType { NONE = 0, RADTAN, EQUIDISTANT };
+enum class DistortionType { NONE = 0, RADTAN, EQUIDISTANT, LADYBUG };
 /**
  * @brief Abstract class for distortion models
  */
