@@ -43,7 +43,7 @@ public:
    * @brief method to instantiate camera model from json file
    * @param file_location absolute path to json file
    */
-  static std::unique_ptr<beam_calibration::CameraModel>
+  static std::shared_ptr<beam_calibration::CameraModel>
       LoadJSON(std::string& file_location);
 
   /**
@@ -51,7 +51,7 @@ public:
    * @param type Type of model to create
    * @return
    */
-  static std::unique_ptr<CameraModel>
+  static std::shared_ptr<CameraModel>
       Create(beam_calibration::CameraType camera_type, beam::VecX intrinsics,
              std::unique_ptr<DistortionModel> distortion, uint32_t image_width,
              uint32_t image_height, std::string frame_id, std::string date);
