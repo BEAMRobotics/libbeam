@@ -25,6 +25,13 @@ public:
    */
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
+  /**
+   * @brief Method for colorizing a point cloud
+   * @return Colored point cloud pointer
+   */
+  pcl::PointCloud<beam_containers::PointBridge>::Ptr
+      ColorizeMask() const override;
+
 private:
 };
 /** @} group colorizer */

@@ -3,10 +3,10 @@ PROJECT(beam_calibration)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
-  Boost::boost
+    Boost::boost
+    Catch2::Catch2
     catkin::catkin
     Eigen3::Eigen
-    Catch2::Catch2
     nlohmann_json::nlohmann_json
   SOURCES
     src/TfTree.cpp
@@ -14,6 +14,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/DistortionModel.cpp
     src/PinholeCamera.cpp
     src/RadTanDistortion.cpp
+    src/TfTree.cpp
 
 )
 
@@ -45,9 +46,9 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Catch2::Catch2
   Boost::boost
   catkin::catkin
-  )]]
-#######################################
 
+#######################################
+]]
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_debug
   src/_debug.cpp
@@ -60,4 +61,5 @@ target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
   catkin::catkin
 )
+
 #######################################

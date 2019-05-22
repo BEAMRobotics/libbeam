@@ -1,6 +1,7 @@
 #include "beam_calibration/Pinhole.h"
 #include "beam_calibration/TfTree.h"
 #include "beam_colorize/Projection.h"
+#include "beam_colorize/RayTrace.h"
 #include "beam_utils/math.hpp"
 
 #include <boost/filesystem.hpp>
@@ -61,13 +62,13 @@ int main() {
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-  beam_colorize::Projection projector;
+  beam_colorize::Projection colorizer;
   bool image_distorted = true;
-  projector.SetPointCloud(cloud);
-  projector.SetImage(image);
-  projector.SetIntrinsics(F1.get());
-  projector.SetDistortion(image_distorted);
-  cloud_colored = projector.ColorizePointCloud();
+  colorizer.SetPointCloud(cloud);
+  colorizer.SetImage(image);
+  colorizer.SetIntrinsics(F1.get());
+  colorizer.SetDistortion(image_distorted);
+  cloud_colored = colorizer.ColorizePointCloud();
 
   pcl::visualization::PCLVisualizer::Ptr viewer(
       new pcl::visualization::PCLVisualizer("3D Viewer"));

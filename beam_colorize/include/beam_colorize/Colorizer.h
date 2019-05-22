@@ -13,6 +13,7 @@
 
 // libbeam
 #include "beam_calibration/Intrinsics.h"
+#include "beam_containers/PointBridge.h"
 #include <beam_utils/log.hpp>
 
 // PCL
@@ -34,7 +35,7 @@ namespace beam_colorize {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class ColorizerType { PROJECTION = 0, RAY_TRACE};
+enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
 
 /**
  * @brief Abstract class which different colorization methods can implement
@@ -98,6 +99,13 @@ public:
    * @return Colored point cloud pointer
    */
   virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const = 0;
+
+  /**
+   * @brief Pure virtual method for colorizing a point cloud
+   * @return Colored point cloud pointer
+   */
+  virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
+      ColorizeMask() const = 0;
 
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
