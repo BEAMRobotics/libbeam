@@ -4,7 +4,6 @@
   "method": "matlab",
   "calibration": [
     {
-      "cam_id": 0,
       "image_width": 2048,
       "image_height": 1536,
       "frame_id": "F1_link",

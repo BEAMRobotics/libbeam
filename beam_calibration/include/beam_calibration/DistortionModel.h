@@ -14,7 +14,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of distortion models
  */
-enum class DistortionType { NONE = 0, RADTAN, EQUIDISTANT, LADYBUG };
+enum class DistortionType { NONE = 0, RADTAN, EQUIDISTANT };
 /**
  * @brief Abstract class for distortion models
  */
@@ -35,8 +35,8 @@ public:
    * @param type Type of Vehicle to create
    * @return
    */
-  static std::unique_ptr<DistortionModel>
-      Create(DistortionType type, beam::VecX coeffs, unsigned int cam_id);
+  static std::unique_ptr<DistortionModel> Create(DistortionType type,
+                                                 beam::VecX coeffs);
 
   /**
    * @brief Method for projecting a point into an image plane

@@ -140,7 +140,7 @@ public:
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
-  virtual const beam_calibration::DistortionModel& GetDistortion() const;
+  virtual beam_calibration::DistortionModel& GetDistortion();
 
   /**
    * @brief Method for retrieving the camera type

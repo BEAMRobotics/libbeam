@@ -24,7 +24,6 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   json J;
   int image_width = 0, image_height = 0;
   std::string camera_type, date, method, frame_id, distortion_model;
-  unsigned int cam_id = 0;
   beam::VecX coeffs;
   beam::VecX intrinsics;
   beam_calibration::CameraType cam_type;
@@ -40,7 +39,6 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     distortion_model = calib["distortion_model"];
     image_width = calib["image_width"].get<int>();
     image_height = calib["image_height"].get<int>();
-    cam_id = calib["cam_id"].get<int>();
     frame_id = calib["frame_id"];
 
     std::vector<double> tmp_intrinsics;
@@ -67,8 +65,6 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     dist_type = beam_calibration::DistortionType::RADTAN;
   } else if (distortion_model == "none") {
     dist_type = beam_calibration::DistortionType::NONE;
-  } else if (distortion_model == "ladybug") {
-    dist_type = beam_calibration::DistortionType::LADYBUG;
   }
   // Get type of camera model to use
   if (camera_type == "pinhole") {
@@ -77,7 +73,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
 
   // create distortion model
   std::unique_ptr<beam_calibration::DistortionModel> distortion =
-      beam_calibration::DistortionModel::Create(dist_type, coeffs, cam_id);
+      beam_calibration::DistortionModel::Create(dist_type, coeffs);
   // create camera model
   std::shared_ptr<CameraModel> camera = beam_calibration::CameraModel::Create(
       cam_type, intrinsics, std::move(distortion), image_height, image_width,
@@ -143,7 +139,7 @@ const beam::VecX CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 
-const beam_calibration::DistortionModel& CameraModel::GetDistortion() const {
+beam_calibration::DistortionModel& CameraModel::GetDistortion() {
   return *distortion_;
 }
 

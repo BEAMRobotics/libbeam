@@ -3,7 +3,7 @@
  */
 
 #pragma once
-#include "beam_calibration/DistortionModel.h"
+#include "beam_calibration/CameraModel.h"
 
 #include <ladybug/ladybug.h>
 #include <ladybug/ladybuggeom.h>
@@ -14,51 +14,55 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Abstract class for distortion models
+ * @brief Derived class for pinhole intrinsics
  */
-class LadybugDistortion : public DistortionModel {
+class LadybugCamera : public CameraModel {
 public:
   /**
    * @brief Default destructor
    */
-  LadybugDistortion() = default;
+  LadybugCamera() = default;
 
   /**
-   * @brief Construct with camera id
+   * @brief constructor with values
    */
-  LadybugDistortion(unsigned int id);
+  LadybugCamera(unsigned int id, std::string& file);
 
   /**
    * @brief Default destructor
    */
-  ~LadybugDistortion() = default;
+  ~LadybugCamera() = default;
 
   /**
    * @brief Method for projecting a point into an image plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
-   * @param X point to be projected. Not in homographic form
+   * @param point to be projected. Not in homographic form
    */
-  beam::Vec2 Distort(beam::Vec2& point) override;
+  beam::Vec2 ProjectPoint(beam::Vec3& point) override;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
    * plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
-   * @param X point to be projected. In homographic form
+   * @param point to be projected. In homographic form
    */
-  beam::Vec2 Undistort(beam::Vec2& point) override;
+  beam::Vec2 ProjectPoint(beam::Vec4& point) override;
 
   /**
-   * @brief Method for creating ladybug context from file
-   * @param path to config file
+   * @brief Special distortion using ladybug SDK
+   * @return Returns image coordinates after point has been undistorted
+   * @param pixel_in point to be undistorted
    */
-  void LoadConfig(std::string& file);
+  beam::Vec2 Undistort(beam::Vec2 pixel_in);
 
-protected:
-  /// Parameter vector for the coefficients.
-  beam::VecX coefficients_;
+  /**
+   * @brief Special distortion using ladybug SDK
+   * @return Returns image coordinates after point has been distorted
+   * @param pixel_in point to be distorted
+   */
+  beam::Vec2 Distort(beam::Vec2 pixel_in);
 
 private:
   void LadybugCheckError();

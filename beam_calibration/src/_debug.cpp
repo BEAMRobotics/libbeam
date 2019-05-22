@@ -1,5 +1,6 @@
 #include "beam_calibration/CameraModel.h"
 #include "beam_calibration/DistortionModel.h"
+#include "beam_calibration/LadybugCamera.h"
 #include "beam_calibration/PinholeCamera.h"
 #include "beam_calibration/RadTanDistortion.h"
 #include "beam_calibration/TfTree.h"
@@ -15,9 +16,12 @@ int main() {
                             intrinsics_location.end());
   intrinsics_location += "tests/test_data/";
   intrinsics_location += intrinsics_name;
+  // load conf file
+  std::string conf_name = "ladybug.conf";
+  std::string conf_location = __FILE__;
+  conf_location.erase(conf_location.end() - 14, conf_location.end());
+  conf_location += "tests/test_data/";
+  conf_location += conf_name;
 
-  auto camera = beam_calibration::CameraModel::LoadJSON(intrinsics_location);
-  beam::Vec3 point;
-  point << 1234.32, 5342.54, 234.34;
-  std::cout << camera->ProjectPoint(point) << std::endl;
+  beam_calibration::LadybugCamera camera(0, conf_location);
 }
