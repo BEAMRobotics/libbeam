@@ -4,7 +4,8 @@
 
 namespace beam_calibration {
 std::unique_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
-                                                         beam::VecX coeffs) {
+                                                         beam::VecX coeffs,
+                                                         unsigned int cam_id) {
   if (type == beam_calibration::DistortionType::RADTAN) {
     return std::unique_ptr<beam_calibration::RadTanDistortion>(
         new RadTanDistortion(coeffs));
@@ -14,7 +15,7 @@ std::unique_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
         new RadTanDistortion(zeros));
   } else if (type == beam_calibration::DistortionType::LADYBUG) {
     return std::unique_ptr<beam_calibration::LadybugDistortion>(
-        new LadybugDistortion());
+        new LadybugDistortion(cam_id));
   } else {
     return nullptr;
   }

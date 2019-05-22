@@ -4,9 +4,6 @@
 
 #pragma once
 #include "beam_calibration/DistortionModel.h"
-#include "beam_utils/math.hpp"
-#include <fstream>
-#include <iostream>
 
 namespace beam_calibration {
 /** @addtogroup calibration

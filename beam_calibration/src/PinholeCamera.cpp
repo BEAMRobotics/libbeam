@@ -18,7 +18,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
   const double x = point[0], y = point[1], z = point[2];
   const double rz = 1.0 / z;
   out_point << (x * rz), (y * rz);
-  // Distort point
+  // Distort point using distortion model
   out_point = distortion_->Distort(out_point);
   // flip the coordinate system to be consistent with opencv convention shown:
   // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
@@ -29,5 +29,8 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {}
+beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
+  beam::Vec3 new_point(point[0], point[1], point[2]);
+  return ProjectPoint(new_point);
+}
 } // namespace beam_calibration

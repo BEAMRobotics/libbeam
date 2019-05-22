@@ -4,9 +4,10 @@
 
 #pragma once
 #include "beam_calibration/DistortionModel.h"
-#include "beam_utils/math.hpp"
-#include <fstream>
-#include <iostream>
+
+#include <ladybug/ladybug.h>
+#include <ladybug/ladybuggeom.h>
+#include <ladybug/ladybugrenderer.h>
 
 namespace beam_calibration {
 /** @addtogroup calibration
@@ -21,6 +22,11 @@ public:
    * @brief Default destructor
    */
   LadybugDistortion() = default;
+
+  /**
+   * @brief Construct with camera id
+   */
+  LadybugDistortion(unsigned int id);
 
   /**
    * @brief Default destructor
@@ -44,9 +50,26 @@ public:
    */
   beam::Vec2 Undistort(beam::Vec2& point) override;
 
+  /**
+   * @brief Method for creating ladybug context from file
+   * @param path to config file
+   */
+  void LoadConfig(std::string& file);
+
 protected:
   /// Parameter vector for the coefficients.
   beam::VecX coefficients_;
+
+private:
+  void LadybugCheckError();
+
+  LadybugContext lb_context_;
+  LadybugError lb_error_;
+
+  unsigned int cam_id_ = 0;
+  const unsigned int LB_FULL_WIDTH = 2048;
+  const unsigned int LB_FULL_HEIGHT = 2464;
+  beam::Vec2 img_dims_ = {LB_FULL_WIDTH, LB_FULL_HEIGHT};
 };
 
 /** @} group calibration */

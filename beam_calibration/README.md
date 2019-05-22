@@ -7,12 +7,7 @@ This module contains the multiple different camera models and distortion models 
 1. **Pinhole Camera Model** Intrinsics: [fx, fy, cx, cy]
     * **With Radial-Tangential distortion** Coefficients: [k1, k2, k3, r1, r2]
     * **With Equidistant distortion** Coefficients: [k1, k2, k3, k4]
-
-2. **Ladybug Camera Model** 
-
-3. **Extended Unified Camera Model** 
-
-2. **Double Sphere Camera Model** 
+    * **With Ladybug distortion**
 
 ### Example JSON calibration file
 
@@ -23,6 +18,7 @@ This module contains the multiple different camera models and distortion models 
   "method": "matlab",
   "calibration": [
     {
+      "cam_id": 0,
       "image_width": 2048,
       "image_height": 1536,
       "frame_id": "F1_link",

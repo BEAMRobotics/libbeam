@@ -35,8 +35,8 @@ public:
    * @param type Type of Vehicle to create
    * @return
    */
-  static std::unique_ptr<DistortionModel> Create(DistortionType type,
-                                                 beam::VecX coeffs);
+  static std::unique_ptr<DistortionModel>
+      Create(DistortionType type, beam::VecX coeffs, unsigned int cam_id);
 
   /**
    * @brief Method for projecting a point into an image plane

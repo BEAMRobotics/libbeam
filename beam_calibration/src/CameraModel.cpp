@@ -24,6 +24,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   json J;
   int image_width = 0, image_height = 0;
   std::string camera_type, date, method, frame_id, distortion_model;
+  unsigned int cam_id = 0;
   beam::VecX coeffs;
   beam::VecX intrinsics;
   beam_calibration::CameraType cam_type;
@@ -39,6 +40,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     distortion_model = calib["distortion_model"];
     image_width = calib["image_width"].get<int>();
     image_height = calib["image_height"].get<int>();
+    cam_id = calib["cam_id"].get<int>();
     frame_id = calib["frame_id"];
 
     std::vector<double> tmp_intrinsics;
@@ -73,9 +75,10 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     cam_type = beam_calibration::CameraType::PINHOLE;
   }
 
+  // create distortion model
   std::unique_ptr<beam_calibration::DistortionModel> distortion =
-      beam_calibration::DistortionModel::Create(dist_type, coeffs);
-
+      beam_calibration::DistortionModel::Create(dist_type, coeffs, cam_id);
+  // create camera model
   std::shared_ptr<CameraModel> camera = beam_calibration::CameraModel::Create(
       cam_type, intrinsics, std::move(distortion), image_height, image_width,
       frame_id, date);
