@@ -44,7 +44,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  virtual beam::Vec2 Distort(beam::Vec2& X) = 0;
+  virtual beam::Vec2 Distort(beam::Vec2& point) = 0;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -53,7 +53,7 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  virtual beam::Vec2 Undistort(beam::Vec2& X) = 0;
+  virtual beam::Vec2 Undistort(beam::Vec2& point) = 0;
 
   /**
    * @brief Method for adding coefficients

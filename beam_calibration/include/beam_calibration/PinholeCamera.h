@@ -44,7 +44,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 ProjectPoint(beam::Vec3& X) override;
+  beam::Vec2 ProjectPoint(beam::Vec3& point) override;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -53,7 +53,7 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  beam::Vec2 ProjectPoint(beam::Vec4& X) override;
+  beam::Vec2 ProjectPoint(beam::Vec4& point) override;
 };
 
 /** @} group calibration */

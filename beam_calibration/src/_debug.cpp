@@ -17,4 +17,7 @@ int main() {
   intrinsics_location += intrinsics_name;
 
   auto camera = beam_calibration::CameraModel::LoadJSON(intrinsics_location);
+  beam::Vec3 point;
+  point << 1234.32, 5342.54, 234.34;
+  std::cout << camera->ProjectPoint(point) << std::endl;
 }

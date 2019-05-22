@@ -38,7 +38,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 Distort(beam::Vec2& X) override;
+  beam::Vec2 Distort(beam::Vec2& point) override;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -47,7 +47,7 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  beam::Vec2 Undistort(beam::Vec2& X) override;
+  beam::Vec2 Undistort(beam::Vec2& point) override;
 
 protected:
   /// Parameter vector for the coefficients.

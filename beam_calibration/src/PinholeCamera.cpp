@@ -10,7 +10,21 @@ PinholeCamera::PinholeCamera(beam_calibration::CameraType camera_type,
     : CameraModel(camera_type, intrinsics, std::move(distortion), image_width,
                   image_height, frame_id, date) {}
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& X) {}
+beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
+  beam::Vec2 out_point;
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& X) {}
+  // Project point
+  const double fx = intrinsics_[0], fy = intrinsics_[1], cx = intrinsics_[2],
+               cy = intrinsics_[3];
+  const double x = point[0], y = point[1], z = point[2];
+  const double rz = 1.0 / z;
+  out_point << (x * rz), (y * rz);
+
+  // Distort point
+  out_point = distortion_->Distort(out_point);
+
+  return out_point;
+}
+
+beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {}
 } // namespace beam_calibration
