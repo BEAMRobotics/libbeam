@@ -1,4 +1,5 @@
 #include "beam_calibration/CameraModel.h"
+#include "beam_calibration/LadybugCamera.h"
 #include "beam_calibration/PinholeCamera.h"
 
 using json = nlohmann::json;
@@ -69,6 +70,8 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   // Get type of camera model to use
   if (camera_type == "pinhole") {
     cam_type = beam_calibration::CameraType::PINHOLE;
+  } else if (camera_type == "ladybug") {
+    cam_type = beam_calibration::CameraType::LADYBUG;
   }
 
   std::unique_ptr<beam_calibration::DistortionModel> distortion =
@@ -86,9 +89,12 @@ std::shared_ptr<CameraModel> CameraModel::Create(
     std::unique_ptr<DistortionModel> distortion, uint32_t image_width,
     uint32_t image_height, std::string frame_id, std::string date) {
   if (type == CameraType::PINHOLE) {
-    return std::unique_ptr<beam_calibration::PinholeCamera>(
+    return std::shared_ptr<beam_calibration::PinholeCamera>(
         new PinholeCamera(type, intrinsics, std::move(distortion), image_width,
                           image_height, frame_id, date));
+  } else if (type == CameraType::LADYBUG) {
+    return std::shared_ptr<beam_calibration::LadybugCamera>(
+        new LadybugCamera());
   } else {
     return nullptr;
   }

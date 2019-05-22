@@ -8,11 +8,13 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     catkin::catkin
     Eigen3::Eigen
     nlohmann_json::nlohmann_json
+    #Ladybug::Ladybug
   SOURCES
     src/TfTree.cpp
     src/CameraModel.cpp
     src/DistortionModel.cpp
     src/PinholeCamera.cpp
+    src/LadybugCamera.cpp
     src/RadTanDistortion.cpp
     src/TfTree.cpp
 

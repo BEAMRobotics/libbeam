@@ -4,11 +4,6 @@
 
 #pragma once
 #include "beam_calibration/CameraModel.h"
-#include <beam_utils/log.hpp>
-#include <beam_utils/math.hpp>
-#include <fstream>
-#include <iostream>
-#include <nlohmann/json.hpp>
 
 namespace beam_calibration {
 /** @addtogroup calibration
