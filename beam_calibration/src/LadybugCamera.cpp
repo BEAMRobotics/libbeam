@@ -32,20 +32,26 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {
-  beam::Vec2 out_point;
-  // Project point
-  const double fx = intrinsics_[0], fy = intrinsics_[1], cx = intrinsics_[2],
-               cy = intrinsics_[3];
-  const double x = point[0], y = point[1], z = point[2];
-  const double rz = 1.0 / z;
-  out_point << (x * rz), (y * rz);
-  // Distort point using distortion model
-  out_point = this->Distort(out_point);
-  // flip the coordinate system to be consistent with opencv convention shown:
+  beam::Vec2 coords;
+  beam::Vec3 x_proj, X_flip;
+  beam::Mat3 K;
+  double fx = intrinsics_[0], fy = intrinsics_[1], cx = intrinsics_[2],
+         cy = intrinsics_[3];
+  K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
+  std::cout << K << std::endl;
+  // flip the coordinate system to be consistent with opencv convention shown
+  // here:
   // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
-  double xx = out_point[0], yy = out_point[1];
-  out_point[0] = (fx * (-yy) + cx);
-  out_point[1] = (fy * xx + cy);
+  X_flip(0, 0) = -point(1, 0); // x = -y
+  X_flip(1, 0) = point(0, 0);  // y = x
+  X_flip(2, 0) = point(2, 0);  // z = z
+  // project
+  x_proj = K * X_flip;
+  // normalize
+  coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
+  coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
+  // Distort point using distortion model
+  beam::Vec2 out_point = this->Distort(coords);
 
   return out_point;
 }

@@ -14,7 +14,10 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for pinhole intrinsics
+ * @brief Derived class for camera model
+ * Due to being a specific case ladybug cannot be instantiated in the
+ * Create or LoadJSON methods and must be manually created using
+ * the conf file from the ladybug SDK
  */
 class LadybugCamera : public CameraModel {
 public:
