@@ -9,6 +9,31 @@
 #include <typeinfo>
 
 int main() {
+  // radtan
+  std::string radtan_name = "F1.json";
+  std::string radtan_location = __FILE__;
+  radtan_location.erase(radtan_location.end() - 14, radtan_location.end());
+  radtan_location += "tests/test_data/";
+  radtan_location += radtan_name;
+
+  std::shared_ptr<beam_calibration::CameraModel> camera =
+      beam_calibration::CameraModel::LoadJSON(radtan_location);
+  beam::Vec3 point(20, 20, 20);
+  std::cout << camera->ProjectPoint(point) << std::endl;
+
+  // load equidistant
+  std::string equidistant_name = "F2.json";
+  std::string equidistant_location = __FILE__;
+  equidistant_location.erase(equidistant_location.end() - 14,
+                             equidistant_location.end());
+  equidistant_location += "tests/test_data/";
+  equidistant_location += equidistant_name;
+
+  std::shared_ptr<beam_calibration::CameraModel> camera2 =
+      beam_calibration::CameraModel::LoadJSON(equidistant_location);
+  beam::Vec3 point2(20, 20, 20);
+  std::cout << camera2->ProjectPoint(point2) << std::endl;
+  /*
   // load conf file
   std::string conf_name = "ladybug.conf";
   std::string conf_location = __FILE__;
@@ -26,4 +51,5 @@ int main() {
   std::cout << ladybug.ProjectPoint(point1) << std::endl;
   std::cout << ladybug.ProjectPoint(point2) << std::endl;
   std::cout << ladybug.ProjectPoint(point3) << std::endl;
+  */
 }

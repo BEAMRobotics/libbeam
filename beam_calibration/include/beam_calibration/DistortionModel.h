@@ -26,6 +26,11 @@ public:
   DistortionModel() = default;
 
   /**
+   * @brief Construct with values
+   */
+  DistortionModel(beam::VecX coeffs, beam_calibration::DistortionType type);
+
+  /**
    * @brief Default destructor
    */
   virtual ~DistortionModel() = default;
@@ -67,9 +72,35 @@ public:
    */
   virtual const beam::VecX GetCoefficients() const;
 
+  /**
+   * @brief Method for setting the type of model
+   * @param distortion type
+   */
+  virtual void SetType(beam_calibration::DistortionType type);
+
+  /**
+   * @brief Method for retreiving the type of model
+   * @return distortion type
+   */
+  virtual beam_calibration::DistortionType GetType();
+
 protected:
-  /// Parameter vector for the coefficients.
+  // Map for keeping required number of coefficient variables based on
+  // distortion type
+  std::map<beam_calibration::DistortionType, int> get_size_ = {
+      {beam_calibration::DistortionType::NONE, 0},
+      {beam_calibration::DistortionType::RADTAN, 5},
+      {beam_calibration::DistortionType::EQUIDISTANT, 4}};
+  // Parameter vector for the coefficients.
   beam::VecX coefficients_;
+  beam_calibration::DistortionType type_;
+  // boolean values to keep track of validity
+  bool coefficients_valid_ = false;
+  // constants to hold types
+  beam_calibration::DistortionType
+      NONE = beam_calibration::DistortionType::NONE,
+      RADTAN = beam_calibration::DistortionType::RADTAN,
+      EQUIDISTANT = beam_calibration::DistortionType::EQUIDISTANT;
 };
 
 /** @} group calibration */

@@ -16,7 +16,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { PINHOLE = 0 };
+enum class CameraType { PINHOLE = 0, LADYBUG };
 /**
  * @brief Abstract class for camera models
  */
@@ -148,14 +148,56 @@ public:
    */
   virtual beam_calibration::CameraType GetType();
 
+  /**
+   * @brief Method for retrieving fx
+   * @return fx
+   */
+  virtual double GetFx();
+
+  /**
+   * @brief Method for retrieving fy
+   * @return fy
+   */
+  virtual double GetFy();
+
+  /**
+   * @brief Method for retrieving cx
+   * @return cx
+   */
+  virtual double GetCx();
+
+  /**
+   * @brief Method for retrieving cy
+   * @return cy
+   */
+  virtual double GetCy();
+
+  /**
+   * @brief Method for retrieving camera matrix
+   * @return K
+   */
+  virtual beam::Mat3 GetCameraMatrix();
+
 protected:
+  // Map for keeping required number of coefficient variables based on
+  // distortion type
+  std::map<beam_calibration::CameraType, int> get_size_ = {
+      {beam_calibration::CameraType::LADYBUG, 0},
+      {beam_calibration::CameraType::PINHOLE, 4}};
+
   beam_calibration::CameraType type_;
   std::string frame_id_, calibration_date_;
-  uint32_t image_height_, image_width_;
+  uint32_t image_height_, image_width_, required_size_;
   // Parameter vector for the intrinsic parameters of the model.
   beam::VecX intrinsics_;
   // The distortion for this camera.
   std::unique_ptr<beam_calibration::DistortionModel> distortion_;
+  // Boolean values to keep track of validity
+  bool intrinsics_valid_ = false, distortion_set_ = false,
+       calibration_date_set_ = false;
+  // constants to hold types
+  beam_calibration::CameraType PINHOLE = beam_calibration::CameraType::PINHOLE,
+                               LADYBUG = beam_calibration::CameraType::LADYBUG;
 };
 
 /** @} group calibration */

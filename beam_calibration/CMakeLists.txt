@@ -15,6 +15,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/DistortionModel.cpp
     src/PinholeCamera.cpp
     src/RadTanDistortion.cpp
+    src/EquidistantDistortion.cpp
     src/LadybugCamera.cpp
     src/TfTree.cpp
 

@@ -10,12 +10,12 @@ CameraModel::CameraModel(beam_calibration::CameraType camera_type,
                          std::unique_ptr<DistortionModel> distortion,
                          uint32_t image_width, uint32_t image_height,
                          std::string frame_id, std::string date) {
-  SetType(camera_type);
-  SetFrameID(frame_id);
-  SetCalibrationDate(date);
-  SetImageDims(image_height, image_width);
-  SetIntrinsics(intrinsics);
-  SetDistortion(std::move(distortion));
+  this->SetType(camera_type);
+  this->SetFrameID(frame_id);
+  this->SetCalibrationDate(date);
+  this->SetImageDims(image_height, image_width);
+  this->SetIntrinsics(intrinsics);
+  this->SetDistortion(std::move(distortion));
 }
 
 std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
@@ -65,6 +65,8 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     dist_type = beam_calibration::DistortionType::RADTAN;
   } else if (distortion_model == "none") {
     dist_type = beam_calibration::DistortionType::NONE;
+  } else if (distortion_model == "equidistant") {
+    dist_type = beam_calibration::DistortionType::EQUIDISTANT;
   }
   // Get type of camera model to use
   if (camera_type == "pinhole") {
@@ -101,6 +103,7 @@ void CameraModel::SetFrameID(std::string id) {
 
 void CameraModel::SetCalibrationDate(std::string date) {
   calibration_date_ = date;
+  calibration_date_set_ = true;
 }
 
 void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
@@ -109,12 +112,21 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
 }
 
 void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
-  intrinsics_ = intrinsics;
+  // throw error if input isnt correct size
+  if (intrinsics.size() != get_size_[this->GetType()]) {
+    LOG_ERROR("Invalid number of elements in intrinsics vector.");
+    throw std::runtime_error{
+        "Invalid number of elements in intrinsics vector."};
+  } else {
+    intrinsics_ = intrinsics;
+    intrinsics_valid_ = true;
+  }
 }
 
 void CameraModel::SetDistortion(
     std::unique_ptr<beam_calibration::DistortionModel> distortion) {
   distortion_ = std::move(distortion);
+  distortion_set_ = true;
 }
 
 void CameraModel::SetType(beam_calibration::CameraType type) {
@@ -126,6 +138,10 @@ const std::string CameraModel::GetFrameID() const {
 }
 
 const std::string CameraModel::GetCalibrationDate() const {
+  if (!calibration_date_set_) {
+    LOG_ERROR("cannot retrieve calibration date, value not set.");
+    throw std::runtime_error{"cannot retrieve calibration date, value not set"};
+  }
   return calibration_date_;
 }
 
@@ -136,15 +152,46 @@ beam::Vec2 CameraModel::GetImageDims() const {
 }
 
 const beam::VecX CameraModel::GetIntrinsics() const {
+  if (!intrinsics_valid_) {
+    LOG_ERROR("cannot retrieve intrinsics, value not set.");
+    throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
+  }
   return intrinsics_;
 }
 
 beam_calibration::DistortionModel& CameraModel::GetDistortion() {
+  if (!distortion_set_) {
+    LOG_ERROR("cannot retrieve distortion, value not set.");
+    throw std::runtime_error{"cannot retrieve distortion, value not set"};
+  }
   return *distortion_;
 }
 
 beam_calibration::CameraType CameraModel::GetType() {
   return type_;
+}
+
+double CameraModel::GetFx() {
+  return intrinsics_[0];
+}
+
+double CameraModel::GetFy() {
+  return intrinsics_[1];
+}
+
+double CameraModel::GetCx() {
+  return intrinsics_[2];
+}
+
+double CameraModel::GetCy() {
+  return intrinsics_[3];
+}
+
+beam::Mat3 CameraModel::GetCameraMatrix() {
+  beam::Mat3 K;
+  K << this->GetFx(), 0, this->GetCy(), 0, this->GetFy(), this->GetCx(), 0, 0,
+      1;
+  return K;
 }
 
 } // namespace beam_calibration

@@ -34,11 +34,7 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {
   beam::Vec2 coords;
   beam::Vec3 x_proj, X_flip;
-  beam::Mat3 K;
-  double fx = intrinsics_[0], fy = intrinsics_[1], cx = intrinsics_[2],
-         cy = intrinsics_[3];
-  K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
-  std::cout << K << std::endl;
+  beam::Mat3 K = this->GetCameraMatrix();
   // flip the coordinate system to be consistent with opencv convention shown
   // here:
   // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html

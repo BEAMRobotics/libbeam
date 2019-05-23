@@ -7,7 +7,8 @@ This module contains the multiple different camera models and distortion models 
 1. **Pinhole Camera Model** Intrinsics: [fx, fy, cx, cy]
     * **With Radial-Tangential distortion** Coefficients: [k1, k2, k3, r1, r2]
     * **With Equidistant distortion** Coefficients: [k1, k2, k3, k4]
-    * **With Ladybug distortion**
+2. **With Ladybug distortion**
+    * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
 
 ### Example JSON calibration file
 

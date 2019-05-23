@@ -12,22 +12,23 @@ namespace beam_calibration {
 /**
  * @brief Abstract class for distortion models
  */
-class RadTanDistortion : public DistortionModel {
+class EquidistantDistortion : public DistortionModel {
 public:
   /**
    * @brief Default destructor
    */
-  RadTanDistortion() = default;
+  EquidistantDistortion() = default;
 
   /**
    * @brief Default constructor
    */
-  RadTanDistortion(beam::VecX coeffs, beam_calibration::DistortionType type);
+  EquidistantDistortion(beam::VecX coeffs,
+                        beam_calibration::DistortionType type);
 
   /**
    * @brief Default destructor
    */
-  ~RadTanDistortion() = default;
+  ~EquidistantDistortion() = default;
 
   /**
    * @brief Method for projecting a point into an image plane
