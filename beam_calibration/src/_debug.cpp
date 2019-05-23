@@ -1,8 +1,5 @@
 #include "beam_calibration/CameraModel.h"
-#include "beam_calibration/DistortionModel.h"
 #include "beam_calibration/LadybugCamera.h"
-#include "beam_calibration/PinholeCamera.h"
-#include "beam_calibration/RadTanDistortion.h"
 #include "beam_calibration/TfTree.h"
 #include "beam_utils/math.hpp"
 #include <boost/filesystem.hpp>
@@ -18,21 +15,25 @@ int main() {
 
   std::shared_ptr<beam_calibration::CameraModel> camera =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
+
   beam::Vec3 point(20, 20, 20);
   std::cout << camera->ProjectPoint(point) << std::endl;
 
+  /*
   // load equidistant
   std::string equidistant_name = "F2.json";
   std::string equidistant_location = __FILE__;
   equidistant_location.erase(equidistant_location.end() - 14,
-                             equidistant_location.end());
+                            equidistant_location.end());
   equidistant_location += "tests/test_data/";
   equidistant_location += equidistant_name;
 
   std::shared_ptr<beam_calibration::CameraModel> camera2 =
       beam_calibration::CameraModel::LoadJSON(equidistant_location);
-  beam::Vec3 point2(20, 20, 20);
-  std::cout << camera2->ProjectPoint(point2) << std::endl;
+  beam::Vec3 pointx(20, 20, 20);
+  std::cout << camera2->ProjectPoint(pointx) << std::endl;
+  */
+
   /*
   // load conf file
   std::string conf_name = "ladybug.conf";

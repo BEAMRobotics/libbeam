@@ -10,17 +10,17 @@ DistortionModel::DistortionModel(beam::VecX coeffs,
   this->SetCoefficients(coeffs);
 }
 
-std::unique_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
+std::shared_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
                                                          beam::VecX coeffs) {
   if (type == beam_calibration::DistortionType::RADTAN) {
-    return std::unique_ptr<beam_calibration::RadTanDistortion>(
+    return std::shared_ptr<beam_calibration::RadTanDistortion>(
         new RadTanDistortion(coeffs, type));
   } else if (type == beam_calibration::DistortionType::NONE) {
     beam::VecX zeros = beam::VecX::Zero(5);
-    return std::unique_ptr<beam_calibration::RadTanDistortion>(
+    return std::shared_ptr<beam_calibration::RadTanDistortion>(
         new RadTanDistortion(zeros, type));
   } else if (type == beam_calibration::DistortionType::EQUIDISTANT) {
-    return std::unique_ptr<beam_calibration::EquidistantDistortion>(
+    return std::shared_ptr<beam_calibration::EquidistantDistortion>(
         new EquidistantDistortion(coeffs, type));
   } else {
     return nullptr;

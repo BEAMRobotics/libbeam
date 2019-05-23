@@ -40,7 +40,7 @@ public:
    * @param type Type of Vehicle to create
    * @return
    */
-  static std::unique_ptr<DistortionModel> Create(DistortionType type,
+  static std::shared_ptr<DistortionModel> Create(DistortionType type,
                                                  beam::VecX coeffs);
 
   /**

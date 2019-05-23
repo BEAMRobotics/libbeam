@@ -24,7 +24,7 @@ public:
    */
   PinholeCamera(beam_calibration::CameraType camera_type,
                 beam::VecX& intrinsics,
-                std::unique_ptr<DistortionModel> distortion,
+                std::shared_ptr<DistortionModel> distortion,
                 uint32_t image_width, uint32_t image_height,
                 std::string frame_id, std::string date);
 

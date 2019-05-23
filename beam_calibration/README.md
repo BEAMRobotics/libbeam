@@ -41,6 +41,8 @@ This module contains the multiple different camera models and distortion models 
   ]
 }
 ```
+## Class Diagram
+![alt text](https://github.com/BEAMRobotics/libbeam/blob/add_camera_models/beam_calibration/ClassDiagram.png)
 
 ## References
 

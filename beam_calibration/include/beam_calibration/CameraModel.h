@@ -31,7 +31,7 @@ public:
    * @brief Construct with values
    */
   CameraModel(beam_calibration::CameraType camera_type, beam::VecX& intrinsics,
-              std::unique_ptr<DistortionModel> distortion, uint32_t image_width,
+              std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
               uint32_t image_height, std::string frame_id, std::string date);
 
   /**
@@ -53,7 +53,7 @@ public:
    */
   static std::shared_ptr<CameraModel>
       Create(beam_calibration::CameraType camera_type, beam::VecX intrinsics,
-             std::unique_ptr<DistortionModel> distortion, uint32_t image_width,
+             std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
              uint32_t image_height, std::string frame_id, std::string date);
 
   /**
@@ -102,7 +102,7 @@ public:
    * @param distortion model
    */
   virtual void SetDistortion(
-      std::unique_ptr<beam_calibration::DistortionModel> distortion);
+      std::shared_ptr<beam_calibration::DistortionModel> distortion);
 
   /**
    * @brief Method for retrieving the camera type
@@ -140,7 +140,7 @@ public:
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
-  virtual beam_calibration::DistortionModel& GetDistortion();
+  virtual std::shared_ptr<beam_calibration::DistortionModel> GetDistortion();
 
   /**
    * @brief Method for retrieving the camera type
@@ -191,7 +191,7 @@ protected:
   // Parameter vector for the intrinsic parameters of the model.
   beam::VecX intrinsics_;
   // The distortion for this camera.
-  std::unique_ptr<beam_calibration::DistortionModel> distortion_;
+  std::shared_ptr<beam_calibration::DistortionModel> distortion_;
   // Boolean values to keep track of validity
   bool intrinsics_valid_ = false, distortion_set_ = false,
        calibration_date_set_ = false;

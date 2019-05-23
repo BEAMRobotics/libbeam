@@ -28,7 +28,7 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
 
   // Set K matrix
   intrinsics_.resize(4);
-  intrinsics_ << focal_length, focal_length, cx, cy;
+  intrinsics_ << focal_length, focal_length, cy, cx;
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {

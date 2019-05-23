@@ -7,7 +7,7 @@ namespace beam_calibration {
 
 CameraModel::CameraModel(beam_calibration::CameraType camera_type,
                          beam::VecX& intrinsics,
-                         std::unique_ptr<DistortionModel> distortion,
+                         std::shared_ptr<DistortionModel> distortion,
                          uint32_t image_width, uint32_t image_height,
                          std::string frame_id, std::string date) {
   this->SetType(camera_type);
@@ -74,23 +74,23 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   }
 
   // create distortion model
-  std::unique_ptr<beam_calibration::DistortionModel> distortion =
+  std::shared_ptr<beam_calibration::DistortionModel> distortion =
       beam_calibration::DistortionModel::Create(dist_type, coeffs);
   // create camera model
   std::shared_ptr<CameraModel> camera = beam_calibration::CameraModel::Create(
-      cam_type, intrinsics, std::move(distortion), image_height, image_width,
-      frame_id, date);
+      cam_type, intrinsics, distortion, image_height, image_width, frame_id,
+      date);
 
   return camera;
 }
 
 std::shared_ptr<CameraModel> CameraModel::Create(
     beam_calibration::CameraType type, beam::VecX intrinsics,
-    std::unique_ptr<DistortionModel> distortion, uint32_t image_width,
+    std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
     uint32_t image_height, std::string frame_id, std::string date) {
   if (type == CameraType::PINHOLE) {
     return std::shared_ptr<beam_calibration::PinholeCamera>(
-        new PinholeCamera(type, intrinsics, std::move(distortion), image_width,
+        new PinholeCamera(type, intrinsics, distortion, image_width,
                           image_height, frame_id, date));
   } else {
     return nullptr;
@@ -124,8 +124,8 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
 }
 
 void CameraModel::SetDistortion(
-    std::unique_ptr<beam_calibration::DistortionModel> distortion) {
-  distortion_ = std::move(distortion);
+    std::shared_ptr<beam_calibration::DistortionModel> distortion) {
+  distortion_ = distortion;
   distortion_set_ = true;
 }
 
@@ -159,12 +159,13 @@ const beam::VecX CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 
-beam_calibration::DistortionModel& CameraModel::GetDistortion() {
+std::shared_ptr<beam_calibration::DistortionModel>
+    CameraModel::GetDistortion() {
   if (!distortion_set_) {
     LOG_ERROR("cannot retrieve distortion, value not set.");
     throw std::runtime_error{"cannot retrieve distortion, value not set"};
   }
-  return *distortion_;
+  return distortion_;
 }
 
 beam_calibration::CameraType CameraModel::GetType() {
@@ -189,7 +190,7 @@ double CameraModel::GetCy() {
 
 beam::Mat3 CameraModel::GetCameraMatrix() {
   beam::Mat3 K;
-  K << this->GetFx(), 0, this->GetCy(), 0, this->GetFy(), this->GetCx(), 0, 0,
+  K << this->GetFx(), 0, this->GetCx(), 0, this->GetFy(), this->GetCy(), 0, 0,
       1;
   return K;
 }

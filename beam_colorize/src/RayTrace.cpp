@@ -27,8 +27,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   }
 
   // store intrinsics of camera
-  beam::Mat3 K = intrinsics_->GetCameraMatrix();
-  double f = (K(0, 0) + K(1, 1)) / 2, cx = K(0, 2), cy = K(1, 2);
+  double f = (intrinsics_->GetFx() + intrinsics_->GetFx()) / 2,
+         cy = intrinsics_->GetCy(), cx = intrinsics_->GetCx();
   // remove points which will not be in the projection
   auto reduced_cloud =
       RayTrace::ReduceCloud(input_point_cloud_, image_, intrinsics_);
