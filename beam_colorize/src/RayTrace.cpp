@@ -27,7 +27,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   }
 
   // store intrinsics of camera
-  beam::Mat3 K = intrinsics_->GetK();
+  beam::Mat3 K = intrinsics_->GetCameraMatrix();
   double f = (K(0, 0) + K(1, 1)) / 2, cx = K(0, 2), cy = K(1, 2);
   // remove points which will not be in the projection
   auto reduced_cloud =
@@ -46,11 +46,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     point << input_cloud->points[i].x, input_cloud->points[i].y,
         input_cloud->points[i].z;
     beam::Vec2 coords;
-    if (image_distored_) {
-      coords = intrinsics_->ProjectDistortedPoint(point);
-    } else {
-      coords = intrinsics_->ProjectPoint(point);
-    }
+
+    coords = intrinsics_->ProjectPoint(point);
+
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
     if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
       tmp.at<cv::Vec3b>(v, u).val[0] = 255;
@@ -114,9 +112,10 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
 }
 
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-    RayTrace::ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-                          std::shared_ptr<cv::Mat> image,
-                          beam_calibration::Intrinsics* intrinsics) const {
+    RayTrace::ReduceCloud(
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
+        std::shared_ptr<cv::Mat> image,
+        std::shared_ptr<beam_calibration::CameraModel> intrinsics) const {
   // cloud to search on
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);

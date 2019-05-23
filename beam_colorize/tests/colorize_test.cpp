@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_calibration/Pinhole.h"
+#include "beam_calibration/CameraModel.h"
 #include "beam_calibration/TfTree.h"
 #include "beam_colorize/Projection.h"
 #include "beam_colorize/RayTrace.h"
@@ -42,22 +42,21 @@ cv::Mat GetImage() {
   return image;
 }
 
-std::shared_ptr<beam_calibration::Intrinsics> GetIntrinsics() {
+std::shared_ptr<beam_calibration::CameraModel> GetIntrinsics() {
   // load intrinsics
   std::string intrinsics_name = "F1.json";
   std::string intrinsics_location = __FILE__;
   intrinsics_location.erase(intrinsics_location.end() - 17,
                             intrinsics_location.end());
   intrinsics_location += "test_data/" + intrinsics_name;
-  std::shared_ptr<beam_calibration::Intrinsics> F1 =
-      std::make_shared<beam_calibration::Pinhole>();
-  F1->LoadJSON(intrinsics_location);
+  std::shared_ptr<beam_calibration::CameraModel> F1 =
+      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
   return F1;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr PerformColorization(int type) {
   // load intrinsics
-  std::shared_ptr<beam_calibration::Intrinsics> F1 = GetIntrinsics();
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
   // load Image
   cv::Mat image = GetImage();
   // load pcd
@@ -76,7 +75,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr PerformColorization(int type) {
   bool image_distorted = true;
   colorizer->SetPointCloud(cloud);
   colorizer->SetImage(image);
-  colorizer->SetIntrinsics(F1.get());
+  colorizer->SetIntrinsics(F1);
   colorizer->SetDistortion(image_distorted);
   cloud_colored = colorizer->ColorizePointCloud();
 
@@ -179,7 +178,7 @@ TEST_CASE("Test factory method") {
 
 TEST_CASE("Test setter functions") {
   // load intrinsics
-  std::shared_ptr<beam_calibration::Intrinsics> F1 = GetIntrinsics();
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
   // load Image
   cv::Mat image = GetImage();
   // load pcd
@@ -192,18 +191,18 @@ TEST_CASE("Test setter functions") {
   REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
   REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
   REQUIRE_NOTHROW(projection.SetImage(image));
-  REQUIRE_NOTHROW(projection.SetIntrinsics(F1.get()));
+  REQUIRE_NOTHROW(projection.SetIntrinsics(F1));
 
   beam_colorize::RayTrace raytrace;
   REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
   REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
   REQUIRE_NOTHROW(raytrace.SetImage(image));
-  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1.get()));
+  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1));
 }
 
 TEST_CASE("Test correct exception throwing") {
   // load intrinsics
-  std::shared_ptr<beam_calibration::Intrinsics> F1 = GetIntrinsics();
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
   // load Image
   cv::Mat image = GetImage();
   // load pcd
@@ -216,7 +215,7 @@ TEST_CASE("Test correct exception throwing") {
   REQUIRE_THROWS(projection.ColorizePointCloud());
   projection.SetImage(image);
   REQUIRE_THROWS(projection.ColorizePointCloud());
-  projection.SetIntrinsics(F1.get());
+  projection.SetIntrinsics(F1);
   REQUIRE_NOTHROW(projection.ColorizePointCloud());
   projection.SetPointCloud(empty_cloud);
   REQUIRE_THROWS(projection.ColorizePointCloud());
@@ -226,7 +225,7 @@ TEST_CASE("Test correct exception throwing") {
   REQUIRE_THROWS(raytrace.ColorizePointCloud());
   raytrace.SetImage(image);
   REQUIRE_THROWS(raytrace.ColorizePointCloud());
-  raytrace.SetIntrinsics(F1.get());
+  raytrace.SetIntrinsics(F1);
   REQUIRE_NOTHROW(raytrace.ColorizePointCloud());
   raytrace.SetPointCloud(empty_cloud);
   REQUIRE_THROWS(raytrace.ColorizePointCloud());

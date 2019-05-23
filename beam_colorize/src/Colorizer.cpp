@@ -40,7 +40,8 @@ void Colorizer::SetImage(const sensor_msgs::Image& image_input) {
   image_initialized_ = true;
 }
 
-void Colorizer::SetIntrinsics(beam_calibration::Intrinsics* intrinsics) {
+void Colorizer::SetIntrinsics(
+    std::shared_ptr<beam_calibration::CameraModel> intrinsics) {
   intrinsics_ = intrinsics;
   intrinsics_initialized_ = true;
 }

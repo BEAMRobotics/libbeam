@@ -1,4 +1,4 @@
-#include "beam_calibration/Pinhole.h"
+#include "beam_calibration/CameraModel.h"
 #include "beam_calibration/TfTree.h"
 #include "beam_colorize/Projection.h"
 #include "beam_colorize/RayTrace.h"
@@ -19,9 +19,8 @@ int main() {
   intrinsics_location += "tests/test_data/";
   intrinsics_location += intrinsics_name;
 
-  std::shared_ptr<beam_calibration::Intrinsics> F1 =
-      std::make_shared<beam_calibration::Pinhole>();
-  F1->LoadJSON(intrinsics_location);
+  std::shared_ptr<beam_calibration::CameraModel> F1 =
+      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
 
   // load Image
   std::string image_name = "image18reduced.jpg";
@@ -66,7 +65,7 @@ int main() {
   bool image_distorted = true;
   colorizer.SetPointCloud(cloud);
   colorizer.SetImage(image);
-  colorizer.SetIntrinsics(F1.get());
+  colorizer.SetIntrinsics(F1);
   colorizer.SetDistortion(image_distorted);
   cloud_colored = colorizer.ColorizePointCloud();
 
