@@ -3,9 +3,15 @@
  */
 
 #pragma once
+// beam
 #include "beam_utils/math.hpp"
+
+// std library
 #include <fstream>
 #include <iostream>
+
+// OpenCV
+#include <opencv2/opencv.hpp>
 
 namespace beam_calibration {
 /** @addtogroup calibration
@@ -59,6 +65,14 @@ public:
    * @param X point to be projected. In homographic form
    */
   virtual beam::Vec2 Undistort(beam::Vec2& point) = 0;
+
+  /**
+   * @brief Method undistorting an image
+   * @return Returns undistorted image
+   * @param distorted image
+   */
+  virtual cv::Mat UndistortImage(const cv::Mat& input_image,
+                                 std::vector<double> intrinsics) = 0;
 
   /**
    * @brief Method for adding coefficients

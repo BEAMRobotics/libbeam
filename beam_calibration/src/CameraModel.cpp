@@ -190,17 +190,11 @@ beam::Mat3 CameraModel::GetCameraMatrix() {
 }
 
 cv::Mat CameraModel::UndistortImage(const cv::Mat& input_image) {
-  cv::Mat output_image;
-  beam::VecX coeffs = this->GetDistortion()->GetCoefficients();
   std::vector<double> intrinsics(intrinsics_.data(),
                                  intrinsics_.data() +
                                      intrinsics_.rows() * intrinsics_.cols());
-  cv::InputArray K(intrinsics);
-  std::vector<double> coefficients(
-      coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-  cv::InputArray D(coefficients);
-  cv::fisheye::undistortImage(input_image, output_image, K, D);
-  return output_image;
+  // undistort image using appropriate model
+  return this->GetDistortion()->UndistortImage(input_image, intrinsics);
 }
 
 } // namespace beam_calibration

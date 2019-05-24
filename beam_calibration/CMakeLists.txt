@@ -7,18 +7,18 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Catch2::Catch2
     catkin::catkin
     Eigen3::Eigen
-    nlohmann_json::nlohmann_json
     Ladybug::Ladybug
+    nlohmann_json::nlohmann_json
     yaml-cpp
     OpenCV::OpenCV
   SOURCES
     src/TfTree.cpp
     src/CameraModel.cpp
-    src/DistortionModel.cpp
+    src/LadybugCamera.cpp
     src/PinholeCamera.cpp
+    src/DistortionModel.cpp
     src/RadTanDistortion.cpp
     src/EquidistantDistortion.cpp
-    src/LadybugCamera.cpp
     src/TfTree.cpp
 
 )

@@ -23,4 +23,20 @@ beam::Vec2 RadTanDistortion::Distort(beam::Vec2& point) {
 
 beam::Vec2 RadTanDistortion::Undistort(beam::Vec2& point) {}
 
+cv::Mat RadTanDistortion::UndistortImage(const cv::Mat& input_image,
+                                         std::vector<double> intrinsics) {
+  cv::Mat output_image;
+  beam::VecX coeffs = this->GetCoefficients();
+  std::vector<double> coefficients;
+  coefficients.push_back(coeffs[0]);
+  coefficients.push_back(coeffs[1]);
+  coefficients.push_back(coeffs[3]);
+  coefficients.push_back(coeffs[4]);
+  coefficients.push_back(coeffs[2]);
+  cv::InputArray K(intrinsics);
+  cv::InputArray D(coefficients);
+  cv::undistort(input_image, output_image, K, D);
+  return output_image;
+}
+
 } // namespace beam_calibration

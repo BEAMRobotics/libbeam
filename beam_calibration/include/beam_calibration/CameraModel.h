@@ -5,19 +5,10 @@
 #pragma once
 // beam
 #include "beam_calibration/DistortionModel.h"
-#include "beam_utils/math.hpp"
-
-// std library
-#include <fstream>
-#include <iostream>
 
 // format libraries
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
-
-// OpenCV
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
 
 namespace beam_calibration {
 /** @addtogroup calibration

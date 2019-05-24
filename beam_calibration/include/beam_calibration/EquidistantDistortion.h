@@ -46,6 +46,14 @@ public:
    * @param X point to be projected. In homographic form
    */
   beam::Vec2 Undistort(beam::Vec2& point) override;
+
+  /**
+   * @brief Method undistorting an image
+   * @return Returns undistorted image
+   * @param distorted image
+   */
+  cv::Mat UndistortImage(const cv::Mat& input_image,
+                         std::vector<double> intrinsics) override;
 };
 
 /** @} group calibration */
