@@ -46,13 +46,6 @@ public:
    * @param X point to be projected. In homographic form
    */
   beam::Vec2 Undistort(beam::Vec2& point) override;
-
-protected:
-  /// Parameter vector for the coefficients.
-  beam::VecX coefficients_;
-  beam_calibration::DistortionType type_;
-  // boolean values to keep track of validity
-  bool coefficients_valid_ = false;
 };
 
 /** @} group calibration */

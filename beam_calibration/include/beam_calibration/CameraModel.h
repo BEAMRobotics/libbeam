@@ -3,11 +3,21 @@
  */
 
 #pragma once
+// beam
 #include "beam_calibration/DistortionModel.h"
 #include "beam_utils/math.hpp"
+
+// std library
 #include <fstream>
 #include <iostream>
+
+// format libraries
 #include <nlohmann/json.hpp>
+#include <yaml-cpp/yaml.h>
+
+// OpenCV
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
 
 namespace beam_calibration {
 /** @addtogroup calibration
@@ -16,7 +26,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { PINHOLE = 0, LADYBUG };
+enum class CameraType { NONE = 0, PINHOLE, LADYBUG };
 /**
  * @brief Abstract class for camera models
  */
@@ -178,6 +188,12 @@ public:
    */
   virtual beam::Mat3 GetCameraMatrix();
 
+  /**
+   * @brief Method for undistorting an image based on camera's distortion
+   * @return image
+   */
+  virtual cv::Mat UndistortImage(const cv::Mat& image_input);
+
 protected:
   // Map for keeping required number of coefficient variables based on
   // distortion type
@@ -197,7 +213,8 @@ protected:
        calibration_date_set_ = false;
   // constants to hold types
   beam_calibration::CameraType PINHOLE = beam_calibration::CameraType::PINHOLE,
-                               LADYBUG = beam_calibration::CameraType::LADYBUG;
+                               LADYBUG = beam_calibration::CameraType::LADYBUG,
+                               NONE = beam_calibration::CameraType::NONE;
 };
 
 /** @} group calibration */

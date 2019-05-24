@@ -9,6 +9,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
     nlohmann_json::nlohmann_json
     Ladybug::Ladybug
+    yaml-cpp
+    OpenCV::OpenCV
   SOURCES
     src/TfTree.cpp
     src/CameraModel.cpp

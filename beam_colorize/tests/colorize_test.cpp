@@ -118,6 +118,46 @@ TEST_CASE("Test correct projection colorization and exceptions") {
   REQUIRE(percent_blue > 0.95);
 }
 
+TEST_CASE("Test factory method") {
+  beam_colorize::ColorizerType PROJ = beam_colorize::ColorizerType::PROJECTION;
+  beam_colorize::ColorizerType RAY = beam_colorize::ColorizerType::RAY_TRACE;
+
+  auto projection = beam_colorize::Colorizer::Create(PROJ);
+  auto raytrace = beam_colorize::Colorizer::Create(RAY);
+
+  std::string proj_type(typeid(*projection).name());
+  std::string ray_type(typeid(*raytrace).name());
+
+  std::string proj_test = "Projection", ray_test = "RayTrace";
+
+  REQUIRE(proj_type.find(proj_test) != -1);
+  REQUIRE(ray_type.find(ray_test) != -1);
+}
+
+TEST_CASE("Test setter functions") {
+  // load intrinsics
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
+  // load Image
+  cv::Mat image = GetImage();
+  // load pcd
+  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD();
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
+      new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
+
+  beam_colorize::Projection projection;
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_NOTHROW(projection.SetImage(image));
+  REQUIRE_NOTHROW(projection.SetIntrinsics(F1));
+
+  beam_colorize::RayTrace raytrace;
+  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_NOTHROW(raytrace.SetImage(image));
+  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1));
+}
+
 TEST_CASE("Test correct raytrace colorization and exceptions") {
   // load intrinsics
   std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
@@ -181,44 +221,4 @@ TEST_CASE("Test correct raytrace colorization and exceptions") {
   // 20% occurs when dilation is 1, and increases as dilation does
   REQUIRE(percent_red > 0.20);
   REQUIRE(percent_blue > 0.20);
-}
-
-TEST_CASE("Test factory method") {
-  beam_colorize::ColorizerType PROJ = beam_colorize::ColorizerType::PROJECTION;
-  beam_colorize::ColorizerType RAY = beam_colorize::ColorizerType::RAY_TRACE;
-
-  auto projection = beam_colorize::Colorizer::Create(PROJ);
-  auto raytrace = beam_colorize::Colorizer::Create(RAY);
-
-  std::string proj_type(typeid(*projection).name());
-  std::string ray_type(typeid(*raytrace).name());
-
-  std::string proj_test = "Projection", ray_test = "RayTrace";
-
-  REQUIRE(proj_type.find(proj_test) != -1);
-  REQUIRE(ray_type.find(ray_test) != -1);
-}
-
-TEST_CASE("Test setter functions") {
-  // load intrinsics
-  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
-  // load Image
-  cv::Mat image = GetImage();
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD();
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
-      new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
-
-  beam_colorize::Projection projection;
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_NOTHROW(projection.SetImage(image));
-  REQUIRE_NOTHROW(projection.SetIntrinsics(F1));
-
-  beam_colorize::RayTrace raytrace;
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_NOTHROW(raytrace.SetImage(image));
-  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1));
 }

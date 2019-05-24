@@ -26,8 +26,9 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   std::string camera_type, date, method, frame_id, distortion_model;
   beam::VecX coeffs;
   beam::VecX intrinsics;
-  beam_calibration::CameraType cam_type;
-  beam_calibration::DistortionType dist_type;
+  beam_calibration::CameraType cam_type = beam_calibration::CameraType::NONE;
+  beam_calibration::DistortionType dist_type =
+      beam_calibration::DistortionType::NONE;
 
   std::ifstream file(file_location);
   file >> J;
@@ -40,7 +41,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     image_width = calib["image_width"].get<int>();
     image_height = calib["image_height"].get<int>();
     frame_id = calib["frame_id"];
-
+    // push intrinsics
     std::vector<double> tmp_intrinsics;
     for (const auto& value : calib["intrinsics"]) {
       tmp_intrinsics.push_back(value.get<double>());
@@ -49,7 +50,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     for (uint8_t k = 0; k < tmp_intrinsics.size(); k++) {
       intrinsics(k) = tmp_intrinsics[k];
     }
-
+    // push distortion coeffs
     std::vector<double> tmp_coeffs;
     for (const auto& value : calib["distortion_coefficients"]) {
       tmp_coeffs.push_back(value.get<double>());
@@ -63,8 +64,6 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   // Get type of distortion model to use
   if (distortion_model == "radtan") {
     dist_type = beam_calibration::DistortionType::RADTAN;
-  } else if (distortion_model == "none") {
-    dist_type = beam_calibration::DistortionType::NONE;
   } else if (distortion_model == "equidistant") {
     dist_type = beam_calibration::DistortionType::EQUIDISTANT;
   }
@@ -194,5 +193,7 @@ beam::Mat3 CameraModel::GetCameraMatrix() {
       1;
   return K;
 }
+
+cv::Mat CameraModel::UndistortImage(const cv::Mat& image_input) {}
 
 } // namespace beam_calibration
