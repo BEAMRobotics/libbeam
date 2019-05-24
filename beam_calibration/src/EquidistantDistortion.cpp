@@ -2,8 +2,8 @@
 
 namespace beam_calibration {
 
-EquidistantDistortion::EquidistantDistortion(
-    beam::VecX coeffs, beam_calibration::DistortionType type)
+EquidistantDistortion::EquidistantDistortion(beam::VecX coeffs,
+                                             DistortionType type)
     : DistortionModel(coeffs, type) {}
 
 beam::Vec2 EquidistantDistortion::Distort(beam::Vec2& point) {

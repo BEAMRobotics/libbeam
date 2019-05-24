@@ -2,8 +2,7 @@
 
 namespace beam_calibration {
 
-PinholeCamera::PinholeCamera(beam_calibration::CameraType camera_type,
-                             beam::VecX& intrinsics,
+PinholeCamera::PinholeCamera(CameraType camera_type, beam::VecX& intrinsics,
                              std::shared_ptr<DistortionModel> distortion,
                              uint32_t image_width, uint32_t image_height,
                              std::string frame_id, std::string date)

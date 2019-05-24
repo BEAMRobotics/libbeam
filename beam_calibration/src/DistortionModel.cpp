@@ -4,23 +4,21 @@
 
 namespace beam_calibration {
 
-DistortionModel::DistortionModel(beam::VecX coeffs,
-                                 beam_calibration::DistortionType type) {
+DistortionModel::DistortionModel(beam::VecX coeffs, DistortionType type) {
   this->SetType(type);
   this->SetCoefficients(coeffs);
 }
 
 std::shared_ptr<DistortionModel> DistortionModel::Create(DistortionType type,
                                                          beam::VecX coeffs) {
-  if (type == beam_calibration::DistortionType::RADTAN) {
-    return std::shared_ptr<beam_calibration::RadTanDistortion>(
+  if (type == DistortionType::RADTAN) {
+    return std::shared_ptr<RadTanDistortion>(
         new RadTanDistortion(coeffs, type));
-  } else if (type == beam_calibration::DistortionType::NONE) {
+  } else if (type == DistortionType::NONE) {
     beam::VecX zeros = beam::VecX::Zero(5);
-    return std::shared_ptr<beam_calibration::RadTanDistortion>(
-        new RadTanDistortion(zeros, type));
-  } else if (type == beam_calibration::DistortionType::EQUIDISTANT) {
-    return std::shared_ptr<beam_calibration::EquidistantDistortion>(
+    return std::shared_ptr<RadTanDistortion>(new RadTanDistortion(zeros, type));
+  } else if (type == DistortionType::EQUIDISTANT) {
+    return std::shared_ptr<EquidistantDistortion>(
         new EquidistantDistortion(coeffs, type));
   } else {
     return nullptr;
@@ -46,11 +44,11 @@ const beam::VecX DistortionModel::GetCoefficients() const {
   return coefficients_;
 }
 
-void DistortionModel::SetType(beam_calibration::DistortionType type) {
+void DistortionModel::SetType(DistortionType type) {
   type_ = type;
 }
 
-beam_calibration::DistortionType DistortionModel::GetType() {
+DistortionType DistortionModel::GetType() {
   return type_;
 }
 

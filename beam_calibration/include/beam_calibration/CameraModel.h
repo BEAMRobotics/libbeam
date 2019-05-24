@@ -40,7 +40,7 @@ public:
   /**
    * @brief Construct with values
    */
-  CameraModel(beam_calibration::CameraType camera_type, beam::VecX& intrinsics,
+  CameraModel(CameraType camera_type, beam::VecX& intrinsics,
               std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
               uint32_t image_height, std::string frame_id, std::string date);
 
@@ -53,8 +53,7 @@ public:
    * @brief method to instantiate camera model from json file
    * @param file_location absolute path to json file
    */
-  static std::shared_ptr<beam_calibration::CameraModel>
-      LoadJSON(std::string& file_location);
+  static std::shared_ptr<CameraModel> LoadJSON(std::string& file_location);
 
   /**
    * @brief Factory method for camera models
@@ -62,7 +61,7 @@ public:
    * @return
    */
   static std::shared_ptr<CameraModel>
-      Create(beam_calibration::CameraType camera_type, beam::VecX intrinsics,
+      Create(CameraType camera_type, beam::VecX intrinsics,
              std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
              uint32_t image_height, std::string frame_id, std::string date);
 
@@ -111,14 +110,13 @@ public:
    * @brief Method for adding the distortion model
    * @param distortion model
    */
-  virtual void SetDistortion(
-      std::shared_ptr<beam_calibration::DistortionModel> distortion);
+  virtual void SetDistortion(std::shared_ptr<DistortionModel> distortion);
 
   /**
    * @brief Method for retrieving the camera type
    * @return camera type
    */
-  virtual void SetType(beam_calibration::CameraType type);
+  virtual void SetType(CameraType type);
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -150,13 +148,13 @@ public:
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
-  virtual std::shared_ptr<beam_calibration::DistortionModel> GetDistortion();
+  virtual std::shared_ptr<DistortionModel> GetDistortion();
 
   /**
    * @brief Method for retrieving the camera type
    * @return camera type
    */
-  virtual beam_calibration::CameraType GetType();
+  virtual CameraType GetType();
 
   /**
    * @brief Method for retrieving fx
@@ -195,26 +193,18 @@ public:
   virtual cv::Mat UndistortImage(const cv::Mat& image_input);
 
 protected:
-  // Map for keeping required number of coefficient variables based on
-  // distortion type
-  std::map<beam_calibration::CameraType, int> get_size_ = {
-      {beam_calibration::CameraType::LADYBUG, 0},
-      {beam_calibration::CameraType::PINHOLE, 4}};
-
-  beam_calibration::CameraType type_;
+  CameraType type_;
   std::string frame_id_, calibration_date_;
   uint32_t image_height_, image_width_, required_size_;
-  // Parameter vector for the intrinsic parameters of the model.
   beam::VecX intrinsics_;
-  // The distortion for this camera.
-  std::shared_ptr<beam_calibration::DistortionModel> distortion_;
+  std::shared_ptr<DistortionModel> distortion_;
   // Boolean values to keep track of validity
   bool intrinsics_valid_ = false, distortion_set_ = false,
        calibration_date_set_ = false;
-  // constants to hold types
-  beam_calibration::CameraType PINHOLE = beam_calibration::CameraType::PINHOLE,
-                               LADYBUG = beam_calibration::CameraType::LADYBUG,
-                               NONE = beam_calibration::CameraType::NONE;
+  // Map for keeping required number of intrinsic variables
+  std::map<CameraType, int> get_size_ = {{CameraType::LADYBUG, 0},
+                                         {CameraType::PINHOLE, 4},
+                                         {CameraType::NONE, 0}};
 };
 
 /** @} group calibration */

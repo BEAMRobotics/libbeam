@@ -2,8 +2,7 @@
 
 namespace beam_calibration {
 
-RadTanDistortion::RadTanDistortion(beam::VecX coeffs,
-                                   beam_calibration::DistortionType type)
+RadTanDistortion::RadTanDistortion(beam::VecX coeffs, DistortionType type)
     : DistortionModel(coeffs, type) {}
 
 beam::Vec2 RadTanDistortion::Distort(beam::Vec2& point) {
