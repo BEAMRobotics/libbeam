@@ -3,7 +3,7 @@
 namespace beam_colorize {
 
 Projection::Projection() {
-  image_distored_ = true;
+  image_distorted_ = true;
   image_initialized_ = false;
   point_cloud_initialized_ = false;
   intrinsics_initialized_ = false;

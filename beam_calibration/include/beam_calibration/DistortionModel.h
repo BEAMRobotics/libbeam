@@ -11,6 +11,7 @@
 #include <iostream>
 
 // OpenCV
+#include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 
 namespace beam_calibration {
@@ -71,8 +72,7 @@ public:
    * @return Returns undistorted image
    * @param distorted image
    */
-  virtual cv::Mat UndistortImage(const cv::Mat& input_image,
-                                 std::vector<double> intrinsics) = 0;
+  virtual cv::Mat UndistortImage(const cv::Mat& input_image, cv::Mat K) = 0;
 
   /**
    * @brief Method for adding coefficients
@@ -104,7 +104,7 @@ protected:
   bool coefficients_valid_ = false;
   // Map for keeping required number of coefficient variables based on
   // distortion type
-  std::map<DistortionType, int> get_size_ = {{DistortionType::NONE, 0},
+  std::map<DistortionType, int> get_size_ = {{DistortionType::NONE, 5},
                                              {DistortionType::RADTAN, 5},
                                              {DistortionType::EQUIDISTANT, 4}};
 };

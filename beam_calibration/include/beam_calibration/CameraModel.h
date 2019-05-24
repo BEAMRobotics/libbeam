@@ -10,6 +10,10 @@
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
 
+// OpenCV
+#include <opencv2/core/eigen.hpp>
+#include <opencv2/opencv.hpp>
+
 namespace beam_calibration {
 /** @addtogroup calibration
  *  @{ */
@@ -72,6 +76,12 @@ public:
    * @param X point to be projected. In homographic form
    */
   virtual beam::Vec2 ProjectPoint(beam::Vec4& point) = 0;
+
+  /**
+   * @brief Method for undistorting an image based on camera's distortion
+   * @return image
+   */
+  virtual cv::Mat UndistortImage(cv::Mat& image_input) = 0;
 
   /**
    * @brief Method for adding the frame id
@@ -176,12 +186,6 @@ public:
    * @return K
    */
   virtual beam::Mat3 GetCameraMatrix();
-
-  /**
-   * @brief Method for undistorting an image based on camera's distortion
-   * @return image
-   */
-  virtual cv::Mat UndistortImage(const cv::Mat& image_input);
 
 protected:
   CameraType type_;

@@ -189,12 +189,4 @@ beam::Mat3 CameraModel::GetCameraMatrix() {
   return K;
 }
 
-cv::Mat CameraModel::UndistortImage(const cv::Mat& input_image) {
-  std::vector<double> intrinsics(intrinsics_.data(),
-                                 intrinsics_.data() +
-                                     intrinsics_.rows() * intrinsics_.cols());
-  // undistort image using appropriate model
-  return this->GetDistortion()->UndistortImage(input_image, intrinsics);
-}
-
 } // namespace beam_calibration

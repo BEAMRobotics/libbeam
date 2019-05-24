@@ -47,7 +47,7 @@ void Colorizer::SetIntrinsics(
 }
 
 void Colorizer::SetDistortion(const bool& image_distored) {
-  image_distored_ = image_distored;
+  image_distorted_ = image_distored;
 }
 
 void Colorizer::SetTransform(const Eigen::Affine3d& T_C_L) {

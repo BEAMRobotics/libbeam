@@ -49,6 +49,12 @@ public:
    * @param X point to be projected. In homographic form
    */
   beam::Vec2 ProjectPoint(beam::Vec4& point) override;
+
+  /**
+   * @brief Method for undistorting an image based on camera's distortion
+   * @return image
+   */
+  cv::Mat UndistortImage(cv::Mat& image_input) override;
 };
 
 /** @} group calibration */

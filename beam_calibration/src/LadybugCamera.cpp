@@ -73,6 +73,10 @@ beam::Vec2 LadybugCamera::Distort(beam::Vec2 pixel_in) {
   return pixel_out;
 }
 
+cv::Mat LadybugCamera::UndistortImage(cv::Mat& input_image) {
+  return input_image;
+}
+
 void LadybugCamera::LadybugCheckError() {
   if (lb_error_ != LADYBUG_OK) {
     LOG_ERROR("Ladybug threw an error: %s", ladybugErrorToString(lb_error_));

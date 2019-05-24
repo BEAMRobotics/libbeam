@@ -34,16 +34,18 @@ beam::Vec2 EquidistantDistortion::Distort(beam::Vec2& point) {
   return coords;
 }
 
-beam::Vec2 EquidistantDistortion::Undistort(beam::Vec2& point) {}
+beam::Vec2 EquidistantDistortion::Undistort(beam::Vec2& point) {
+  return point;
+}
 
 cv::Mat EquidistantDistortion::UndistortImage(const cv::Mat& input_image,
-                                              std::vector<double> intrinsics) {
+                                              cv::Mat K) {
   cv::Mat output_image;
-  beam::VecX coeffs = this->GetCoefficients();
-  std::vector<double> coefficients(
-      coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-  cv::InputArray K(intrinsics);
-  cv::InputArray D(coefficients);
+  // convert eigen to cv mat
+  beam::VecX distortion_coeffs = this->GetCoefficients();
+  cv::Mat D(1, 5, CV_8UC1);
+  cv::eigen2cv(distortion_coeffs, D);
+  // undistort image
   cv::fisheye::undistortImage(input_image, output_image, K, D);
   return output_image;
 }

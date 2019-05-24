@@ -32,4 +32,14 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
   beam::Vec3 new_point(point[0], point[1], point[2]);
   return ProjectPoint(new_point);
 }
+
+cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
+  beam::Mat3 camera_matrix = this->GetCameraMatrix();
+  // convert eigen to cv mat
+  cv::Mat K(3, 3, CV_8UC1);
+  cv::eigen2cv(camera_matrix, K);
+  // undistort image using appropriate model
+  return this->GetDistortion()->UndistortImage(input_image, K);
+}
+
 } // namespace beam_calibration

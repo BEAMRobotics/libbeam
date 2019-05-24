@@ -112,7 +112,7 @@ protected:
   std::shared_ptr<cv::Mat> image_;
   std::shared_ptr<beam_calibration::CameraModel> intrinsics_;
   Eigen::Affine3d T_C_L_;
-  bool image_distored_, image_initialized_, point_cloud_initialized_,
+  bool image_distorted_, image_initialized_, point_cloud_initialized_,
       intrinsics_initialized_, transform_set_;
 };
 

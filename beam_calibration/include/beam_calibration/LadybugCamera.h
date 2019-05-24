@@ -54,6 +54,12 @@ public:
   beam::Vec2 ProjectPoint(beam::Vec4& point) override;
 
   /**
+   * @brief Method for undistorting an image based on camera's distortion
+   * @return image
+   */
+  cv::Mat UndistortImage(cv::Mat& image_input) override;
+
+  /**
    * @brief Special distortion using ladybug SDK
    * @return Returns image coordinates after point has been undistorted
    * @param pixel_in point to be undistorted

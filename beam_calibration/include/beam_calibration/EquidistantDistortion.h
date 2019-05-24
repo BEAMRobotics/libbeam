@@ -52,8 +52,7 @@ public:
    * @return Returns undistorted image
    * @param distorted image
    */
-  cv::Mat UndistortImage(const cv::Mat& input_image,
-                         std::vector<double> intrinsics) override;
+  cv::Mat UndistortImage(const cv::Mat& input_image, cv::Mat K) override;
 };
 
 /** @} group calibration */
