@@ -2,8 +2,11 @@
 
 namespace beam_calibration {
 
-RadTanDistortion::RadTanDistortion(beam::VecX coeffs, DistortionType type)
-    : DistortionModel(coeffs, type) {}
+RadTanDistortion::RadTanDistortion(beam::VecX coeffs) {
+  type_ = DistortionType::RADTAN;
+  if (coeffs.isZero(0)) { type_ = DistortionType::NONE; }
+  this->SetCoefficients(coeffs);
+}
 
 beam::Vec2 RadTanDistortion::Distort(beam::Vec2& point) {
   beam::Vec2 coords;
@@ -29,9 +32,13 @@ cv::Mat RadTanDistortion::UndistortImage(const cv::Mat& input_image,
                                          cv::Mat K) {
   cv::Mat output_image;
   // convert eigen to cv mat
-  beam::VecX distortion_coeffs = this->GetCoefficients();
+  beam::VecX dist_coeffs = this->GetCoefficients();
+  // opencv uses the ordering [k1, k2, r1, r2, k3]
+  beam::VecX coeffs;
+  coeffs << dist_coeffs[0], dist_coeffs[1], dist_coeffs[3], dist_coeffs[4],
+      dist_coeffs[2];
   cv::Mat D(1, 5, CV_8UC1);
-  cv::eigen2cv(distortion_coeffs, D);
+  cv::eigen2cv(coeffs, D);
   // undistort image
   cv::undistort(input_image, output_image, K, D);
   return output_image;

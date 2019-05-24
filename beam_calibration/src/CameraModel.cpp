@@ -5,18 +5,6 @@ using json = nlohmann::json;
 
 namespace beam_calibration {
 
-CameraModel::CameraModel(CameraType camera_type, beam::VecX& intrinsics,
-                         std::shared_ptr<DistortionModel> distortion,
-                         uint32_t image_width, uint32_t image_height,
-                         std::string frame_id, std::string date) {
-  this->SetType(camera_type);
-  this->SetFrameID(frame_id);
-  this->SetCalibrationDate(date);
-  this->SetImageDims(image_height, image_width);
-  this->SetIntrinsics(intrinsics);
-  this->SetDistortion(std::move(distortion));
-}
-
 std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   LOG_INFO("Loading file: %s", file_location.c_str());
 
@@ -85,9 +73,8 @@ std::shared_ptr<CameraModel>
                         uint32_t image_width, uint32_t image_height,
                         std::string frame_id, std::string date) {
   if (type == CameraType::PINHOLE) {
-    return std::shared_ptr<PinholeCamera>(
-        new PinholeCamera(type, intrinsics, distortion, image_width,
-                          image_height, frame_id, date));
+    return std::shared_ptr<PinholeCamera>(new PinholeCamera(
+        intrinsics, distortion, image_width, image_height, frame_id, date));
   } else {
     return nullptr;
   }
@@ -122,10 +109,6 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
 void CameraModel::SetDistortion(std::shared_ptr<DistortionModel> distortion) {
   distortion_ = distortion;
   distortion_set_ = true;
-}
-
-void CameraModel::SetType(CameraType type) {
-  type_ = type;
 }
 
 const std::string CameraModel::GetFrameID() const {

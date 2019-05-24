@@ -22,7 +22,7 @@ public:
   /**
    * @brief Default constructor
    */
-  RadTanDistortion(beam::VecX coeffs, beam_calibration::DistortionType type);
+  RadTanDistortion(beam::VecX coeffs);
 
   /**
    * @brief Default destructor

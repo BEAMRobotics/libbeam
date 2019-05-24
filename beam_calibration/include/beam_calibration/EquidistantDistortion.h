@@ -22,8 +22,7 @@ public:
   /**
    * @brief Default constructor
    */
-  EquidistantDistortion(beam::VecX coeffs,
-                        beam_calibration::DistortionType type);
+  EquidistantDistortion(beam::VecX coeffs);
 
   /**
    * @brief Default destructor

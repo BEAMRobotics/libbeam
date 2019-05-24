@@ -33,13 +33,6 @@ public:
   CameraModel() = default;
 
   /**
-   * @brief Construct with values
-   */
-  CameraModel(CameraType camera_type, beam::VecX& intrinsics,
-              std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
-              uint32_t image_height, std::string frame_id, std::string date);
-
-  /**
    * @brief Default destructor
    */
   virtual ~CameraModel() = default;
@@ -103,6 +96,8 @@ public:
 
   /**
    * @brief Method for adding intrinsic values
+   * Pinhole: [fx,fy,cx,cy]
+   * Ladybug: [fx,fy,cy,cx]
    * @param intrinsics of the camera
    */
   virtual void SetIntrinsics(beam::VecX instrinsics);
@@ -112,12 +107,6 @@ public:
    * @param distortion model
    */
   virtual void SetDistortion(std::shared_ptr<DistortionModel> distortion);
-
-  /**
-   * @brief Method for retrieving the camera type
-   * @return camera type
-   */
-  virtual void SetType(CameraType type);
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -197,7 +186,7 @@ protected:
   bool intrinsics_valid_ = false, distortion_set_ = false,
        calibration_date_set_ = false;
   // Map for keeping required number of intrinsic variables
-  std::map<CameraType, int> get_size_ = {{CameraType::LADYBUG, 0},
+  std::map<CameraType, int> get_size_ = {{CameraType::LADYBUG, 4},
                                          {CameraType::PINHOLE, 4},
                                          {CameraType::NONE, 0}};
 };

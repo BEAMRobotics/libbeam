@@ -22,8 +22,7 @@ public:
   /**
    * @brief constructor with values
    */
-  PinholeCamera(beam_calibration::CameraType camera_type,
-                beam::VecX& intrinsics,
+  PinholeCamera(beam::VecX& intrinsics,
                 std::shared_ptr<DistortionModel> distortion,
                 uint32_t image_width, uint32_t image_height,
                 std::string frame_id, std::string date);

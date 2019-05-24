@@ -32,29 +32,47 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {
-  beam::Vec2 coords;
-  beam::Vec3 x_proj, X_flip;
-  beam::Mat3 K = this->GetCameraMatrix();
-  // flip the coordinate system to be consistent with opencv convention shown
-  // here:
-  // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
-  X_flip(0, 0) = -point(1, 0); // x = -y
-  X_flip(1, 0) = point(0, 0);  // y = x
-  X_flip(2, 0) = point(2, 0);  // z = z
-  // project
-  x_proj = K * X_flip;
-  // normalize
-  coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
-  coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
-  // Distort point using distortion model
-  beam::Vec2 out_point = this->Distort(coords);
+  beam::Vec2 out_point;
+  if (intrinsics_valid_ && distortion_set_) {
+    beam::Vec2 coords;
+    beam::Vec3 x_proj, X_flip;
+    beam::Mat3 K = this->GetCameraMatrix();
+    // flip the coordinate system to be consistent with opencv convention shown
+    // here:
+    // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
+    X_flip(0, 0) = -point(1, 0); // x = -y
+    X_flip(1, 0) = point(0, 0);  // y = x
+    X_flip(2, 0) = point(2, 0);  // z = z
+    // project
+    x_proj = K * X_flip;
+    // normalize
+    coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
+    coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
+    // Distort point using distortion model
+    out_point = this->Distort(coords);
+  } else if (!intrinsics_valid_) {
+    LOG_ERROR("Intrinsics not set, cannot project point.");
+    throw std::invalid_argument{"Intrinsics nto set"};
+  }
 
   return out_point;
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4& point) {
-  beam::Vec3 new_point(point[0], point[1], point[2]);
-  return ProjectPoint(new_point);
+  bool homographic_form = (point[3] == 1);
+  beam::Vec2 out_point;
+  if (intrinsics_valid_ && homographic_form && distortion_set_) {
+    beam::Vec3 new_point(point[0], point[1], point[2]);
+    out_point = ProjectPoint(new_point);
+  } else if (!intrinsics_valid_) {
+    LOG_ERROR("Intrinsics not set, cannot project point.");
+    throw std::invalid_argument{"Intrinsics nto set"};
+  } else {
+    LOG_ERROR("invalid entry, cannot project point: the point is not in "
+              "homographic form, ");
+    throw std::invalid_argument{"invalid point"};
+  }
+  return out_point;
 }
 
 beam::Vec2 LadybugCamera::Undistort(beam::Vec2 pixel_in) {

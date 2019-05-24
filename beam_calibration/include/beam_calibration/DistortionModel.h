@@ -33,22 +33,18 @@ public:
   DistortionModel() = default;
 
   /**
-   * @brief Construct with values
-   */
-  DistortionModel(beam::VecX coeffs, DistortionType type);
-
-  /**
    * @brief Default destructor
    */
   virtual ~DistortionModel() = default;
 
   /**
    * @brief Factory method for instantiating intrinsics
-   * @param type Type of Vehicle to create
-   * @return
+   * @param type Distortion to create
+   * @param coeffs Coefficient vector
+   * @return DistortionModel
    */
-  static std::shared_ptr<DistortionModel> Create(DistortionType type,
-                                                 beam::VecX coeffs);
+  static std::shared_ptr<DistortionModel>
+      Create(DistortionType type, beam::VecX coeffs = beam::VecX::Zero(0));
 
   /**
    * @brief Method for projecting a point into an image plane
@@ -63,7 +59,7 @@ public:
    * plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
-   * @param X point to be projected. In homographic form
+   * @param Point to be projected. In homographic form
    */
   virtual beam::Vec2 Undistort(beam::Vec2& point) = 0;
 
@@ -76,6 +72,8 @@ public:
 
   /**
    * @brief Method for adding coefficients
+   * Radtan: [k1,k2,k3,r1,r2]
+   * Equidistant: [k1,k2,k3,k4]
    * @param coefficient vector
    */
   virtual void SetCoefficients(beam::VecX coeffs);
@@ -85,12 +83,6 @@ public:
    * @return coefficient vector
    */
   virtual const beam::VecX GetCoefficients() const;
-
-  /**
-   * @brief Method for setting the type of model
-   * @param distortion type
-   */
-  virtual void SetType(DistortionType type);
 
   /**
    * @brief Method for retreiving the type of model

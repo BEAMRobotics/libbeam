@@ -32,7 +32,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     img = std::make_shared<cv::Mat>(intrinsics_->UndistortImage(*image_));
     std::shared_ptr<beam_calibration::DistortionModel> dist =
         beam_calibration::DistortionModel::Create(
-            beam_calibration::DistortionType::NONE, beam::VecX::Zero(5));
+            beam_calibration::DistortionType::NONE);
     intrinsics_->SetDistortion(dist);
   }
   // store intrinsics of camera
