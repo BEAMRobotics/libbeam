@@ -114,13 +114,13 @@ public:
    * Ladybug: [fx,fy,cy,cx]
    * @param intrinsics of the camera
    */
-  virtual void SetIntrinsics(beam::VecX instrinsics);
+  virtual void SetIntrinsics(beam::VecX& instrinsics);
 
   /**
    * @brief Method for adding the distortion model
    * @param distortion model
    */
-  virtual void SetDistortionCoefficients(beam::VecX coeffs);
+  virtual void SetDistortionCoefficients(beam::VecX& coeffs);
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -146,19 +146,19 @@ public:
    * @brief Method for retrieving the intrinsic values of the model
    * @return intrinsics of the camera
    */
-  virtual const beam::VecX GetIntrinsics() const;
+  virtual const beam::VecX& GetIntrinsics() const;
 
   /**
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
-  virtual const beam::VecX GetDistortionCoefficients() const;
+  virtual const beam::VecX& GetDistortionCoefficients() const;
 
   /**
    * @brief Method for retrieving the camera type
    * @return camera type
    */
-  virtual const CameraType GetType() const;
+  virtual CameraType GetType();
 
   /**
    * @brief Method for retrieving fx

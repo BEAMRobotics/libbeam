@@ -22,7 +22,7 @@ public:
   /**
    * @brief constructor with values
    */
-  EquidistantCamera(beam::VecX& intrinsics, beam::VecX distortion,
+  EquidistantCamera(beam::VecX& intrinsics, beam::VecX& distortion,
                     uint32_t image_width, uint32_t image_height,
                     std::string frame_id, std::string date);
 

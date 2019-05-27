@@ -3,7 +3,7 @@
 namespace beam_calibration {
 
 EquidistantCamera::EquidistantCamera(beam::VecX& intrinsics,
-                                     beam::VecX distortion,
+                                     beam::VecX& distortion,
                                      uint32_t image_width,
                                      uint32_t image_height,
                                      std::string frame_id, std::string date) {
@@ -96,13 +96,9 @@ cv::Mat EquidistantCamera::UndistortImage(cv::Mat& input_image) {
   cv::Mat K(3, 3, CV_8UC1);
   cv::eigen2cv(camera_matrix, K);
   // convert eigen to cv mat
-  beam::VecX dist_coeffs = this->GetDistortionCoefficients();
-  // opencv uses the ordering [k1, k2, r1, r2, k3]
-  beam::VecX coeffs;
-  coeffs << dist_coeffs[0], dist_coeffs[1], dist_coeffs[3], dist_coeffs[4],
-      dist_coeffs[2];
+  beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
   cv::Mat D(1, 5, CV_8UC1);
-  cv::eigen2cv(coeffs, D);
+  cv::eigen2cv(distortion_coeffs, D);
   // undistort image
   cv::fisheye::undistortImage(input_image, output_image, K, D);
   return output_image;

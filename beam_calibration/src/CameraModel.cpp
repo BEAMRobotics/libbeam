@@ -49,8 +49,11 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   // Get type of camera model to use
   if (camera_type == "pinhole") {
     cam_type = CameraType::PINHOLE;
-  } else if (camera_type == "equidistant") {
-    cam_type = CameraType::EQUIDISTANT;
+  } else if (camera_type == "fisheye") {
+    // if its fisheye, create camera based off distortion it uses
+    if (distortion_model == "equidistant") {
+      cam_type = CameraType::EQUIDISTANT;
+    }
   }
 
   // create camera model
@@ -90,7 +93,7 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
   image_height_ = height;
 }
 
-void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
+void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
   // throw error if input isnt correct size
   if (intrinsics.size() != 4) {
     LOG_ERROR("Invalid number of elements in intrinsics vector.");
@@ -102,7 +105,7 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   }
 }
 
-void CameraModel::SetDistortionCoefficients(beam::VecX distortion) {
+void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
   if (distortion.size() != get_coeffs_size_[this->GetType()]) {
     LOG_ERROR("Invalid number of elements in coefficient vector.");
     throw std::runtime_error{
@@ -131,7 +134,7 @@ beam::Vec2 CameraModel::GetImageDims() const {
   return coords;
 }
 
-const beam::VecX CameraModel::GetIntrinsics() const {
+const beam::VecX& CameraModel::GetIntrinsics() const {
   if (!intrinsics_valid_) {
     LOG_ERROR("cannot retrieve intrinsics, value not set.");
     throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
@@ -139,7 +142,7 @@ const beam::VecX CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 
-const beam::VecX CameraModel::GetDistortionCoefficients() const {
+const beam::VecX& CameraModel::GetDistortionCoefficients() const {
   if (!distortion_set_) {
     LOG_ERROR("cannot retrieve distortion, value not set.");
     throw std::runtime_error{"cannot retrieve distortion, value not set"};
@@ -147,7 +150,7 @@ const beam::VecX CameraModel::GetDistortionCoefficients() const {
   return distortion_coefficients_;
 }
 
-const CameraType CameraModel::GetType() const {
+CameraType CameraModel::GetType() {
   return type_;
 }
 

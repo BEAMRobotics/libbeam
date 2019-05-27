@@ -1,5 +1,5 @@
 {
-  "camera_type": "equidistant",
+  "camera_type": "fisheye",
   "date": "2018_12_20",
   "method": "matlab",
   "calibration": [

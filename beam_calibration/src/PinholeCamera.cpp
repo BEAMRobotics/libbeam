@@ -2,7 +2,7 @@
 
 namespace beam_calibration {
 
-PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX distortion,
+PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
                              uint32_t image_width, uint32_t image_height,
                              std::string frame_id, std::string date) {
   type_ = CameraType::PINHOLE;
@@ -84,7 +84,7 @@ cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
   // convert eigen to cv mat
   beam::VecX dist_coeffs = this->GetDistortionCoefficients();
   // opencv uses the ordering [k1, k2, r1, r2, k3]
-  beam::VecX coeffs;
+  beam::VecX coeffs(5);
   coeffs << dist_coeffs[0], dist_coeffs[1], dist_coeffs[3], dist_coeffs[4],
       dist_coeffs[2];
   cv::Mat D(1, 5, CV_8UC1);

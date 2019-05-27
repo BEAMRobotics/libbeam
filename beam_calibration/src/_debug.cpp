@@ -6,8 +6,11 @@
 #include <typeinfo>
 
 int main() {
+  beam::Vec3 p0(123, 741, 7023);
+  beam::Vec3 p1(34, 1234, 23);
+  beam::Vec3 p2(1223, 10, 523);
+  beam::Vec3 p3(12, 74, 70);
   // radtan
-
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 14, radtan_location.end());
   radtan_location += "tests/test_data/F1.json";

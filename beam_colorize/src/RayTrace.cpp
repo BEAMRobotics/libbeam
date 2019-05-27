@@ -25,15 +25,12 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     return cloud_colored;
     LOG_ERROR("Colorizer not properly initialized.");
   }
-
   // correct image if its distorted and set model to no distortion
   std::shared_ptr<cv::Mat> img = image_;
   if (image_distorted_) {
     img = std::make_shared<cv::Mat>(intrinsics_->UndistortImage(*image_));
-    std::shared_ptr<beam_calibration::DistortionModel> dist =
-        beam_calibration::DistortionModel::Create(
-            beam_calibration::DistortionType::NONE);
-    intrinsics_->SetDistortion(dist);
+    beam::VecX dist = beam::VecX::Zero(5);
+    intrinsics_->SetDistortionCoefficients(dist);
   }
   // store intrinsics of camera
   double f = (intrinsics_->GetFx() + intrinsics_->GetFx()) / 2,
