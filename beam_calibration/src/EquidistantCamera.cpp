@@ -8,9 +8,9 @@ EquidistantCamera::EquidistantCamera() {
 
 EquidistantCamera::EquidistantCamera(beam::VecX& intrinsics,
                                      beam::VecX& distortion,
-                                     uint32_t image_width,
                                      uint32_t image_height,
-                                     std::string frame_id, std::string date) {
+                                     uint32_t image_width, std::string frame_id,
+                                     std::string date) {
   type_ = CameraType::EQUIDISTANT;
   this->SetFrameID(frame_id);
   this->SetCalibrationDate(date);
@@ -90,7 +90,8 @@ beam::Vec2 EquidistantCamera::DistortPoint(beam::Vec2& point) {
 }
 
 beam::Vec2 EquidistantCamera::UndistortPoint(beam::Vec2& point) {
-  return point;
+  LOG_ERROR("Undistort not implemented");
+  throw std::runtime_error{"Undistort not implemented"};
 }
 
 cv::Mat EquidistantCamera::UndistortImage(cv::Mat& input_image) {
@@ -101,7 +102,7 @@ cv::Mat EquidistantCamera::UndistortImage(cv::Mat& input_image) {
   cv::eigen2cv(camera_matrix, K);
   // convert eigen to cv mat
   beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
-  cv::Mat D(1, 5, CV_8UC1);
+  cv::Mat D(1, 4, CV_8UC1);
   cv::eigen2cv(distortion_coeffs, D);
   // undistort image
   cv::fisheye::undistortImage(input_image, output_image, K, D);

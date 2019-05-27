@@ -50,7 +50,7 @@ public:
    */
   static std::shared_ptr<CameraModel>
       Create(CameraType camera_type, beam::VecX intrinsics,
-             beam::VecX distortion, uint32_t image_width, uint32_t image_height,
+             beam::VecX distortion, uint32_t image_height, uint32_t image_width,
              std::string frame_id, std::string date);
 
   /**
@@ -136,11 +136,16 @@ public:
   virtual const std::string GetCalibrationDate() const;
 
   /**
-   * @brief Method for getting the image dimensions
-   * @return img_dims dimensions of the images taken by the camera associated
-   * with this intrinsics object: [height, width]^T
+   * @brief Method for getting the image height
+   * @return image height
    */
-  virtual beam::Vec2 GetImageDims() const;
+  virtual uint32_t GetHeight() const;
+
+  /**
+   * @brief Method for getting the image width
+   * @return image width
+   */
+  virtual uint32_t GetWidth() const;
 
   /**
    * @brief Method for retrieving the intrinsic values of the model

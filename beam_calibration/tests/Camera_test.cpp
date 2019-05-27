@@ -73,9 +73,8 @@ TEST_CASE("Testing LoadJSON function") {
   radtan_location += "tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> radtan =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
-  beam::Vec2 img_dims = radtan->GetImageDims();
-  REQUIRE(img_dims[0] == 2048);
-  REQUIRE(img_dims[1] == 1536);
+  REQUIRE(radtan->GetWidth() == 2048);
+  REQUIRE(radtan->GetHeight() == 1536);
   REQUIRE(radtan->GetFx() == 2338.485520924695);
   REQUIRE(radtan->GetFy() == 2333.0927287230647);
   REQUIRE(radtan->GetCx() == 1002.8381839138167);
@@ -90,8 +89,8 @@ TEST_CASE("Testing LoadJSON function") {
   equidistant_location += "tests/test_data/F2.json";
   std::shared_ptr<beam_calibration::CameraModel> equid =
       beam_calibration::CameraModel::LoadJSON(equidistant_location);
-  REQUIRE(img_dims[0] == 2048);
-  REQUIRE(img_dims[1] == 1536);
+  REQUIRE(equid->GetWidth() == 2048);
+  REQUIRE(equid->GetHeight() == 1536);
   REQUIRE(equid->GetFx() == 2338.485520924695);
   REQUIRE(equid->GetFy() == 2333.0927287230647);
   REQUIRE(equid->GetCx() == 1002.8381839138167);

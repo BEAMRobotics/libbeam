@@ -42,7 +42,7 @@ enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
  */
 class Colorizer {
 public:
-  Colorizer() = default;
+  Colorizer();
 
   virtual ~Colorizer() = default;
 

@@ -7,7 +7,7 @@ PinholeCamera::PinholeCamera() {
 }
 
 PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                             uint32_t image_width, uint32_t image_height,
+                             uint32_t image_height, uint32_t image_width,
                              std::string frame_id, std::string date) {
   type_ = CameraType::PINHOLE;
   this->SetFrameID(frame_id);
@@ -28,9 +28,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
     out_point << (x * rz), (y * rz);
     // Distort point using distortion model
     out_point = this->DistortPoint(out_point);
-    // flip the coordinate system to be consistent with opencv convention shown:
-    // http:
-    // homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
+    // flip the coordinate system to be consistent with opencv convention
     double xx = out_point[0], yy = out_point[1];
     out_point[0] = (fx * (-yy) + cx);
     out_point[1] = (fy * xx + cy);
@@ -76,7 +74,8 @@ beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2& point) {
 }
 
 beam::Vec2 PinholeCamera::UndistortPoint(beam::Vec2& point) {
-  return point;
+  LOG_ERROR("Undistort not implemented");
+  throw std::runtime_error{"Undistort not implemented"};
 }
 
 cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {

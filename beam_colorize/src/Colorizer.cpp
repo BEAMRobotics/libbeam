@@ -3,7 +3,13 @@
 #include "beam_colorize/RayTrace.h"
 
 namespace beam_colorize {
-
+Colorizer::Colorizer() {
+  image_distorted_ = true;
+  image_initialized_ = false;
+  point_cloud_initialized_ = false;
+  intrinsics_initialized_ = false;
+  transform_set_ = false;
+}
 void Colorizer::SetPointCloud(
     const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_input) {
   input_point_cloud_ = cloud_input;

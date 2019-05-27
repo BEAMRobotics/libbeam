@@ -10,7 +10,7 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for pinhole intrinsics
+ * @brief Derived class for pinhole camera model
  */
 class PinholeCamera : public CameraModel {
 public:
@@ -23,7 +23,7 @@ public:
    * @brief constructor with values
    */
   PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                uint32_t image_width, uint32_t image_height,
+                uint32_t image_height, uint32_t image_width,
                 std::string frame_id, std::string date);
 
   /**

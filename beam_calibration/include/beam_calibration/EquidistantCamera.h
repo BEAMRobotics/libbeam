@@ -10,7 +10,8 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for pinhole intrinsics
+ * @brief Derived class for equidistant camera model
+ * Link: http://www.ee.oulu.fi/research/mvmp/mvg/files/pdf/pdf_697.pdf
  */
 class EquidistantCamera : public CameraModel {
 public:
@@ -23,7 +24,7 @@ public:
    * @brief constructor with values
    */
   EquidistantCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                    uint32_t image_width, uint32_t image_height,
+                    uint32_t image_height, uint32_t image_width,
                     std::string frame_id, std::string date);
 
   /**

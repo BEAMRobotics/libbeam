@@ -2,16 +2,7 @@
 
 namespace beam_colorize {
 
-RayTrace::RayTrace() {
-  image_distorted_ = true;
-  image_initialized_ = false;
-  point_cloud_initialized_ = false;
-  intrinsics_initialized_ = false;
-  transform_set_ = false;
-  dilation_ = 3;
-  max_ray_ = 20;
-  hit_threshold_ = 0.01;
-}
+RayTrace::RayTrace() : Colorizer() {}
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(

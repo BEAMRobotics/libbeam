@@ -65,15 +65,15 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
 
 std::shared_ptr<CameraModel>
     CameraModel::Create(CameraType type, beam::VecX intrinsics,
-                        beam::VecX distortion, uint32_t image_width,
-                        uint32_t image_height, std::string frame_id,
+                        beam::VecX distortion, uint32_t image_height,
+                        uint32_t image_width, std::string frame_id,
                         std::string date) {
   if (type == CameraType::PINHOLE) {
     return std::shared_ptr<PinholeCamera>(new PinholeCamera(
-        intrinsics, distortion, image_width, image_height, frame_id, date));
+        intrinsics, distortion, image_height, image_width, frame_id, date));
   } else if (type == CameraType::EQUIDISTANT) {
     return std::shared_ptr<EquidistantCamera>(new EquidistantCamera(
-        intrinsics, distortion, image_width, image_height, frame_id, date));
+        intrinsics, distortion, image_height, image_width, frame_id, date));
   } else {
     return nullptr;
   }
@@ -128,10 +128,12 @@ const std::string CameraModel::GetCalibrationDate() const {
   return calibration_date_;
 }
 
-beam::Vec2 CameraModel::GetImageDims() const {
-  beam::Vec2 coords;
-  coords << image_height_, image_width_;
-  return coords;
+uint32_t CameraModel::GetHeight() const {
+  return image_height_;
+}
+
+uint32_t CameraModel::GetWidth() const {
+  return image_width_;
 }
 
 const beam::VecX& CameraModel::GetIntrinsics() const {

@@ -17,7 +17,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/LadybugCamera.cpp
     src/PinholeCamera.cpp
     src/EquidistantCamera.cpp
-    src/TfTree.cpp
 
 )
 
