@@ -2,6 +2,10 @@
 
 namespace beam_calibration {
 
+EquidistantCamera::EquidistantCamera() {
+  type_ = CameraType::EQUIDISTANT;
+}
+
 EquidistantCamera::EquidistantCamera(beam::VecX& intrinsics,
                                      beam::VecX& distortion,
                                      uint32_t image_width,

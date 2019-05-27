@@ -17,7 +17,7 @@ public:
   /**
    * @brief Default destructor
    */
-  EquidistantCamera() = default;
+  EquidistantCamera();
 
   /**
    * @brief constructor with values

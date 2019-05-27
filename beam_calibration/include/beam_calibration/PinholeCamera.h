@@ -17,7 +17,7 @@ public:
   /**
    * @brief Default destructor
    */
-  PinholeCamera() = default;
+  PinholeCamera();
 
   /**
    * @brief constructor with values

@@ -3,6 +3,7 @@
 namespace beam_calibration {
 
 LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
+  type_ = CameraType::LADYBUG;
   lb_error_ = ladybugCreateContext(&lb_context_);
   LadybugCheckError();
 
