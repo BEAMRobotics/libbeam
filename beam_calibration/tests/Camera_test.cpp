@@ -6,12 +6,13 @@
 #include "beam_utils/math.hpp"
 #include <catch2/catch.hpp>
 
+/*TO DO
 TEST_CASE("Test correct projection - pinhole") {}
 
 TEST_CASE("Test correct projection - equidistant") {}
 
 TEST_CASE("Test correct projection - ladybug") {}
-
+*/
 TEST_CASE("Test factory method") {
   beam_calibration::CameraType type = beam_calibration::CameraType::NONE;
   beam::VecX intrinsics(4);
