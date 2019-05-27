@@ -55,11 +55,11 @@ private:
   std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
       ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
                   std::shared_ptr<cv::Mat>,
-                  beam_calibration::Intrinsics*) const;
+                  std::shared_ptr<beam_calibration::CameraModel>) const;
 
 protected:
-  uint16_t dilation_, max_ray_;
-  double hit_threshold_;
+  uint16_t dilation_ = 3, max_ray_ = 20;
+  double hit_threshold_ = 0.01;
 };
 
 /** @} group colorizer */

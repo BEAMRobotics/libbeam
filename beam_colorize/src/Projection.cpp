@@ -2,13 +2,7 @@
 
 namespace beam_colorize {
 
-Projection::Projection() {
-  image_distored_ = true;
-  image_initialized_ = false;
-  point_cloud_initialized_ = false;
-  intrinsics_initialized_ = false;
-  transform_set_ = false;
-}
+Projection::Projection() : Colorizer() {}
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
@@ -38,11 +32,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
-    if (image_distored_) {
-      coords = intrinsics_->ProjectDistortedPoint(point);
-    } else {
-      coords = intrinsics_->ProjectPoint(point);
-    }
+
+    coords = intrinsics_->ProjectPoint(point);
+
     u = std::round(coords(0, 0));
     v = std::round(coords(1, 0));
     if (u > 0 && v > 0 && v < vmax && u < umax) {
@@ -95,11 +87,9 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
-    if (image_distored_) {
-      coords = intrinsics_->ProjectDistortedPoint(point);
-    } else {
-      coords = intrinsics_->ProjectPoint(point);
-    }
+
+    coords = intrinsics_->ProjectPoint(point);
+
     u = std::round(coords(0, 0));
     v = std::round(coords(1, 0));
     if (u > 0 && v > 0 && v < vmax && u < umax) {

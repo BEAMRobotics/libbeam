@@ -2,16 +2,7 @@
 
 namespace beam_colorize {
 
-RayTrace::RayTrace() {
-  image_distored_ = true;
-  image_initialized_ = false;
-  point_cloud_initialized_ = false;
-  intrinsics_initialized_ = false;
-  transform_set_ = false;
-  dilation_ = 3;
-  max_ray_ = 20;
-  hit_threshold_ = 0.01;
-}
+RayTrace::RayTrace() : Colorizer() {}
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
@@ -25,13 +16,25 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     return cloud_colored;
     LOG_ERROR("Colorizer not properly initialized.");
   }
-
+  // correct image if its distorted and set model to no distortion
+  std::shared_ptr<cv::Mat> img = image_;
+  if (image_distorted_) {
+    img = std::make_shared<cv::Mat>(intrinsics_->UndistortImage(*image_));
+    beam::VecX dist;
+    if (intrinsics_->GetType() == beam_calibration::CameraType::PINHOLE) {
+      dist = beam::VecX::Zero(5);
+    } else if (intrinsics_->GetType() ==
+               beam_calibration::CameraType::EQUIDISTANT) {
+      dist = beam::VecX::Zero(4);
+    }
+    intrinsics_->SetDistortionCoefficients(dist);
+  }
   // store intrinsics of camera
-  beam::Mat3 K = intrinsics_->GetK();
-  double f = (K(0, 0) + K(1, 1)) / 2, cx = K(0, 2), cy = K(1, 2);
+  double f = (intrinsics_->GetFx() + intrinsics_->GetFx()) / 2,
+         cy = intrinsics_->GetCy(), cx = intrinsics_->GetCx();
   // remove points which will not be in the projection
   auto reduced_cloud =
-      RayTrace::ReduceCloud(input_point_cloud_, image_, intrinsics_);
+      RayTrace::ReduceCloud(input_point_cloud_, img, intrinsics_);
   auto input_cloud = std::get<0>(reduced_cloud);
   // indices stores a mapping back to the original cloud
   auto indices = std::get<1>(reduced_cloud);
@@ -39,20 +42,18 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
   kdtree.setInputCloud(input_cloud);
   // create image mask where white pixels = projection hit
-  cv::Mat tmp = cv::Mat::zeros(image_->size(), CV_8UC1);
+  cv::Mat tmp = cv::Mat::zeros(img->size(), CV_8UC1);
   cv::Mat hit_mask;
   for (uint32_t i = 0; i < input_cloud->points.size(); i++) {
     beam::Vec3 point;
     point << input_cloud->points[i].x, input_cloud->points[i].y,
         input_cloud->points[i].z;
     beam::Vec2 coords;
-    if (image_distored_) {
-      coords = intrinsics_->ProjectDistortedPoint(point);
-    } else {
-      coords = intrinsics_->ProjectPoint(point);
-    }
+
+    coords = intrinsics_->ProjectPoint(point);
+
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
+    if (u > 0 && v > 0 && v < img->rows && u < img->cols) {
       tmp.at<cv::Vec3b>(v, u).val[0] = 255;
     }
   }
@@ -62,7 +63,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   // This lambda performs ray tracing in parallel on each pixel in the image
   std::mutex mutex;
   uint32_t points_colored = 0;
-  image_->forEach<RayTrace::Pixel>(
+  img->forEach<RayTrace::Pixel>(
       [&](RayTrace::Pixel& pixel, const int* position) -> void {
         // if the pixel actually traces to a point then continue
         cv::Vec3b colors = hit_mask.at<cv::Vec3b>(position[0], position[1]);
@@ -71,7 +72,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
           beam::Vec3 ray(0, 0, 0);
           // get direction between origin and pixel
           double x = position[0] - cy;
-          double y = image_->cols - cx - position[1];
+          double y = img->cols - cx - position[1];
           beam::Vec3 point(x, y, f);
           point.normalize();
           // while loop to ray trace
@@ -114,9 +115,10 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
 }
 
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-    RayTrace::ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-                          std::shared_ptr<cv::Mat> image,
-                          beam_calibration::Intrinsics* intrinsics) const {
+    RayTrace::ReduceCloud(
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
+        std::shared_ptr<cv::Mat> image,
+        std::shared_ptr<beam_calibration::CameraModel> intrinsics) const {
   // cloud to search on
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);

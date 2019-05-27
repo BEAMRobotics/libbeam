@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_calibration/Pinhole.h"
+#include "beam_calibration/CameraModel.h"
 #include "beam_calibration/TfTree.h"
 #include "beam_colorize/Projection.h"
 #include "beam_colorize/RayTrace.h"
@@ -42,22 +42,21 @@ cv::Mat GetImage() {
   return image;
 }
 
-std::shared_ptr<beam_calibration::Intrinsics> GetIntrinsics() {
+std::shared_ptr<beam_calibration::CameraModel> GetIntrinsics() {
   // load intrinsics
   std::string intrinsics_name = "F1.json";
   std::string intrinsics_location = __FILE__;
   intrinsics_location.erase(intrinsics_location.end() - 17,
                             intrinsics_location.end());
   intrinsics_location += "test_data/" + intrinsics_name;
-  std::shared_ptr<beam_calibration::Intrinsics> F1 =
-      std::make_shared<beam_calibration::Pinhole>();
-  F1->LoadJSON(intrinsics_location);
+  std::shared_ptr<beam_calibration::CameraModel> F1 =
+      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
   return F1;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr PerformColorization(int type) {
+TEST_CASE("Test correct projection colorization and exceptions") {
   // load intrinsics
-  std::shared_ptr<beam_calibration::Intrinsics> F1 = GetIntrinsics();
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
   // load Image
   cv::Mat image = GetImage();
   // load pcd
@@ -66,25 +65,23 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr PerformColorization(int type) {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  beam_colorize::ColorizerType type2;
-  if (type == 0) {
-    type2 = beam_colorize::ColorizerType::PROJECTION;
-  } else {
-    type2 = beam_colorize::ColorizerType::RAY_TRACE;
-  }
-  auto colorizer = beam_colorize::Colorizer::Create(type2);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr empty_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+
+  auto colorizer = beam_colorize::Colorizer::Create(
+      beam_colorize::ColorizerType::PROJECTION);
   bool image_distorted = true;
-  colorizer->SetPointCloud(cloud);
+
+  colorizer->SetPointCloud(empty_cloud);
+  REQUIRE_THROWS(colorizer->ColorizePointCloud());
   colorizer->SetImage(image);
-  colorizer->SetIntrinsics(F1.get());
+  REQUIRE_THROWS(colorizer->ColorizePointCloud());
+  colorizer->SetIntrinsics(F1);
+  REQUIRE_THROWS(colorizer->ColorizePointCloud());
   colorizer->SetDistortion(image_distorted);
+  colorizer->SetPointCloud(cloud);
+  REQUIRE_NOTHROW(colorizer->ColorizePointCloud());
   cloud_colored = colorizer->ColorizePointCloud();
-
-  return cloud_colored;
-}
-
-TEST_CASE("Test correct projection colorization") {
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored = PerformColorization(0);
 
   nlohmann::json J;
   std::string data_location = __FILE__;
@@ -121,8 +118,73 @@ TEST_CASE("Test correct projection colorization") {
   REQUIRE(percent_blue > 0.95);
 }
 
-TEST_CASE("Test correct raytrace colorization") {
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored = PerformColorization(1);
+TEST_CASE("Test factory method") {
+  beam_colorize::ColorizerType PROJ = beam_colorize::ColorizerType::PROJECTION;
+  beam_colorize::ColorizerType RAY = beam_colorize::ColorizerType::RAY_TRACE;
+
+  auto projection = beam_colorize::Colorizer::Create(PROJ);
+  auto raytrace = beam_colorize::Colorizer::Create(RAY);
+
+  std::string proj_type(typeid(*projection).name());
+  std::string ray_type(typeid(*raytrace).name());
+
+  std::string proj_test = "Projection", ray_test = "RayTrace";
+
+  REQUIRE(proj_type.find(proj_test) != -1);
+  REQUIRE(ray_type.find(ray_test) != -1);
+}
+
+TEST_CASE("Test setter functions") {
+  // load intrinsics
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
+  // load Image
+  cv::Mat image = GetImage();
+  // load pcd
+  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD();
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
+      new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
+
+  beam_colorize::Projection projection;
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_NOTHROW(projection.SetImage(image));
+  REQUIRE_NOTHROW(projection.SetIntrinsics(F1));
+
+  beam_colorize::RayTrace raytrace;
+  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_NOTHROW(raytrace.SetImage(image));
+  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1));
+}
+
+TEST_CASE("Test correct raytrace colorization and exceptions") {
+  // load intrinsics
+  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
+  // load Image
+  cv::Mat image = GetImage();
+  // load pcd
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = GetPCD();
+
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
+      new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr empty_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+
+  auto colorizer =
+      beam_colorize::Colorizer::Create(beam_colorize::ColorizerType::RAY_TRACE);
+  bool image_distorted = true;
+
+  colorizer->SetPointCloud(empty_cloud);
+  REQUIRE_THROWS(colorizer->ColorizePointCloud());
+  colorizer->SetImage(image);
+  REQUIRE_THROWS(colorizer->ColorizePointCloud());
+  colorizer->SetIntrinsics(F1);
+  REQUIRE_THROWS(colorizer->ColorizePointCloud());
+  colorizer->SetDistortion(image_distorted);
+  colorizer->SetPointCloud(cloud);
+  REQUIRE_NOTHROW(colorizer->ColorizePointCloud());
+  cloud_colored = colorizer->ColorizePointCloud();
 
   nlohmann::json J;
   std::string data_location = __FILE__;
@@ -159,75 +221,4 @@ TEST_CASE("Test correct raytrace colorization") {
   // 20% occurs when dilation is 1, and increases as dilation does
   REQUIRE(percent_red > 0.20);
   REQUIRE(percent_blue > 0.20);
-}
-
-TEST_CASE("Test factory method") {
-  beam_colorize::ColorizerType PROJ = beam_colorize::ColorizerType::PROJECTION;
-  beam_colorize::ColorizerType RAY = beam_colorize::ColorizerType::RAY_TRACE;
-
-  auto projection = beam_colorize::Colorizer::Create(PROJ);
-  auto raytrace = beam_colorize::Colorizer::Create(RAY);
-
-  std::string proj_type(typeid(*projection).name());
-  std::string ray_type(typeid(*raytrace).name());
-
-  std::string proj_test = "Projection", ray_test = "RayTrace";
-
-  REQUIRE(proj_type.find(proj_test) != -1);
-  REQUIRE(ray_type.find(ray_test) != -1);
-}
-
-TEST_CASE("Test setter functions") {
-  // load intrinsics
-  std::shared_ptr<beam_calibration::Intrinsics> F1 = GetIntrinsics();
-  // load Image
-  cv::Mat image = GetImage();
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD();
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
-      new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
-
-  beam_colorize::Projection projection;
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_NOTHROW(projection.SetImage(image));
-  REQUIRE_NOTHROW(projection.SetIntrinsics(F1.get()));
-
-  beam_colorize::RayTrace raytrace;
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_NOTHROW(raytrace.SetImage(image));
-  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1.get()));
-}
-
-TEST_CASE("Test correct exception throwing") {
-  // load intrinsics
-  std::shared_ptr<beam_calibration::Intrinsics> F1 = GetIntrinsics();
-  // load Image
-  cv::Mat image = GetImage();
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD();
-  pcl::PointCloud<pcl::PointXYZ>::Ptr empty_cloud(
-      new pcl::PointCloud<pcl::PointXYZ>);
-
-  beam_colorize::Projection projection;
-  projection.SetPointCloud(XYZ_cloud);
-  REQUIRE_THROWS(projection.ColorizePointCloud());
-  projection.SetImage(image);
-  REQUIRE_THROWS(projection.ColorizePointCloud());
-  projection.SetIntrinsics(F1.get());
-  REQUIRE_NOTHROW(projection.ColorizePointCloud());
-  projection.SetPointCloud(empty_cloud);
-  REQUIRE_THROWS(projection.ColorizePointCloud());
-
-  beam_colorize::RayTrace raytrace;
-  raytrace.SetPointCloud(XYZ_cloud);
-  REQUIRE_THROWS(raytrace.ColorizePointCloud());
-  raytrace.SetImage(image);
-  REQUIRE_THROWS(raytrace.ColorizePointCloud());
-  raytrace.SetIntrinsics(F1.get());
-  REQUIRE_NOTHROW(raytrace.ColorizePointCloud());
-  raytrace.SetPointCloud(empty_cloud);
-  REQUIRE_THROWS(raytrace.ColorizePointCloud());
 }

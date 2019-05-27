@@ -12,7 +12,7 @@
 #include <boost/make_shared.hpp>
 
 // libbeam
-#include "beam_calibration/Intrinsics.h"
+#include "beam_calibration/CameraModel.h"
 #include "beam_containers/PointBridge.h"
 #include <beam_utils/log.hpp>
 
@@ -42,7 +42,7 @@ enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
  */
 class Colorizer {
 public:
-  Colorizer() = default;
+  Colorizer();
 
   virtual ~Colorizer() = default;
 
@@ -77,7 +77,7 @@ public:
    * @brief Method for adding the intrinsics object. This is required.
    * @param intrinsics pointer to intrinsics abstract object
    */
-  void SetIntrinsics(beam_calibration::Intrinsics* intrinsics);
+  void SetIntrinsics(std::shared_ptr<beam_calibration::CameraModel> intrinsics);
 
   /**
    * @brief Method for adding a transformation between the image and point
@@ -110,9 +110,9 @@ public:
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
   std::shared_ptr<cv::Mat> image_;
-  beam_calibration::Intrinsics* intrinsics_;
+  std::shared_ptr<beam_calibration::CameraModel> intrinsics_;
   Eigen::Affine3d T_C_L_;
-  bool image_distored_, image_initialized_, point_cloud_initialized_,
+  bool image_distorted_, image_initialized_, point_cloud_initialized_,
       intrinsics_initialized_, transform_set_;
 };
 
