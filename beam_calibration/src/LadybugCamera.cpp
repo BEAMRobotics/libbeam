@@ -49,7 +49,7 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {
     coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
     coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
     // Distort point using distortion model
-    out_point = this->Distort(coords);
+    out_point = this->DistortPoint(coords);
   } else if (!intrinsics_valid_) {
     LOG_ERROR("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics nto set"};
@@ -75,7 +75,7 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4& point) {
   return out_point;
 }
 
-beam::Vec2 LadybugCamera::Undistort(beam::Vec2 pixel_in) {
+beam::Vec2 LadybugCamera::UndistortPoint(beam::Vec2& pixel_in) {
   beam::Vec2 pixel_out = {0, 0};
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel_in[0],
                                   pixel_in[1], &pixel_out[0], &pixel_out[1]);
@@ -83,7 +83,7 @@ beam::Vec2 LadybugCamera::Undistort(beam::Vec2 pixel_in) {
   return pixel_out;
 }
 
-beam::Vec2 LadybugCamera::Distort(beam::Vec2 pixel_in) {
+beam::Vec2 LadybugCamera::DistortPoint(beam::Vec2& pixel_in) {
   beam::Vec2 pixel_out = {0, 0};
   lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, pixel_in[0],
                                     pixel_in[1], &pixel_out[0], &pixel_out[1]);

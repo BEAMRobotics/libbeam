@@ -64,14 +64,14 @@ public:
    * @return Returns image coordinates after point has been undistorted
    * @param pixel_in point to be undistorted
    */
-  beam::Vec2 Undistort(beam::Vec2 pixel_in);
+  beam::Vec2 UndistortPoint(beam::Vec2& pixel_in) override;
 
   /**
    * @brief Special distortion using ladybug SDK
    * @return Returns image coordinates after point has been distorted
    * @param pixel_in point to be distorted
    */
-  beam::Vec2 Distort(beam::Vec2 pixel_in);
+  beam::Vec2 DistortPoint(beam::Vec2& pixel_in) override;
 
 private:
   void LadybugCheckError();

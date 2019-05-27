@@ -4,7 +4,7 @@
 
 #pragma once
 // beam
-#include "beam_calibration/DistortionModel.h"
+#include "beam_utils/math.hpp"
 
 // format libraries
 #include <nlohmann/json.hpp>
@@ -21,7 +21,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { NONE = 0, PINHOLE, LADYBUG };
+enum class CameraType { NONE = 0, PINHOLE, LADYBUG, EQUIDISTANT };
 /**
  * @brief Abstract class for camera models
  */
@@ -50,8 +50,8 @@ public:
    */
   static std::shared_ptr<CameraModel>
       Create(CameraType camera_type, beam::VecX intrinsics,
-             std::shared_ptr<DistortionModel> distortion, uint32_t image_width,
-             uint32_t image_height, std::string frame_id, std::string date);
+             beam::VecX distortion, uint32_t image_width, uint32_t image_height,
+             std::string frame_id, std::string date);
 
   /**
    * @brief Method for projecting a point into an image plane
@@ -69,6 +69,20 @@ public:
    * @param X point to be projected. In homographic form
    */
   virtual beam::Vec2 ProjectPoint(beam::Vec4& point) = 0;
+
+  /**
+   * @brief Method distorting a point
+   * @return Returns distorted point
+   * @param undistorted point
+   */
+  virtual beam::Vec2 DistortPoint(beam::Vec2& point) = 0;
+
+  /**
+   * @brief Method undistorting a point
+   * @return Returns undistorted point
+   * @param distorted point
+   */
+  virtual beam::Vec2 UndistortPoint(beam::Vec2& point) = 0;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion
@@ -106,7 +120,7 @@ public:
    * @brief Method for adding the distortion model
    * @param distortion model
    */
-  virtual void SetDistortion(std::shared_ptr<DistortionModel> distortion);
+  virtual void SetDistortionCoefficients(beam::VecX coeffs);
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -138,13 +152,13 @@ public:
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
-  virtual std::shared_ptr<DistortionModel> GetDistortion();
+  virtual const beam::VecX GetDistortionCoefficients() const;
 
   /**
    * @brief Method for retrieving the camera type
    * @return camera type
    */
-  virtual CameraType GetType();
+  virtual const CameraType GetType() const;
 
   /**
    * @brief Method for retrieving fx
@@ -180,15 +194,14 @@ protected:
   CameraType type_;
   std::string frame_id_, calibration_date_;
   uint32_t image_height_, image_width_, required_size_;
-  beam::VecX intrinsics_;
-  std::shared_ptr<DistortionModel> distortion_;
+  beam::VecX intrinsics_, distortion_coefficients_;
   // Boolean values to keep track of validity
   bool intrinsics_valid_ = false, distortion_set_ = false,
        calibration_date_set_ = false;
-  // Map for keeping required number of intrinsic variables
-  std::map<CameraType, int> get_size_ = {{CameraType::LADYBUG, 4},
-                                         {CameraType::PINHOLE, 4},
-                                         {CameraType::NONE, 0}};
+  // Map for keeping required number of values in distortion vector
+  std::map<CameraType, int> get_coeffs_size_ = {{CameraType::LADYBUG, 0},
+                                                {CameraType::PINHOLE, 5},
+                                                {CameraType::EQUIDISTANT, 4}};
 };
 
 /** @} group calibration */

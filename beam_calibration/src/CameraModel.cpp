@@ -1,4 +1,5 @@
 #include "beam_calibration/CameraModel.h"
+#include "beam_calibration/EquidistantCamera.h"
 #include "beam_calibration/PinholeCamera.h"
 
 using json = nlohmann::json;
@@ -11,10 +12,8 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   json J;
   int image_width = 0, image_height = 0;
   std::string camera_type, date, method, frame_id, distortion_model;
-  beam::VecX coeffs;
-  beam::VecX intrinsics;
+  beam::VecX coeffs, intrinsics;
   CameraType cam_type = CameraType::NONE;
-  DistortionType dist_type = DistortionType::NONE;
 
   std::ifstream file(file_location);
   file >> J;
@@ -47,33 +46,30 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     }
   }
 
-  // Get type of distortion model to use
-  if (distortion_model == "radtan") {
-    dist_type = DistortionType::RADTAN;
-  } else if (distortion_model == "equidistant") {
-    dist_type = DistortionType::EQUIDISTANT;
-  }
   // Get type of camera model to use
-  if (camera_type == "pinhole") { cam_type = CameraType::PINHOLE; }
+  if (camera_type == "pinhole") {
+    cam_type = CameraType::PINHOLE;
+  } else if (camera_type == "equidistant") {
+    cam_type = CameraType::EQUIDISTANT;
+  }
 
-  // create distortion model
-  std::shared_ptr<DistortionModel> distortion =
-      DistortionModel::Create(dist_type, coeffs);
   // create camera model
-  std::shared_ptr<CameraModel> camera =
-      CameraModel::Create(cam_type, intrinsics, distortion, image_height,
-                          image_width, frame_id, date);
+  std::shared_ptr<CameraModel> camera = CameraModel::Create(
+      cam_type, intrinsics, coeffs, image_height, image_width, frame_id, date);
 
   return camera;
 }
 
 std::shared_ptr<CameraModel>
     CameraModel::Create(CameraType type, beam::VecX intrinsics,
-                        std::shared_ptr<DistortionModel> distortion,
-                        uint32_t image_width, uint32_t image_height,
-                        std::string frame_id, std::string date) {
+                        beam::VecX distortion, uint32_t image_width,
+                        uint32_t image_height, std::string frame_id,
+                        std::string date) {
   if (type == CameraType::PINHOLE) {
     return std::shared_ptr<PinholeCamera>(new PinholeCamera(
+        intrinsics, distortion, image_width, image_height, frame_id, date));
+  } else if (type == CameraType::EQUIDISTANT) {
+    return std::shared_ptr<EquidistantCamera>(new EquidistantCamera(
         intrinsics, distortion, image_width, image_height, frame_id, date));
   } else {
     return nullptr;
@@ -96,7 +92,7 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
 
 void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   // throw error if input isnt correct size
-  if (intrinsics.size() != get_size_[this->GetType()]) {
+  if (intrinsics.size() != 4) {
     LOG_ERROR("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
         "Invalid number of elements in intrinsics vector."};
@@ -106,9 +102,15 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   }
 }
 
-void CameraModel::SetDistortion(std::shared_ptr<DistortionModel> distortion) {
-  distortion_ = distortion;
-  distortion_set_ = true;
+void CameraModel::SetDistortionCoefficients(beam::VecX distortion) {
+  if (distortion.size() != get_coeffs_size_[this->GetType()]) {
+    LOG_ERROR("Invalid number of elements in coefficient vector.");
+    throw std::runtime_error{
+        "Invalid number of elements in coefficient vector."};
+  } else {
+    distortion_coefficients_ = distortion;
+    distortion_set_ = true;
+  }
 }
 
 const std::string CameraModel::GetFrameID() const {
@@ -137,15 +139,15 @@ const beam::VecX CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 
-std::shared_ptr<DistortionModel> CameraModel::GetDistortion() {
+const beam::VecX CameraModel::GetDistortionCoefficients() const {
   if (!distortion_set_) {
     LOG_ERROR("cannot retrieve distortion, value not set.");
     throw std::runtime_error{"cannot retrieve distortion, value not set"};
   }
-  return distortion_;
+  return distortion_coefficients_;
 }
 
-CameraType CameraModel::GetType() {
+const CameraType CameraModel::GetType() const {
   return type_;
 }
 

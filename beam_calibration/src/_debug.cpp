@@ -7,6 +7,7 @@
 
 int main() {
   // radtan
+
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 14, radtan_location.end());
   radtan_location += "tests/test_data/F1.json";

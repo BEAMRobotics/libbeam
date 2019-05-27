@@ -1,5 +1,5 @@
 {
-  "camera_type": "pinhole",
+  "camera_type": "equidistant",
   "date": "2018_12_20",
   "method": "matlab",
   "calibration": [

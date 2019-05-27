@@ -1,11 +1,13 @@
-#include "beam_calibration/PinholeCamera.h"
+#include "beam_calibration/EquidistantCamera.h"
 
 namespace beam_calibration {
 
-PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX distortion,
-                             uint32_t image_width, uint32_t image_height,
-                             std::string frame_id, std::string date) {
-  type_ = CameraType::PINHOLE;
+EquidistantCamera::EquidistantCamera(beam::VecX& intrinsics,
+                                     beam::VecX distortion,
+                                     uint32_t image_width,
+                                     uint32_t image_height,
+                                     std::string frame_id, std::string date) {
+  type_ = CameraType::EQUIDISTANT;
   this->SetFrameID(frame_id);
   this->SetCalibrationDate(date);
   this->SetImageDims(image_height, image_width);
@@ -13,7 +15,7 @@ PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX distortion,
   this->SetDistortionCoefficients(distortion);
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
+beam::Vec2 EquidistantCamera::ProjectPoint(beam::Vec3& point) {
   beam::Vec2 out_point;
   if (intrinsics_valid_ && distortion_set_) {
     // Project point
@@ -38,7 +40,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
+beam::Vec2 EquidistantCamera::ProjectPoint(beam::Vec4& point) {
   bool homographic_form = (point[3] == 1);
   beam::Vec2 out_point;
   if (intrinsics_valid_ && homographic_form && distortion_set_) {
@@ -55,27 +57,39 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2& point) {
+beam::Vec2 EquidistantCamera::DistortPoint(beam::Vec2& point) {
   beam::Vec2 coords;
+
   double x = point[0], y = point[1];
   beam::VecX coeffs = this->GetDistortionCoefficients();
 
-  double xx, yy, r2, k1 = coeffs[0], k2 = coeffs[1], k3 = coeffs[2],
-                     p1 = coeffs[3], p2 = coeffs[4];
-  r2 = x * x + y * y;
-  double quotient = (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-  xx = x * quotient + 2 * p1 * x * y + p2 * (r2 + 2 * x * x);
-  yy = y * quotient + p1 * (r2 + 2 * y * y) + 2 * p2 * x * y;
+  const double k1 = coeffs[0], k2 = coeffs[1], k3 = coeffs[2], k4 = coeffs[3];
 
-  coords << xx, yy;
+  double x2 = x * x;
+  double y2 = y * y;
+  double r = sqrt(x2 + y2);
+
+  double theta = atan(r);
+  double theta2 = theta * theta;
+  double theta4 = theta2 * theta2;
+  double theta6 = theta2 * theta4;
+  double theta8 = theta4 * theta4;
+  double thetad =
+      theta * (1 + k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8);
+
+  double scaling = (r > 1e-8) ? thetad / r : 1.0;
+  x *= scaling;
+  y *= scaling;
+
+  coords << x, y;
   return coords;
 }
 
-beam::Vec2 PinholeCamera::UndistortPoint(beam::Vec2& point) {
+beam::Vec2 EquidistantCamera::UndistortPoint(beam::Vec2& point) {
   return point;
 }
 
-cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
+cv::Mat EquidistantCamera::UndistortImage(cv::Mat& input_image) {
   cv::Mat output_image;
   beam::Mat3 camera_matrix = this->GetCameraMatrix();
   // convert eigen to cv mat
@@ -90,7 +104,7 @@ cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
   cv::Mat D(1, 5, CV_8UC1);
   cv::eigen2cv(coeffs, D);
   // undistort image
-  cv::undistort(input_image, output_image, K, D);
+  cv::fisheye::undistortImage(input_image, output_image, K, D);
   return output_image;
 }
 
