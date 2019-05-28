@@ -10,26 +10,27 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for Radtan camera model
+ * @brief Derived class for Fisheye camera model
+ * Link: http://www.ee.oulu.fi/research/mvmp/mvg/files/pdf/pdf_697.pdf
  */
-class RadtanCamera : public CameraModel {
+class FisheyeCamera : public CameraModel {
 public:
   /**
    * @brief Default destructor
    */
-  RadtanCamera();
+  FisheyeCamera();
 
   /**
    * @brief constructor with values
    */
-  RadtanCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-               uint32_t image_height, uint32_t image_width,
-               std::string frame_id, std::string date);
+  FisheyeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
+                uint32_t image_height, uint32_t image_width,
+                std::string frame_id, std::string date);
 
   /**
    * @brief Default destructor
    */
-  ~RadtanCamera() = default;
+  ~FisheyeCamera() = default;
 
   /**
    * @brief Method for projecting a point into an image plane

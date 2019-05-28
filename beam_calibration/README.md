@@ -6,10 +6,15 @@ This module contains the multiple different camera models and distortion models 
 
 1. **Pinhole Camera Model** Intrinsics: [fx, fy, cx, cy]
     * Distortion Coefficients: [k1, k2, k3, r1, r2]
-2. **Equidistant Camera Model** Intrinsics: [fx, fy, cx, cy]
+    * This model is the basic pinhole model with radial and tangential distortion
+2. **Fisheye Camera Model** Intrinsics: [fx, fy, cx, cy]
     * Distortion Coefficients: [k1, k2, k3, k4]
+    * This model follows the model presented in [1]
 3. **Ladybug Camera** Intrinsics: [fx, fy, cy, cx]
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
+4. **Unified Camera Model** Intrinsics: [fx, fy, cx, cy, alpha, beta]
+    * Distortion coefficients: [k1, k2, k3, k4, k5]
+    * This camera model follwos the one introduced in [3]
 
 ### Example JSON calibration file
 
@@ -50,3 +55,5 @@ This module contains the multiple different camera models and distortion models 
 1. J. Kannala and S. Brandt (2006). A Generic Camera Model and Calibration Method for Conventional, Wide-Angle, and Fish-Eye Lenses, IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 28, no. 8, pp. 1335-1340
 
 2. Usenko, V., Demmel, N., & Cremers, D. (2018). The Double Sphere Camera Model. 2018 International Conference on 3D Vision (3DV). doi:10.1109/3dv.2018.00069
+
+3. B. Khomutenko, G. Garcia, and P. Martinet. (2016) An enhanced unified camera model. IEEE Robotics and Automation Letters.

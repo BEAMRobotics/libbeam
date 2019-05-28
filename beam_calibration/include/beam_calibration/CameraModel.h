@@ -21,7 +21,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { NONE = 0, RADTAN, LADYBUG, EQUIDISTANT };
+enum class CameraType { NONE = 0, PINHOLE, LADYBUG, FISHEYE };
 /**
  * @brief Abstract class for camera models
  */
@@ -197,9 +197,13 @@ protected:
   bool intrinsics_valid_ = false, distortion_set_ = false,
        calibration_date_set_ = false;
   // Map for keeping required number of values in distortion vector
-  std::map<CameraType, int> get_coeffs_size_ = {{CameraType::LADYBUG, 0},
-                                                {CameraType::RADTAN, 5},
-                                                {CameraType::EQUIDISTANT, 4}};
+  std::map<CameraType, int> get_intrinsics_size_ = {{CameraType::LADYBUG, 4},
+                                                    {CameraType::PINHOLE, 4},
+                                                    {CameraType::FISHEYE, 4}};
+
+  std::map<CameraType, int> get_distortion_size_ = {{CameraType::LADYBUG, 0},
+                                                    {CameraType::PINHOLE, 5},
+                                                    {CameraType::FISHEYE, 4}};
 };
 
 /** @} group calibration */

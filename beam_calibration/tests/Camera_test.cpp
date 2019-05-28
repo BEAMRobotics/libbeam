@@ -1,8 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include "beam_calibration/CameraModel.h"
-#include "beam_calibration/EquidistantCamera.h"
+#include "beam_calibration/FisheyeCamera.h"
 #include "beam_calibration/LadybugCamera.h"
-#include "beam_calibration/RadtanCamera.h"
+#include "beam_calibration/PinholeCamera.h"
 #include "beam_utils/math.hpp"
 #include <catch2/catch.hpp>
 
@@ -27,15 +27,15 @@ TEST_CASE("Test factory method") {
                                             image_height, image_width, frame_id,
                                             date);
   REQUIRE(!camera);
-  type = beam_calibration::CameraType::RADTAN;
+  type = beam_calibration::CameraType::PINHOLE;
   camera = beam_calibration::CameraModel::Create(
       type, intrinsics, distortion, image_height, image_width, frame_id, date);
-  REQUIRE(camera->GetType() == beam_calibration::CameraType::RADTAN);
+  REQUIRE(camera->GetType() == beam_calibration::CameraType::PINHOLE);
   distortion.resize(4);
-  type = beam_calibration::CameraType::EQUIDISTANT;
+  type = beam_calibration::CameraType::FISHEYE;
   camera = beam_calibration::CameraModel::Create(
       type, intrinsics, distortion, image_height, image_width, frame_id, date);
-  REQUIRE(camera->GetType() == beam_calibration::CameraType::EQUIDISTANT);
+  REQUIRE(camera->GetType() == beam_calibration::CameraType::FISHEYE);
 }
 
 TEST_CASE("Test exception throwing") {
@@ -48,7 +48,7 @@ TEST_CASE("Test exception throwing") {
   distortion_equid << 1, 2, 3, 4;
   uint32_t image_width = 1000, image_height = 1000;
   std::string frame_id = "1", date = "now";
-  beam_calibration::RadtanCamera radtan;
+  beam_calibration::PinholeCamera radtan;
   beam::VecX invalid = beam::VecX::Zero(0);
   REQUIRE_THROWS(radtan.SetDistortionCoefficients(invalid));
   REQUIRE_THROWS(radtan.SetIntrinsics(invalid));
@@ -58,7 +58,7 @@ TEST_CASE("Test exception throwing") {
   REQUIRE_NOTHROW(radtan.SetImageDims(image_width, image_height));
   REQUIRE_NOTHROW(radtan.ProjectPoint(point));
 
-  beam_calibration::EquidistantCamera equid;
+  beam_calibration::FisheyeCamera equid;
   REQUIRE_THROWS(equid.SetDistortionCoefficients(invalid));
   REQUIRE_THROWS(equid.SetIntrinsics(invalid));
   REQUIRE_THROWS(equid.ProjectPoint(point));
@@ -81,7 +81,7 @@ TEST_CASE("Testing LoadJSON function") {
   REQUIRE(radtan->GetCx() == 1002.8381839138167);
   REQUIRE(radtan->GetCy() == 784.1498440053573);
   REQUIRE(radtan->GetDistortionCoefficients().size() == 5);
-  REQUIRE(radtan->GetType() == beam_calibration::CameraType::RADTAN);
+  REQUIRE(radtan->GetType() == beam_calibration::CameraType::PINHOLE);
   REQUIRE(radtan->GetIntrinsics().size() == 4);
   // load equidistant
   std::string equidistant_location = __FILE__;
@@ -97,6 +97,6 @@ TEST_CASE("Testing LoadJSON function") {
   REQUIRE(equid->GetCx() == 1002.8381839138167);
   REQUIRE(equid->GetCy() == 784.1498440053573);
   REQUIRE(equid->GetDistortionCoefficients().size() == 4);
-  REQUIRE(equid->GetType() == beam_calibration::CameraType::EQUIDISTANT);
+  REQUIRE(equid->GetType() == beam_calibration::CameraType::FISHEYE);
   REQUIRE(equid->GetIntrinsics().size() == 4);
 }

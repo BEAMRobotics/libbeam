@@ -10,27 +10,26 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for equidistant camera model
- * Link: http://www.ee.oulu.fi/research/mvmp/mvg/files/pdf/pdf_697.pdf
+ * @brief Derived class for Pinhole camera model
  */
-class EquidistantCamera : public CameraModel {
+class PinholeCamera : public CameraModel {
 public:
   /**
    * @brief Default destructor
    */
-  EquidistantCamera();
+  PinholeCamera();
 
   /**
    * @brief constructor with values
    */
-  EquidistantCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                    uint32_t image_height, uint32_t image_width,
-                    std::string frame_id, std::string date);
+  PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
+                uint32_t image_height, uint32_t image_width,
+                std::string frame_id, std::string date);
 
   /**
    * @brief Default destructor
    */
-  ~EquidistantCamera() = default;
+  ~PinholeCamera() = default;
 
   /**
    * @brief Method for projecting a point into an image plane

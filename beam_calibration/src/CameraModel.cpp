@@ -1,6 +1,6 @@
 #include "beam_calibration/CameraModel.h"
-#include "beam_calibration/EquidistantCamera.h"
-#include "beam_calibration/RadtanCamera.h"
+#include "beam_calibration/FisheyeCamera.h"
+#include "beam_calibration/PinholeCamera.h"
 
 using json = nlohmann::json;
 
@@ -48,12 +48,9 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
 
   // Get type of camera model to use
   if (camera_type == "pinhole") {
-    cam_type = CameraType::RADTAN;
+    cam_type = CameraType::PINHOLE;
   } else if (camera_type == "fisheye") {
-    // if its fisheye, create camera based off distortion it uses
-    if (distortion_model == "equidistant") {
-      cam_type = CameraType::EQUIDISTANT;
-    }
+    cam_type = CameraType::FISHEYE;
   }
 
   // create camera model
@@ -61,18 +58,18 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
       cam_type, intrinsics, coeffs, image_height, image_width, frame_id, date);
 
   return camera;
-}
+} // namespace beam_calibration
 
 std::shared_ptr<CameraModel>
     CameraModel::Create(CameraType type, beam::VecX intrinsics,
                         beam::VecX distortion, uint32_t image_height,
                         uint32_t image_width, std::string frame_id,
                         std::string date) {
-  if (type == CameraType::RADTAN) {
-    return std::shared_ptr<RadtanCamera>(new RadtanCamera(
+  if (type == CameraType::PINHOLE) {
+    return std::shared_ptr<PinholeCamera>(new PinholeCamera(
         intrinsics, distortion, image_height, image_width, frame_id, date));
-  } else if (type == CameraType::EQUIDISTANT) {
-    return std::shared_ptr<EquidistantCamera>(new EquidistantCamera(
+  } else if (type == CameraType::FISHEYE) {
+    return std::shared_ptr<FisheyeCamera>(new FisheyeCamera(
         intrinsics, distortion, image_height, image_width, frame_id, date));
   } else {
     return nullptr;
@@ -95,7 +92,7 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
 
 void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
   // throw error if input isnt correct size
-  if (intrinsics.size() != 4) {
+  if (intrinsics.size() != get_intrinsics_size_[this->GetType()]) {
     LOG_ERROR("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
         "Invalid number of elements in intrinsics vector."};
@@ -106,7 +103,7 @@ void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
 }
 
 void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
-  if (distortion.size() != get_coeffs_size_[this->GetType()]) {
+  if (distortion.size() != get_distortion_size_[this->GetType()]) {
     LOG_ERROR("Invalid number of elements in coefficient vector.");
     throw std::runtime_error{
         "Invalid number of elements in coefficient vector."};
