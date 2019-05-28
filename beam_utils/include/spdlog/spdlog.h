@@ -314,6 +314,14 @@ inline void critical(const wchar_t *fmt, const Args &... args)
 #define SPDLOG_INFO(...) (void)0
 #endif
 
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
+#define BEAM_LOGGER_INFO(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::info, __VA_ARGS__)
+#define BEAM_INFO(...) BEAM_LOGGER_INFO(spdlog::default_logger_raw(), __VA_ARGS__)
+#else
+#define BEAM_LOGGER_INFO(logger, ...) (void)0
+#define BEAM_INFO(...) (void)0
+#endif
+
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN
 #define SPDLOG_LOGGER_WARN(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::warn, __VA_ARGS__)
 #define SPDLOG_WARN(...) SPDLOG_LOGGER_WARN(spdlog::default_logger_raw(), __VA_ARGS__)
