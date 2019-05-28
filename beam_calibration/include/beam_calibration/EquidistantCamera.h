@@ -57,13 +57,6 @@ public:
   beam::Vec2 DistortPoint(beam::Vec2& point) override;
 
   /**
-   * @brief Method undistorting a point
-   * @return Returns undistorted point
-   * @param distorted point
-   */
-  beam::Vec2 UndistortPoint(beam::Vec2& point) override;
-
-  /**
    * @brief Method for undistorting an image based on camera's distortion
    * @return image
    */

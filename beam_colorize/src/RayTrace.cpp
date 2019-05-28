@@ -21,7 +21,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   if (image_distorted_) {
     img = std::make_shared<cv::Mat>(intrinsics_->UndistortImage(*image_));
     beam::VecX dist;
-    if (intrinsics_->GetType() == beam_calibration::CameraType::PINHOLE) {
+    if (intrinsics_->GetType() == beam_calibration::CameraType::RADTAN) {
       dist = beam::VecX::Zero(5);
     } else if (intrinsics_->GetType() ==
                beam_calibration::CameraType::EQUIDISTANT) {

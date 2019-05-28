@@ -1,15 +1,15 @@
-#include "beam_calibration/PinholeCamera.h"
+#include "beam_calibration/RadtanCamera.h"
 
 namespace beam_calibration {
 
-PinholeCamera::PinholeCamera() {
-  type_ = CameraType::PINHOLE;
+RadtanCamera::RadtanCamera() {
+  type_ = CameraType::RADTAN;
 }
 
-PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                             uint32_t image_height, uint32_t image_width,
-                             std::string frame_id, std::string date) {
-  type_ = CameraType::PINHOLE;
+RadtanCamera::RadtanCamera(beam::VecX& intrinsics, beam::VecX& distortion,
+                           uint32_t image_height, uint32_t image_width,
+                           std::string frame_id, std::string date) {
+  type_ = CameraType::RADTAN;
   this->SetFrameID(frame_id);
   this->SetCalibrationDate(date);
   this->SetImageDims(image_height, image_width);
@@ -17,7 +17,7 @@ PinholeCamera::PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
   this->SetDistortionCoefficients(distortion);
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
+beam::Vec2 RadtanCamera::ProjectPoint(beam::Vec3& point) {
   beam::Vec2 out_point;
   if (intrinsics_valid_ && distortion_set_) {
     // Project point
@@ -40,7 +40,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
+beam::Vec2 RadtanCamera::ProjectPoint(beam::Vec4& point) {
   bool homographic_form = (point[3] == 1);
   beam::Vec2 out_point;
   if (intrinsics_valid_ && homographic_form && distortion_set_) {
@@ -57,7 +57,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2& point) {
+beam::Vec2 RadtanCamera::DistortPoint(beam::Vec2& point) {
   beam::Vec2 coords;
   double x = point[0], y = point[1];
   beam::VecX coeffs = this->GetDistortionCoefficients();
@@ -73,12 +73,7 @@ beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2& point) {
   return coords;
 }
 
-beam::Vec2 PinholeCamera::UndistortPoint(beam::Vec2& point) {
-  LOG_ERROR("Undistort not implemented");
-  throw std::runtime_error{"Undistort not implemented"};
-}
-
-cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
+cv::Mat RadtanCamera::UndistortImage(cv::Mat& input_image) {
   cv::Mat output_image;
   beam::Mat3 camera_matrix = this->GetCameraMatrix();
   // convert eigen to cv mat

@@ -89,11 +89,6 @@ beam::Vec2 EquidistantCamera::DistortPoint(beam::Vec2& point) {
   return coords;
 }
 
-beam::Vec2 EquidistantCamera::UndistortPoint(beam::Vec2& point) {
-  LOG_ERROR("Undistort not implemented");
-  throw std::runtime_error{"Undistort not implemented"};
-}
-
 cv::Mat EquidistantCamera::UndistortImage(cv::Mat& input_image) {
   cv::Mat output_image;
   beam::Mat3 camera_matrix = this->GetCameraMatrix();

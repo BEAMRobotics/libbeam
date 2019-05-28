@@ -21,7 +21,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { NONE = 0, PINHOLE, LADYBUG, EQUIDISTANT };
+enum class CameraType { NONE = 0, RADTAN, LADYBUG, EQUIDISTANT };
 /**
  * @brief Abstract class for camera models
  */
@@ -78,13 +78,6 @@ public:
   virtual beam::Vec2 DistortPoint(beam::Vec2& point) = 0;
 
   /**
-   * @brief Method undistorting a point
-   * @return Returns undistorted point
-   * @param distorted point
-   */
-  virtual beam::Vec2 UndistortPoint(beam::Vec2& point) = 0;
-
-  /**
    * @brief Method for undistorting an image based on camera's distortion
    * @return image
    */
@@ -110,7 +103,7 @@ public:
 
   /**
    * @brief Method for adding intrinsic values
-   * Pinhole: [fx,fy,cx,cy]
+   * RADTAN: [fx,fy,cx,cy]
    * Ladybug: [fx,fy,cy,cx]
    * @param intrinsics of the camera
    */
@@ -205,7 +198,7 @@ protected:
        calibration_date_set_ = false;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> get_coeffs_size_ = {{CameraType::LADYBUG, 0},
-                                                {CameraType::PINHOLE, 5},
+                                                {CameraType::RADTAN, 5},
                                                 {CameraType::EQUIDISTANT, 4}};
 };
 

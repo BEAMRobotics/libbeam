@@ -17,7 +17,6 @@ int main() {
   std::shared_ptr<beam_calibration::CameraModel> radtan =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
   beam::Vec2 up(20, 30);
-  std::cout << radtan->UndistortPoint(up) << std::endl;
   // load equidistant
   std::string equidistant_location = __FILE__;
   equidistant_location.erase(equidistant_location.end() - 14,

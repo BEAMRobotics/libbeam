@@ -10,26 +10,26 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for pinhole camera model
+ * @brief Derived class for Radtan camera model
  */
-class PinholeCamera : public CameraModel {
+class RadtanCamera : public CameraModel {
 public:
   /**
    * @brief Default destructor
    */
-  PinholeCamera();
+  RadtanCamera();
 
   /**
    * @brief constructor with values
    */
-  PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                uint32_t image_height, uint32_t image_width,
-                std::string frame_id, std::string date);
+  RadtanCamera(beam::VecX& intrinsics, beam::VecX& distortion,
+               uint32_t image_height, uint32_t image_width,
+               std::string frame_id, std::string date);
 
   /**
    * @brief Default destructor
    */
-  ~PinholeCamera() = default;
+  ~RadtanCamera() = default;
 
   /**
    * @brief Method for projecting a point into an image plane
@@ -54,13 +54,6 @@ public:
    * @param undistorted point
    */
   beam::Vec2 DistortPoint(beam::Vec2& point) override;
-
-  /**
-   * @brief Method undistorting a point
-   * @return Returns undistorted point
-   * @param distorted point
-   */
-  beam::Vec2 UndistortPoint(beam::Vec2& point) override;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion

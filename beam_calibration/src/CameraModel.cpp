@@ -1,6 +1,6 @@
 #include "beam_calibration/CameraModel.h"
 #include "beam_calibration/EquidistantCamera.h"
-#include "beam_calibration/PinholeCamera.h"
+#include "beam_calibration/RadtanCamera.h"
 
 using json = nlohmann::json;
 
@@ -48,7 +48,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
 
   // Get type of camera model to use
   if (camera_type == "pinhole") {
-    cam_type = CameraType::PINHOLE;
+    cam_type = CameraType::RADTAN;
   } else if (camera_type == "fisheye") {
     // if its fisheye, create camera based off distortion it uses
     if (distortion_model == "equidistant") {
@@ -68,8 +68,8 @@ std::shared_ptr<CameraModel>
                         beam::VecX distortion, uint32_t image_height,
                         uint32_t image_width, std::string frame_id,
                         std::string date) {
-  if (type == CameraType::PINHOLE) {
-    return std::shared_ptr<PinholeCamera>(new PinholeCamera(
+  if (type == CameraType::RADTAN) {
+    return std::shared_ptr<RadtanCamera>(new RadtanCamera(
         intrinsics, distortion, image_height, image_width, frame_id, date));
   } else if (type == CameraType::EQUIDISTANT) {
     return std::shared_ptr<EquidistantCamera>(new EquidistantCamera(
