@@ -12,9 +12,7 @@ This module contains the multiple different camera models and distortion models 
     * This model follows the model presented in [1]
 3. **Ladybug Camera** Intrinsics: [fx, fy, cy, cx]
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
-4. **Unified Camera Model** Intrinsics: [fx, fy, cx, cy, alpha, beta]
-    * Distortion coefficients: [k1, k2, k3, k4, k5]
-    * This camera model follwos the one introduced in [3]
+
 
 ### Example JSON calibration file
 
