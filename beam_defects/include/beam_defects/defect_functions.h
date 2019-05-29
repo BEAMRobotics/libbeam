@@ -8,11 +8,12 @@
 
 #include <pcl/sample_consensus/method_types.h>
 //#include <pcl/sample_consensus/model_types.h>
+#include <pcl/common/common.h>
+#include <pcl/filters/project_inliers.h>
+#include <pcl/point_types.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
-#include <pcl/point_types.h>
-#include <pcl/common/common.h>
 
 #include <cmath>
 #include <typeinfo>
@@ -35,6 +36,9 @@ float vectorLength(const std::vector<float>& vect_A);
 
 // function to normalize a vector
 std::vector<float> normalizeVector(const std::vector<float>& vect_A);
+// RANSAC noise removal
+pcl::PointCloud<pcl::PointXYZ>
+    PCNoiseRemoval(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 // caluclate concave hull of a point cloud
 pcl::PointCloud<pcl::PointXYZ>
@@ -50,8 +54,7 @@ pcl::PointCloud<pcl::PointXYZ>
                   const std::vector<float>& plane_norm_vect);
 
 // calculate area given a hull cloud
-float calculateHullArea(
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+float calculateHullArea(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 // calculate maximum length from a hull cloud
 float calculateMaxLength(

@@ -35,6 +35,35 @@ std::vector<float> normalizeVector(const std::vector<float>& vect_A) {
   return normalized_vector;
 }
 
+// RANSAC noise removal
+pcl::PointCloud<pcl::PointXYZ>
+    PCNoiseRemoval(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto coefficients = boost::make_shared<pcl::ModelCoefficients>();
+  auto inliers = boost::make_shared<pcl::PointIndices>();
+  // Create the segmentation object
+  pcl::SACSegmentation<pcl::PointXYZ> seg;
+  // Optional
+  seg.setOptimizeCoefficients(true);
+  // Mandatory
+  seg.setModelType(pcl::SACMODEL_PLANE);
+  seg.setMethodType(pcl::SAC_RANSAC);
+  seg.setDistanceThreshold(0.01);
+
+  seg.setInputCloud(input_cloud);
+  seg.segment(*inliers, *coefficients);
+
+  // Project the model inliers
+  pcl::ProjectInliers<pcl::PointXYZ> proj;
+  proj.setModelType(pcl::SACMODEL_PLANE);
+  proj.setIndices(inliers);
+  proj.setInputCloud(input_cloud);
+  proj.setModelCoefficients(coefficients);
+  proj.filter(*cloud_filtered);
+
+  return *cloud_filtered;
+}
+
 // caluclate concave hull of a point cloud
 pcl::PointCloud<pcl::PointXYZ>
     calculateHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
@@ -91,10 +120,10 @@ pcl::PointCloud<pcl::PointXYZ>
 
   if (plane_norm_vect == x_axis) {
     // initialize original y_axis for cross product projection
-    std::vector<float> y_axis(num_dims,0);
+    std::vector<float> y_axis(num_dims, 0);
     y_axis[1] = 1;
 
-    //Generate new x axis by crossing the old y with the plane normal
+    // Generate new x axis by crossing the old y with the plane normal
     // this assumes that the plane normal is the new z axis
     std::vector<float> new_x = crossProduct(y_axis, plane_norm_vect);
 
@@ -152,10 +181,10 @@ float calculateHullArea(
 float calculateMaxLength(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
   pcl::PointXYZ minPt, maxPt;
-  pcl::getMinMax3D (*input_cloud, minPt, maxPt);
+  pcl::getMinMax3D(*input_cloud, minPt, maxPt);
   double dx = maxPt.x - minPt.x;
   double dy = maxPt.y - minPt.y;
-  double length = std::sqrt(pow(dx,2) + pow(dy,2));
+  double length = std::sqrt(pow(dx, 2) + pow(dy, 2));
 
   return length;
 }

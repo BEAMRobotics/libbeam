@@ -23,8 +23,9 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   // Instantiate the defect object with point cloud
   beam_defects::Spall spall{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.493669));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(spall.GetSize() == Approx(0.4803934));
+  REQUIRE(spall.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::VERY_SEVERE);
 }
 
 TEST_CASE("No spall returns size of 0") {
@@ -37,15 +38,15 @@ TEST_CASE("Spall (xy-plane) size calculation and LIGHT OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 6;
   cloud->height = 1;
-  cloud->points.resize (cloud->width * cloud->height);
+  cloud->points.resize(cloud->width * cloud->height);
 
   // Generate some data
-  cloud->points.push_back(pcl::PointXYZ{0,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.2,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.25,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.2,0.1,0});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0.1,0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.2, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.25, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.2, 0.1, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0.1, 0});
 
   beam_defects::Spall spall{cloud};
 
@@ -57,20 +58,20 @@ TEST_CASE("Spall (xz-plane) size calculation and MEDIUM OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 11;
   cloud->height = 1;
-  cloud->points.resize (cloud->width * cloud->height);
+  cloud->points.resize(cloud->width * cloud->height);
 
   // Generate some data
-  cloud->points.push_back(pcl::PointXYZ{0,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0.1});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0.2});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0.3});
-  cloud->points.push_back(pcl::PointXYZ{0.1,0,0.4});
-  cloud->points.push_back(pcl::PointXYZ{0.05,0,0.45});
-  cloud->points.push_back(pcl::PointXYZ{0,0,0.4});
-  cloud->points.push_back(pcl::PointXYZ{0,0,0.3});
-  cloud->points.push_back(pcl::PointXYZ{0,0,0.2});
-  cloud->points.push_back(pcl::PointXYZ{0,0,0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0.1});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0.2});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0.3});
+  cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0.4});
+  cloud->points.push_back(pcl::PointXYZ{0.05, 0, 0.45});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0.4});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0.3});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0.2});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0.1});
   beam_defects::Spall spall{cloud};
 
   REQUIRE(spall.GetSize() == Approx(0.0425));
@@ -81,31 +82,31 @@ TEST_CASE("Spall (yz-plane) size calculation and SEVERE OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 22;
   cloud->height = 1;
-  cloud->points.resize (cloud->width * cloud->height);
+  cloud->points.resize(cloud->width * cloud->height);
 
   // Generate some data
-  cloud->points.push_back(pcl::PointXYZ{0,0,0});
-  cloud->points.push_back(pcl::PointXYZ{0,0.1,0});
-  cloud->points.push_back(pcl::PointXYZ{0,0.2,0});
-  cloud->points.push_back(pcl::PointXYZ{0,0.3,0});
-  cloud->points.push_back(pcl::PointXYZ{0,0.4,0});
-  cloud->points.push_back(pcl::PointXYZ{0,0.5,0});
-  cloud->points.push_back(pcl::PointXYZ{0,0.5,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,0.4,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,0.3,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,0.2,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,0.1,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,0,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.1,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.2,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.3,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.4,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.5,-0.1});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.5,0});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.4,0});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.3,0});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.2,0});
-  cloud->points.push_back(pcl::PointXYZ{0,-0.1,0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.1, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.2, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.3, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.4, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.5, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.5, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.4, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.3, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.2, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, 0.1, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, 0, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.1, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.2, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.3, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.4, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.5, -0.1});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.5, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.4, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.3, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.2, 0});
+  cloud->points.push_back(pcl::PointXYZ{0, -0.1, 0});
 
   beam_defects::Spall spall{cloud};
 
