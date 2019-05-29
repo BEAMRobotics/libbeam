@@ -75,4 +75,16 @@ cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
                                      this->GetWidth());
 }
 
+beam::Vec3 PinholeCamera::BackProject(beam::Vec2& point) {
+  beam::Vec3 out_point;
+  beam::Vec2 kp = point;
+  kp[0] = (kp[0] - this->GetCx()) / this->GetFx();
+  kp[1] = (kp[1] - this->GetCy()) / this->GetFy();
+  beam::Vec2 undistorted =
+      distortion_->Undistort(this->GetDistortionCoefficients(), kp);
+  out_point << undistorted[1], -(undistorted[0]), 1;
+  out_point.normalize();
+  return out_point;
+}
+
 } // namespace beam_calibration

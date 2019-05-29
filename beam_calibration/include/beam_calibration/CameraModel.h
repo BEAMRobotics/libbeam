@@ -46,12 +46,27 @@ struct Distortion {
    */
   DistortionType GetType();
   /*
-   * @brief Method to dsitort point
+   * @brief Method to distort point
    * @return Vec2 distorted point
    * @param VecX: intrinsics
    * @param Vec2: point
    */
   beam::Vec2 Distort(beam::VecX, beam::Vec2);
+
+  /*
+   * @brief Method to undistort point
+   * @return Vec2 undistorted point
+   * @param Vec2: point
+   */
+  beam::Vec2 Undistort(beam::VecX, beam::Vec2);
+
+  /*
+   * @brief Method to computer distortion jacobian
+   * @return Mat2: jacobian
+   * @param VecX: coefficients
+   * @param Vec2: point
+   */
+  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2);
   /*
    * @brief Method to undistort image
    * @return undistorted image
@@ -118,6 +133,13 @@ public:
    * @param undistorted point
    */
   virtual beam::Vec2 DistortPoint(beam::Vec2& point) = 0;
+
+  /**
+   * @brief Method back projecting
+   * @return Returns bearing vector
+   * @param distorted point
+   */
+  virtual beam::Vec3 BackProject(beam::Vec2& point) = 0;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion

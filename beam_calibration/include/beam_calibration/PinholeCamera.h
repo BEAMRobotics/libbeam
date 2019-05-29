@@ -56,6 +56,13 @@ public:
   beam::Vec2 DistortPoint(beam::Vec2& point) override;
 
   /**
+   * @brief Method back projecting
+   * @return Returns bearing vector
+   * @param distorted point
+   */
+  beam::Vec3 BackProject(beam::Vec2& point) override;
+
+  /**
    * @brief Method for undistorting an image based on camera's distortion
    * @return image
    */

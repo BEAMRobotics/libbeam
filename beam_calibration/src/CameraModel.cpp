@@ -199,6 +199,8 @@ beam::Mat3 CameraModel::GetCameraMatrix() {
   return K;
 }
 
+/***********************Distortion Implementations**************************/
+
 Distortion::Distortion(DistortionType type) {
   type_ = type;
 }
@@ -246,6 +248,116 @@ beam::Vec2 Distortion::Distort(beam::VecX coeffs, beam::Vec2 point) {
     return point;
   }
   return coords;
+}
+
+beam::Vec2 Distortion::Undistort(beam::VecX coeffs, beam::Vec2 point) {
+  const int n = 30; // Max. number of iterations
+  beam::Vec2 y = point;
+  beam::Vec2 ybar = y;
+  beam::Mat2 F;
+  beam::Vec2 y_tmp;
+  // Handle special case around image center.
+  if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
+  int i;
+  for (i = 0; i < n; ++i) {
+    y_tmp = ybar;
+    F = ComputeJacobian(coeffs, point);
+    beam::Vec2 e(y - y_tmp);
+    beam::Vec2 du = (F.transpose() * F).inverse() * F.transpose() * e;
+    ybar += du;
+  }
+  y = ybar;
+  return y;
+}
+
+beam::Mat2 Distortion::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
+  beam::Mat2 out_jacobian;
+  double x = point[0];
+  double y = point[1];
+  double x2 = x * x;
+  double y2 = y * y;
+  double xy = x * y;
+  double r = sqrt(x2 + y2);
+  if (type_ == DistortionType::EQUIDISTANT) {
+    const double& k1 = coeffs[0];
+    const double& k2 = coeffs[1];
+    const double& k3 = coeffs[2];
+    const double& k4 = coeffs[3];
+    // Handle special case around image center.
+    if (r < 1e-10) { return out_jacobian; }
+    double theta = atan(r);
+    double theta2 = theta * theta;
+    double theta4 = theta2 * theta2;
+    double theta6 = theta2 * theta4;
+    double theta8 = theta4 * theta4;
+    double theta3 = theta2 * theta;
+    double theta5 = theta4 * theta;
+    double theta7 = theta6 * theta;
+    const double duf_du =
+        theta * 1.0 / r *
+            (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0) +
+        x * theta * 1.0 / r *
+            ((k2 * x * theta3 * 1.0 / r * 4.0) / (x2 + y2 + 1.0) +
+             (k3 * x * theta5 * 1.0 / r * 6.0) / (x2 + y2 + 1.0) +
+             (k4 * x * theta7 * 1.0 / r * 8.0) / (x2 + y2 + 1.0) +
+             (k1 * x * theta * 1.0 / r * 2.0) / (x2 + y2 + 1.0)) +
+        ((x2) * (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0)) /
+            ((x2 + y2) * (x2 + y2 + 1.0)) -
+        (x2)*theta * 1.0 / pow(x2 + y2, 3.0 / 2.0) *
+            (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0);
+    const double duf_dv =
+        x * theta * 1.0 / r *
+            ((k2 * y * theta3 * 1.0 / r * 4.0) / (x2 + y2 + 1.0) +
+             (k3 * y * theta5 * 1.0 / r * 6.0) / (x2 + y2 + 1.0) +
+             (k4 * y * theta7 * 1.0 / r * 8.0) / (x2 + y2 + 1.0) +
+             (k1 * y * theta * 1.0 / r * 2.0) / (x2 + y2 + 1.0)) +
+        (x * y *
+         (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0)) /
+            ((x2 + y2) * (x2 + y2 + 1.0)) -
+        x * y * theta * 1.0 / pow(x2 + y2, 3.0 / 2.0) *
+            (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0);
+    const double dvf_du =
+        y * theta * 1.0 / r *
+            ((k2 * x * theta3 * 1.0 / r * 4.0) / (x2 + y2 + 1.0) +
+             (k3 * x * theta5 * 1.0 / r * 6.0) / (x2 + y2 + 1.0) +
+             (k4 * x * theta7 * 1.0 / r * 8.0) / (x2 + y2 + 1.0) +
+             (k1 * x * theta * 1.0 / r * 2.0) / (x2 + y2 + 1.0)) +
+        (x * y *
+         (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0)) /
+            ((x2 + y2) * (x2 + y2 + 1.0)) -
+        x * y * theta * 1.0 / pow(x2 + y2, 3.0 / 2.0) *
+            (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0);
+    const double dvf_dv =
+        theta * 1.0 / r *
+            (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0) +
+        y * theta * 1.0 / r *
+            ((k2 * y * theta3 * 1.0 / r * 4.0) / (x2 + y2 + 1.0) +
+             (k3 * y * theta5 * 1.0 / r * 6.0) / (x2 + y2 + 1.0) +
+             (k4 * y * theta7 * 1.0 / r * 8.0) / (x2 + y2 + 1.0) +
+             (k1 * y * theta * 1.0 / r * 2.0) / (x2 + y2 + 1.0)) +
+        ((y2) * (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0)) /
+            ((x2 + y2) * (x2 + y2 + 1.0)) -
+        (y2)*theta * 1.0 / pow(x2 + y2, 3.0 / 2.0) *
+            (k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8 + 1.0);
+
+    out_jacobian << duf_du, duf_dv, dvf_du, dvf_dv;
+  } else if (type_ == DistortionType::RADTAN) {
+    const double& k1 = coeffs[0];
+    const double& k2 = coeffs[1];
+    const double& p1 = coeffs[3];
+    const double& p2 = coeffs[4];
+    double r2 = x2 + y2;
+    double rad_dist_u = k1 * r2 + k2 * r2 * r2;
+    const double duf_du = 1.0 + rad_dist_u + 2.0 * k1 * x2 +
+                          4.0 * k2 * r2 * x2 + 2.0 * p1 * y + 6.0 * p2 * x;
+    const double duf_dv =
+        2.0 * k1 * xy + 4.0 * k2 * r2 * xy + 2.0 * p1 * x + 2.0 * p2 * y;
+    const double dvf_du = duf_dv;
+    const double dvf_dv = 1.0 + rad_dist_u + 2.0 * k1 * y2 +
+                          4.0 * k2 * r2 * y2 + 2.0 * p2 * x + 6.0 * p1 * y;
+    out_jacobian << duf_du, duf_dv, dvf_du, dvf_dv;
+  }
+  return out_jacobian;
 }
 
 cv::Mat Distortion::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
