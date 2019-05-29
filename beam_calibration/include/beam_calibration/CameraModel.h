@@ -21,7 +21,48 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { NONE = 0, PINHOLE, LADYBUG, FISHEYE };
+enum class CameraType { PINHOLE = 0, LADYBUG };
+/**
+ * @brief Enum class for different types of dsitortion models
+ */
+enum class DistortionType { NONE = 0, RADTAN, EQUIDISTANT };
+
+/**
+ * @brief Struct to perform distortion functions
+ */
+struct Distortion {
+  DistortionType type_;
+  /*
+   * @brief Initialize with type
+   */
+  Distortion(DistortionType);
+  /*
+   * @brief Default destructor
+   */
+  ~Distortion() = default;
+  /*
+   * @brief Method to return type of distortion
+   * @return DistortionType
+   */
+  DistortionType GetType();
+  /*
+   * @brief Method to dsitort point
+   * @return Vec2 distorted point
+   * @param VecX: intrinsics
+   * @param Vec2: point
+   */
+  beam::Vec2 Distort(beam::VecX, beam::Vec2);
+  /*
+   * @brief Method to undistort image
+   * @return undistorted image
+   * @param Mat3: camera matrix
+   * @param VecX dsitortion coefficients
+   * @param cv::Mat image to undistort
+   * @param uint32_t height and width
+   */
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t, uint32_t);
+};
+
 /**
  * @brief Abstract class for camera models
  */
@@ -49,9 +90,10 @@ public:
    * @return
    */
   static std::shared_ptr<CameraModel>
-      Create(CameraType camera_type, beam::VecX intrinsics,
-             beam::VecX distortion, uint32_t image_height, uint32_t image_width,
-             std::string frame_id, std::string date);
+      Create(CameraType camera_type, DistortionType dist_type,
+             beam::VecX intrinsics, beam::VecX distortion,
+             uint32_t image_height, uint32_t image_width, std::string frame_id,
+             std::string date);
 
   /**
    * @brief Method for projecting a point into an image plane
@@ -116,6 +158,12 @@ public:
   virtual void SetDistortionCoefficients(beam::VecX& coeffs);
 
   /**
+   * @brief Method for setting distortion type
+   * @param distortion model
+   */
+  virtual void SetDistortionType(DistortionType dist);
+
+  /**
    * @brief Method for returning the frame id of an intrinsics
    * calibration object
    * @return Returns frame id
@@ -151,6 +199,12 @@ public:
    * @return distortion model
    */
   virtual const beam::VecX& GetDistortionCoefficients() const;
+
+  /**
+   * @brief Method for setting distortion type
+   * @param distortion model
+   */
+  virtual DistortionType GetDistortionType();
 
   /**
    * @brief Method for retrieving the camera type
@@ -191,19 +245,20 @@ public:
 protected:
   CameraType type_;
   std::string frame_id_, calibration_date_;
-  uint32_t image_height_, image_width_, required_size_;
+  uint32_t image_height_, image_width_;
   beam::VecX intrinsics_, distortion_coefficients_;
+  std::unique_ptr<Distortion> distortion_ = nullptr;
   // Boolean values to keep track of validity
-  bool intrinsics_valid_ = false, distortion_set_ = false,
-       calibration_date_set_ = false;
+  bool intrinsics_valid_ = false, distortion_coeffs_set_ = false,
+       calibration_date_set_ = false, distortion_set_ = false;
   // Map for keeping required number of values in distortion vector
-  std::map<CameraType, int> get_intrinsics_size_ = {{CameraType::LADYBUG, 4},
-                                                    {CameraType::PINHOLE, 4},
-                                                    {CameraType::FISHEYE, 4}};
+  std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
+                                                {CameraType::PINHOLE, 4}};
 
-  std::map<CameraType, int> get_distortion_size_ = {{CameraType::LADYBUG, 0},
-                                                    {CameraType::PINHOLE, 5},
-                                                    {CameraType::FISHEYE, 4}};
+  std::map<DistortionType, int> distortion_size_ = {
+      {DistortionType::NONE, 0},
+      {DistortionType::RADTAN, 5},
+      {DistortionType::EQUIDISTANT, 4}};
 };
 
 /** @} group calibration */

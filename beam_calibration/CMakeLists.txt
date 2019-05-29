@@ -16,7 +16,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/CameraModel.cpp
     src/LadybugCamera.cpp
     src/PinholeCamera.cpp
-    src/FisheyeCamera.cpp
 
 )
 
@@ -49,7 +48,7 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Boost::boost
   catkin::catkin
 )
-#######################################
+  #######################################
 
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_debug
@@ -62,21 +61,6 @@ target_include_directories(${PROJECT_NAME}_debug
 target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
   catkin::catkin
-)
-
-#######################################
-
-############# Debug files #############
-add_executable(${PROJECT_NAME}_calibrate
-  src/Calibrator.cpp
-)
-target_include_directories(${PROJECT_NAME}_calibrate
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_calibrate
-  ${PROJECT_NAME}
-  OpenCV::OpenCV
 )
 
 #######################################

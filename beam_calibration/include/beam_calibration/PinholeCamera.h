@@ -22,9 +22,9 @@ public:
   /**
    * @brief constructor with values
    */
-  PinholeCamera(beam::VecX& intrinsics, beam::VecX& distortion,
-                uint32_t image_height, uint32_t image_width,
-                std::string frame_id, std::string date);
+  PinholeCamera(DistortionType dist_type, beam::VecX& intrinsics,
+                beam::VecX& distortion, uint32_t image_height,
+                uint32_t image_width, std::string frame_id, std::string date);
 
   /**
    * @brief Default destructor
