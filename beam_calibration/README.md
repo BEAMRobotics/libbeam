@@ -56,9 +56,11 @@ The pinhole model with radial-tangential distoriton is equivalent to OpenCV's mo
 
 ## Calibrate.py Usage
 
-`python Calibrate.py camera_model path_to_images`
+`python Calibrator.py [camera_model] [height] [width] [frame_id]`
 
 camera_model = ["equidistant", "radtan"]
+height/width = dimensions of calibration board
+frame_id = name of camera being calibrated
 
 ## References
 
