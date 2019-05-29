@@ -35,7 +35,7 @@ struct Distortion {
   /*
    * @brief Initialize with type
    */
-  Distortion(DistortionType);
+  Distortion() = default;
   /*
    * @brief Default destructor
    */
@@ -51,14 +51,14 @@ struct Distortion {
    * @param VecX: intrinsics
    * @param Vec2: point
    */
-  beam::Vec2 Distort(beam::VecX, beam::Vec2);
+  virtual beam::Vec2 Distort(beam::VecX, beam::Vec2) = 0;
 
   /*
    * @brief Method to undistort point
    * @return Vec2 undistorted point
    * @param Vec2: point
    */
-  beam::Vec2 Undistort(beam::VecX, beam::Vec2);
+  virtual beam::Vec2 Undistort(beam::VecX, beam::Vec2) = 0;
 
   /*
    * @brief Method to computer distortion jacobian
@@ -66,7 +66,7 @@ struct Distortion {
    * @param VecX: coefficients
    * @param Vec2: point
    */
-  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2);
+  virtual beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) = 0;
   /*
    * @brief Method to undistort image
    * @return undistorted image
@@ -75,7 +75,36 @@ struct Distortion {
    * @param cv::Mat image to undistort
    * @param uint32_t height and width
    */
-  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t, uint32_t);
+  virtual cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t,
+                                 uint32_t) = 0;
+};
+
+/*
+ *@brief Struct to perform distortion functions for radial tangential model
+ */
+struct Radtan : Distortion {
+  Radtan();
+  ~Radtan() = default;
+  DistortionType GetType();
+  beam::Vec2 Distort(beam::VecX, beam::Vec2) override;
+  beam::Vec2 Undistort(beam::VecX, beam::Vec2) override;
+  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) override;
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t,
+                         uint32_t) override;
+};
+
+/*
+ *@brief Struct to perform distortion functions for equidistant model
+ */
+struct Equidistant : Distortion {
+  Equidistant();
+  ~Equidistant() = default;
+  DistortionType GetType();
+  beam::Vec2 Distort(beam::VecX, beam::Vec2) override;
+  beam::Vec2 Undistort(beam::VecX, beam::Vec2) override;
+  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) override;
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t,
+                         uint32_t) override;
 };
 
 /**
