@@ -4,7 +4,7 @@
 
 #include "beam_defects/Corrosion.h"
 
-// DELAMINATION TESTS
+// CORROSION TESTS
 
 TEST_CASE("Corrosion defect type is returned", "[GetType]") {
   beam_defects::Corrosion corrosion{};
