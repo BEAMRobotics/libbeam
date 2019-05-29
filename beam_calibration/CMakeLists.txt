@@ -16,7 +16,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/CameraModel.cpp
     src/LadybugCamera.cpp
     src/PinholeCamera.cpp
-
 )
 
 ################ tests ##################
