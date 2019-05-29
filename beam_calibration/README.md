@@ -2,24 +2,22 @@
 
 This module contains the multiple different camera models and distortion models used for BEAMRobotics.
 
-## Supported Models
+## Supported Camera Models
 
-1. **Pinhole** 
-    * Intrinsics: [fx, fy, cx, cy]
-    * Distortion Model: Radial-tangential
-    * Distortion Coefficients: [k1, k2, k3, r1, r2]
-2. **Fisheye** 
-    * Intrinsics: [fx, fy, cx, cy]
-    * Distortion Model: Equidistant
-    * Distortion Coefficients: [k1, k2, k3, k4]
-3. **Extended Unified**
-    * Intrinsics: [fx, fy, cx, cy, alpha, beta]
-    * Distrotion Model: Radial-tangential
-    * Distortion Coefficients: [k1, k2, k3, r1, r2]
+1. **Pinhole** Intrinsics: [fx, fy, cx, cy]
+    * Supported Distortion Models
+        * Radial-tangential: [k1, k2, k3, r1, r2]
+        * Equidistant: [k1, k2, k3, k4]
+3. **Extended Unified** Intrinsics: [fx, fy, cx, cy, alpha, beta]
+    * Supported Distortion Models
+        * Radial-tangential: [k1, k2, k3, r1, r2]
+        * Equidistant: [k1, k2, k3, k4]
 4. **Ladybug** 
     * Intrinsics: [fx, fy, cy, cx]
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
 
+### Info
+    The pinhole model with radial-tangential distoriton is equivalent to OpenCV's model, and with equidistant distortion is equivalent to OpenCV's fisheye model.
 
 ### Example JSON calibration file
 
@@ -54,6 +52,13 @@ This module contains the multiple different camera models and distortion models 
 ```
 ## Class Diagram
 ![alt text](https://github.com/BEAMRobotics/libbeam/blob/add_calibrator_script/beam_calibration/ClassDiagram.png)
+
+
+## Calibrate.py Usage
+
+`python Calibrate.py camera_model path_to_images`
+
+camera_model = ["equidistant", "radtan"]
 
 ## References
 

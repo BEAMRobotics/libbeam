@@ -7,17 +7,15 @@ namespace beam_calibration {
 
 std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   LOG_INFO("Loading file: %s", file_location.c_str());
-
+  // load JSON
   json J;
-  int image_width = 0, image_height = 0;
-  std::string camera_type, date, method, frame_id, distortion_model;
-  beam::VecX coeffs, intrinsics;
-  CameraType cam_type;
-  DistortionType dist_type;
-
   std::ifstream file(file_location);
   file >> J;
 
+  int image_width = 0, image_height = 0;
+  std::string camera_type, date, method, frame_id, distortion_model;
+  beam::VecX coeffs, intrinsics;
+  // Read values from JSON and populate variables
   camera_type = J["camera_type"];
   date = J["date"];
   method = J["method"];
@@ -46,7 +44,9 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     }
   }
 
-  // Get type of camera model to use
+  CameraType cam_type;
+  DistortionType dist_type;
+  // Get type of camera model and distortion model to use
   if (camera_type == "pinhole") {
     cam_type = CameraType::PINHOLE;
     if (distortion_model == "radtan") {
@@ -91,7 +91,6 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
 }
 
 void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
-  // throw error if input isnt correct size
   if (intrinsics.size() != intrinsics_size_[this->GetType()]) {
     LOG_ERROR("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
@@ -103,7 +102,7 @@ void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
 }
 
 void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
-  if (!distortion_) {
+  if (!distortion_set_) {
     LOG_ERROR("Distortion has not been set");
     throw std::runtime_error{"Distortion has not been set"};
   } else if (distortion.size() != distortion_size_[this->GetDistortionType()]) {
@@ -119,6 +118,14 @@ void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
 void CameraModel::SetDistortionType(DistortionType dist) {
   distortion_ = std::unique_ptr<Distortion>(new Distortion(dist));
   distortion_set_ = true;
+  beam::VecX dist;
+  if (this->GetDistortionType == DistortionType::RADTAN) {
+    dist = beam::VecX::Zero(5);
+  } else if (this->GetDistortionType == DistortionType::EQUIDISTANT) {
+    dist = beam::VecX::Zero(4);
+  }
+  this->SetDistortionCoefficients(dist);
+  LOG_INFO("Distortion coefficients set to zero due to new distortion type");
 }
 
 const std::string CameraModel::GetFrameID() const {
@@ -236,6 +243,8 @@ beam::Vec2 Distortion::Distort(beam::VecX coeffs, beam::Vec2 point) {
     y *= scaling;
 
     coords << x, y;
+  } else if (type_ == DistortionType::NONE) {
+    return point;
   }
   return coords;
 }
@@ -272,6 +281,8 @@ cv::Mat Distortion::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
     cv::fisheye::initUndistortRectifyMap(K, D, R, P, img_size, CV_32FC1, map1,
                                          map2);
     cv::remap(image_input, output_image, map1, map2, 1);
+  } else if (type_ == DistortionType::NONE) {
+    return image_input;
   }
   return output_image;
 }

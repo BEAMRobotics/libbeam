@@ -36,7 +36,10 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
     out_point[1] = (fy * xx + cy);
   } else if (!intrinsics_valid_) {
     LOG_ERROR("Intrinsics not set, cannot project point.");
-    throw std::invalid_argument{"Intrinsics nto set"};
+    throw std::invalid_argument{"Intrinsics not set"};
+  } else if (!distortion_set_) {
+    LOG_ERROR("Distortion not set, cannot project point.");
+    throw std::invalid_argument{"Distortion not set"};
   }
 
   return out_point;
