@@ -253,20 +253,18 @@ beam::Vec2 Distortion::Distort(beam::VecX coeffs, beam::Vec2 point) {
 beam::Vec2 Distortion::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   const int n = 30; // Max. number of iterations
   beam::Vec2 y = point;
-  beam::Vec2 ybar = y;
   beam::Mat2 F;
   beam::Vec2 y_tmp;
   // Handle special case around image center.
   if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
   int i;
   for (i = 0; i < n; ++i) {
-    y_tmp = ybar;
+    y_tmp = y;
     F = ComputeJacobian(coeffs, point);
     beam::Vec2 e(y - y_tmp);
     beam::Vec2 du = (F.transpose() * F).inverse() * F.transpose() * e;
-    ybar += du;
+    y += du;
   }
-  y = ybar;
   return y;
 }
 
@@ -381,7 +379,7 @@ cv::Mat Distortion::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
     cv::remap(image_input, output_image, map1, map2, 1);
   } else if (type_ == DistortionType::EQUIDISTANT) {
     // convert eigen to cv mat
-    cv::Mat D(4, 1, CV_8UC1);
+    cv::Mat D(1, 4, CV_8UC1);
     cv::eigen2cv(coeffs, D);
     // undistort image
     cv::Mat map1, map2;

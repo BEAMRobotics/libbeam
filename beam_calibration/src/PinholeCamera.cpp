@@ -82,6 +82,7 @@ beam::Vec3 PinholeCamera::BackProject(beam::Vec2& point) {
   kp[1] = (kp[1] - this->GetCy()) / this->GetFy();
   beam::Vec2 undistorted =
       distortion_->Undistort(this->GetDistortionCoefficients(), kp);
+  // flip the coordinate system to be consistent with opencv convention
   out_point << undistorted[1], -(undistorted[0]), 1;
   out_point.normalize();
   return out_point;

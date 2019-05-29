@@ -137,7 +137,7 @@ public:
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
-   * @param distorted point
+   * @param distorted point [u,v]
    */
   virtual beam::Vec3 BackProject(beam::Vec2& point) = 0;
 

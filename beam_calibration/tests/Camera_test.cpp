@@ -73,6 +73,8 @@ TEST_CASE("Testing LoadJSON function") {
   REQUIRE(radtan->GetCy() == 784.1498440053573);
   REQUIRE(radtan->GetDistortionCoefficients().size() == 5);
   REQUIRE(radtan->GetType() == beam_calibration::CameraType::PINHOLE);
+  REQUIRE(radtan->GetDistortionType() ==
+          beam_calibration::DistortionType::RADTAN);
   REQUIRE(radtan->GetIntrinsics().size() == 4);
   // load equidistant
   std::string equidistant_location = __FILE__;
@@ -84,11 +86,13 @@ TEST_CASE("Testing LoadJSON function") {
 
   REQUIRE(equid->GetWidth() == 2048);
   REQUIRE(equid->GetHeight() == 1536);
-  REQUIRE(equid->GetFx() == 783.6962954715218);
-  REQUIRE(equid->GetFy() == 783.5313758187239);
-  REQUIRE(equid->GetCx() == 998.5030334529295);
-  REQUIRE(equid->GetCy() == 816.2497351565951);
+  REQUIRE(equid->GetFx() == 783.44463219576687);
+  REQUIRE(equid->GetFy() == 783.68479107567089);
+  REQUIRE(equid->GetCx() == 996.34300258081578);
+  REQUIRE(equid->GetCy() == 815.47561902246832);
   REQUIRE(equid->GetDistortionCoefficients().size() == 4);
   REQUIRE(equid->GetType() == beam_calibration::CameraType::PINHOLE);
+  REQUIRE(equid->GetDistortionType() ==
+          beam_calibration::DistortionType::EQUIDISTANT);
   REQUIRE(equid->GetIntrinsics().size() == 4);
 }

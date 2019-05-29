@@ -54,7 +54,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
         if (colors.val[0] == 255) {
           // initialize ray
           beam::Vec3 ray(0, 0, 0);
-          // get direction between origin and pixel
+          // get direction vector
           beam::Vec2 input_point(position[1], position[0]);
           beam::Vec3 point = intrinsics_->BackProject(input_point);
           // while loop to ray trace
