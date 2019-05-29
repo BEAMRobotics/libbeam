@@ -14,6 +14,11 @@
 #ifndef BEAM_UTILS_LOG_HPP
 #define BEAM_UTILS_LOG_HPP
 
+#ifndef NDEBUG
+  #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
+#endif
+#include "spdlog/spdlog.h"
+
 namespace beam {
 /** @addtogroup utils
  *  @{ */
