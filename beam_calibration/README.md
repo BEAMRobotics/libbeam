@@ -17,7 +17,7 @@ This module contains the multiple different camera models and distortion models 
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
 
 ### Info
-    The pinhole model with radial-tangential distoriton is equivalent to OpenCV's model, and with equidistant distortion is equivalent to OpenCV's fisheye model.
+The pinhole model with radial-tangential distoriton is equivalent to OpenCV's model, and with equidistant distortion is equivalent to OpenCV's fisheye model.
 
 ### Example JSON calibration file
 
