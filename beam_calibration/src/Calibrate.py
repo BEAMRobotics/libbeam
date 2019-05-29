@@ -33,7 +33,7 @@ def calibrateFisheye(path, height, width, frame_id):
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob(path + '/*.jpg')
+    images = glob.glob(path + '/*.png')
 
     for fname in images:
         img = cv2.imread(fname)

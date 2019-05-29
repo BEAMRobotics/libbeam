@@ -22,12 +22,12 @@ int main() {
   std::shared_ptr<beam_calibration::CameraModel> equid =
       beam_calibration::CameraModel::LoadJSON(equidistant_location);
 
-  std::string image_location = "/home/jake/Pictures/img_06.jpg";
+  std::string image_location = "/home/jake/Pictures/img_06.png";
 
   cv::Mat image;
   image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
   cv::Mat undistorted_image = equid->UndistortImage(image);
-  cv::imwrite("/home/jake/Pictures/cpp_undistorted.jpg", undistorted_image);
+  cv::imwrite("/home/jake/Pictures/cpp_undistorted.png", undistorted_image);
 
   /*
   // load conf file

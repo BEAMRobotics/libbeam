@@ -118,14 +118,13 @@ void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
 void CameraModel::SetDistortionType(DistortionType dist) {
   distortion_ = std::unique_ptr<Distortion>(new Distortion(dist));
   distortion_set_ = true;
-  beam::VecX dist;
-  if (this->GetDistortionType == DistortionType::RADTAN) {
-    dist = beam::VecX::Zero(5);
-  } else if (this->GetDistortionType == DistortionType::EQUIDISTANT) {
-    dist = beam::VecX::Zero(4);
+  beam::VecX coeffs;
+  if (this->GetDistortionType() == DistortionType::RADTAN) {
+    coeffs = beam::VecX::Zero(5);
+  } else if (this->GetDistortionType() == DistortionType::EQUIDISTANT) {
+    coeffs = beam::VecX::Zero(4);
   }
-  this->SetDistortionCoefficients(dist);
-  LOG_INFO("Distortion coefficients set to zero due to new distortion type");
+  this->SetDistortionCoefficients(coeffs);
 }
 
 const std::string CameraModel::GetFrameID() const {
@@ -269,15 +268,15 @@ cv::Mat Distortion::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
     cv::initUndistortRectifyMap(K, D, R, K, img_size, CV_32FC1, map1, map2);
     cv::remap(image_input, output_image, map1, map2, 1);
   } else if (type_ == DistortionType::EQUIDISTANT) {
-    cv::Mat P = K.clone();
-    P.at<double>(0, 0) = K.at<double>(0, 0) / 1.5;
-    P.at<double>(1, 1) = K.at<double>(1, 1) / 1.5;
     // convert eigen to cv mat
     cv::Mat D(4, 1, CV_8UC1);
     cv::eigen2cv(coeffs, D);
     // undistort image
     cv::Mat map1, map2;
     cv::Size img_size = cv::Size(width, height);
+    cv::Mat P;
+    cv::fisheye::estimateNewCameraMatrixForUndistortRectify(K, D, img_size, R,
+                                                            P);
     cv::fisheye::initUndistortRectifyMap(K, D, R, P, img_size, CV_32FC1, map1,
                                          map2);
     cv::remap(image_input, output_image, map1, map2, 1);
