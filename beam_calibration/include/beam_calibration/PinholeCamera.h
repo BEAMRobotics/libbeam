@@ -10,7 +10,7 @@ namespace beam_calibration {
  *  @{ */
 
 /**
- * @brief Derived class for Pinhole camera model
+ * @brief Derived class for pinhole camera model
  */
 class PinholeCamera : public CameraModel {
 public:

@@ -4,6 +4,7 @@ import glob
 import sys
 import json
 from collections import OrderedDict
+import datetime
 
 def main():
     if(len(sys.argv) != 5):
@@ -83,9 +84,10 @@ def calibrateFisheye(path, height, width, frame_id):
     saveToJson(intrinsics, coeffs, model, _img_shape, frame_id)
 
 def saveToJson(intrinsics, coeffs, model, dims, frame_id):
+    date = str(datetime.date.today())
     x = OrderedDict()
     x["camera_type"] = "pinhole"
-    x["date"]= "2018_12_20"
+    x["date"]= date
     x["method"] = "opencv"
     x["calibration"] = [OrderedDict()]
     x["calibration"][0]["image_width"] = dims[1]

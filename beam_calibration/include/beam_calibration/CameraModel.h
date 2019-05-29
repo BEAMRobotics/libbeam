@@ -145,7 +145,7 @@ public:
 
   /**
    * @brief Method for adding intrinsic values
-   * RADTAN: [fx,fy,cx,cy]
+   * Pinhole: [fx,fy,cx,cy]
    * Ladybug: [fx,fy,cy,cx]
    * @param intrinsics of the camera
    */
