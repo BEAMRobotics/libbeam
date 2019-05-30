@@ -45,7 +45,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   }
 
   CameraType cam_type;
-  DistortionType dist_type;
+  DistortionType dist_type = DistortionType::NONE;
   // Get type of camera model and distortion model to use
   if (camera_type == "pinhole") {
     cam_type = CameraType::PINHOLE;
@@ -110,6 +110,11 @@ void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
     throw std::runtime_error{
         "Invalid number of elements in coefficient vector."};
   } else {
+    if (this->GetDistortionType() == DistortionType::NONE) {
+      distortion = beam::VecX::Zero(5);
+      LOG_INFO("Attempting to set coefficients to non zero for 'NONE' "
+               "distortion type");
+    }
     distortion_coefficients_ = distortion;
     distortion_coeffs_set_ = true;
   }
@@ -118,7 +123,7 @@ void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
 void CameraModel::SetDistortionType(DistortionType dist) {
   distortion_set_ = true;
   beam::VecX coeffs;
-  if (dist == DistortionType::RADTAN) {
+  if (dist == DistortionType::RADTAN || dist == DistortionType::NONE) {
     coeffs = beam::VecX::Zero(5);
     distortion_ = std::unique_ptr<Radtan>(new Radtan());
     distortion_set_ = true;
@@ -260,36 +265,38 @@ beam::Vec2 Equidistant::Distort(beam::VecX coeffs, beam::Vec2 point) {
 beam::Vec2 Radtan::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   const int n = 30; // Max. number of iterations
   beam::Vec2 y = point;
+  beam::Vec2 ybar = y;
   beam::Mat2 F;
   beam::Vec2 y_tmp;
   // Handle special case around image center.
   if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
-  int i;
-  for (i = 0; i < n; ++i) {
-    y_tmp = y;
-    F = ComputeJacobian(coeffs, point);
+  for (int i = 0; i < n; ++i) {
+    y_tmp = Distort(coeffs, ybar);
+    F = ComputeJacobian(coeffs, ybar);
     beam::Vec2 e(y - y_tmp);
     beam::Vec2 du = (F.transpose() * F).inverse() * F.transpose() * e;
-    y += du;
+    ybar += du;
   }
+  y = ybar;
   return y;
 }
 
 beam::Vec2 Equidistant::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   const int n = 30; // Max. number of iterations
   beam::Vec2 y = point;
+  beam::Vec2 ybar = y;
   beam::Mat2 F;
   beam::Vec2 y_tmp;
   // Handle special case around image center.
   if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
-  int i;
-  for (i = 0; i < n; ++i) {
-    y_tmp = y;
-    F = ComputeJacobian(coeffs, point);
+  for (int i = 0; i < n; ++i) {
+    y_tmp = Distort(coeffs, ybar);
+    F = ComputeJacobian(coeffs, ybar);
     beam::Vec2 e(y - y_tmp);
     beam::Vec2 du = (F.transpose() * F).inverse() * F.transpose() * e;
-    y += du;
+    ybar += du;
   }
+  y = ybar;
   return y;
 }
 
@@ -300,7 +307,6 @@ beam::Mat2 Radtan::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
   double x2 = x * x;
   double y2 = y * y;
   double xy = x * y;
-  double r = sqrt(x2 + y2);
   const double& k1 = coeffs[0];
   const double& k2 = coeffs[1];
   const double& p1 = coeffs[3];
@@ -324,7 +330,6 @@ beam::Mat2 Equidistant::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
   double y = point[1];
   double x2 = x * x;
   double y2 = y * y;
-  double xy = x * y;
   double r = sqrt(x2 + y2);
   const double& k1 = coeffs[0];
   const double& k2 = coeffs[1];

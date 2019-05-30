@@ -11,7 +11,6 @@ This module contains the multiple different camera models and distortion models 
 3. **Extended Unified** Intrinsics: [fx, fy, cx, cy, alpha, beta]
     * Supported Distortion Models
         * Radial-tangential: [k1, k2, k3, r1, r2]
-        * Equidistant: [k1, k2, k3, k4]
 4. **Ladybug** 
     * Intrinsics: [fx, fy, cy, cx]
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
