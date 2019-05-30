@@ -8,7 +8,7 @@ This module contains the multiple different camera models and distortion models 
     * Supported Distortion Models
         * Radial-tangential: [k1, k2, k3, r1, r2]
         * Equidistant: [k1, k2, k3, k4]
-3. ~~**Extended Unified** Intrinsics: [fx, fy, cx, cy, alpha, beta]~~
+3. **Extended Unified** Intrinsics: [fx, fy, cx, cy, alpha, beta]
     * Supported Distortion Models
         * Radial-tangential: [k1, k2, k3, r1, r2]
 4. **Ladybug** 
