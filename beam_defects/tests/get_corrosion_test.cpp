@@ -32,7 +32,8 @@ TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
   REQUIRE(corrosion.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
   REQUIRE(corrosion2.GetSize() == Approx(0.23996));
-  REQUIRE(corrosion2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(corrosion2.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::SEVERE);
 }
 
 TEST_CASE("No Corrosion returns size of 0") {
