@@ -36,3 +36,5 @@ script:
   - ./beam_defects_delam_tests
   - ./beam_defects_spall_tests
   - ./beam_defects_crack_tests
+  - cd $HOME/catkin_ws/build/libbeam/beam_colorize
+  - ./beam_colorize_tests
