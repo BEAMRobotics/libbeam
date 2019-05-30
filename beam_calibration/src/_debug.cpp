@@ -9,7 +9,7 @@ int main() {
   // radtan
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 14, radtan_location.end());
-  radtan_location += "tests/test_data/F2.json";
+  radtan_location += "tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> radtan =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
   // load equidistant
@@ -27,11 +27,9 @@ int main() {
   cv::Mat undistorted_image = equid->UndistortImage(image);
   cv::imwrite("/home/jake/Pictures/cpp_undistorted.png", undistorted_image);
 
-  /*
   // load conf file
   std::string conf_location = __FILE__;
   conf_location.erase(conf_location.end() - 14, conf_location.end());
   conf_location += "tests/test_data/ladybug.conf";
   beam_calibration::LadybugCamera ladybug(0, conf_location);
-  */
 }

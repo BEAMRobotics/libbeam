@@ -60,11 +60,6 @@ int main() {
   colorizer.SetPointCloud(cloud);
   colorizer.SetImage(image);
   colorizer.SetIntrinsics(F1);
-  cv::Mat out_img = F1->UndistortImage(image);
-  cv::imwrite("/home/jake/projects/beam_robotics/libbeam/beam_colorize/tests/"
-              "test_data/out_img.jpg",
-              out_img);
-
   colorizer.SetDistortion(image_distorted);
   cloud_colored = colorizer.ColorizePointCloud();
 
