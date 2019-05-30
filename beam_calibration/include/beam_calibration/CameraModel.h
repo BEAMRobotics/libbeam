@@ -61,7 +61,7 @@ struct Distortion {
   virtual beam::Vec2 Undistort(beam::VecX, beam::Vec2) = 0;
 
   /*
-   * @brief Method to computer distortion jacobian
+   * @brief Method to compute jacobian of the distortion function
    * @return Mat2: jacobian
    * @param VecX: coefficients
    * @param Vec2: point
