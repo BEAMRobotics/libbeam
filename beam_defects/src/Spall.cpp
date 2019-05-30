@@ -18,10 +18,10 @@ double Spall::CalculateSize() {
   auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   *calc_cloud = PCNoiseRemoval(defect_cloud_);
-  *calc_cloud = calculateHull(calc_cloud);
-  std::vector<float> plane_norm_vect = planeNormalVector(calc_cloud);
-  *calc_cloud = project2Plane(calc_cloud, plane_norm_vect);
-  double spall_area = calculateHullArea(calc_cloud);
+  *calc_cloud = ConcaveHull(calc_cloud);
+  std::vector<float> plane_norm_vect = PlaneNormalVector(calc_cloud);
+  *calc_cloud = Project2Plane(calc_cloud, plane_norm_vect);
+  double spall_area = HullArea(calc_cloud);
 
   return spall_area;
 }

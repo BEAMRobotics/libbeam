@@ -15,17 +15,22 @@ TEST_CASE("Delam defect type is returned", "[GetType]") {
 
 TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
   reader.read("test_data/cloud_cluster_0.pcd", *cloud);
+  reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
   beam_defects::Delam delam{cloud};
+  beam_defects::Delam delam2{cloud2};
 
   REQUIRE(delam.GetSize() == Approx(0.4803934));
   REQUIRE(delam.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(delam2.GetSize() == Approx(0.23996));
+  REQUIRE(delam2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
 }
 
 TEST_CASE("No Delam returns size of 0") {

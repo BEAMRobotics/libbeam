@@ -20,10 +20,10 @@ double Delam::CalculateSize() {
 
 
   *calc_cloud = PCNoiseRemoval(defect_cloud_);
-  *cloud_hull = calculateHull(calc_cloud);
-  std::vector<float> plane_norm_vect = planeNormalVector(cloud_hull);
-  *calc_cloud = project2Plane(cloud_hull, plane_norm_vect);
-  double delam_area = calculateHullArea(cloud_hull);
+  *cloud_hull = ConcaveHull(calc_cloud);
+  std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
+  *calc_cloud = Project2Plane(cloud_hull, plane_norm_vect);
+  double delam_area = HullArea(cloud_hull);
 
   return delam_area;
 }

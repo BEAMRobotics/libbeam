@@ -17,17 +17,22 @@ TEST_CASE("Corrosion defect type is returned", "[GetType]") {
 TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
           "[GetSize]") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
   reader.read("test_data/cloud_cluster_0.pcd", *cloud);
+  reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
   beam_defects::Corrosion corrosion{cloud};
+  beam_defects::Corrosion corrosion2{cloud2};
 
   REQUIRE(corrosion.GetSize() == Approx(0.4803934));
   REQUIRE(corrosion.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(corrosion2.GetSize() == Approx(0.23996));
+  REQUIRE(corrosion2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
 }
 
 TEST_CASE("No Corrosion returns size of 0") {

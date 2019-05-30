@@ -14,6 +14,7 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
+#include <pcl/surface/convex_hull.h>
 
 #include <cmath>
 #include <typeinfo>
@@ -24,40 +25,44 @@ namespace beam_defects {
  *  @{ */
 
 // function to calculate dot product
-float dotProduct(const std::vector<float>& vect_A,
+float DotProduct(const std::vector<float>& vect_A,
                  const std::vector<float>& vect_B);
 
 // function to calculate cross product
-std::vector<float> crossProduct(const std::vector<float>& vect_A,
+std::vector<float> CrossProduct(const std::vector<float>& vect_A,
                                 const std::vector<float>& vect_B);
 
 // function to calculate the length of a vector
-float vectorLength(const std::vector<float>& vect_A);
+float VectorLength(const std::vector<float>& vect_A);
 
 // function to normalize a vector
-std::vector<float> normalizeVector(const std::vector<float>& vect_A);
+std::vector<float> NormalizeVector(const std::vector<float>& vect_A);
 // RANSAC noise removal
 pcl::PointCloud<pcl::PointXYZ>
     PCNoiseRemoval(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 // caluclate concave hull of a point cloud
 pcl::PointCloud<pcl::PointXYZ>
-    calculateHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+    ConcaveHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+
+// caluclate convex hull of a point cloud
+pcl::PointCloud<pcl::PointXYZ>
+    ConvexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 // Calculate Normal Vector of a plane
 std::vector<float>
-    planeNormalVector(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+    PlaneNormalVector(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 // Project points from a cloud onto a common plane
 pcl::PointCloud<pcl::PointXYZ>
-    project2Plane(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+    Project2Plane(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                   const std::vector<float>& plane_norm_vect);
 
 // calculate area given a hull cloud
-float calculateHullArea(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+float HullArea(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 // calculate maximum length from a hull cloud
-float calculateMaxLength(
+float MaxLength(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
 
 /** @} group defects */
