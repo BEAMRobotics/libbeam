@@ -10,10 +10,10 @@
 #pragma once
 
 #include <beam_utils/time.hpp>
-#include <chrono>
 #include <nlohmann/json.hpp>
-#include <opencv2/opencv.hpp>
-#include <string>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <fstream>
 
 namespace beam_containers {
 /** @addtogroup containers

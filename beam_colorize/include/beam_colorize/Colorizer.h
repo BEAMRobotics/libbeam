@@ -14,16 +14,13 @@
 // libbeam
 #include "beam_calibration/CameraModel.h"
 #include "beam_containers/PointBridge.h"
-#include <beam_utils/log.hpp>
 
 // PCL
-#include <pcl/common/transforms.h>
-#include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
 
 // OpenCV
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 
 // ROS
 #include <sensor_msgs/Image.h>

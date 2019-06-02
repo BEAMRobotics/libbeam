@@ -1,9 +1,6 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_calibration/CameraModel.h"
-#include "beam_calibration/TfTree.h"
-#include "beam_colorize/Projection.h"
-#include "beam_colorize/RayTrace.h"
-#include "beam_utils/math.hpp"
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
 
 #include <boost/filesystem.hpp>
 
@@ -12,6 +9,12 @@
 
 #include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
+
+#include "beam_calibration/CameraModel.h"
+#include "beam_calibration/TfTree.h"
+#include "beam_colorize/Projection.h"
+#include "beam_colorize/RayTrace.h"
+#include "beam_utils/math.hpp"
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr GetPCD() {
   std::string pcd_name = "map18crop.pcd";

@@ -6,7 +6,6 @@
 #include "beam_colorize/Colorizer.h"
 
 // PCL
-#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_cloud.h>
 
 // Standard lib

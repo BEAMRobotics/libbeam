@@ -9,6 +9,8 @@
 #include <iostream>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
 
 int main() {
   // load intrinsics

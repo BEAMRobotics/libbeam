@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
-#include <iostream>
 #include <memory>
+#include <boost/smart_ptr.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
