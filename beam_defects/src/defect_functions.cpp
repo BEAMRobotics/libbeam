@@ -1,9 +1,13 @@
 #include <boost/smart_ptr.hpp>
+
+#include <pcl/common/common.h>
+#include <pcl/filters/project_inliers.h>
+#include <pcl/point_types.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
-#include <pcl/common/common.h>
+#include <pcl/surface/convex_hull.h>
 
 #include "beam_defects/defect_functions.h"
 
