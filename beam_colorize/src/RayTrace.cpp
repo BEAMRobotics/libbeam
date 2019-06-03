@@ -16,25 +16,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     return cloud_colored;
     LOG_ERROR("Colorizer not properly initialized.");
   }
-  // correct image if its distorted and set model to no distortion
-  std::shared_ptr<cv::Mat> img = image_;
-  if (image_distorted_) {
-    img = std::make_shared<cv::Mat>(intrinsics_->UndistortImage(*image_));
-    beam::VecX dist;
-    if (intrinsics_->GetType() == beam_calibration::CameraType::PINHOLE) {
-      dist = beam::VecX::Zero(5);
-    } else if (intrinsics_->GetType() ==
-               beam_calibration::CameraType::EQUIDISTANT) {
-      dist = beam::VecX::Zero(4);
-    }
-    intrinsics_->SetDistortionCoefficients(dist);
-  }
-  // store intrinsics of camera
-  double f = (intrinsics_->GetFx() + intrinsics_->GetFx()) / 2,
-         cy = intrinsics_->GetCy(), cx = intrinsics_->GetCx();
   // remove points which will not be in the projection
   auto reduced_cloud =
-      RayTrace::ReduceCloud(input_point_cloud_, img, intrinsics_);
+      RayTrace::ReduceCloud(input_point_cloud_, image_, intrinsics_);
   auto input_cloud = std::get<0>(reduced_cloud);
   // indices stores a mapping back to the original cloud
   auto indices = std::get<1>(reduced_cloud);
@@ -42,7 +26,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
   kdtree.setInputCloud(input_cloud);
   // create image mask where white pixels = projection hit
-  cv::Mat tmp = cv::Mat::zeros(img->size(), CV_8UC1);
+  cv::Mat tmp = cv::Mat::zeros(image_->size(), CV_8UC1);
   cv::Mat hit_mask;
   for (uint32_t i = 0; i < input_cloud->points.size(); i++) {
     beam::Vec3 point;
@@ -53,7 +37,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     coords = intrinsics_->ProjectPoint(point);
 
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    if (u > 0 && v > 0 && v < img->rows && u < img->cols) {
+    if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
       tmp.at<cv::Vec3b>(v, u).val[0] = 255;
     }
   }
@@ -63,18 +47,16 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   // This lambda performs ray tracing in parallel on each pixel in the image
   std::mutex mutex;
   uint32_t points_colored = 0;
-  img->forEach<RayTrace::Pixel>(
+  image_->forEach<RayTrace::Pixel>(
       [&](RayTrace::Pixel& pixel, const int* position) -> void {
         // if the pixel actually traces to a point then continue
         cv::Vec3b colors = hit_mask.at<cv::Vec3b>(position[0], position[1]);
         if (colors.val[0] == 255) {
           // initialize ray
           beam::Vec3 ray(0, 0, 0);
-          // get direction between origin and pixel
-          double x = position[0] - cy;
-          double y = img->cols - cx - position[1];
-          beam::Vec3 point(x, y, f);
-          point.normalize();
+          // get direction vector
+          beam::Vec2 input_point(position[1], position[0]);
+          beam::Vec3 point = intrinsics_->BackProject(input_point);
           // while loop to ray trace
           uint16_t raypt = 0;
           while (true) {

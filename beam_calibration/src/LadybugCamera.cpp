@@ -32,7 +32,7 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
   intrinsics_ << focal_length, focal_length, cy, cx;
 }
 
-beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {
+beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
   beam::Vec2 out_point;
   if (intrinsics_valid_ && distortion_set_) {
     beam::Vec2 coords;
@@ -59,7 +59,7 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3& point) {
   return out_point;
 }
 
-beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4& point) {
+beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4 point) {
   bool homographic_form = (point[3] == 1);
   beam::Vec2 out_point;
   if (intrinsics_valid_ && homographic_form && distortion_set_) {
@@ -76,15 +76,7 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4& point) {
   return out_point;
 }
 
-beam::Vec2 LadybugCamera::UndistortPoint(beam::Vec2& pixel_in) {
-  beam::Vec2 pixel_out = {0, 0};
-  lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel_in[0],
-                                  pixel_in[1], &pixel_out[0], &pixel_out[1]);
-  LadybugCheckError();
-  return pixel_out;
-}
-
-beam::Vec2 LadybugCamera::DistortPoint(beam::Vec2& pixel_in) {
+beam::Vec2 LadybugCamera::DistortPoint(beam::Vec2 pixel_in) {
   beam::Vec2 pixel_out = {0, 0};
   lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, pixel_in[0],
                                     pixel_in[1], &pixel_out[0], &pixel_out[1]);
@@ -92,7 +84,7 @@ beam::Vec2 LadybugCamera::DistortPoint(beam::Vec2& pixel_in) {
   return pixel_out;
 }
 
-cv::Mat LadybugCamera::UndistortImage(cv::Mat& input_image) {
+cv::Mat LadybugCamera::UndistortImage(cv::Mat input_image) {
   return input_image;
 }
 

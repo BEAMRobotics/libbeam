@@ -39,9 +39,6 @@ int main() {
     LOG_INFO("Opened file: %s", image_location.c_str());
   }
 
-  cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE);
-  cv::imshow("Display window", image);
-
   // load pcd
   std::string pcd_name = "map18crop.pcd";
   std::string pcd_location = __FILE__;
@@ -55,9 +52,6 @@ int main() {
   } else {
     LOG_INFO("Opened file: %s", pcd_location.c_str());
   }
-  // pcl::visualization::CloudViewer viewer ("Test Cloud Viewer");
-  // viewer.showCloud (cloud);
-  // while (!viewer.wasStopped ()){cv::waitKey(0);}
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);

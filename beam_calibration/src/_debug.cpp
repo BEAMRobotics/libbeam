@@ -6,18 +6,12 @@
 #include <typeinfo>
 
 int main() {
-  beam::Vec3 p0(123, 741, 7023);
-  beam::Vec3 p1(34, 1234, 23);
-  beam::Vec3 p2(1223, 10, 523);
-  beam::Vec3 p3(12, 74, 70);
   // radtan
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 14, radtan_location.end());
-  radtan_location += "tests/test_data/F1.json";
+  radtan_location += "tests/test_data/F2.json";
   std::shared_ptr<beam_calibration::CameraModel> radtan =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
-  beam::Vec2 up(20, 30);
-  std::cout << radtan->UndistortPoint(up) << std::endl;
   // load equidistant
   std::string equidistant_location = __FILE__;
   equidistant_location.erase(equidistant_location.end() - 14,
@@ -26,20 +20,18 @@ int main() {
   std::shared_ptr<beam_calibration::CameraModel> equid =
       beam_calibration::CameraModel::LoadJSON(equidistant_location);
 
+  std::string image_location = "/home/jake/Pictures/img_06.png";
+
+  cv::Mat image;
+  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+  cv::Mat undistorted_image = equid->UndistortImage(image);
+  cv::imwrite("/home/jake/Pictures/cpp_undistorted.png", undistorted_image);
+
+  /*
   // load conf file
   std::string conf_location = __FILE__;
   conf_location.erase(conf_location.end() - 14, conf_location.end());
   conf_location += "tests/test_data/ladybug.conf";
   beam_calibration::LadybugCamera ladybug(0, conf_location);
-
-  /**
-   * To do:
-   * - test making camera's manually
-   * - test making children from the parent class
-   *     - ie make cameramodel with its constructor then try to set it to
-   * pinhole
-   * - test setters and projections
-   * - test undisort image
-   * - test making distortion model's manually
-   */
+  */
 }
