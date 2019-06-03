@@ -39,7 +39,7 @@ struct Distortion {
   /*
    * @brief Default destructor
    */
-  ~Distortion() = default;
+  virtual ~Distortion() = default;
   /*
    * @brief Method to return type of distortion
    * @return DistortionType
@@ -51,14 +51,14 @@ struct Distortion {
    * @param VecX: intrinsics
    * @param Vec2: point
    */
-  virtual beam::Vec2 Distort(beam::VecX, beam::Vec2) = 0;
+  virtual beam::Vec2 DistortPixel(beam::VecX, beam::Vec2) const = 0;
 
   /*
    * @brief Method to undistort point
    * @return Vec2 undistorted point
    * @param Vec2: point
    */
-  virtual beam::Vec2 Undistort(beam::VecX, beam::Vec2) = 0;
+  virtual beam::Vec2 UndistortPixel(beam::VecX, beam::Vec2) const = 0;
 
   /*
    * @brief Method to compute jacobian of the distortion function
@@ -66,7 +66,7 @@ struct Distortion {
    * @param VecX: coefficients
    * @param Vec2: point
    */
-  virtual beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) = 0;
+  virtual beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) const = 0;
   /*
    * @brief Method to undistort image
    * @return undistorted image
@@ -75,8 +75,8 @@ struct Distortion {
    * @param cv::Mat image to undistort
    * @param uint32_t height and width
    */
-  virtual cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t,
-                                 uint32_t) = 0;
+  virtual cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat, uint32_t,
+                                 uint32_t) const = 0;
 };
 
 /*
@@ -85,12 +85,11 @@ struct Distortion {
 struct Radtan : Distortion {
   Radtan();
   ~Radtan() = default;
-  DistortionType GetType();
-  beam::Vec2 Distort(beam::VecX, beam::Vec2) override;
-  beam::Vec2 Undistort(beam::VecX, beam::Vec2) override;
-  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) override;
-  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t,
-                         uint32_t) override;
+  beam::Vec2 DistortPixel(beam::VecX, beam::Vec2) const override;
+  beam::Vec2 UndistortPixel(beam::VecX, beam::Vec2) const override;
+  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) const override;
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat, uint32_t,
+                         uint32_t) const override;
 };
 
 /*
@@ -99,12 +98,11 @@ struct Radtan : Distortion {
 struct Equidistant : Distortion {
   Equidistant();
   ~Equidistant() = default;
-  DistortionType GetType();
-  beam::Vec2 Distort(beam::VecX, beam::Vec2) override;
-  beam::Vec2 Undistort(beam::VecX, beam::Vec2) override;
-  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) override;
-  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat&, uint32_t,
-                         uint32_t) override;
+  beam::Vec2 DistortPixel(beam::VecX, beam::Vec2) const override;
+  beam::Vec2 UndistortPixel(beam::VecX, beam::Vec2) const override;
+  beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) const override;
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat, uint32_t,
+                         uint32_t) const override;
 };
 
 /**
@@ -145,7 +143,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  virtual beam::Vec2 ProjectPoint(beam::Vec3& point) = 0;
+  virtual beam::Vec2 ProjectPoint(beam::Vec3 point) = 0;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -154,27 +152,27 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  virtual beam::Vec2 ProjectPoint(beam::Vec4& point) = 0;
+  virtual beam::Vec2 ProjectPoint(beam::Vec4 point) = 0;
 
   /**
    * @brief Method distorting a point
    * @return Returns distorted point
    * @param undistorted point
    */
-  virtual beam::Vec2 DistortPoint(beam::Vec2& point) = 0;
+  virtual beam::Vec2 DistortPoint(beam::Vec2 point) = 0;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param distorted point [u,v]
    */
-  virtual beam::Vec3 BackProject(beam::Vec2& point) = 0;
+  virtual beam::Vec3 BackProject(beam::Vec2 point) = 0;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion
    * @return image
    */
-  virtual cv::Mat UndistortImage(cv::Mat& image_input) = 0;
+  virtual cv::Mat UndistortImage(cv::Mat image_input) = 0;
 
   /**
    * @brief Method for adding the frame id
@@ -200,13 +198,13 @@ public:
    * Ladybug: [fx,fy,cy,cx]
    * @param intrinsics of the camera
    */
-  virtual void SetIntrinsics(beam::VecX& instrinsics);
+  virtual void SetIntrinsics(beam::VecX instrinsics);
 
   /**
    * @brief Method for adding the distortion model
    * @param distortion model
    */
-  virtual void SetDistortionCoefficients(beam::VecX& coeffs);
+  virtual void SetDistortionCoefficients(beam::VecX coeffs);
 
   /**
    * @brief Method for setting distortion type
@@ -243,55 +241,55 @@ public:
    * @brief Method for retrieving the intrinsic values of the model
    * @return intrinsics of the camera
    */
-  virtual const beam::VecX& GetIntrinsics() const;
+  virtual const beam::VecX GetIntrinsics() const;
 
   /**
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
-  virtual const beam::VecX& GetDistortionCoefficients() const;
+  virtual const beam::VecX GetDistortionCoefficients() const;
 
   /**
    * @brief Method for setting distortion type
    * @param distortion model
    */
-  virtual DistortionType GetDistortionType();
+  virtual DistortionType GetDistortionType() const;
 
   /**
    * @brief Method for retrieving the camera type
    * @return camera type
    */
-  virtual CameraType GetType();
+  virtual CameraType GetType() const;
 
   /**
    * @brief Method for retrieving fx
    * @return fx
    */
-  virtual double GetFx();
+  virtual double GetFx() const;
 
   /**
    * @brief Method for retrieving fy
    * @return fy
    */
-  virtual double GetFy();
+  virtual double GetFy() const;
 
   /**
    * @brief Method for retrieving cx
    * @return cx
    */
-  virtual double GetCx();
+  virtual double GetCx() const;
 
   /**
    * @brief Method for retrieving cy
    * @return cy
    */
-  virtual double GetCy();
+  virtual double GetCy() const;
 
   /**
    * @brief Method for retrieving camera matrix
    * @return K
    */
-  virtual beam::Mat3 GetCameraMatrix();
+  virtual beam::Mat3 GetCameraMatrix() const;
 
 protected:
   CameraType type_;

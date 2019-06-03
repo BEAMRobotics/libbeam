@@ -68,9 +68,9 @@ std::shared_ptr<CameraModel>
                         uint32_t image_height, uint32_t image_width,
                         std::string frame_id, std::string date) {
   if (type == CameraType::PINHOLE) {
-    return std::shared_ptr<PinholeCamera>(
-        new PinholeCamera(dist_type, intrinsics, distortion, image_height,
-                          image_width, frame_id, date));
+    return std::make_shared<PinholeCamera>(dist_type, intrinsics, distortion,
+                                           image_height, image_width, frame_id,
+                                           date);
   } else {
     return nullptr;
   }
@@ -90,7 +90,7 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
   image_height_ = height;
 }
 
-void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
+void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   if (intrinsics.size() != intrinsics_size_[this->GetType()]) {
     LOG_ERROR("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
@@ -101,7 +101,7 @@ void CameraModel::SetIntrinsics(beam::VecX& intrinsics) {
   }
 }
 
-void CameraModel::SetDistortionCoefficients(beam::VecX& distortion) {
+void CameraModel::SetDistortionCoefficients(beam::VecX distortion) {
   if (!distortion_set_) {
     LOG_ERROR("Distortion has not been set");
     throw std::runtime_error{"Distortion has not been set"};
@@ -125,11 +125,11 @@ void CameraModel::SetDistortionType(DistortionType dist) {
   beam::VecX coeffs;
   if (dist == DistortionType::RADTAN || dist == DistortionType::NONE) {
     coeffs = beam::VecX::Zero(5);
-    distortion_ = std::unique_ptr<Radtan>(new Radtan());
+    distortion_ = std::make_unique<Radtan>();
     distortion_set_ = true;
   } else if (dist == DistortionType::EQUIDISTANT) {
     coeffs = beam::VecX::Zero(4);
-    distortion_ = std::unique_ptr<Equidistant>(new Equidistant());
+    distortion_ = std::make_unique<Equidistant>();
     distortion_set_ = true;
   }
   this->SetDistortionCoefficients(coeffs);
@@ -155,7 +155,7 @@ uint32_t CameraModel::GetWidth() const {
   return image_width_;
 }
 
-const beam::VecX& CameraModel::GetIntrinsics() const {
+const beam::VecX CameraModel::GetIntrinsics() const {
   if (!intrinsics_valid_) {
     LOG_ERROR("cannot retrieve intrinsics, value not set.");
     throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
@@ -163,7 +163,7 @@ const beam::VecX& CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 
-const beam::VecX& CameraModel::GetDistortionCoefficients() const {
+const beam::VecX CameraModel::GetDistortionCoefficients() const {
   if (!distortion_set_) {
     LOG_ERROR("cannot retrieve distortion, value not set.");
     throw std::runtime_error{"cannot retrieve distortion, value not set"};
@@ -171,7 +171,7 @@ const beam::VecX& CameraModel::GetDistortionCoefficients() const {
   return distortion_coefficients_;
 }
 
-DistortionType CameraModel::GetDistortionType() {
+DistortionType CameraModel::GetDistortionType() const {
   if (!distortion_) {
     LOG_ERROR("Distortion has not been set");
     throw std::runtime_error{"Distortion has not been set"};
@@ -180,27 +180,27 @@ DistortionType CameraModel::GetDistortionType() {
   }
 }
 
-CameraType CameraModel::GetType() {
+CameraType CameraModel::GetType() const {
   return type_;
 }
 
-double CameraModel::GetFx() {
+double CameraModel::GetFx() const {
   return intrinsics_[0];
 }
 
-double CameraModel::GetFy() {
+double CameraModel::GetFy() const {
   return intrinsics_[1];
 }
 
-double CameraModel::GetCx() {
+double CameraModel::GetCx() const {
   return intrinsics_[2];
 }
 
-double CameraModel::GetCy() {
+double CameraModel::GetCy() const {
   return intrinsics_[3];
 }
 
-beam::Mat3 CameraModel::GetCameraMatrix() {
+beam::Mat3 CameraModel::GetCameraMatrix() const {
   beam::Mat3 K;
   K << this->GetFx(), 0, this->GetCx(), 0, this->GetFy(), this->GetCy(), 0, 0,
       1;
@@ -221,7 +221,7 @@ Radtan::Radtan() {
   type_ = DistortionType::RADTAN;
 }
 
-beam::Vec2 Radtan::Distort(beam::VecX coeffs, beam::Vec2 point) {
+beam::Vec2 Radtan::DistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
   beam::Vec2 coords;
   double x = point[0], y = point[1];
 
@@ -236,7 +236,8 @@ beam::Vec2 Radtan::Distort(beam::VecX coeffs, beam::Vec2 point) {
   return coords;
 }
 
-beam::Vec2 Equidistant::Distort(beam::VecX coeffs, beam::Vec2 point) {
+beam::Vec2 Equidistant::DistortPixel(beam::VecX coeffs,
+                                     beam::Vec2 point) const {
   beam::Vec2 coords;
   double x = point[0], y = point[1];
 
@@ -262,8 +263,8 @@ beam::Vec2 Equidistant::Distort(beam::VecX coeffs, beam::Vec2 point) {
   return coords;
 }
 
-beam::Vec2 Radtan::Undistort(beam::VecX coeffs, beam::Vec2 point) {
-  const int n = 30; // Max. number of iterations
+beam::Vec2 Radtan::UndistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
+  constexpr int n = 30; // Max. number of iterations
   beam::Vec2 y = point;
   beam::Vec2 ybar = y;
   beam::Mat2 F;
@@ -271,7 +272,7 @@ beam::Vec2 Radtan::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   // Handle special case around image center.
   if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
   for (int i = 0; i < n; ++i) {
-    y_tmp = Distort(coeffs, ybar);
+    y_tmp = DistortPixel(coeffs, ybar);
     F = ComputeJacobian(coeffs, ybar);
     beam::Vec2 e(y - y_tmp);
     beam::Vec2 du = (F.transpose() * F).inverse() * F.transpose() * e;
@@ -281,8 +282,9 @@ beam::Vec2 Radtan::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   return y;
 }
 
-beam::Vec2 Equidistant::Undistort(beam::VecX coeffs, beam::Vec2 point) {
-  const int n = 30; // Max. number of iterations
+beam::Vec2 Equidistant::UndistortPixel(beam::VecX coeffs,
+                                       beam::Vec2 point) const {
+  constexpr int n = 30; // Max. number of iterations
   beam::Vec2 y = point;
   beam::Vec2 ybar = y;
   beam::Mat2 F;
@@ -290,7 +292,7 @@ beam::Vec2 Equidistant::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   // Handle special case around image center.
   if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
   for (int i = 0; i < n; ++i) {
-    y_tmp = Distort(coeffs, ybar);
+    y_tmp = DistortPixel(coeffs, ybar);
     F = ComputeJacobian(coeffs, ybar);
     beam::Vec2 e(y - y_tmp);
     beam::Vec2 du = (F.transpose() * F).inverse() * F.transpose() * e;
@@ -300,7 +302,7 @@ beam::Vec2 Equidistant::Undistort(beam::VecX coeffs, beam::Vec2 point) {
   return y;
 }
 
-beam::Mat2 Radtan::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
+beam::Mat2 Radtan::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) const {
   beam::Mat2 out_jacobian;
   double x = point[0];
   double y = point[1];
@@ -324,7 +326,8 @@ beam::Mat2 Radtan::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
   return out_jacobian;
 }
 
-beam::Mat2 Equidistant::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
+beam::Mat2 Equidistant::ComputeJacobian(beam::VecX coeffs,
+                                        beam::Vec2 point) const {
   beam::Mat2 out_jacobian;
   double x = point[0];
   double y = point[1];
@@ -395,8 +398,8 @@ beam::Mat2 Equidistant::ComputeJacobian(beam::VecX coeffs, beam::Vec2 point) {
 }
 
 cv::Mat Radtan::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
-                               cv::Mat& image_input, uint32_t height,
-                               uint32_t width) {
+                               cv::Mat image_input, uint32_t height,
+                               uint32_t width) const {
   cv::Mat output_image;
   cv::Mat K(3, 3, CV_32F);
   cv::eigen2cv(intrinsics, K);
@@ -406,7 +409,7 @@ cv::Mat Radtan::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
   new_coeffs << coeffs[0], coeffs[1], coeffs[3], coeffs[4], coeffs[2];
   cv::Mat D(1, 5, CV_8UC1);
   cv::eigen2cv(new_coeffs, D);
-  // undistort image
+  // Undistort image
   cv::Mat map1, map2;
   cv::Size img_size = cv::Size(width, height);
   cv::initUndistortRectifyMap(K, D, R, K, img_size, CV_32FC1, map1, map2);
@@ -415,8 +418,8 @@ cv::Mat Radtan::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
 }
 
 cv::Mat Equidistant::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
-                                    cv::Mat& image_input, uint32_t height,
-                                    uint32_t width) {
+                                    cv::Mat image_input, uint32_t height,
+                                    uint32_t width) const {
   cv::Mat output_image;
   cv::Mat K(3, 3, CV_32F);
   cv::eigen2cv(intrinsics, K);
@@ -424,7 +427,7 @@ cv::Mat Equidistant::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
   // convert eigen to cv mat
   cv::Mat D(1, 4, CV_8UC1);
   cv::eigen2cv(coeffs, D);
-  // undistort image
+  // Undistort image
   cv::Mat map1, map2;
   cv::Size img_size = cv::Size(width, height);
   cv::Mat P;

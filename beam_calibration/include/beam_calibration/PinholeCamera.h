@@ -22,8 +22,8 @@ public:
   /**
    * @brief constructor with values
    */
-  PinholeCamera(DistortionType dist_type, beam::VecX& intrinsics,
-                beam::VecX& distortion, uint32_t image_height,
+  PinholeCamera(DistortionType dist_type, beam::VecX intrinsics,
+                beam::VecX distortion, uint32_t image_height,
                 uint32_t image_width, std::string frame_id, std::string date);
 
   /**
@@ -37,7 +37,7 @@ public:
    * plane.
    * @param X point to be projected. Not in homographic form
    */
-  beam::Vec2 ProjectPoint(beam::Vec3& point) override;
+  beam::Vec2 ProjectPoint(beam::Vec3 point) override;
 
   /**
    * @brief Method for projecting a point in homographic form into an image
@@ -46,27 +46,27 @@ public:
    * plane.
    * @param X point to be projected. In homographic form
    */
-  beam::Vec2 ProjectPoint(beam::Vec4& point) override;
+  beam::Vec2 ProjectPoint(beam::Vec4 point) override;
 
   /**
    * @brief Method distorting a point
    * @return Returns distorted point
    * @param undistorted point
    */
-  beam::Vec2 DistortPoint(beam::Vec2& point) override;
+  beam::Vec2 DistortPoint(beam::Vec2 point) override;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param distorted point
    */
-  beam::Vec3 BackProject(beam::Vec2& point) override;
+  beam::Vec3 BackProject(beam::Vec2 point) override;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion
    * @return image
    */
-  cv::Mat UndistortImage(cv::Mat& image_input) override;
+  cv::Mat UndistortImage(cv::Mat image_input) override;
 };
 
 /** @} group calibration */

@@ -6,8 +6,8 @@ PinholeCamera::PinholeCamera() {
   type_ = CameraType::PINHOLE;
 }
 
-PinholeCamera::PinholeCamera(DistortionType dist_type, beam::VecX& intrinsics,
-                             beam::VecX& distortion, uint32_t image_height,
+PinholeCamera::PinholeCamera(DistortionType dist_type, beam::VecX intrinsics,
+                             beam::VecX distortion, uint32_t image_height,
                              uint32_t image_width, std::string frame_id,
                              std::string date) {
   type_ = CameraType::PINHOLE;
@@ -19,7 +19,7 @@ PinholeCamera::PinholeCamera(DistortionType dist_type, beam::VecX& intrinsics,
   this->SetDistortionCoefficients(distortion);
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
+beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
   beam::Vec2 out_point;
   if (intrinsics_valid_ && distortion_set_) {
     // Project point
@@ -45,7 +45,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
+beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4 point) {
   bool homographic_form = (point[3] == 1);
   beam::Vec2 out_point;
   if (intrinsics_valid_ && homographic_form && distortion_set_) {
@@ -62,12 +62,12 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4& point) {
   return out_point;
 }
 
-beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2& point) {
+beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2 point) {
   beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
-  return distortion_->Distort(distortion_coeffs, point);
+  return distortion_->DistortPixel(distortion_coeffs, point);
 }
 
-cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
+cv::Mat PinholeCamera::UndistortImage(cv::Mat input_image) {
   beam::Mat3 camera_matrix = this->GetCameraMatrix();
   beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
   return distortion_->UndistortImage(camera_matrix, distortion_coeffs,
@@ -75,13 +75,13 @@ cv::Mat PinholeCamera::UndistortImage(cv::Mat& input_image) {
                                      this->GetWidth());
 }
 
-beam::Vec3 PinholeCamera::BackProject(beam::Vec2& point) {
+beam::Vec3 PinholeCamera::BackProject(beam::Vec2 point) {
   beam::Vec3 out_point;
   beam::Vec2 kp = point;
   kp[0] = (kp[0] - this->GetCx()) / this->GetFx();
   kp[1] = (kp[1] - this->GetCy()) / this->GetFy();
   beam::Vec2 undistorted =
-      distortion_->Undistort(this->GetDistortionCoefficients(), kp);
+      distortion_->UndistortPixel(this->GetDistortionCoefficients(), kp);
   // flip the coordinate system to be consistent with opencv convention
   out_point << undistorted[1], -(undistorted[0]), 1;
   out_point.normalize();
