@@ -110,15 +110,16 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
 
 // Extract cloud groups using euclidian segmentation
 std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
-    GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+    GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+                       float tolerance, int min_size, int max_size) {
   auto tree = boost::make_shared<pcl::search::KdTree<pcl::PointXYZ>>();
   tree->setInputCloud(input_cloud);
 
   std::vector<pcl::PointIndices> cluster_indices;
   pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-  ec.setClusterTolerance(0.1); // 10cm
-  ec.setMinClusterSize(100);
-  ec.setMaxClusterSize(50000);
+  ec.setClusterTolerance(tolerance); // in meters
+  ec.setMinClusterSize(min_size);
+  ec.setMaxClusterSize(max_size);
   ec.setSearchMethod(tree);
   ec.setInputCloud(input_cloud);
   ec.extract(cluster_indices);

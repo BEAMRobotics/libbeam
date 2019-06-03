@@ -17,10 +17,10 @@ double Crack::CalculateSize() {
   // code that calculates the size of a crack
   auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
-  *cloud_hull = calculateHull(defect_cloud_);
-  std::vector<float> plane_norm_vect = planeNormalVector(cloud_hull);
-  *cloud_hull = project2Plane(cloud_hull, plane_norm_vect);
-  double crack_length = calculateMaxLength(cloud_hull);
+  *cloud_hull = ConcaveHull(defect_cloud_);
+  std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
+  *cloud_hull = Project2Plane(cloud_hull, plane_norm_vect);
+  double crack_length = MaxLength(cloud_hull);
 
   return crack_length;
 }

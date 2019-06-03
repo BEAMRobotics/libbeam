@@ -16,7 +16,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/CameraModel.cpp
     src/LadybugCamera.cpp
     src/PinholeCamera.cpp
-    src/EquidistantCamera.cpp
 )
 
 ################ tests ##################
@@ -48,7 +47,7 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Boost::boost
   catkin::catkin
 )
-#######################################
+  #######################################
 
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_debug

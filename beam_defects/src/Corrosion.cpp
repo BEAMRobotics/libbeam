@@ -15,12 +15,13 @@ double Corrosion::CalculateSize() {
   if (defect_cloud_->width == 0) return 0;
 
   // code that calculates the size of corrosion
-  auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
-  *cloud_hull = calculateHull(defect_cloud_);
-  std::vector<float> plane_norm_vect = planeNormalVector(cloud_hull);
-  *cloud_hull = project2Plane(cloud_hull, plane_norm_vect);
-  double corrosion_area = calculateHullArea(cloud_hull);
+  *calc_cloud = PCNoiseRemoval(defect_cloud_);
+  *calc_cloud = ConcaveHull(calc_cloud);
+  std::vector<float> plane_norm_vect = PlaneNormalVector(calc_cloud);
+  *calc_cloud = Project2Plane(calc_cloud, plane_norm_vect);
+  double corrosion_area = HullArea(calc_cloud);
 
   return corrosion_area;
 }
