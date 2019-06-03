@@ -23,8 +23,7 @@ TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Delam delam{cloud};
-  beam_defects::Delam delam2{cloud2};
+  beam_defects::Delam delam{cloud}, delam2{cloud2};
 
   REQUIRE(delam.GetSize() == Approx(0.4803934));
   REQUIRE(delam.GetOSIMSeverity() ==
@@ -45,7 +44,7 @@ TEST_CASE("Delam (xy-plane) size calculation and LIGHT OSIM check") {
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
 
-  // Generate some data
+  // Generate a polygonal shape
   cloud->points.push_back(pcl::PointXYZ{0, 0, 0});
   cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0});
   cloud->points.push_back(pcl::PointXYZ{0.2, 0, 0});
@@ -65,7 +64,7 @@ TEST_CASE("Delam (xz-plane) size calculation and MEDIUM OSIM check") {
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
 
-  // Generate some data
+  // Generate a polygonal shape
   cloud->points.push_back(pcl::PointXYZ{0, 0, 0});
   cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0});
   cloud->points.push_back(pcl::PointXYZ{0.1, 0, 0.1});
@@ -90,7 +89,7 @@ TEST_CASE("Delam (yz-plane) size calculation and SEVERE OSIM check") {
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
 
-  // Generate some data
+  // Generate a polygonal shape
   cloud->points.push_back(pcl::PointXYZ{0, 0, 0});
   cloud->points.push_back(pcl::PointXYZ{0, 0.1, 0});
   cloud->points.push_back(pcl::PointXYZ{0, 0.2, 0});

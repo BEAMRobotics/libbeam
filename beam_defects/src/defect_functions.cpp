@@ -37,7 +37,8 @@ std::vector<float> NormalizeVector(const std::vector<float>& vect_A) {
 
 // RANSAC noise removal
 pcl::PointCloud<pcl::PointXYZ>
-    PCNoiseRemoval(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+    PCNoiseRemoval(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+                   float outlier_threshold) {
   auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   auto coefficients = boost::make_shared<pcl::ModelCoefficients>();
   auto inliers = boost::make_shared<pcl::PointIndices>();
@@ -46,7 +47,7 @@ pcl::PointCloud<pcl::PointXYZ>
   seg.setOptimizeCoefficients(true);
   seg.setModelType(pcl::SACMODEL_PLANE);
   seg.setMethodType(pcl::SAC_RANSAC);
-  seg.setDistanceThreshold(0.01);
+  seg.setDistanceThreshold(outlier_threshold);
 
   seg.setInputCloud(input_cloud);
   seg.segment(*inliers, *coefficients);
@@ -64,12 +65,13 @@ pcl::PointCloud<pcl::PointXYZ>
 
 // caluclate concave hull of a point cloud
 pcl::PointCloud<pcl::PointXYZ>
-    ConcaveHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+    ConcaveHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+                float alpha) {
   auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::ConcaveHull<pcl::PointXYZ> concave_hull;
   concave_hull.setInputCloud(input_cloud);
-  concave_hull.setAlpha(0.1); // limits the size of the hull segments. Smaller
-                              // alpha means more detailed hull
+  concave_hull.setAlpha(alpha); // limits the size of the hull segments. Smaller
+                                // alpha means more detailed hull
   concave_hull.reconstruct(*cloud_hull);
 
   return *cloud_hull;
@@ -172,8 +174,7 @@ pcl::PointCloud<pcl::PointXYZ>
 }
 
 // calculate area given a hull cloud
-float HullArea(
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+float HullArea(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
   double area = 0.0;
   for (unsigned int i = 0; i < input_cloud->points.size(); ++i) {
     int j = (i + 1) % input_cloud->points.size();
@@ -187,8 +188,7 @@ float HullArea(
 }
 
 // calculate maximum length from a hull cloud
-float MaxLength(
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
+float MaxLength(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
   pcl::PointXYZ minPt, maxPt;
   pcl::getMinMax3D(*input_cloud, minPt, maxPt);
   double dx = maxPt.x - minPt.x;

@@ -49,12 +49,6 @@ public:
    */
   virtual double GetSize() = 0;
 
-   /**
-   * @brief Pure virtual method for returning the size of a defect
-   * @return Returns size of defect
-   */
-  double GetBoundaryArea();
-
   /**
    * @brief Pure virtual method for returning type of defect
    * @return
