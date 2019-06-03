@@ -75,8 +75,8 @@ struct Distortion {
    * @param cv::Mat image to undistort
    * @param uint32_t height and width
    */
-  virtual cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat, uint32_t,
-                                 uint32_t) const = 0;
+  virtual cv::Mat UndistortImage(beam::Mat3, beam::VecX, const cv::Mat&,
+                                 uint32_t, uint32_t) const = 0;
 };
 
 /*
@@ -88,7 +88,7 @@ struct Radtan : Distortion {
   beam::Vec2 DistortPixel(beam::VecX, beam::Vec2) const override;
   beam::Vec2 UndistortPixel(beam::VecX, beam::Vec2) const override;
   beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) const override;
-  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat, uint32_t,
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, const cv::Mat&, uint32_t,
                          uint32_t) const override;
 };
 
@@ -101,7 +101,7 @@ struct Equidistant : Distortion {
   beam::Vec2 DistortPixel(beam::VecX, beam::Vec2) const override;
   beam::Vec2 UndistortPixel(beam::VecX, beam::Vec2) const override;
   beam::Mat2 ComputeJacobian(beam::VecX, beam::Vec2) const override;
-  cv::Mat UndistortImage(beam::Mat3, beam::VecX, cv::Mat, uint32_t,
+  cv::Mat UndistortImage(beam::Mat3, beam::VecX, const cv::Mat&, uint32_t,
                          uint32_t) const override;
 };
 

@@ -398,7 +398,7 @@ beam::Mat2 Equidistant::ComputeJacobian(beam::VecX coeffs,
 }
 
 cv::Mat Radtan::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
-                               cv::Mat image_input, uint32_t height,
+                               const cv::Mat& image_input, uint32_t height,
                                uint32_t width) const {
   cv::Mat output_image;
   cv::Mat K(3, 3, CV_32F);
@@ -418,7 +418,7 @@ cv::Mat Radtan::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
 }
 
 cv::Mat Equidistant::UndistortImage(beam::Mat3 intrinsics, beam::VecX coeffs,
-                                    cv::Mat image_input, uint32_t height,
+                                    const cv::Mat& image_input, uint32_t height,
                                     uint32_t width) const {
   cv::Mat output_image;
   cv::Mat K(3, 3, CV_32F);
