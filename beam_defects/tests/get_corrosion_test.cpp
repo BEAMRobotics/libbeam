@@ -2,18 +2,20 @@
 #include <catch2/catch.hpp>
 #include <pcl/io/pcd_io.h>
 
-#include "beam_defects/Spall.h"
+#include "beam_defects/Corrosion.h"
 
-// SPALL TESTS
+// CORROSION TESTS
 
-TEST_CASE("Spall defect type is returned", "[GetType]") {
-  beam_defects::Spall spall{};
+TEST_CASE("Corrosion defect type is returned", "[GetType]") {
+  beam_defects::Corrosion corrosion{};
 
-  REQUIRE(spall.GetType() == beam_defects::DefectType::SPALL);
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::NONE);
+  REQUIRE(corrosion.GetType() == beam_defects::DefectType::CORROSION);
+  REQUIRE(corrosion.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::NONE);
 }
 
-TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
+TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
+          "[GetSize]") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
@@ -23,22 +25,23 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Spall spall{cloud}, spall2{cloud2};
+  beam_defects::Corrosion corrosion{cloud}, corrosion2{cloud2};
 
-  REQUIRE(spall.GetSize() == Approx(0.4803934));
-  REQUIRE(spall.GetOSIMSeverity() ==
+  REQUIRE(corrosion.GetSize() == Approx(0.4803934));
+  REQUIRE(corrosion.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
-  REQUIRE(spall2.GetSize() == Approx(0.23996));
-  REQUIRE(spall2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(corrosion2.GetSize() == Approx(0.23996));
+  REQUIRE(corrosion2.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::SEVERE);
 }
 
-TEST_CASE("No spall returns size of 0") {
-  beam_defects::Spall spall;
+TEST_CASE("No Corrosion returns size of 0") {
+  beam_defects::Corrosion corrosion;
 
-  REQUIRE(spall.GetSize() == Approx(0));
+  REQUIRE(corrosion.GetSize() == Approx(0));
 }
 
-TEST_CASE("Spall (xy-plane) size calculation and LIGHT OSIM check") {
+TEST_CASE("Corrosion (xy-plane) size calculation and LIGHT OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 6;
   cloud->height = 1;
@@ -52,13 +55,14 @@ TEST_CASE("Spall (xy-plane) size calculation and LIGHT OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0.2, 0.1, 0});
   cloud->points.push_back(pcl::PointXYZ{0.1, 0.1, 0});
 
-  beam_defects::Spall spall{cloud};
+  beam_defects::Corrosion corrosion{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.0175));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::LIGHT);
+  REQUIRE(corrosion.GetSize() == Approx(0.0175));
+  REQUIRE(corrosion.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::LIGHT);
 }
 
-TEST_CASE("Spall (xz-plane) size calculation and MEDIUM OSIM check") {
+TEST_CASE("Corrosion (xz-plane) size calculation and MEDIUM OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 11;
   cloud->height = 1;
@@ -76,13 +80,15 @@ TEST_CASE("Spall (xz-plane) size calculation and MEDIUM OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0, 0, 0.3});
   cloud->points.push_back(pcl::PointXYZ{0, 0, 0.2});
   cloud->points.push_back(pcl::PointXYZ{0, 0, 0.1});
-  beam_defects::Spall spall{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.0425));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
+  beam_defects::Corrosion corrosion{cloud};
+
+  REQUIRE(corrosion.GetSize() == Approx(0.0425));
+  REQUIRE(corrosion.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::MEDIUM);
 }
 
-TEST_CASE("Spall (yz-plane) size calculation and SEVERE OSIM check") {
+TEST_CASE("Corrosion (yz-plane) size calculation and SEVERE OSIM check") {
   auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 22;
   cloud->height = 1;
@@ -112,8 +118,9 @@ TEST_CASE("Spall (yz-plane) size calculation and SEVERE OSIM check") {
   cloud->points.push_back(pcl::PointXYZ{0, -0.2, 0});
   cloud->points.push_back(pcl::PointXYZ{0, -0.1, 0});
 
-  beam_defects::Spall spall{cloud};
+  beam_defects::Corrosion corrosion{cloud};
 
-  REQUIRE(spall.GetSize() == Approx(0.1));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(corrosion.GetSize() == Approx(0.1));
+  REQUIRE(corrosion.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::SEVERE);
 }

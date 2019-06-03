@@ -15,12 +15,15 @@ double Delam::CalculateSize() {
   if (defect_cloud_->width == 0) return 0;
 
   // code that calculates the size of a delam
+  auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
-  *cloud_hull = calculateHull(defect_cloud_);
-  std::vector<float> plane_norm_vect = planeNormalVector(cloud_hull);
-  *cloud_hull = project2Plane(cloud_hull, plane_norm_vect);
-  double delam_area = calculateHullArea(cloud_hull);
+
+  *calc_cloud = PCNoiseRemoval(defect_cloud_);
+  *cloud_hull = ConcaveHull(calc_cloud);
+  std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
+  *calc_cloud = Project2Plane(cloud_hull, plane_norm_vect);
+  double delam_area = HullArea(cloud_hull);
 
   return delam_area;
 }

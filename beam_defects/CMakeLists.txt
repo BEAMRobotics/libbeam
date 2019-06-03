@@ -76,6 +76,21 @@ target_link_libraries(${PROJECT_NAME}_crack_tests
   PCL::PCL
 )
 
+# corrosion tests
+add_executable(${PROJECT_NAME}_corrosion_tests
+  tests/get_corrosion_test.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_corrosion_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_corrosion_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+  PCL::PCL
+)
+
 file(COPY tests/test_data
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )

@@ -58,6 +58,7 @@ public:
   virtual DefectOSIMSeverity GetOSIMSeverity() = 0;
 
   using Ptr = std::shared_ptr<Defect>;
+  
 };
 
 /** @} group defects */
