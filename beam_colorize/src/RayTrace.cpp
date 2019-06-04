@@ -69,7 +69,11 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
             search_point.x = ray(0, 0);
             search_point.y = ray(1, 0);
             search_point.z = ray(2, 0);
-            std::lock_guard<std::mutex> lock(mutex);
+
+            /* Don't need thread lock - lookups on FLANN KDTree should be
+             * thread-safe std::lock_guard<std::mutex> lock(mutex);
+             */
+
             // search for closest point to ray
             std::vector<int> point_idx(1);
             std::vector<float> point_distance(1);
