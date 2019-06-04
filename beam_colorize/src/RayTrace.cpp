@@ -1,3 +1,5 @@
+#include <pcl/kdtree/kdtree_flann.h>
+
 #include "beam_colorize/RayTrace.h"
 
 namespace beam_colorize {
@@ -26,7 +28,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
   kdtree.setInputCloud(input_cloud);
   // create image mask where white pixels = projection hit
-  cv::Mat tmp = cv::Mat::zeros(image_->size(), CV_8UC1);
+
+  cv::Mat tmp = cv::Mat::zeros(image_->size(), CV_8UC3);
+
   cv::Mat hit_mask;
   for (uint32_t i = 0; i < input_cloud->points.size(); i++) {
     beam::Vec3 point;

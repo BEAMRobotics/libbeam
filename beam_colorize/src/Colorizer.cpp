@@ -1,3 +1,10 @@
+#include <beam_utils/log.hpp>
+
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
+
+#include <cv_bridge/cv_bridge.h>
+
 #include "beam_colorize/Colorizer.h"
 #include "beam_colorize/Projection.h"
 #include "beam_colorize/RayTrace.h"

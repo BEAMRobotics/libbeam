@@ -1,3 +1,6 @@
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
+
 #include "beam_colorize/Projection.h"
 
 namespace beam_colorize {
