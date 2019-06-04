@@ -49,7 +49,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
              cv::Point(-1, -1), 1, 1, 1);
 
   // This lambda performs ray tracing in parallel on each pixel in the image
-  std::mutex mutex;
   uint32_t points_colored = 0;
   image_->forEach<RayTrace::Pixel>(
       [&](RayTrace::Pixel& pixel, const int* position) -> void {
@@ -69,11 +68,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
             search_point.x = ray(0, 0);
             search_point.y = ray(1, 0);
             search_point.z = ray(2, 0);
-
             /* Don't need thread lock - lookups on FLANN KDTree should be
              * thread-safe std::lock_guard<std::mutex> lock(mutex);
              */
-
             // search for closest point to ray
             std::vector<int> point_idx(1);
             std::vector<float> point_distance(1);
