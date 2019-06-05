@@ -5,6 +5,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
     catkin::catkin
     yaml-cpp
+    PCL::PCL
   SOURCES
     src/math.cpp
     src/time.cpp
