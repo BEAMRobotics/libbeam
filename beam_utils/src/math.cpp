@@ -40,6 +40,17 @@ double median(std::vector<double> v) {
   }
 }
 
+double distance(Vec3 p1, Vec3 p2) {
+  return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0])) +
+              ((p1[1] - p2[1]) * (p1[1] - p2[1])) +
+              ((p1[2] - p2[2]) * (p1[2] - p2[2])));
+}
+
+double distance(Vec2 p1, Vec2 p2) {
+  return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0])) +
+              ((p1[1] - p2[1]) * (p1[1] - p2[1])));
+}
+
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   int idx;
 

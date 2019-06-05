@@ -84,6 +84,12 @@ int fltcmp(double f1, double f2, double threshold = 0.0001);
 /** @return the median of `v`. */
 double median(std::vector<double> v);
 
+/** @return the distance between p1 and p2. */
+double distance(Vec3 p1, Vec3 p2);
+
+/** @return the distance between p1 and p2. */
+double distance(Vec2 p1, Vec2 p2);
+
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
 
