@@ -85,17 +85,32 @@ int fltcmp(double f1, double f2, double threshold = 0.0001);
 /** @return the median of `v`. */
 double median(std::vector<double> v);
 
-/** @return the distance between p1 and p2. */
-double distance(beam::Vec3 p1, beam::Vec3 p2);
+template <typename T, int N>
+T distance(const Eigen::Matrix<T, N, 1>& lhs,
+           const Eigen::Matrix<T, N, 1>& rhs) {
+  T dist = 0;
+  for (size_t i = 0; i < N; ++i) {
+    dist += (lhs[i] - rhs[i]) * (lhs[i] - rhs[i]);
+  }
+  return sqrt(dist);
+}
+template <typename P, typename P2>
+double distance(const P& lhs, const P2& rhs) {
+  double dist = 0;
+  for (size_t i = 0; i < 3; ++i) {
+    dist += (lhs.data[i] - rhs.data[i]) * (lhs.data[i] - rhs.data[i]);
+  }
+  return sqrt(dist);
+}
 
-/** @return the distance between p1 and p2. */
-double distance(pcl::PointXYZ p1, pcl::PointXYZ p2);
-
-/** @return the distance between p1 and p2. */
-double distance(pcl::PointXYZ p1, beam::Vec3 p2);
-
-/** @return the distance between p1 and p2. */
-double distance(beam::Vec3 p1, pcl::PointXYZ p2);
+template <typename P, typename T, int N>
+T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
+  T dist = 0;
+  for (size_t i = 0; i < N; ++i) {
+    dist += (lhs.data[i] - rhs[i]) * (lhs.data[i] - rhs[i]);
+  }
+  return sqrt(dist);
+}
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);

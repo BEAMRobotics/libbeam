@@ -40,30 +40,6 @@ double median(std::vector<double> v) {
   }
 }
 
-double distance(beam::Vec3 p1, beam::Vec3 p2) {
-  return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0])) +
-              ((p1[1] - p2[1]) * (p1[1] - p2[1])) +
-              ((p1[2] - p2[2]) * (p1[2] - p2[2])));
-}
-
-double distance(pcl::PointXYZ p1, pcl::PointXYZ p2) {
-  return sqrt(((p1.x - p2.x) * (p1.x - p2.x)) +
-              ((p1.y - p2.y) * (p1.y - p2.y)) +
-              ((p1.z - p2.z) * (p1.z - p2.z)));
-}
-
-double distance(pcl::PointXYZ p1, beam::Vec3 p2) {
-  return sqrt(((p1.x - p2[0]) * (p1.x - p2[0])) +
-              ((p1.y - p2[1]) * (p1.y - p2[1])) +
-              ((p1.z - p2[2]) * (p1.z - p2[2])));
-}
-
-double distance(beam::Vec3 p1, pcl::PointXYZ p2) {
-  return sqrt(((p1[0] - p2.x) * (p1[0] - p2.x)) +
-              ((p1[1] - p2.y) * (p1[1] - p2.y)) +
-              ((p1[2] - p2.z) * (p1[2] - p2.z)));
-}
-
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   int idx;
 
