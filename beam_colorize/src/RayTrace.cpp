@@ -50,51 +50,50 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
 
   // This lambda performs ray tracing in parallel on each pixel in the image
   uint32_t points_colored = 0;
-  image_->forEach<RayTrace::Pixel>(
-      [&](RayTrace::Pixel& pixel, const int* position) -> void {
-        // if the pixel actually traces to a point then continue
-        cv::Vec3b colors = hit_mask.at<cv::Vec3b>(position[0], position[1]);
-        if (colors.val[0] == 255) {
-          // initialize ray
-          beam::Vec3 ray(0, 0, 0);
-          // get direction vector
-          beam::Vec2 input_point(position[1], position[0]);
-          beam::Vec3 point = intrinsics_->BackProject(input_point);
-          // while loop to ray trace
-          uint16_t raypt = 0;
-          while (true) {
-            // get point at end of ray
-            pcl::PointXYZRGB search_point;
-            search_point.x = ray(0, 0);
-            search_point.y = ray(1, 0);
-            search_point.z = ray(2, 0);
-            /* Don't need thread lock - lookups on FLANN KDTree should be
-             * thread-safe std::lock_guard<std::mutex> lock(mutex);
-             */
-            // search for closest point to ray
-            std::vector<int> point_idx(1);
-            std::vector<float> point_distance(1);
-            kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
-            float distance = sqrt(point_distance[0]);
-            int idx = indices[point_idx[0]];
-            // if the point is within 1cm then color it appropriately
-            if (distance < hit_threshold_) {
-              points_colored++;
-              cloud_colored->points[idx].r = pixel.z;
-              cloud_colored->points[idx].g = pixel.y;
-              cloud_colored->points[idx].b = pixel.x;
-              break;
-            } else if (raypt >= max_ray_) {
-              break;
-            } else {
-              raypt++;
-              ray(0, 0) = ray(0, 0) + distance * point(0, 0);
-              ray(1, 0) = ray(1, 0) + distance * point(1, 0);
-              ray(2, 0) = ray(2, 0) + distance * point(2, 0);
-            }
-          }
+  image_->forEach<Pixel>([&](Pixel& pixel, const int* position) -> void {
+    // if the pixel actually traces to a point then continue
+    cv::Vec3b colors = hit_mask.at<cv::Vec3b>(position[0], position[1]);
+    if (colors.val[0] == 255) {
+      // initialize ray
+      beam::Vec3 ray(0, 0, 0);
+      // get direction vector
+      beam::Vec2 input_point(position[1], position[0]);
+      beam::Vec3 point = intrinsics_->BackProject(input_point);
+      // while loop to ray trace
+      uint16_t raypt = 0;
+      while (true) {
+        // get point at end of ray
+        pcl::PointXYZRGB search_point;
+        search_point.x = ray(0, 0);
+        search_point.y = ray(1, 0);
+        search_point.z = ray(2, 0);
+        /* Don't need thread lock - lookups on FLANN KDTree should be
+         * thread-safe std::lock_guard<std::mutex> lock(mutex);
+         */
+        // search for closest point to ray
+        std::vector<int> point_idx(1);
+        std::vector<float> point_distance(1);
+        kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
+        float distance = sqrt(point_distance[0]);
+        int idx = indices[point_idx[0]];
+        // if the point is within 1cm then color it appropriately
+        if (distance < hit_threshold_) {
+          points_colored++;
+          cloud_colored->points[idx].r = pixel.z;
+          cloud_colored->points[idx].g = pixel.y;
+          cloud_colored->points[idx].b = pixel.x;
+          break;
+        } else if (raypt >= max_ray_) {
+          break;
+        } else {
+          raypt++;
+          ray(0, 0) = ray(0, 0) + distance * point(0, 0);
+          ray(1, 0) = ray(1, 0) + distance * point(1, 0);
+          ray(2, 0) = ray(2, 0) + distance * point(2, 0);
         }
-      });
+      }
+    }
+  });
 
   LOG_INFO("Coloured %d of %d total points.", (int)points_colored,
            (int)input_point_cloud_->points.size());

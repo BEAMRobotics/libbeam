@@ -7,10 +7,10 @@
 #include <boost/filesystem.hpp>
 
 #include <iostream>
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_visualizer.h>
 
 int main() {
   // load intrinsics
@@ -63,6 +63,7 @@ int main() {
   colorizer.SetImage(image);
   colorizer.SetIntrinsics(F1);
   colorizer.SetDistortion(image_distorted);
+  colorizer.CorrectImageGamma();
   cloud_colored = colorizer.ColorizePointCloud();
 
   pcl::visualization::PCLVisualizer::Ptr viewer(

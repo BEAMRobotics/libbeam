@@ -16,11 +16,14 @@
 #include "beam_containers/PointBridge.h"
 
 // PCL
-#include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 // OpenCV
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgcodecs.hpp"
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // ROS
 #include <sensor_msgs/Image.h>
@@ -33,6 +36,11 @@ namespace beam_colorize {
  * @brief Enum class for different types of intrinsic calibrations
  */
 enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
+
+/**
+ * @brief Pixel type for iterating through the image
+ */
+typedef cv::Point3_<uchar> Pixel;
 
 /**
  * @brief Abstract class which different colorization methods can implement
@@ -90,6 +98,11 @@ public:
    * the image has already been undistorted. Default = true;
    */
   void SetDistortion(const bool& image_distored);
+
+  /**
+   * @brief Method for correcting image gamma based on its brightness
+   */
+  void CorrectImageGamma();
 
   /**
    * @brief Pure virtual method for colorizing a point cloud

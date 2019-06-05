@@ -73,6 +73,29 @@ void Colorizer::SetTransform(const Eigen::Affine3d& T_C_L) {
   transform_set_ = true;
 }
 
+void Colorizer::CorrectImageGamma() {
+  cv::Mat bgr_image = image_->clone();
+  cv::Mat lab_image;
+  cv::cvtColor(bgr_image, lab_image, CV_BGR2Lab);
+
+  // Extract the L channel
+  std::vector<cv::Mat> lab_planes(6);
+  cv::split(lab_image, lab_planes); // now we have the L image in lab_planes[0]
+
+  // apply the CLAHE algorithm to the L channel
+  cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+  clahe->setClipLimit(3);
+  cv::Mat dst;
+  clahe->apply(lab_planes[0], dst);
+
+  // Merge the the color planes back into an Lab image
+  dst.copyTo(lab_planes[0]);
+  cv::merge(lab_planes, lab_image);
+
+  // convert back to RGB
+  cv::cvtColor(lab_image, *image_, CV_Lab2BGR);
+}
+
 std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
   if (type == ColorizerType::PROJECTION)
     return std::unique_ptr<Projection>(new Projection());
