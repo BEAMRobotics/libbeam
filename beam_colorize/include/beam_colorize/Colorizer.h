@@ -20,10 +20,7 @@
 #include <pcl/point_types.h>
 
 // OpenCV
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgcodecs.hpp"
 #include <opencv2/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 // ROS
 #include <sensor_msgs/Image.h>
