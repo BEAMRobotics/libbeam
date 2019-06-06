@@ -37,7 +37,7 @@ enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
 /**
  * @brief Pixel type for iterating through the image
  */
-typedef cv::Point3_<uchar> Pixel;
+using Pixel = cv::Point3_<uchar>;
 
 /**
  * @brief Abstract class which different colorization methods can implement

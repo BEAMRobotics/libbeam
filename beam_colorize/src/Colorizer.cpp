@@ -84,6 +84,8 @@ void Colorizer::CorrectImageGamma() {
 
   // apply the CLAHE algorithm to the L channel
   cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+  // Explanation of ClipLimit
+  // here:https://en.wikipedia.org/wiki/Adaptive_histogram_equalization#Contrast_Limited_AHE
   clahe->setClipLimit(3);
   cv::Mat dst;
   clahe->apply(lab_planes[0], dst);
@@ -94,6 +96,7 @@ void Colorizer::CorrectImageGamma() {
 
   // convert back to RGB
   cv::cvtColor(lab_image, *image_, CV_Lab2BGR);
+  cv::imwrite("/home/jake/adjusted.jpg", *image_);
 }
 
 std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
