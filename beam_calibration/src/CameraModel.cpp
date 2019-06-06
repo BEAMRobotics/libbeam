@@ -6,7 +6,7 @@ using json = nlohmann::json;
 namespace beam_calibration {
 
 std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
-  LOG_INFO("Loading file: %s", file_location.c_str());
+  BEAM_INFO("Loading file: {}", file_location);
   // load JSON
   json J;
   std::ifstream file(file_location);

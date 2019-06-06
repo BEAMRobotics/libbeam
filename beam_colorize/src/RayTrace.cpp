@@ -15,8 +15,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   if (!image_initialized_ || !point_cloud_initialized_ ||
       !intrinsics_initialized_ || input_point_cloud_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
+    BEAM_CRITICAL("Colorizer not properly initialized.");
     return cloud_colored;
-    LOG_ERROR("Colorizer not properly initialized.");
   }
   // remove points which will not be in the projection
   auto reduced_cloud =
@@ -95,8 +95,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     }
   });
 
-  LOG_INFO("Coloured %d of %d total points.", (int)points_colored,
-           (int)input_point_cloud_->points.size());
+  BEAM_INFO("Coloured {} of {} total points.", points_colored,
+            input_point_cloud_->points.size());
   return cloud_colored;
 }
 
