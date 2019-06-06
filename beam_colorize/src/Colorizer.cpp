@@ -96,7 +96,6 @@ void Colorizer::CorrectImageGamma() {
 
   // convert back to RGB
   cv::cvtColor(lab_image, *image_, CV_Lab2BGR);
-  cv::imwrite("/home/jake/adjusted.jpg", *image_);
 }
 
 std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
