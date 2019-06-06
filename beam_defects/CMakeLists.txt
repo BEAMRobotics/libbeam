@@ -44,6 +44,7 @@ target_link_libraries(${PROJECT_NAME}_delam_tests
   ${PROJECT_NAME}
   Catch2::Catch2
   PCL::PCL
+  beam::containers
 )
 
 # spall tests

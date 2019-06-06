@@ -4,7 +4,6 @@
 
 #pragma once
 
-
 #include <pcl/point_types.h>
 
 #include <beam_containers/PointBridge.h>
@@ -83,11 +82,12 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
  * @brief Function to extract crack objects from an input cloud
  * @param input_cloud
  * @param threshold Value between 0 and 1. All points with crack value >
- * threshold are considered crack points in the extraction algorithm 
+ * threshold are considered crack points in the extraction algorithm
  */
 std::vector<beam_defects::Crack> GetCracks(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
-    const float& threshold);
+    const float& threshold, float tolerance = 0.075, int min_size = 100,
+    int max_size = 50000);
 
 /**
  * @brief Function to extract spall objects from an input cloud
@@ -97,7 +97,8 @@ std::vector<beam_defects::Crack> GetCracks(
  */
 std::vector<beam_defects::Spall> GetSpalls(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
-    const float& threshold);
+    const float& threshold, float tolerance = 0.075, int min_size = 100,
+    int max_size = 50000);
 
 /**
  * @brief Function to extract delam objects from an input cloud
@@ -107,7 +108,8 @@ std::vector<beam_defects::Spall> GetSpalls(
  */
 std::vector<beam_defects::Delam> GetDelams(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
-    const float& threshold);
+    const float& threshold, float tolerance = 0.075, int min_size = 100,
+    int max_size = 50000);
 
 /**
  * @brief Function to extract corrosion objects from an input cloud
@@ -117,7 +119,8 @@ std::vector<beam_defects::Delam> GetDelams(
  */
 std::vector<beam_defects::Corrosion> GetCorrosion(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
-    const float& threshold);
+    const float& threshold, float tolerance = 0.075, int min_size = 100,
+    int max_size = 50000);
 
 /** @} group defects */
 
