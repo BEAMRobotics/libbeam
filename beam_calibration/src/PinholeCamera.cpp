@@ -35,10 +35,10 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
     out_point[0] = (fx * (-yy) + cx);
     out_point[1] = (fy * xx + cy);
   } else if (!intrinsics_valid_) {
-    LOG_ERROR("Intrinsics not set, cannot project point.");
+    BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics not set"};
   } else if (!distortion_set_) {
-    LOG_ERROR("Distortion not set, cannot project point.");
+    BEAM_CRITICAL("Distortion not set, cannot project point.");
     throw std::invalid_argument{"Distortion not set"};
   }
 
@@ -52,11 +52,11 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4 point) {
     beam::Vec3 new_point(point[0], point[1], point[2]);
     out_point = ProjectPoint(new_point);
   } else if (!intrinsics_valid_) {
-    LOG_ERROR("Intrinsics not set, cannot project point.");
+    BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics nto set"};
   } else {
-    LOG_ERROR("invalid entry, cannot project point: the point is not in "
-              "homographic form, ");
+    BEAM_CRITICAL("invalid entry, cannot project point: the point is not in "
+                  "homographic form, ");
     throw std::invalid_argument{"invalid point"};
   }
   return out_point;

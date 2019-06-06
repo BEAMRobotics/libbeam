@@ -52,7 +52,7 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
     // Distort point using distortion model
     out_point = this->DistortPoint(coords);
   } else if (!intrinsics_valid_) {
-    LOG_ERROR("Intrinsics not set, cannot project point.");
+    BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics nto set"};
   }
 
@@ -66,11 +66,11 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4 point) {
     beam::Vec3 new_point(point[0], point[1], point[2]);
     out_point = ProjectPoint(new_point);
   } else if (!intrinsics_valid_) {
-    LOG_ERROR("Intrinsics not set, cannot project point.");
+    BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics nto set"};
   } else {
-    LOG_ERROR("invalid entry, cannot project point: the point is not in "
-              "homographic form, ");
+    BEAM_CRITICAL("invalid entry, cannot project point: the point is not in "
+                  "homographic form, ");
     throw std::invalid_argument{"invalid point"};
   }
   return out_point;

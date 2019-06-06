@@ -29,11 +29,6 @@ public:
   ~RayTrace() = default;
 
   /**
-   * @brief Pixel type for iterating through the image
-   */
-  typedef cv::Point3_<uchar> Pixel;
-
-  /**
    * @brief Method for colorizing a point cloud
    * @return Colored point cloud pointer
    */

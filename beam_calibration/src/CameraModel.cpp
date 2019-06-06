@@ -6,7 +6,7 @@ using json = nlohmann::json;
 namespace beam_calibration {
 
 std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
-  LOG_INFO("Loading file: %s", file_location.c_str());
+  BEAM_INFO("Loading file: {}", file_location);
   // load JSON
   json J;
   std::ifstream file(file_location);
@@ -92,7 +92,7 @@ void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
 
 void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   if (intrinsics.size() != intrinsics_size_[this->GetType()]) {
-    LOG_ERROR("Invalid number of elements in intrinsics vector.");
+    BEAM_CRITICAL("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
         "Invalid number of elements in intrinsics vector."};
   } else {
@@ -103,17 +103,17 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
 
 void CameraModel::SetDistortionCoefficients(beam::VecX distortion) {
   if (!distortion_set_) {
-    LOG_ERROR("Distortion has not been set");
+    BEAM_CRITICAL("Distortion has not been set");
     throw std::runtime_error{"Distortion has not been set"};
   } else if (distortion.size() != distortion_size_[this->GetDistortionType()]) {
-    LOG_ERROR("Invalid number of elements in coefficient vector.");
+    BEAM_CRITICAL("Invalid number of elements in coefficient vector.");
     throw std::runtime_error{
         "Invalid number of elements in coefficient vector."};
   } else {
     if (this->GetDistortionType() == DistortionType::NONE) {
       distortion = beam::VecX::Zero(5);
-      LOG_INFO("Attempting to set coefficients to non zero for 'NONE' "
-               "distortion type");
+      BEAM_INFO("Attempting to set coefficients to non zero for 'NONE' "
+                "distortion type");
     }
     distortion_coefficients_ = distortion;
     distortion_coeffs_set_ = true;
@@ -141,7 +141,7 @@ const std::string CameraModel::GetFrameID() const {
 
 const std::string CameraModel::GetCalibrationDate() const {
   if (!calibration_date_set_) {
-    LOG_ERROR("cannot retrieve calibration date, value not set.");
+    BEAM_CRITICAL("cannot retrieve calibration date, value not set.");
     throw std::runtime_error{"cannot retrieve calibration date, value not set"};
   }
   return calibration_date_;
@@ -157,7 +157,7 @@ uint32_t CameraModel::GetWidth() const {
 
 const beam::VecX CameraModel::GetIntrinsics() const {
   if (!intrinsics_valid_) {
-    LOG_ERROR("cannot retrieve intrinsics, value not set.");
+    BEAM_CRITICAL("cannot retrieve intrinsics, value not set.");
     throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
   }
   return intrinsics_;
@@ -165,7 +165,7 @@ const beam::VecX CameraModel::GetIntrinsics() const {
 
 const beam::VecX CameraModel::GetDistortionCoefficients() const {
   if (!distortion_set_) {
-    LOG_ERROR("cannot retrieve distortion, value not set.");
+    BEAM_CRITICAL("cannot retrieve distortion, value not set.");
     throw std::runtime_error{"cannot retrieve distortion, value not set"};
   }
   return distortion_coefficients_;
@@ -173,7 +173,7 @@ const beam::VecX CameraModel::GetDistortionCoefficients() const {
 
 DistortionType CameraModel::GetDistortionType() const {
   if (!distortion_) {
-    LOG_ERROR("Distortion has not been set");
+    BEAM_CRITICAL("Distortion has not been set");
     throw std::runtime_error{"Distortion has not been set"};
   } else {
     return distortion_->GetType();
