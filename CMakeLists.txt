@@ -72,6 +72,7 @@ ADD_SUBDIRECTORY(beam_colorize)
 ADD_SUBDIRECTORY(beam_defects)
 ADD_SUBDIRECTORY(beam_utils)
 ADD_SUBDIRECTORY(beam_containers)
+ADD_SUBDIRECTORY(beam_filtering)
 
 # Documentation
 SET(BEAM_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
