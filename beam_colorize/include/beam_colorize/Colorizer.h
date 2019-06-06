@@ -97,11 +97,6 @@ public:
   void SetDistortion(const bool& image_distored);
 
   /**
-   * @brief Method for correcting image gamma based on its brightness
-   */
-  void CorrectImageGamma();
-
-  /**
    * @brief Pure virtual method for colorizing a point cloud
    * @return Colored point cloud pointer
    */
