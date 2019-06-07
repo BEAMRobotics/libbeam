@@ -5,6 +5,8 @@
 #pragma once
 
 #include <pcl/point_types.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/segmentation/extract_clusters.h>
 
 #include <beam_containers/PointBridge.h>
 
