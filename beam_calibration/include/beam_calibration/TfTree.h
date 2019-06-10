@@ -16,6 +16,7 @@
 #include <nlohmann/json.hpp>
 #include <tf2/buffer_core.h>
 #include <tf2_eigen/tf2_eigen.h>
+#include <unordered_map>
 
 namespace beam_calibration {
 /** @addtogroup calibration
@@ -86,13 +87,18 @@ public:
 
   ros::Time start_time_{0};
 
+  std::unordered_map<std::string, std::vector<std::string>> GetAllFrames() { return frames_; }
+
 private:
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                     std::string& from_frame);
 
+  void InsertFrame(std::string& to_frame, std::string& from_frame );
+
   tf2::BufferCore Tree_{ros::Duration(1000)};
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;
+  std::unordered_map<std::string, std::vector<std::string>> frames_;
 };
 
 /** @} group calibration */

@@ -78,6 +78,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
   }
+  std::cout << to_frame << " " << from_frame << std::endl;
 
   std::string parent;
   bool parent_exists = Tree_._getParent(to_frame, time0, parent);
@@ -88,12 +89,17 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
              parent.c_str());
     Eigen::Affine3d TAnew_inverse = TAnew.inverse();
     SetTransform(TAnew_inverse, from_frame, to_frame);
+    InsertFrame(from_frame, to_frame);
   } else {
     SetTransform(TAnew, to_frame, from_frame);
+    InsertFrame(to_frame, from_frame);
   }
 }
 
 void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
+  std::string from_frame = msg.header.frame_id;
+  std::string to_frame = msg.child_frame_id;
+  InsertFrame(to_frame, from_frame);
   if (!Tree_.setTransform(msg, "TfTree", is_static)) {
     std::cout << "Error adding transform" << std::endl;
   }
@@ -153,6 +159,17 @@ void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
     throw std::invalid_argument{"Cannot add transform. Transform invalid."};
     LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
               from_frame.c_str(), to_frame.c_str());
+  }
+}
+
+void TfTree::InsertFrame(std::string& to_frame, std::string& from_frame) {
+  auto it = frames_.find(from_frame);
+  if (it == frames_.end()) {
+    // from frame not added yet
+    frames_.emplace(from_frame, std::vector<std::string>{to_frame});
+  } else {
+    // from frame already exists in the map, insert to frame at the back
+    frames_[from_frame].push_back(to_frame);
   }
 }
 
