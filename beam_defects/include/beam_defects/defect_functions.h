@@ -6,8 +6,8 @@
 
 #include <boost/smart_ptr.hpp>
 
-#include <pcl/point_types.h>
 #include <pcl/filters/project_inliers.h>
+#include <pcl/point_types.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
@@ -55,7 +55,8 @@ std::vector<float> NormalizeVector(const std::vector<float>& vect_A);
  * @details RANSAC used to fit plane to input_cloud. Points not within X meters
  * of fitted plane are removed
  * @param input_cloud
- * @param outlier_threshold The threshold (in meters) for outlier removal
+ * @param outlier_threshold The threshold (in meters) for outlier removal.
+ * Default = 0.01m
  * @return Returns a pcl XYZ point cloud with outlier points removed
  */
 pcl::PointCloud<pcl::PointXYZ>
@@ -66,7 +67,7 @@ pcl::PointCloud<pcl::PointXYZ>
  * @brief Function to extract the concave hull of an input point cloud
  * @param input_cloud
  * @param alpha Variable to limit the size of the resultant hull segments (the
- * smaller, the more detailed the hull)
+ * smaller, the more detailed the hull). Default = 0.1
  * @return Returns the concave hull of the input point cloud
  */
 pcl::PointCloud<pcl::PointXYZ>
