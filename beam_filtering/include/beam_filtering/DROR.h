@@ -12,13 +12,17 @@
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
-typedef pcl::KdTreeFLANN<pcl::PointXYZ> KdTree;
-typedef KdTree::Ptr KdTreePtr;
-typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
-typedef PointCloud::Ptr PointCloudPtr;
+using KdTree = pcl::KdTreeFLANN<pcl::PointXYZ>;
+using KdTreePtr = KdTree::Ptr;
+using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+using PointCloudPtr = PointCloud::Ptr;
 
 namespace beam_filtering {
-/** @addtogroup filtering
+/** @addtogroup filteringusing pcl::KdTreeFLANN<pcl::PointXYZ> KdTree;
+using KdTree::Ptr KdTreePtr;
+using pcl::PointCloud<pcl::PointXYZ> PointCloud;
+using PointCloud::Ptr PointCloudPtr;
+
  *  @{ */
 
 /**
@@ -90,7 +94,7 @@ public:
    * @param input_cloud cloud to be filtered
    * @param filtered_cloud cloud to save to
    */
-  void Filter(pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+  void Filter(pcl::PointCloud<pcl::PointXYZ>& input_cloud,
               pcl::PointCloud<pcl::PointXYZ>& filtered_cloud);
 
 private:

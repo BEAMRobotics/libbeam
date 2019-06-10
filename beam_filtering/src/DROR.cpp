@@ -34,19 +34,19 @@ double DROR::GetMinSearchRadius() {
   return min_search_radius_;
 }
 
-void DROR::Filter(pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+void DROR::Filter(pcl::PointCloud<pcl::PointXYZ>& input_cloud,
                   pcl::PointCloud<pcl::PointXYZ>& filtered_cloud) {
   // Clear points in output cloud
   filtered_cloud.clear();
-
+  PointCloudPtr input_pointer = boost::make_shared<PointCloud>(input_cloud);
   // init. kd search tree
-  KdTreePtr kd_tree_(new pcl::KdTreeFLANN<pcl::PointXYZ>());
-  kd_tree_->setInputCloud(input_cloud);
+  KdTreePtr kd_tree_ = boost::make_shared<pcl::KdTreeFLANN<pcl::PointXYZ>>();
+  kd_tree_->setInputCloud(input_pointer);
 
   // Go over all the points and check which doesn't have enough neighbors
   // perform filtering
-  for (pcl::PointCloud<pcl::PointXYZ>::iterator it = input_cloud->begin();
-       it != input_cloud->end(); ++it) {
+  for (pcl::PointCloud<pcl::PointXYZ>::iterator it = input_pointer->begin();
+       it != input_pointer->end(); ++it) {
     float x_i = it->x;
     float y_i = it->y;
     float range_i = sqrt(pow(x_i, 2) + pow(y_i, 2));

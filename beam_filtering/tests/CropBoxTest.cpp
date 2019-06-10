@@ -4,11 +4,11 @@
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 
-typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
 TEST_CASE("Test invalid inputs and params i/o") {
-  PointCloud::Ptr input_cloud(new PointCloud);
-  PointCloud::Ptr output_cloud(new PointCloud);
+  PointCloud::Ptr input_cloud = boost::make_shared<PointCloud>();
+  PointCloud::Ptr output_cloud = boost::make_shared<PointCloud>();
   beam_filtering::CropBox cropper;
   REQUIRE_THROWS(cropper.Filter(*input_cloud, *output_cloud));
   Eigen::Vector3f min_vec(-1, -1, -1);
@@ -30,8 +30,8 @@ double GetRandNum(int precision) {
 }
 
 TEST_CASE("Test cropper is working on real points") {
-  PointCloud::Ptr input_cloud(new PointCloud);
-  PointCloud::Ptr output_cloud(new PointCloud);
+  PointCloud::Ptr input_cloud = boost::make_shared<PointCloud>();
+  PointCloud::Ptr output_cloud = boost::make_shared<PointCloud>();
   beam_filtering::CropBox cropper;
   Eigen::Vector3f min_vec(-1, -1, -1);
   Eigen::Vector3f max_vec(1, 1, 1);
@@ -74,7 +74,6 @@ TEST_CASE("Test cropper is working on real points") {
   R_box_cloud = Eigen::AngleAxisf(30, Eigen::Vector3f::UnitZ());
   T_box_cloud.matrix().block(0, 3, 3, 1) = t_box_cloud;
   T_box_cloud.matrix().block(0, 0, 3, 3) = R_box_cloud;
-  std::cout << "T_box_cloud.matrix()" << T_box_cloud.matrix() << "\n";
 
   PointCloud::Ptr transformed_cloud(new PointCloud);
   pcl::transformPointCloud(*input_cloud, *transformed_cloud,
