@@ -78,7 +78,6 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
   }
-  std::cout << to_frame << " " << from_frame << std::endl;
 
   std::string parent;
   bool parent_exists = Tree_._getParent(to_frame, time0, parent);
