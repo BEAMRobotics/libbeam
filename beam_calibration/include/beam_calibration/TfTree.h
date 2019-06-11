@@ -88,13 +88,25 @@ public:
 
   ros::Time start_time_{0};
 
-  std::unordered_map<std::string, std::vector<std::string>> GetAllFrames() { return frames_; }
+  /**
+   * @brief Method for getting all the frames in TfTree
+   * @return Return unordered_map. First strings are from (parent) frames and
+   * vectors of strings are to (child) frames
+   */
+  std::unordered_map<std::string, std::vector<std::string>> GetAllFrames() {
+    return frames_;
+  }
 
 private:
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                     std::string& from_frame);
 
-  void InsertFrame(std::string& to_frame, std::string& from_frame );
+  /**
+   * @brief Method for storing frame names in frames_ variable
+   * @param to_frame child frame of a transform
+   * @param from_frame parent frame of a transform
+   */
+  void InsertFrame(std::string& to_frame, std::string& from_frame);
 
   tf2::BufferCore Tree_{ros::Duration(1000)};
   std::string calibration_date_;

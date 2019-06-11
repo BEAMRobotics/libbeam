@@ -102,8 +102,8 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
 
   std::string transform_error;
 
-  bool transform_exists =
-      Tree_.canTransform(to_frame, from_frame, transform_time, &transform_error);
+  bool transform_exists = Tree_.canTransform(to_frame, from_frame,
+                                             transform_time, &transform_error);
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
   }
@@ -207,13 +207,14 @@ void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
 void TfTree::InsertFrame(std::string& to_frame, std::string& from_frame) {
   auto it = frames_.find(from_frame);
   if (it == frames_.end()) {
-    // from frame not added yet
+    // from_frame not added yet
     frames_.emplace(from_frame, std::vector<std::string>{to_frame});
   } else {
     for (auto child_frame : it->second) {
+      // transform already exists. Return.
       if (child_frame == to_frame) return;
     }
-    // from frame already exists in the map, insert to frame at the back
+    // from_frame already exists in the map, insert to_frame at the back
     frames_[from_frame].push_back(to_frame);
   }
 }

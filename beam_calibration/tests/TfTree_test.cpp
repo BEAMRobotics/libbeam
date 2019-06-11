@@ -181,6 +181,10 @@ TEST_CASE("Test multiple parent case for TransformStamped messages"){
 
   Tree.AddTransform(tf_msg1);
   Tree.AddTransform(tf_msg2);
-  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame, from_frame1, transform_time));
-  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame, from_frame2, transform_time));
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame,
+                                             from_frame1,
+                                             transform_time));
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame,
+                                             from_frame2,
+                                             transform_time));
 }
