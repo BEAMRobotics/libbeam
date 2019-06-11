@@ -144,3 +144,43 @@ TEST_CASE("Testing multiple parent case"){
    // REQUIRE_NOTHROW(T = Tree2.GetTransform(to_frame2, from_frame1));
    // REQUIRE_NOTHROW(T = Tree2.GetTransform(from_frame1, from_frame3));
 }
+
+TEST_CASE("Test multiple parent case for TransformStamped messages"){
+  beam_calibration::TfTree Tree;
+  geometry_msgs::TransformStamped tf_msg1, tf_msg2, tf_msg;
+  ros::Time::init();
+  ros::Time transform_time = ros::Time::now();
+
+  std::string to_frame = "X1_link";
+  std::string from_frame1 = "hvlp_link";
+  std::string from_frame2 = "IMU1_link";
+
+  tf_msg1.header.seq = 1;
+  tf_msg1.header.frame_id = from_frame1;
+  tf_msg1.child_frame_id = to_frame;
+  tf_msg1.header.stamp = transform_time;
+  tf_msg1.transform.translation.x = 0;
+  tf_msg1.transform.translation.y = 0;
+  tf_msg1.transform.translation.z = 1;
+  tf_msg1.transform.rotation.x = 0;
+  tf_msg1.transform.rotation.y = 0;
+  tf_msg1.transform.rotation.z = 0;
+  tf_msg1.transform.rotation.w = 1;
+
+  tf_msg2.header.seq = 1;
+  tf_msg2.header.frame_id = from_frame2;
+  tf_msg2.child_frame_id = to_frame;
+  tf_msg2.header.stamp = transform_time;
+  tf_msg2.transform.translation.x = 1;
+  tf_msg2.transform.translation.y = 1;
+  tf_msg2.transform.translation.z = 1;
+  tf_msg2.transform.rotation.x = 0;
+  tf_msg2.transform.rotation.y = 0;
+  tf_msg2.transform.rotation.z = 0;
+  tf_msg2.transform.rotation.w = 1;
+
+  Tree.AddTransform(tf_msg1);
+  Tree.AddTransform(tf_msg2);
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame, from_frame1, transform_time));
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame, from_frame2, transform_time));
+}

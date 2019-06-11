@@ -98,9 +98,39 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
 void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
   std::string from_frame = msg.header.frame_id;
   std::string to_frame = msg.child_frame_id;
-  InsertFrame(to_frame, from_frame);
-  if (!Tree_.setTransform(msg, "TfTree", is_static)) {
-    std::cout << "Error adding transform" << std::endl;
+  ros::Time transform_time = msg.header.stamp;
+
+  std::string transform_error;
+
+  bool transform_exists =
+      Tree_.canTransform(to_frame, from_frame, transform_time, &transform_error);
+  if (transform_exists) {
+    throw std::runtime_error{"Cannot add transform. Transform already exists."};
+  }
+
+  std::string parent;
+  bool parent_exists = Tree_._getParent(to_frame, transform_time, parent);
+  if (parent_exists) {
+    LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
+             "has a parent (%s). Adding inverse of inputted transform.",
+             from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
+             parent.c_str());
+    tf2::Transform inverse_transform;
+    tf2::fromMsg(msg.transform, inverse_transform);
+    inverse_transform = inverse_transform.inverse();
+    msg.transform = tf2::toMsg(inverse_transform);
+    msg.header.frame_id = to_frame;
+    msg.child_frame_id = from_frame;
+
+    if (!Tree_.setTransform(msg, "TfTree", is_static)) {
+      std::cout << "Error adding transform" << std::endl;
+    }
+    InsertFrame(from_frame, to_frame);
+  } else {
+    if (!Tree_.setTransform(msg, "TfTree", is_static)) {
+      std::cout << "Error adding transform" << std::endl;
+    }
+    InsertFrame(to_frame, from_frame);
   }
 }
 
@@ -128,8 +158,21 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
 geometry_msgs::TransformStamped TfTree::GetTransform(std::string& to_frame,
                                                      std::string& from_frame,
                                                      ros::Time lookup_time) {
-  geometry_msgs::TransformStamped transform_msg =
-      Tree_.lookupTransform(to_frame, from_frame, lookup_time);
+  geometry_msgs::TransformStamped transform_msg;
+  std::string transform_error;
+
+  bool can_transform =
+      Tree_.canTransform(to_frame, from_frame, lookup_time, &transform_error);
+
+  if (can_transform) {
+    transform_msg = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
+  } else {
+    throw std::runtime_error{"Cannot look up transform."};
+    LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
+              "Message: %s",
+              from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
+  }
+
   return transform_msg;
 }
 
@@ -167,6 +210,9 @@ void TfTree::InsertFrame(std::string& to_frame, std::string& from_frame) {
     // from frame not added yet
     frames_.emplace(from_frame, std::vector<std::string>{to_frame});
   } else {
+    for (auto child_frame : it->second) {
+      if (child_frame == to_frame) return;
+    }
     // from frame already exists in the map, insert to frame at the back
     frames_[from_frame].push_back(to_frame);
   }

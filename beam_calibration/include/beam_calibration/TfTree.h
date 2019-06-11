@@ -16,6 +16,7 @@
 #include <nlohmann/json.hpp>
 #include <tf2/buffer_core.h>
 #include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <unordered_map>
 
 namespace beam_calibration {
@@ -98,6 +99,8 @@ private:
   tf2::BufferCore Tree_{ros::Duration(1000)};
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;
+
+  // Stores all frame names. Key: Parent frame Value: Vector of child frames
   std::unordered_map<std::string, std::vector<std::string>> frames_;
 };
 
