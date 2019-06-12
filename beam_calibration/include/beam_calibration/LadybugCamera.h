@@ -66,6 +66,20 @@ public:
    */
   beam::Vec2 DistortPoint(beam::Vec2 pixel_in) override;
 
+  /**
+   * @brief Method back projecting
+   * @return Returns bearing vector
+   * @param distorted point
+   */
+  beam::Vec3 BackProject(beam::Vec2 point) override;
+
+  /**
+   * @brief Method for checking if pixel is in image
+   * @return Returns boolean
+   * @param pixel
+   */
+  bool PixelInImage(beam::Vec2 pixel_in);
+
 private:
   void LadybugCheckError();
 

@@ -30,11 +30,12 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
   // Set K matrix
   intrinsics_.resize(4);
   intrinsics_ << focal_length, focal_length, cy, cx;
+  intrinsics_valid_ = true;
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
   beam::Vec2 out_point;
-  if (intrinsics_valid_ && distortion_set_) {
+  if (intrinsics_valid_) {
     beam::Vec2 coords;
     beam::Vec3 x_proj, X_flip;
     beam::Mat3 K = this->GetCameraMatrix();
@@ -53,21 +54,23 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
     out_point = this->DistortPoint(coords);
   } else if (!intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
-    throw std::invalid_argument{"Intrinsics nto set"};
+    throw std::invalid_argument{"Intrinsics not set"};
+  } else if (!this->PixelInImage(out_point)) {
+    BEAM_CRITICAL("Projected point lies outside of image plane.");
+    throw std::invalid_argument{"Projected point lies outside of image plane."};
   }
-
   return out_point;
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4 point) {
   bool homographic_form = (point[3] == 1);
   beam::Vec2 out_point;
-  if (intrinsics_valid_ && homographic_form && distortion_set_) {
+  if (intrinsics_valid_ && homographic_form) {
     beam::Vec3 new_point(point[0], point[1], point[2]);
     out_point = ProjectPoint(new_point);
   } else if (!intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
-    throw std::invalid_argument{"Intrinsics nto set"};
+    throw std::invalid_argument{"Intrinsics not set"};
   } else {
     BEAM_CRITICAL("invalid entry, cannot project point: the point is not in "
                   "homographic form, ");
@@ -88,10 +91,31 @@ cv::Mat LadybugCamera::UndistortImage(cv::Mat input_image) {
   return input_image;
 }
 
+beam::Vec3 LadybugCamera::BackProject(beam::Vec2 point) {
+  beam::Vec2 pixel_in = point;
+  beam::Vec2 pixel_out = {0, 0};
+  beam::Vec3 out_point;
+  lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel_in[0],
+                                  pixel_in[1], &pixel_out[0], &pixel_out[1]);
+  out_point << (pixel_out[1] - this->GetCy()),
+      (LB_FULL_WIDTH - this->GetCx() - pixel_out[0]),
+      (this->GetFy() + this->GetFx()) / 2;
+  out_point.normalize();
+  LadybugCheckError();
+  return out_point;
+}
+
 void LadybugCamera::LadybugCheckError() {
   if (lb_error_ != LADYBUG_OK) {
     LOG_ERROR("Ladybug threw an error: %s", ladybugErrorToString(lb_error_));
   }
+}
+
+bool LadybugCamera::PixelInImage(beam::Vec2 pixel_in) {
+  if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > img_dims_[0] ||
+      pixel_in[1] > img_dims_[1])
+    return false;
+  return true;
 }
 
 } // namespace beam_calibration
