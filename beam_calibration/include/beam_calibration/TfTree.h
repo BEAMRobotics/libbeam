@@ -16,6 +16,8 @@
 #include <nlohmann/json.hpp>
 #include <tf2/buffer_core.h>
 #include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <unordered_map>
 
 namespace beam_calibration {
 /** @addtogroup calibration
@@ -86,13 +88,39 @@ public:
 
   ros::Time start_time_{0};
 
+  /**
+   * @brief Method for getting all the frames in TfTree
+   * @return Return unordered_map. First strings are from (parent) frames and
+   * vectors of strings are to (child) frames
+   */
+  std::unordered_map<std::string, std::vector<std::string>> GetAllFrames() {
+    return frames_;
+  }
+
 private:
+
+  /**
+   * @brief Private method for setting a transform in the tf tree
+   * @param Tnew Transform being added from from_frame to to_frame
+   * @param to_frame child frame of a transform
+   * @param from_frame parent frame of a transform
+   */
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                     std::string& from_frame);
+
+  /**
+   * @brief Method for storing frame names in frames_ variable
+   * @param to_frame child frame of a transform
+   * @param from_frame parent frame of a transform
+   */
+  void InsertFrame(std::string& to_frame, std::string& from_frame);
 
   tf2::BufferCore Tree_{ros::Duration(1000)};
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;
+
+  // Stores all frame names. Key: Parent frame Value: Vector of child frames
+  std::unordered_map<std::string, std::vector<std::string>> frames_;
 };
 
 /** @} group calibration */
