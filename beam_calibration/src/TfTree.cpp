@@ -102,10 +102,13 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
 
   std::string transform_error;
 
-  bool transform_exists = Tree_.canTransform(to_frame, from_frame,
-                                             transform_time, &transform_error);
-  if (transform_exists) {
-    throw std::runtime_error{"Cannot add transform. Transform already exists."};
+  // if inputting static transform, first check to make sure it's not overriding a transform
+  if(is_static){
+    bool transform_exists = Tree_.canTransform(to_frame, from_frame,
+                                               transform_time, &transform_error);
+    if (transform_exists) {
+      throw std::runtime_error{"Cannot add transform. Transform already exists."};
+    }
   }
 
   std::string parent;
