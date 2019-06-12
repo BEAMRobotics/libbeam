@@ -91,11 +91,4 @@ beam::Vec3 PinholeCamera::BackProject(beam::Vec2 point) {
   return out_point;
 }
 
-bool PinholeCamera::PixelInImage(beam::Vec2 pixel_in) {
-  if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > this->GetWidth() ||
-      pixel_in[1] > this->GetHeight())
-    return false;
-  return true;
-}
-
 } // namespace beam_calibration

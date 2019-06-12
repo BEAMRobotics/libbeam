@@ -31,6 +31,7 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
   intrinsics_.resize(4);
   intrinsics_ << focal_length, focal_length, cy, cx;
   intrinsics_valid_ = true;
+  this->SetImageDims(LB_FULL_HEIGHT, LB_FULL_WIDTH);
 }
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
@@ -109,13 +110,6 @@ void LadybugCamera::LadybugCheckError() {
   if (lb_error_ != LADYBUG_OK) {
     LOG_ERROR("Ladybug threw an error: %s", ladybugErrorToString(lb_error_));
   }
-}
-
-bool LadybugCamera::PixelInImage(beam::Vec2 pixel_in) {
-  if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > img_dims_[0] ||
-      pixel_in[1] > img_dims_[1])
-    return false;
-  return true;
 }
 
 } // namespace beam_calibration

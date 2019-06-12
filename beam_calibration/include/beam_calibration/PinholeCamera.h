@@ -67,13 +67,6 @@ public:
    * @return image
    */
   cv::Mat UndistortImage(cv::Mat image_input) override;
-
-  /**
-   * @brief Method for checking if pixel is in image
-   * @return Returns boolean
-   * @param pixel
-   */
-  bool PixelInImage(beam::Vec2 pixel_in);
 };
 
 /** @} group calibration */
