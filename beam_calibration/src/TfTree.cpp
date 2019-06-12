@@ -114,10 +114,10 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
   std::string parent;
   bool parent_exists = Tree_._getParent(to_frame, transform_time, parent);
   if (parent_exists) {
-    LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
-             "has a parent (%s). Adding inverse of inputted transform.",
-             from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
-             parent.c_str());
+    //     LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
+    //              "has a parent (%s). Adding inverse of inputted transform.",
+    //              from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
+    //              parent.c_str());
     tf2::Transform inverse_transform;
     tf2::fromMsg(msg.transform, inverse_transform);
     inverse_transform = inverse_transform.inverse();
