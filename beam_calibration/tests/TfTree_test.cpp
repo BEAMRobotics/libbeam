@@ -188,3 +188,43 @@ TEST_CASE("Test multiple parent case for TransformStamped messages"){
                                              from_frame2,
                                              transform_time));
 }
+
+TEST_CASE("Test same dynamic transform case with same timestamp"){
+  beam_calibration::TfTree Tree;
+  geometry_msgs::TransformStamped tf_msg1, tf_msg2, tf_msg;
+  ros::Time::init();
+  ros::Time transform_time = ros::Time::now();
+
+  std::string to_frame = "X1_link";
+  std::string from_frame = "hvlp_link";
+
+  tf_msg1.header.seq = 1;
+  tf_msg1.header.frame_id = from_frame;
+  tf_msg1.child_frame_id = to_frame;
+  tf_msg1.header.stamp = transform_time;
+  tf_msg1.transform.translation.x = 0;
+  tf_msg1.transform.translation.y = 0;
+  tf_msg1.transform.translation.z = 1;
+  tf_msg1.transform.rotation.x = 0;
+  tf_msg1.transform.rotation.y = 0;
+  tf_msg1.transform.rotation.z = 0;
+  tf_msg1.transform.rotation.w = 1;
+
+  tf_msg2.header.seq = 1;
+  tf_msg2.header.frame_id = from_frame;
+  tf_msg2.child_frame_id = to_frame;
+  tf_msg2.header.stamp = transform_time;
+  tf_msg2.transform.translation.x = 0;
+  tf_msg2.transform.translation.y = 0;
+  tf_msg2.transform.translation.z = 1;
+  tf_msg2.transform.rotation.x = 0;
+  tf_msg2.transform.rotation.y = 0;
+  tf_msg2.transform.rotation.z = 0;
+  tf_msg2.transform.rotation.w = 1;
+
+  Tree.AddTransform(tf_msg1);
+  Tree.AddTransform(tf_msg2);
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame,
+                                             from_frame,
+                                             transform_time));
+}

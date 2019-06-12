@@ -102,39 +102,49 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
 
   std::string transform_error;
 
-  // if inputting static transform, first check to make sure it's not overriding a transform
-  if(is_static){
-    bool transform_exists = Tree_.canTransform(to_frame, from_frame,
-                                               transform_time, &transform_error);
+  // if inputting static transform, first check to make sure it's not overriding
+  // a transform
+  if (is_static) {
+    // check to make sure the same static transform doesn't already exist
+    bool transform_exists = Tree_.canTransform(
+        to_frame, from_frame, transform_time, &transform_error);
     if (transform_exists) {
-      throw std::runtime_error{"Cannot add transform. Transform already exists."};
+      throw std::runtime_error{
+          "Cannot add transform. Transform already exists."};
     }
   }
-
+  // check if parent already exists
   std::string parent;
   bool parent_exists = Tree_._getParent(to_frame, transform_time, parent);
   if (parent_exists) {
-    LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
-             "has a parent (%s). Adding inverse of inputted transform.",
-             from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
-             parent.c_str());
-    tf2::Transform inverse_transform;
-    tf2::fromMsg(msg.transform, inverse_transform);
-    inverse_transform = inverse_transform.inverse();
-    msg.transform = tf2::toMsg(inverse_transform);
-    msg.header.frame_id = to_frame;
-    msg.child_frame_id = from_frame;
+    // If the transform is static, or the parent is not the same as from_frame
+    // add inverse of the transform
+    if (is_static || parent != from_frame) {
+      //     LOG_INFO("Attemping to add transform from %s to %s, but frame %s
+      //     already "
+      //              "has a parent (%s). Adding inverse of inputted
+      //              transform.", from_frame.c_str(), to_frame.c_str(),
+      //              to_frame.c_str(), parent.c_str());
+      tf2::Transform inverse_transform;
+      tf2::fromMsg(msg.transform, inverse_transform);
+      inverse_transform = inverse_transform.inverse();
+      msg.transform = tf2::toMsg(inverse_transform);
+      msg.header.frame_id = to_frame;
+      msg.child_frame_id = from_frame;
 
-    if (!Tree_.setTransform(msg, "TfTree", is_static)) {
-      std::cout << "Error adding transform" << std::endl;
+      if (!Tree_.setTransform(msg, "TfTree", is_static)) {
+        std::cout << "Error adding transform" << std::endl;
+      }
+      InsertFrame(from_frame, to_frame);
+      return;
     }
-    InsertFrame(from_frame, to_frame);
-  } else {
-    if (!Tree_.setTransform(msg, "TfTree", is_static)) {
-      std::cout << "Error adding transform" << std::endl;
-    }
-    InsertFrame(to_frame, from_frame);
   }
+  // If transform is static and doesn't exist, add normally
+  // If transform is dynamic and the parent equals from_frame, add normally
+  if (!Tree_.setTransform(msg, "TfTree", is_static)) {
+    std::cout << "Error adding transform" << std::endl;
+  }
+  InsertFrame(to_frame, from_frame);
 }
 
 Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
@@ -150,10 +160,10 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
     T_target_source = Tree_.lookupTransform(to_frame, from_frame, time0);
     TA_target_source = tf2::transformToEigen(T_target_source);
   } else {
-    throw std::runtime_error{"Cannot look up transform."};
     LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
               "Message: %s",
               from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
+    throw std::runtime_error{"Cannot look up transform."};
   }
   return TA_target_source;
 }
@@ -170,10 +180,10 @@ geometry_msgs::TransformStamped TfTree::GetTransform(std::string& to_frame,
   if (can_transform) {
     transform_msg = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
   } else {
-    throw std::runtime_error{"Cannot look up transform."};
     LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
               "Message: %s",
               from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
+    throw std::runtime_error{"Cannot look up transform."};
   }
 
   return transform_msg;
