@@ -98,6 +98,13 @@ public:
   }
 
 private:
+
+  /**
+   * @brief Private method for setting a transform in the tf tree
+   * @param Tnew Transform being added from from_frame to to_frame
+   * @param to_frame child frame of a transform
+   * @param from_frame parent frame of a transform
+   */
   void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                     std::string& from_frame);
 
