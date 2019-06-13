@@ -5,14 +5,6 @@
 #include "beam_utils/math.hpp"
 #include <catch2/catch.hpp>
 
-/*TO DO
-TEST_CASE("Test correct projection - radtan") {}
-
-TEST_CASE("Test correct projection - equidistant") {}
-
-TEST_CASE("Test correct projection - ladybug") {}
-*/
-
 TEST_CASE("Test projection and back project -- radtan") {
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 21, radtan_location.end());
@@ -59,6 +51,16 @@ TEST_CASE("Test projection and back project -- equid") {
   REQUIRE(beam::fltcmp(back_point[0], test_point[0], 0.01) == 0);
   REQUIRE(beam::fltcmp(back_point[1], test_point[1], 0.01) == 0);
   REQUIRE(beam::fltcmp(back_point[2], test_point[2], 0.01) == 0);
+}
+
+TEST_CASE("Test ladybug fucntions") {
+  std::string ladybug_location = __FILE__;
+  ladybug_location.erase(ladybug_location.end() - 21, ladybug_location.end());
+  ladybug_location += "tests/test_data/ladybug.conf";
+  beam_calibration::LadybugCamera ladybug(0, ladybug_location);
+  cv::Mat fake;
+  ladybug.UndistortImage(fake);
+  REQUIRE(1 == 1);
 }
 
 TEST_CASE("Test projection and back project -- ladybug") {

@@ -89,6 +89,10 @@ beam::Vec2 LadybugCamera::DistortPoint(beam::Vec2 pixel_in) {
 }
 
 cv::Mat LadybugCamera::UndistortImage(cv::Mat input_image) {
+  beam::Vec2 pixel_in(100, 200);
+  beam::Vec2 pixel_out = {0, 0};
+  lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel_in[0],
+                                  pixel_in[1], &pixel_out[0], &pixel_out[1]);
   return input_image;
 }
 
