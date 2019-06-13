@@ -53,21 +53,6 @@ TEST_CASE("Test projection and back project -- equid") {
   REQUIRE(beam::fltcmp(back_point[2], test_point[2], 0.01) == 0);
 }
 
-TEST_CASE("Test projection and back project -- ladybug") {
-  std::string ladybug_location = __FILE__;
-  ladybug_location.erase(ladybug_location.end() - 21, ladybug_location.end());
-  ladybug_location += "tests/test_data/ladybug.conf";
-  beam_calibration::LadybugCamera ladybug(0, ladybug_location);
-  beam::Vec3 test_point(100, 500, 783);
-  beam::Vec2 result_point = ladybug.ProjectPoint(test_point);
-  beam::Vec3 back_point = ladybug.BackProject(result_point);
-
-  test_point.normalize();
-  double distance = beam::distance(back_point, test_point);
-  // require back projected point to be equal to test point normalized
-  REQUIRE(distance < 0.1);
-}
-
 TEST_CASE("Test factory method") {
   beam_calibration::CameraType type = beam_calibration::CameraType::PINHOLE;
   beam_calibration::DistortionType dist_type =

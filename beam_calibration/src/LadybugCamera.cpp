@@ -103,12 +103,6 @@ beam::Vec3 LadybugCamera::BackProject(beam::Vec2 point) {
       (LB_FULL_WIDTH - this->GetCx() - pixel_out[0]),
       (this->GetFy() + this->GetFx()) / 2;
   out_point.normalize();
-
-  std::stringstream bp;
-  bp << out_point;
-  BEAM_INFO("Back projected point:");
-  BEAM_INFO(bp.str());
-
   LadybugCheckError();
   return out_point;
 }
