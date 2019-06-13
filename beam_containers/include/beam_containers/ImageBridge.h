@@ -34,9 +34,20 @@ public:
    */
   virtual ~ImageBridge() = default;
 
+  /**
+   * @brief Method getting whether or not the BGR color image has been set
+   * @return is_bgr_image_set_
+   */
+
   bool IsBGRImageSet(){return is_bgr_image_set_;}
 
+  /**
+   * @brief Method getting whether or not the BGR mask has been set
+   * @param is_bgr_mask_set_
+   */
+
   bool IsBGRMaskSet(){return is_bgr_mask_set_;}
+
   /**
    * @brief Method for setting the BGR image to the container
    * @param bgr_image Image with standard b-g-r color fields, no processing done
@@ -103,20 +114,20 @@ public:
   cv::Mat GetIRMask() { return ir_image_; }
 
   /**
-   * @brief Method for setting the BRG mask method
+   * @brief Method for setting the BGR mask method
    * @param bgr_mask_method String with the method name that was used to create
    * the mask.
    */
-  void SetBRGMaskMethod(std::string& bgr_mask_method) {
+  void SetBGRMaskMethod(std::string& bgr_mask_method) {
     bgr_mask_method_ = bgr_mask_method;
   }
 
   /**
-   * @brief Method for getting the BRG mask method
+   * @brief Method for getting the BGR mask method
    * @return bgr_mask_method_ String with the method name that was used to
    * create the mask.
    */
-  std::string GetBRGMaskMethod() { return bgr_mask_method_; }
+  std::string GetBGRMaskMethod() { return bgr_mask_method_; }
 
   /**
    * @brief Method for setting the IR mask method
@@ -147,6 +158,7 @@ public:
    * @return bgr_frame_id_
    */
   std::string GetBGRFrameId() { return bgr_frame_id_; }
+
   /**
    * @brief Method for setting the name of the frame id of the IR camera
    * @param bgr_frame_id
