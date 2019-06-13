@@ -1,0 +1,16 @@
+{
+    "bag_name": "/home/nick/bag_files/ig_scans/2019_02_13_Structures_Lab/ig_scan_2019-02-13-19-44-24.bag",
+    "bgr_frame_id": "F1_link",
+    "bgr_is_distorted": true,
+    "bgr_mask_method": "deep_learning",
+    "image_container_type": "ImageBridge",
+    "image_seq": 2,
+    "ir_frame_id": "F2_link",
+    "ir_is_distorted": false,
+    "ir_mask_method": "deep_learning",
+    "is_bgr_image_set": true,
+    "is_bgr_mask_set": true,
+    "is_ir_image_set": true,
+    "is_ir_mask_set": true,
+    "time_stamp": 1550105082718658048
+}
