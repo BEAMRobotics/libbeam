@@ -63,14 +63,9 @@ TEST_CASE("Test projection and back project -- ladybug") {
   beam::Vec3 back_point = ladybug.BackProject(result_point);
 
   test_point.normalize();
-
   double distance = beam::distance(back_point, test_point);
-  // d << distance;
-  // INFO("Distance:");
-  // INFO(d.str());
   // require back projected point to be equal to test point normalized
   REQUIRE(distance < 0.1);
-  REQUIRE(1 == 1);
 }
 
 TEST_CASE("Test factory method") {
