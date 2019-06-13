@@ -23,9 +23,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr GetPCD() {
   pcd_location += "test_data/" + pcd_name;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud) == -1) {
-    LOG_INFO("Couldn't read pcd file:  %s\n", pcd_location.c_str());
+    BEAM_INFO("Couldn't read pcd file:  {}\n", pcd_location);
   } else {
-    LOG_INFO("Opened file: %s", pcd_location.c_str());
+    BEAM_INFO("Opened file: {}", pcd_location);
   }
   return cloud;
 }
@@ -40,7 +40,7 @@ cv::Mat GetImage() {
   if (!image.data) {
     std::cout << "Could not open or find the image" << std::endl;
   } else {
-    LOG_INFO("Opened file: %s", image_location.c_str());
+    BEAM_INFO("Opened file: {}", image_location);
   }
   return image;
 }

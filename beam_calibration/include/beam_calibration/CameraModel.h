@@ -291,6 +291,13 @@ public:
    */
   virtual beam::Mat3 GetCameraMatrix() const;
 
+  /**
+   * @brief Method for checking if pixel is in image
+   * @return Returns boolean
+   * @param pixel
+   */
+  bool PixelInImage(beam::Vec2 pixel_in);
+
 protected:
   CameraType type_;
   std::string frame_id_, calibration_date_;

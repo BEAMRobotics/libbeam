@@ -10,4 +10,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/math.cpp
     src/time.cpp
     src/angles.cpp
-  )
+)
+
+add_subdirectory(tests)
