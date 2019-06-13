@@ -62,21 +62,14 @@ TEST_CASE("Test projection and back project -- ladybug") {
   beam::Vec2 result_point = ladybug.ProjectPoint(test_point);
   beam::Vec3 back_point = ladybug.BackProject(result_point);
 
-  std::stringstream bp, norm, d, rp;
-  rp << result_point;
-  bp << back_point;
   test_point.normalize();
-  norm << test_point;
-  INFO("Back projected point:");
-  INFO(bp.str());
-  INFO("Normalized input point:");
-  INFO(norm.str());
-  // double distance = beam::distance(back_point, test_point);
+
+  double distance = beam::distance(back_point, test_point);
   // d << distance;
   // INFO("Distance:");
   // INFO(d.str());
   // require back projected point to be equal to test point normalized
-  // REQUIRE(distance < 0.1);
+  REQUIRE(distance < 0.1);
   REQUIRE(1 == 1);
 }
 
