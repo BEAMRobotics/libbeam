@@ -290,9 +290,11 @@ public:
     file >> json_config;
 
     bag_name_ = json_config["bag_name"];
+    bgr_frame_id_ = json_config["bgr_frame_id"];
     bgr_is_distorted_ = json_config["bgr_is_distorted"];
     bgr_mask_method_ = json_config["bgr_mask_method"];
     image_seq_ = json_config["image_seq"];
+    ir_frame_id_ = json_config["ir_frame_id"];
     ir_is_distorted_ = json_config["ir_is_distorted"];
     ir_mask_method_ = json_config["ir_mask_method"];
     is_bgr_image_set_ = json_config["is_bgr_image_set"];
