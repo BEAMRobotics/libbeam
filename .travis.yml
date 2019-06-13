@@ -27,7 +27,6 @@ env:
 # Check installation script
 script:
   - cd $CI_SOURCE_PATH
-  - ls
   - travis_wait 30 bash ./scripts/install.bash
   - cd $HOME/catkin_ws/build/libbeam/beam_calibration
   - ./beam_calibration_extrinsics_tests

@@ -44,8 +44,8 @@ TEST_CASE("Test cropper is working on real points") {
     point.z = GetRandNum(1000);
     input_cloud->points.push_back(point);
   }
-  // create point cloud with 50 random points outside cropbox
-  for (size_t i = 0; i < 50; ++i) {
+  // create point cloud with 100 random points outside cropbox
+  for (size_t i = 0; i < 100; ++i) {
     bool point_invalid = true;
     while (point_invalid) {
       pcl::PointXYZ point;
@@ -64,7 +64,7 @@ TEST_CASE("Test cropper is working on real points") {
   cropper.SetMinVector(min_vec);
   cropper.SetMaxVector(max_vec);
   cropper.Filter(*input_cloud, *output_cloud);
-  REQUIRE(input_cloud->points.size() == 100);
+  REQUIRE(input_cloud->points.size() == 150);
   REQUIRE(output_cloud->points.size() == 50);
 
   // test transformation of cropbox
@@ -81,6 +81,16 @@ TEST_CASE("Test cropper is working on real points") {
 
   cropper.SetTransform(T_box_cloud);
   cropper.Filter(*transformed_cloud, *output_cloud);
-  REQUIRE(transformed_cloud->points.size() == 100);
+  REQUIRE(transformed_cloud->points.size() == 150);
   REQUIRE(output_cloud->points.size() == 50);
+
+  // test removing inside points
+    beam_filtering::CropBox cropper2;
+    cropper2.SetMinVector(min_vec);
+    cropper2.SetMaxVector(max_vec);
+    cropper2.SetRemoveOutsidePoints(false);
+    PointCloud::Ptr output_cloud2 = boost::make_shared<PointCloud>();
+    cropper2.Filter(*input_cloud, *output_cloud2);
+    REQUIRE(cropper2.GetRemoveOutsidePoints() == false);
+    REQUIRE(output_cloud2->points.size() == 100);
 }

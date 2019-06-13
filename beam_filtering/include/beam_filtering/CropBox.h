@@ -68,6 +68,21 @@ public:
   void SetTransform(Eigen::Affine3f &T_box_cloud);
 
   /**
+   * @brief Method for setting whether or not the points inside or outside the
+   * box are removed.
+   * @param remove_outside_points (default: true). True means it removes the
+   * points outside the box
+   */
+  void SetRemoveOutsidePoints(bool remove_outside_points);
+
+  /**
+   * @brief Method for getting whether or not the points inside or outside the
+   * box are removed.
+   * @return remove_outside_points
+   */
+  bool GetRemoveOutsidePoints();
+
+  /**
    * @brief Method for applying the cropbox
    * @param input_cloud cloud to be cropped
    * @param cropped_cloud cloud to save to
@@ -78,7 +93,7 @@ public:
 private:
   Eigen::Vector3f  min_vec_, max_vec_;
   Eigen::Affine3f T_box_cloud_;
-  bool min_vec_set_ = false, max_vec_set_ = false;
+  bool min_vec_set_ = false, max_vec_set_ = false, remove_outside_points_ = true;
 };
 
 /** @} group filtering */
