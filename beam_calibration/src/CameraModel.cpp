@@ -207,6 +207,13 @@ beam::Mat3 CameraModel::GetCameraMatrix() const {
   return K;
 }
 
+bool CameraModel::PixelInImage(beam::Vec2 pixel_in) {
+  if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > this->GetWidth() ||
+      pixel_in[1] > this->GetHeight())
+    return false;
+  return true;
+}
+
 /***********************Distortion Implementations**************************/
 
 DistortionType Distortion::GetType() {

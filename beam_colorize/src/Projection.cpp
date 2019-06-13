@@ -16,7 +16,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
       !intrinsics_initialized_ || input_point_cloud_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
     return cloud_colored;
-    LOG_ERROR("Colorizer not properly initialized.");
+    BEAM_CRITICAL("Colorizer not properly initialized.");
   }
 
   beam::Vec3 point;
@@ -56,8 +56,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
       }
     }
   }
-  LOG_INFO("Coloured %d of %d total points.", (int)counter,
-           (int)input_point_cloud_->points.size());
+  BEAM_INFO("Coloured {} of {} total points.", counter,
+            input_point_cloud_->points.size());
   return cloud_colored;
 }
 
@@ -72,7 +72,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
       !intrinsics_initialized_) {
     return defect_cloud;
     throw std::runtime_error{"Colorizer not properly initialized."};
-    LOG_ERROR("Colorizer not properly initialized.");
+    BEAM_CRITICAL("Colorizer not properly initialized.");
   }
 
   beam::Vec3 point;
@@ -113,8 +113,8 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
       }
     }
   }
-  LOG_INFO("Coloured %d of %d total points.", (int)counter,
-           (int)input_point_cloud_->points.size());
+  BEAM_INFO("Coloured {} of {} total points.", counter,
+            input_point_cloud_->points.size());
   return defect_cloud;
 }
 

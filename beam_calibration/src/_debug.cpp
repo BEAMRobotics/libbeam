@@ -27,18 +27,10 @@ int main() {
   cv::Mat undistorted_image = equid->UndistortImage(image);
   cv::imwrite("/home/jake/Pictures/cpp_undistorted.png", undistorted_image);
 
-  beam::Vec3 p1(10, 10, 10);
-  beam::Vec3 p2(20, 20, 20);
-  std::cout << beam::distance(p1, p2) << std::endl;
-  pcl::PointXYZ p3(10, 10, 10);
-  pcl::PointXYZRGB p4(20, 20, 20);
-  std::cout << beam::distance(p3, p4) << std::endl;
-  std::cout << beam::distance(p4, p1) << std::endl;
-  /*
   // load conf file
-  std::string conf_location = __FILE__;
-  conf_location.erase(conf_location.end() - 14, conf_location.end());
-  conf_location += "tests/test_data/ladybug.conf";
-  beam_calibration::LadybugCamera ladybug(0, conf_location);
-  */
+
+  std::string ladybug_location = __FILE__;
+  ladybug_location.erase(ladybug_location.end() - 14, ladybug_location.end());
+  ladybug_location += "tests/test_data/ladybug.conf";
+  beam_calibration::LadybugCamera ladybug(0, ladybug_location);
 }
