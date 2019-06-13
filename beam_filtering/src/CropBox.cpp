@@ -32,6 +32,14 @@ void CropBox::SetTransform(Eigen::Affine3f& T_box_cloud) {
   T_box_cloud_ = T_box_cloud;
 }
 
+void CropBox::SetRemoveOutsidePoints(bool remove_outside_points){
+  remove_outside_points_ = remove_outside_points;
+}
+
+bool CropBox::GetRemoveOutsidePoints(){
+  return remove_outside_points_;
+}
+
 void CropBox::Filter(pcl::PointCloud<pcl::PointXYZ>& input_cloud,
                      pcl::PointCloud<pcl::PointXYZ>& cropped_cloud) {
   // check that inputs are set:
@@ -52,9 +60,18 @@ void CropBox::Filter(pcl::PointCloud<pcl::PointXYZ>& input_cloud,
     if (point.x < min_vec_[0] || point.y < min_vec_[1] ||
         point.z < min_vec_[2] || point.x > max_vec_[0] ||
         point.y > max_vec_[1] || point.z > max_vec_[2]) {
-      continue;
+      if(remove_outside_points_){
+        continue;
+      } else {
+        cropped_cloud.push_back(*it);
+      }
+    } else {
+      if(remove_outside_points_){
+        cropped_cloud.push_back(*it);
+      } else {
+        continue;
+      }
     }
-    cropped_cloud.push_back(*it);
   }
 }
 
