@@ -60,9 +60,9 @@ TEST_CASE("Test projection and back project -- ladybug") {
   beam_calibration::LadybugCamera ladybug(0, ladybug_location);
   beam::Vec3 test_point(100, 500, 783);
   beam::Vec2 result_point = ladybug.ProjectPoint(test_point);
-  /*beam::Vec3 back_point = ladybug.BackProject(result_point);
+  beam::Vec3 back_point = ladybug.BackProject(result_point);
 
-  std::stringstream bp, norm, d, rp;
+  /*std::stringstream bp, norm, d, rp;
   rp << result_point;
   bp << back_point;
   test_point.normalize();
