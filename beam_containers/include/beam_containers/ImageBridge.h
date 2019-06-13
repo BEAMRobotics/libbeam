@@ -49,6 +49,21 @@ public:
   bool IsBGRMaskSet(){return is_bgr_mask_set_;}
 
   /**
+   * @brief Method getting whether or not the IR image has been set
+   * @return is_ir_image_set_
+   */
+
+  bool IsIRImageSet(){return is_ir_image_set_;}
+
+  /**
+   * @brief Method getting whether or not the IR mask has been set
+   * @param is_ir_mask_set_
+   */
+
+  bool IsIRMaskSet(){return is_ir_mask_set_;}
+
+
+  /**
    * @brief Method for setting the BGR image to the container
    * @param bgr_image Image with standard b-g-r color fields, no processing done
    */
