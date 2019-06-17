@@ -25,3 +25,16 @@ target_link_libraries(${PROJECT_NAME}_image_container_tests
   ${PROJECT_NAME}
   Catch2::Catch2
 )
+
+add_executable(${PROJECT_NAME}_point_container_tests
+  tests/point_container_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_point_container_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_point_container_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
