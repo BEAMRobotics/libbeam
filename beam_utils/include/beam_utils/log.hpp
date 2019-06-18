@@ -32,8 +32,6 @@ namespace beam {
 
 #define LOG_INFO(M, ...) fprintf(stdout, "[INFO] " M "\n", ##__VA_ARGS__)
 
-#define LOG_WARNING(M, ...) fprintf(stdout, "[WARNING] " M "\n", ##__VA_ARGS__)
-
 /** @} group utils */
 }  // namespace beam
 
