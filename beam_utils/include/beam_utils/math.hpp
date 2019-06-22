@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -153,7 +154,7 @@ void nwu2edn(const Vec3& nwu, Vec3& edn);
  * @param precision = 100 would round to the second decimal point (i.e. 1.126
  *= 1.13)
  **/
-MatX RoundMatrix(const MatX& M, int& precision);
+MatX RoundMatrix(const MatX& M, int precision);
 
 /**
  * @brief check if a matrix is a valid transformation matrix
