@@ -277,11 +277,11 @@ void nwu2edn(const Vec3& nwu, Vec3& edn) {
   edn(2) = nwu(0);
 }
 
-MatX RoundMatrix(const MatX& M, int& precision) {
+MatX RoundMatrix(const MatX& M, int precision) {
   MatX Mround(M.rows(), M.cols());
   for (int i = 0; i < M.rows(); i++) {
     for (int j = 0; j < M.cols(); j++) {
-      Mround(i, j) = std::round(M(i, j) * precision) / precision;
+      Mround(i, j) = std::round(M(i, j) * std::pow(10, precision)) / std::pow(10, precision);
     }
   }
   return Mround;
@@ -314,7 +314,7 @@ bool IsTransformationMatrix(Eigen::Matrix4d T) {
 }
 
 bool IsRotationMatrix(Eigen::Matrix3d R) {
-  int precision = 100;
+  int precision = 3;
   Eigen::Matrix3d shouldBeIdentity = RoundMatrix(R * R.transpose(), precision);
   double detR = R.determinant();
   double detRRound = std::round(detR * precision) / precision;

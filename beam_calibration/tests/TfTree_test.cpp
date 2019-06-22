@@ -36,7 +36,7 @@ TEST_CASE("Test Tree building and retrieving") {
   std::string from_frame3 = "X1";
   TA_BASELINK_X1_calc.matrix() = TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
   TA_BASELINK_X1_lookup = Tree.GetTransform(to_frame3, from_frame3);
-  int round_precision = 10000000;
+  int round_precision = 7;
   REQUIRE(TA_X1_HVLP.matrix() ==
           beam::RoundMatrix(Tree.GetTransform(to_frame2, from_frame2).matrix(),
                             round_precision));
@@ -54,7 +54,7 @@ TEST_CASE("Test loading tree from .json"){
   beam_calibration::TfTree Tree;
   beam::Mat4 T_BASELINK_HVLP, T_X1_HVLP, T_BASELINK_HVLP_JSON, T_X1_HVLP_JSON,
              T_BASELINK_X1, T_BASELINK_X1_JSON;
-  int round_precision = 10000000;
+  int round_precision = 7;
 
   // add true data
   std::string calib_date = "2018_12_20";

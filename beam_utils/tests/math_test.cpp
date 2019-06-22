@@ -28,3 +28,33 @@ TEST_CASE("Distance", "[Math.hpp]") {
   REQUIRE(beam::distance(point1, point3) == Approx(102.47).epsilon(0.01));
   REQUIRE(beam::distance(point3, point2) == Approx(14.1421).epsilon(0.01));
 }
+
+TEST_CASE("RoundMatrix", "[Math.hpp]") {
+  // beam::Mat2 matrix2x2, matrix2x2round3, matrix2x2round2;
+  Eigen::MatrixXd matrix2x2(2,2), matrix2x2round3(2,2), matrix2x2round2(2,2);
+  matrix2x2 << 0.0041, 0.0045, 0.0061, 0.0077;
+  matrix2x2round3 << 0.004, 0.005, 0.006, 0.008;
+  matrix2x2round2 << 0.00, 0.00, 0.01, 0.01;
+  REQUIRE(matrix2x2round3 == beam::RoundMatrix(matrix2x2,3));
+  REQUIRE(matrix2x2round2 == beam::RoundMatrix(matrix2x2,2));
+}
+
+TEST_CASE("IsTransformationMatrix & IsRotationMatrix", "[Math.hpp]") {
+  // Note, this also tests IsRotationMatrix
+  Eigen::Matrix4d ValidT1, ValidT2, InvalidT1, InvalidT2, InvalidT3;
+  ValidT1.setIdentity();
+  ValidT2.setIdentity();
+  ValidT2(0,1) = 0.00001;
+  InvalidT1.setIdentity();
+  InvalidT1(0,1) = 2;
+  InvalidT2.setIdentity();
+  InvalidT2(3,1) = 1;
+  InvalidT3.setIdentity();
+  InvalidT3(0,1) = 0.001;
+
+  REQUIRE(beam::IsTransformationMatrix(ValidT1) == true);
+  REQUIRE(beam::IsTransformationMatrix(ValidT2) == true);
+  REQUIRE(beam::IsTransformationMatrix(InvalidT1) == false);
+  REQUIRE(beam::IsTransformationMatrix(InvalidT2) == false);
+  REQUIRE(beam::IsTransformationMatrix(InvalidT3) == false);
+}
