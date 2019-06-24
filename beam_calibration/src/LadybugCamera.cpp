@@ -54,11 +54,6 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
     coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
     // Distort point using distortion model
     out_point = this->DistortPoint(coords);
-    if (!this->PixelInImage(out_point)) {
-      BEAM_CRITICAL("Projected point lies outside of image plane.");
-      throw std::invalid_argument{
-          "Projected point lies outside of image plane."};
-    }
   } else if (!intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics not set"};
