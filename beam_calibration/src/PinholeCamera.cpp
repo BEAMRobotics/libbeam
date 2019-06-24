@@ -34,15 +34,17 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
     double xx = out_point[0], yy = out_point[1];
     out_point[0] = (fx * (-yy) + cx);
     out_point[1] = (fy * xx + cy);
+    if (!this->PixelInImage(out_point)) {
+      BEAM_CRITICAL("Projected point lies outside of image plane.");
+      throw std::invalid_argument{
+          "Projected point lies outside of image plane."};
+    }
   } else if (!intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics not set"};
   } else if (!distortion_set_) {
     BEAM_CRITICAL("Distortion not set, cannot project point.");
     throw std::invalid_argument{"Distortion not set"};
-  } else if (!this->PixelInImage(out_point)) {
-    BEAM_CRITICAL("Projected point lies outside of image plane.");
-    throw std::invalid_argument{"Projected point lies outside of image plane."};
   }
 
   return out_point;
