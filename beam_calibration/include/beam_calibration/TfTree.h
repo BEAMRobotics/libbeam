@@ -8,14 +8,10 @@
 
 #pragma once
 
-#include <beam_utils/log.hpp>
 #include <beam_utils/math.hpp>
-#include <fstream>
 #include <geometry_msgs/TransformStamped.h>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <tf2/buffer_core.h>
-#include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <unordered_map>
 
@@ -46,9 +42,22 @@ public:
 
   /**
    * @brief Method for adding a transformation using an Affine3d
+   * @param Tnew new transform to add
+   * @param to_frame
+   * @param from_frame
    */
   void AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                     std::string& from_frame);
+
+  /**
+   * @brief Method for adding a transformation using an Affine3d
+   * @param Tnew new transform to add
+   * @param to_frame
+   * @param from_frame
+   * @param time_stamp
+   */
+  void AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
+                    std::string& from_frame, ros::Time time_stamp);
 
   /**
    * @brief Method for adding transform via TransformStamped

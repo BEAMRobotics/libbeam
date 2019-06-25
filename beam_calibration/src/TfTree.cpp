@@ -1,5 +1,10 @@
 #include "beam_calibration/TfTree.h"
 
+#include <beam_utils/log.hpp>
+#include <iostream>
+#include <fstream>
+#include <tf2_eigen/tf2_eigen.h>
+
 using json = nlohmann::json;
 
 namespace beam_calibration {
@@ -95,6 +100,16 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   }
 }
 
+void TfTree::AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
+                          std::string& from_frame, ros::Time time_stamp){
+  geometry_msgs::TransformStamped msg;
+  msg = tf2::eigenToTransform(Tnew);
+  msg.header.frame_id = from_frame;
+  msg.child_frame_id = to_frame;
+  msg.header.stamp = time_stamp;
+  this->AddTransform(msg, false);
+}
+
 void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
   std::string from_frame = msg.header.frame_id;
   std::string to_frame = msg.child_frame_id;
@@ -120,11 +135,6 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
     // If the transform is static, or the parent is not the same as from_frame
     // add inverse of the transform
     if (is_static || parent != from_frame) {
-      //     LOG_INFO("Attemping to add transform from %s to %s, but frame %s
-      //     already "
-      //              "has a parent (%s). Adding inverse of inputted
-      //              transform.", from_frame.c_str(), to_frame.c_str(),
-      //              to_frame.c_str(), parent.c_str());
       tf2::Transform inverse_transform;
       tf2::fromMsg(msg.transform, inverse_transform);
       inverse_transform = inverse_transform.inverse();
