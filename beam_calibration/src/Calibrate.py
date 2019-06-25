@@ -31,9 +31,17 @@ def calibrateRadtan(path, height, width, frame_id):
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
     images = glob.glob(path + '/*.png')
+    gray = None
+    _img_shape = None
     for fname in images:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        if _img_shape == None:
+            _img_shape = img.shape[:2]
+        else:
+            assert _img_shape == img.shape[:2], "All images must share the same size."
+
         # Find the chess board corners
         ret, corners = cv2.findChessboardCorners(gray, (height,width), None)
         # If found, add object points, image points (after refining them)
@@ -50,7 +58,7 @@ def calibrateRadtan(path, height, width, frame_id):
     ret, K, D, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 
     intrinsics = [K[0,0], K[1,1], K[0,2], K[1,2]]
-    coeffs = [D[0][0], D[1][0], D[2][0], D[3][0]]
+    coeffs = [D[0][0], D[0][1], D[0][2], D[0][3], D[0][4]]
     model = "radtan"
     saveToJson(intrinsics, coeffs, model, _img_shape, frame_id)
 
