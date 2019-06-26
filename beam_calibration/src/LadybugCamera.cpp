@@ -57,9 +57,6 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
   } else if (!intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics not set"};
-  } else if (!this->PixelInImage(out_point)) {
-    BEAM_CRITICAL("Projected point lies outside of image plane.");
-    throw std::invalid_argument{"Projected point lies outside of image plane."};
   }
   return out_point;
 }

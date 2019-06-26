@@ -11,7 +11,7 @@ TEST_CASE("Test projection and back project -- radtan") {
   radtan_location += "tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> radtan =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
-  beam::Vec3 test_point(123, 252, 531);
+  beam::Vec3 test_point(50, 50, 200);
   beam::Vec2 result_point = radtan->ProjectPoint(test_point);
   beam::Vec3 back_point = radtan->BackProject(result_point);
 

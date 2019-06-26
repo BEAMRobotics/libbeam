@@ -22,44 +22,43 @@ def main():
         calibrateRadtan(path, height, width, frame_id)
 
 def calibrateRadtan(path, height, width, frame_id):
-    CHECKERBOARD = (height,width)
-    # termination criteria
+# termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-    objp = np.zeros((CHECKERBOARD[0]*CHECKERBOARD[1],3), np.float32)
-    objp[:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
-
+    objp = np.zeros((height*width,3), np.float32)
+    objp[:,:2] = np.mgrid[0:width,0:height].T.reshape(-1,2)
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
-
-    images = glob.glob('*.png')
-
+    images = glob.glob(path + '/*.png')
+    gray = None
+    _img_shape = None
     for fname in images:
         img = cv2.imread(fname)
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        if _img_shape == None:
+            _img_shape = img.shape[:2]
+        else:
+            assert _img_shape == img.shape[:2], "All images must share the same size."
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, CHECKERBOARD,None)
-
+        ret, corners = cv2.findChessboardCorners(gray, (height,width), None)
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints.append(objp)
-
-            corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-            imgpoints.append(corners2)
-
+            corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+            imgpoints.append(corners)
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2,ret)
-            cv2.imshow('img',img)
+            cv2.drawChessboardCorners(img, (height,width), corners2, ret)
+            cv2.imshow('img', img)
             cv2.waitKey(500)
 
     cv2.destroyAllWindows()
     ret, K, D, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 
     intrinsics = [K[0,0], K[1,1], K[0,2], K[1,2]]
-    coeffs = [D[0][0], D[1][0], D[2][0], D[3][0]]
+    coeffs = [D[0][0], D[0][1], D[0][2], D[0][3], D[0][4]]
     model = "radtan"
     saveToJson(intrinsics, coeffs, model, _img_shape, frame_id)
 

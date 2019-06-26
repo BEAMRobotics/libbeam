@@ -40,9 +40,6 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
   } else if (!distortion_set_) {
     BEAM_CRITICAL("Distortion not set, cannot project point.");
     throw std::invalid_argument{"Distortion not set"};
-  } else if (!this->PixelInImage(out_point)) {
-    BEAM_CRITICAL("Projected point lies outside of image plane.");
-    throw std::invalid_argument{"Projected point lies outside of image plane."};
   }
 
   return out_point;
