@@ -8,10 +8,11 @@
 
 #pragma once
 
-#include <memory>
-#include <boost/smart_ptr.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+
+#include <boost/smart_ptr.hpp>
+#include <memory>
 
 namespace beam_defects {
 /** @addtogroup defects

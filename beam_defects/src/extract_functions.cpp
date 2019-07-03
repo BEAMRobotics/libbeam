@@ -1,6 +1,9 @@
 #define PCL_NO_PRECOMPILE
 #include "beam_defects/extract_functions.h"
 
+#include <pcl/filters/extract_indices.h>
+#include <pcl/segmentation/extract_clusters.h>
+
 namespace beam_defects {
 
 // function to isolate crack points only
