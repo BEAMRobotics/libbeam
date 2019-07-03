@@ -12,15 +12,15 @@ std::string GetFullFile(std::string current_rel_path, std::string new_rel_path){
 }
 
 TEST_CASE("Testing map building") {
-  std::string current_file_rel, config_file_rel, poses_file_rel, bag_file_rel,
-              bag_file_path, poses_file_path, config_file_path;
+  std::string current_file_rel, config_file_rel, pose_file_rel, bag_file_rel,
+              bag_file_path, pose_file_path, config_file_path;
   current_file_rel = "/tests/MapBuilderTest.cpp";
   config_file_rel = "/tests/test_data/MapBuilderTestConfig.json";
-  poses_file_rel = "/tests/test_data/PosesTest.json";
+  pose_file_rel = "/tests/test_data/PosesTest.json";
   bag_file_rel = "/tests/test_data/BagTest.bag";
 
   config_file_path = GetFullFile(current_file_rel, config_file_rel);
-  poses_file_path = GetFullFile(current_file_rel, poses_file_rel);
+  pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
 
   // TODO: Change this back
   // bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
@@ -28,7 +28,7 @@ TEST_CASE("Testing map building") {
 
   beam_mapping::MapBuilder map_builder(config_file_path);
   map_builder.OverrideBagFile(bag_file_path);
-  map_builder.OverridePosesFile(poses_file_path);
+  map_builder.OverridePoseFile(pose_file_path);
   map_builder.BuildMap();
   REQUIRE(1 == 1);
 }

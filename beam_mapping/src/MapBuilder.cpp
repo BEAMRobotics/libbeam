@@ -15,7 +15,7 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
   nlohmann::json J;
   std::ifstream file(config_file);
   file >> J;
-  poses_file_path_ = J["poses_file"];
+  pose_file_path_ = J["pose_file"];
   bag_file_path_ = J["bag_file_path"];
   bag_file_name_ = J["bag_file_name"];
   save_dir_ = J["save_directory"];
@@ -25,17 +25,17 @@ void MapBuilder::OverrideBagFile(const std::string& bag_file) {
   bag_file_path_ = bag_file;
 }
 
-void MapBuilder::OverridePosesFile(const std::string& poses_file) {
-  poses_file_path_ = poses_file;
+void MapBuilder::OverridePoseFile(const std::string& pose_file) {
+  pose_file_path_ = pose_file;
 }
 
-void MapBuilder::LoadPosesFromJSON(const std::string& poses_file) {
-  BEAM_INFO("Loading MapBuilder config file: {}", poses_file.c_str());
+void MapBuilder::LoadPosesFromJSON(const std::string& pose_file) {
+  BEAM_INFO("Loading MapBuilder pose file: {}", pose_file.c_str());
   nlohmann::json J;
-  std::ifstream file(poses_file);
+  std::ifstream file(pose_file);
   file >> J;
   std::string bag_name_from_poses = J["bag_name"];
-  poses_file_date_ = J["poses_file_date"];
+  pose_file_date_ = J["pose_file_date"];
   fixed_frame_ = J["fixed_frame"];
   pose_frame_ = J["pose_frame"];
 
@@ -46,7 +46,7 @@ void MapBuilder::LoadPosesFromJSON(const std::string& poses_file) {
                            "not the same as the name listed in the pose file."};
   }
 
-  poses_file_date_ = J["poses_file_date"];
+  pose_file_date_ = J["pose_file_date"];
 
   for (const auto& pose : J["poses"]){
     double time_stamp_tmp = pose["time_stamp_nsec"];
@@ -82,7 +82,7 @@ void MapBuilder::LoadPosesFromJSON(const std::string& poses_file) {
 
 void MapBuilder::BuildMap() {
   // Load
-  this->LoadPosesFromJSON(poses_file_path_);
+  this->LoadPosesFromJSON(pose_file_path_);
 }
 
 } // namespace beam_mapping

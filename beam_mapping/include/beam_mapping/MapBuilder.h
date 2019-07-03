@@ -44,7 +44,7 @@ public:
    * @brief for overriding the poses file specified in the config file
    * @param poses_file full path to new poses file
    */
-  void OverridePosesFile(const std::string& poses_file);
+  void OverridePoseFile(const std::string& poses_file);
 
   /**
    * @brief performs the map building
@@ -66,8 +66,8 @@ private:
 
   beam_calibration::TfTree trajectory_;
 
-  std::string poses_file_path_, bag_file_path_, bag_file_name_, save_dir_,
-              poses_file_date_, fixed_frame_, pose_frame_, config_file_;
+  std::string pose_file_path_, bag_file_path_, bag_file_name_, save_dir_,
+              pose_file_date_, fixed_frame_, pose_frame_, config_file_;
 };
 
 /** @} group mapping */
