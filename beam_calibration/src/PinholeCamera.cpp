@@ -67,6 +67,11 @@ beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2 point) {
   return distortion_->DistortPixel(distortion_coeffs, point);
 }
 
+beam::Vec2 PinholeCamera::UndistortPoint(beam::Vec2 point) {
+  beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
+  return distortion_->UndistortPixel(distortion_coeffs, point);
+}
+
 cv::Mat PinholeCamera::UndistortImage(cv::Mat input_image) {
   beam::Mat3 camera_matrix = this->GetCameraMatrix();
   beam::VecX distortion_coeffs = this->GetDistortionCoefficients();

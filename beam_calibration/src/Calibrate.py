@@ -34,6 +34,7 @@ def calibrateRadtan(path, height, width, frame_id):
     gray = None
     _img_shape = None
     for fname in images:
+        print(fname)
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
