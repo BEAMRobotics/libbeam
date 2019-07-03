@@ -3,6 +3,7 @@
  */
 
 #include "beam_calibration/TfTree.h"
+#include "beam_mapping/Poses.h"
 
 // PCL specific headers
 #include <pcl/common/transforms.h>
@@ -65,9 +66,9 @@ private:
   void LoadConfigFromJSON(const std::string& config_file);
 
   beam_calibration::TfTree trajectory_;
-
+  beam_mapping::Poses poses_;
   std::string pose_file_path_, bag_file_path_, bag_file_name_, save_dir_,
-              pose_file_date_, fixed_frame_, pose_frame_, config_file_;
+  config_file_;
 };
 
 /** @} group mapping */

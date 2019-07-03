@@ -10,67 +10,67 @@
 
 namespace beam_mapping {
 
-void Poses::AddBagName(const std::string& bag_name) {
-  bag_name_ = bag_name;
+void Poses::AddBagName(const std::string& _bag_name) {
+  bag_name = _bag_name;
 }
 
 std::string Poses::GetBagName() {
-  return bag_name_;
+  return bag_name;
 }
 
-void Poses::AddPoseFileDate(const std::string& pose_file_date) {
-  pose_file_date_ = pose_file_date;
+void Poses::AddPoseFileDate(const std::string& _pose_file_date) {
+  pose_file_date = _pose_file_date;
 }
 
 std::string Poses::GetPoseFileDate() {
-  return pose_file_date_;
+  return pose_file_date;
 }
 
-void Poses::AddFixedFrame(const std::string& fixed_frame) {
-  fixed_frame_ = fixed_frame;
+void Poses::AddFixedFrame(const std::string& _fixed_frame) {
+  fixed_frame = _fixed_frame;
 }
 
 std::string Poses::GetFixedFrame() {
-  return fixed_frame_;
+  return fixed_frame;
 }
 
-void Poses::AddMovingFrame(const std::string& moving_frame) {
-  moving_frame_ = moving_frame;
+void Poses::AddMovingFrame(const std::string& _moving_frame) {
+  moving_frame = _moving_frame;
 }
 
 std::string Poses::GetMovingFrame() {
-  return moving_frame_;
+  return moving_frame;
 }
 
-void Poses::AddTimeStamps(const std::vector<ros::Time>& time_stamps) {
-  time_stamps_ = time_stamps;
+void Poses::AddTimeStamps(const std::vector<ros::Time>& _time_stamps) {
+  time_stamps = _time_stamps;
 }
 
 std::vector<ros::Time> Poses::GetTimeStamps() {
-  return time_stamps_;
+  return time_stamps;
 }
 
-void Poses::AddSingleTimeStamp(const ros::Time& time_stamp) {
-  time_stamps_.push_back(time_stamp);
+void Poses::AddSingleTimeStamp(const ros::Time& _time_stamp) {
+  time_stamps.push_back(_time_stamp);
 }
 
 void Poses::AddPoses(
     const std::vector<Eigen::Affine3d,
-                      Eigen::aligned_allocator<Eigen::Affine3d>>& poses) {
-  poses_ = poses;
+                      Eigen::aligned_allocator<Eigen::Affine3d>>& _poses) {
+  poses = _poses;
 }
 
 std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
     Poses::GetPoses() {
-  return poses_;
+  return poses;
 }
 
 void Poses::AddSinglePose(const Eigen::Affine3d& pose) {
-  poses_.push_back(pose);
+  poses.push_back(pose);
 }
 
 void Poses::WriteToPoseFile(const std::string output_dir) {
-  if (poses_.size() != time_stamps_.size()) {
+  if (poses.size() != time_stamps.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
     throw std::runtime_error{"Number of time stamps not equal to number of "
@@ -86,17 +86,17 @@ void Poses::WriteToPoseFile(const std::string output_dir) {
   // write to json
   std::string J_string, J_poses_string, J_pose_k_string;
   nlohmann::json J, J_pose_k;
-  J = {{"bag_name", bag_name_},
-       {"pose_file_date", pose_file_date_},
-       {"fixed_frame", fixed_frame_},
-       {"moving_frame", moving_frame_}};
+  J = {{"bag_name", bag_name},
+       {"pose_file_date", pose_file_date},
+       {"fixed_frame", fixed_frame},
+       {"moving_frame", moving_frame}};
 
   J_string = J.dump();
   J_poses_string = "{\"poses\": []}";
-  for (uint64_t k = 0; k < poses_.size(); k++) {
-    beam::Mat4 Tk = poses_[k].matrix();
-    J_pose_k = {{"time_stamp_sec", time_stamps_[k].sec},
-                {"time_stamp_nsec", time_stamps_[k].nsec},
+  for (uint64_t k = 0; k < poses.size(); k++) {
+    beam::Mat4 Tk = poses[k].matrix();
+    J_pose_k = {{"time_stamp_sec", time_stamps[k].sec},
+                {"time_stamp_nsec", time_stamps[k].nsec},
                 {"transform", {Tk(0, 0), Tk(0, 1), Tk(0, 2), Tk(0, 3),
                                Tk(1, 0), Tk(1, 1), Tk(1, 2), Tk(1, 3),
                                Tk(2, 0), Tk(2, 1), Tk(2, 2), Tk(2, 3),
@@ -114,7 +114,7 @@ void Poses::WriteToPoseFile(const std::string output_dir) {
   J_string = J_string + "," + J_poses_string; // add poses
   J = nlohmann::json::parse(J_string);
 
-  std::string output_file = output_dir + pose_file_date_ + "_poses.json";
+  std::string output_file = output_dir + pose_file_date + "_poses.json";
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream filejson(output_file);
   filejson << std::setw(4) << J << std::endl;
@@ -125,10 +125,10 @@ void Poses::LoadPoseFile(const std::string input_pose_file_path) {
   nlohmann::json J;
   std::ifstream file(input_pose_file_path);
   file >> J;
-  bag_name_ = J["bag_name"];
-  fixed_frame_ = J["fixed_frame"];
-  moving_frame_ = J["moving_frame"];
-  pose_file_date_ = J["pose_file_date"];
+  bag_name = J["bag_name"];
+  fixed_frame = J["fixed_frame"];
+  moving_frame = J["moving_frame"];
+  pose_file_date = J["pose_file_date"];
   int pose_counter = 0;
 
   for (const auto& pose : J["poses"]) {
@@ -153,10 +153,10 @@ void Poses::LoadPoseFile(const std::string input_pose_file_path) {
       BEAM_CRITICAL("Invalid transform matrix in json pose file.");
       throw std::invalid_argument{"Invalid transform matrix in .json file."};
     } else {
-      time_stamps_.push_back(time_stamp_k);
+      time_stamps.push_back(time_stamp_k);
       Eigen::Affine3d TA_k;
       TA_k.matrix() = T_k;
-      poses_.push_back(TA_k);
+      poses.push_back(TA_k);
     }
   }
   BEAM_INFO("Read {} poses.", pose_counter);

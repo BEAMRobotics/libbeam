@@ -30,54 +30,21 @@ void MapBuilder::OverridePoseFile(const std::string& pose_file) {
 }
 
 void MapBuilder::LoadPosesFromJSON(const std::string& pose_file) {
-  BEAM_INFO("Loading MapBuilder pose file: {}", pose_file.c_str());
-  nlohmann::json J;
-  std::ifstream file(pose_file);
-  file >> J;
-  std::string bag_name_from_poses = J["bag_name"];
-  pose_file_date_ = J["pose_file_date"];
-  fixed_frame_ = J["fixed_frame"];
-  pose_frame_ = J["pose_frame"];
+  poses_.LoadPoseFile(pose_file);
 
-  if (bag_name_from_poses != bag_file_name_) {
+  if (poses_.GetBagName() != bag_file_name_) {
     BEAM_CRITICAL("Bag file name from MapBuilder config file is not the same "
                   "as the name listed in the pose file.");
-    throw std::invalid_argument {"Bag file name from MapBuilder config file is "
-                           "not the same as the name listed in the pose file."};
+    throw std::invalid_argument{
+        "Bag file name from MapBuilder config file is "
+        "not the same as the name listed in the pose file."};
   }
 
-  pose_file_date_ = J["pose_file_date"];
-
-  for (const auto& pose : J["poses"]){
-    double time_stamp_tmp = pose["time_stamp_nsec"];
-    double time_stamp_sec = std::floor(time_stamp_tmp / 1000000000);
-    double time_stamp_nsec = time_stamp_tmp - time_stamp_sec * 1000000000;
-    ros::Time time_stamp_k;
-    time_stamp_k.sec = (int) time_stamp_sec;
-    time_stamp_k.nsec = (int) time_stamp_nsec;
-    beam::Mat4 T;
-    int i = 0, j = 0;
-    int value_counter = 0;
-    for (const auto& value : pose["transform"]) {
-      value_counter++;
-      T(i, j) = value.get<double>();
-      if (j == 3) {
-        i++;
-        j = 0;
-      } else {
-        j++;
-      }
-    }
-    if (value_counter != 16) {
-      BEAM_CRITICAL("Invalid transform matrix in .json file.");
-      throw std::invalid_argument{"Invalid transform matrix in .json file."};
-    }
-
-    Eigen::Affine3d TA;
-    TA.matrix() = T;
-    trajectory_.AddTransform(TA, pose_frame_, fixed_frame_, time_stamp_k);
+  int num_poses = poses_.time_stamps.size();
+  for (int k = 0; k < num_poses; k++) {
+    trajectory_.AddTransform(poses_.poses[k], poses_.moving_frame, poses_.fixed_frame,
+                             poses_.time_stamps[k]);
   }
-
 }
 
 void MapBuilder::BuildMap() {
