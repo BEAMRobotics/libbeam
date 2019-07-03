@@ -14,7 +14,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
 
   int image_width = 0, image_height = 0;
   std::string camera_type, date, method, frame_id, distortion_model;
-  beam::VecX coeffs, intrinsics;
+  beam::VecX coeffs, intrinsics, undistorted_intrinsics;
   // Read values from JSON and populate variables
   camera_type = J["camera_type"];
   date = J["date"];
@@ -42,6 +42,17 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     for (uint8_t k = 0; k < tmp_coeffs.size(); k++) {
       coeffs(k) = tmp_coeffs[k];
     }
+
+    if (calib.find("undistorted_intrinsics") != calib.end()) {
+      std::vector<double> tmp_coeffs;
+      for (const auto& value : calib["undistorted_intrinsics"]) {
+        tmp_coeffs.push_back(value.get<double>());
+      }
+      undistorted_intrinsics.resize(tmp_coeffs.size());
+      for (uint8_t k = 0; k < tmp_coeffs.size(); k++) {
+        undistorted_intrinsics(k) = tmp_coeffs[k];
+      }
+    }
   }
 
   CameraType cam_type;
@@ -57,8 +68,13 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   }
 
   // create camera model
-  return CameraModel::Create(cam_type, dist_type, intrinsics, coeffs,
-                             image_height, image_width, frame_id, date);
+  std::shared_ptr<CameraModel> camera =
+      CameraModel::Create(cam_type, dist_type, intrinsics, coeffs, image_height,
+                          image_width, frame_id, date);
+  if (undistorted_intrinsics.size() > 0) {
+    camera->SetUndistortedIntrinsics(undistorted_intrinsics);
+  }
+  return camera;
 
 } // namespace beam_calibration
 
@@ -98,6 +114,17 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   } else {
     intrinsics_ = intrinsics;
     intrinsics_valid_ = true;
+  }
+}
+
+void CameraModel::SetUndistortedIntrinsics(beam::VecX und_intrinsics) {
+  if (und_intrinsics.size() != intrinsics_size_[this->GetType()]) {
+    BEAM_CRITICAL("Invalid number of elements in intrinsics vector.");
+    throw std::runtime_error{
+        "Invalid number of elements in intrinsics vector."};
+  } else {
+    undistorted_intrinsics_ = und_intrinsics;
+    und_intrinsics_valid_ = true;
   }
 }
 
@@ -162,6 +189,14 @@ const beam::VecX CameraModel::GetIntrinsics() const {
     throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
   }
   return intrinsics_;
+}
+
+const beam::VecX CameraModel::GetUndistortedIntrinsics() const {
+  if (!und_intrinsics_valid_) {
+    BEAM_CRITICAL("cannot retrieve intrinsics, value not set.");
+    throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
+  }
+  return undistorted_intrinsics_;
 }
 
 const beam::VecX CameraModel::GetDistortionCoefficients() const {

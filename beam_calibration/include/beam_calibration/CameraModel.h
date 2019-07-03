@@ -216,6 +216,14 @@ public:
   virtual void SetIntrinsics(beam::VecX instrinsics);
 
   /**
+   * @brief Method for adding intrinsic values for undistorted image
+   * Pinhole: [fx,fy,cx,cy]
+   * Ladybug: [fx,fy,cy,cx]
+   * @param intrinsics of the camera
+   */
+  virtual void SetUndistortedIntrinsics(beam::VecX und_instrinsics);
+
+  /**
    * @brief Method for adding the distortion model
    * @param distortion model
    */
@@ -257,6 +265,12 @@ public:
    * @return intrinsics of the camera
    */
   virtual const beam::VecX GetIntrinsics() const;
+
+  /**
+   * @brief Method for retrieving the intrinsic values of the model
+   * @return intrinsics of the camera
+   */
+  virtual const beam::VecX GetUndistortedIntrinsics() const;
 
   /**
    * @brief Method for retrieving the distortion model
@@ -317,11 +331,12 @@ protected:
   CameraType type_;
   std::string frame_id_, calibration_date_;
   uint32_t image_height_, image_width_;
-  beam::VecX intrinsics_, distortion_coefficients_;
+  beam::VecX intrinsics_, distortion_coefficients_, undistorted_intrinsics_;
   std::unique_ptr<Distortion> distortion_ = nullptr;
   // Boolean values to keep track of validity
   bool intrinsics_valid_ = false, distortion_coeffs_set_ = false,
-       calibration_date_set_ = false, distortion_set_ = false;
+       calibration_date_set_ = false, distortion_set_ = false,
+       und_intrinsics_valid_ = false;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
                                                 {CameraType::PINHOLE, 4}};
