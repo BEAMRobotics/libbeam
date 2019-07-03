@@ -67,6 +67,13 @@ public:
   beam::Vec2 DistortPoint(beam::Vec2 pixel_in) override;
 
   /**
+   * @brief Special undistortion using ladybug SDK
+   * @return Returns image coordinates after point has been undistorted
+   * @param pixel_in point to be undistorted
+   */
+  beam::Vec2 UndistortPoint(beam::Vec2 pixel_in) override;
+
+  /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param distorted point

@@ -162,6 +162,13 @@ public:
   virtual beam::Vec2 DistortPoint(beam::Vec2 point) = 0;
 
   /**
+   * @brief Method undistorting a point
+   * @return Returns undistorted point
+   * @param distorted point
+   */
+  virtual beam::Vec2 UndistortPoint(beam::Vec2 point) = 0;
+
+  /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param distorted point [u,v]
