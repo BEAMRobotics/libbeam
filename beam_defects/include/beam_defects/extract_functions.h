@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include <pcl/filters/extract_indices.h>
-#include <pcl/point_types.h>
-#include <pcl/segmentation/extract_clusters.h>
-
-#include <beam_containers/PointBridge.h>
-
 #include "beam_defects/Corrosion.h"
 #include "beam_defects/Crack.h"
 #include "beam_defects/Delam.h"
 #include "beam_defects/Spall.h"
+
+#include <beam_containers/PointBridge.h>
+
+#include <pcl/point_types.h>
+
+#include <vector>
 
 namespace beam_defects {
 /** @addtogroup defects
