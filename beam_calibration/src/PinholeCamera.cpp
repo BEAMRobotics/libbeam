@@ -47,7 +47,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
 
 beam::Vec2 PinholeCamera::ProjectUndistortedPoint(beam::Vec3 point) {
   beam::Vec2 out_point;
-  if (intrinsics_valid_ && distortion_set_) {
+  if (und_intrinsics_valid_) {
     // Project point
     beam::VecX intrinsics = this->GetUndistortedIntrinsics();
     const double fx = intrinsics[0], fy = intrinsics[1], cx = intrinsics[2],
@@ -59,13 +59,10 @@ beam::Vec2 PinholeCamera::ProjectUndistortedPoint(beam::Vec3 point) {
     double xx = out_point[0], yy = out_point[1];
     out_point[0] = (fx * (-yy) + cx);
     out_point[1] = (fy * xx + cy);
-  } else if (!intrinsics_valid_) {
+  } else if (!und_intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics not set"};
-  } else if (!distortion_set_) {
-    BEAM_CRITICAL("Distortion not set, cannot project point.");
-    throw std::invalid_argument{"Distortion not set"};
-  }
+  } 
   return out_point;
 }
 
