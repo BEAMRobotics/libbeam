@@ -30,6 +30,11 @@ int main() {
   std::cout << "Undistorted point: \n"
             << equid->UndistortPoint(p2) << std::endl;
 
+  beam::Vec3 p3(200, 200, 200);
+  std::cout << "Projected: \n" << equid->ProjectPoint(p3) << std::endl;
+  std::cout << "Projected undistorted: \n"
+            << equid->ProjectUndistortedPoint(p3) << std::endl;
+
   // load conf file
   std::string ladybug_location = __FILE__;
   ladybug_location.erase(ladybug_location.end() - 14, ladybug_location.end());

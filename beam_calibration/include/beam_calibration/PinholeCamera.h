@@ -49,6 +49,14 @@ public:
   beam::Vec2 ProjectPoint(beam::Vec4 point) override;
 
   /**
+   * @brief Method for projecting a point into an image plane without distortion
+   * @return Returns image coordinates after point has been projected into image
+   * plane.
+   * @param point to be projected. Not in homographic form
+   */
+  beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) override;
+
+  /**
    * @brief Method distorting a point
    * @return Returns distorted point
    * @param undistorted point

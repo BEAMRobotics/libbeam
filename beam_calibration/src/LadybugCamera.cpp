@@ -78,6 +78,31 @@ beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec4 point) {
   return out_point;
 }
 
+beam::Vec2 LadybugCamera::ProjectUndistortedPoint(beam::Vec3 point) {
+  beam::Vec2 out_point;
+  if (intrinsics_valid_) {
+    beam::Vec2 coords;
+    beam::Vec3 x_proj, X_flip;
+    beam::Mat3 K = this->GetCameraMatrix();
+    // flip the coordinate system to be consistent with opencv convention shown
+    // here:
+    // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
+    X_flip(0, 0) = -point(1, 0); // x = -y
+    X_flip(1, 0) = point(0, 0);  // y = x
+    X_flip(2, 0) = point(2, 0);  // z = z
+    // project
+    x_proj = K * X_flip;
+    // normalize
+    coords(0, 0) = x_proj(0, 0) / x_proj(2, 0);
+    coords(1, 0) = x_proj(1, 0) / x_proj(2, 0);
+    // Distort point using distortion model
+  } else if (!intrinsics_valid_) {
+    BEAM_CRITICAL("Intrinsics not set, cannot project point.");
+    throw std::invalid_argument{"Intrinsics not set"};
+  }
+  return out_point;
+}
+
 beam::Vec2 LadybugCamera::DistortPoint(beam::Vec2 pixel_in) {
   beam::Vec2 pixel_out = {0, 0};
   lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, pixel_in[0],
