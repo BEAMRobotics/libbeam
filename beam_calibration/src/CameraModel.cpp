@@ -132,6 +132,7 @@ void CameraModel::SetDistortionType(DistortionType dist) {
     distortion_ = std::make_unique<Equidistant>();
     distortion_set_ = true;
   }
+  BEAM_INFO("Distortion type changed, coefficients set to zero");
   this->SetDistortionCoefficients(coeffs);
 }
 
