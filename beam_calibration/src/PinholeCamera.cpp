@@ -62,7 +62,7 @@ beam::Vec2 PinholeCamera::ProjectUndistortedPoint(beam::Vec3 point) {
   } else if (!und_intrinsics_valid_) {
     BEAM_CRITICAL("Intrinsics not set, cannot project point.");
     throw std::invalid_argument{"Intrinsics not set"};
-  } 
+  }
   return out_point;
 }
 
