@@ -67,8 +67,8 @@ TEST_CASE("Test distortion and undistortion") {
 
   std::stringstream og, d1, und1, d2, und2;
   beam::Vec2 original(30, 100);
-  beam::Vec2 distorted = radtan->DistortPoint(original);
-  beam::Vec2 undistorted = radtan->UndistortPoint(distorted);
+  beam::Vec2 distorted = equid->DistortPoint(original);
+  beam::Vec2 undistorted = equid->UndistortPoint(distorted);
   REQUIRE(beam::fltcmp(original[0], undistorted[0]) == 0);
   REQUIRE(beam::fltcmp(original[1], undistorted[1]) == 0);
 
