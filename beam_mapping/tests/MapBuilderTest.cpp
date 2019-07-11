@@ -21,10 +21,11 @@ TEST_CASE("Testing map building") {
 
   config_file_path = GetFullFile(current_file_rel, config_file_rel);
   pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
+  bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
 
-  // TODO: Change this back
-  // bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
-  bag_file_path = "/home/nick/bag_files/ig_scans/2019_02_13_Structures_Lab/ig_scan_2019-02-13-19-44-24.bag";
+  // TODO: Change this back to test files
+  pose_file_path = "/home/nick/results/ig_maps/libbeam_map_builder/testing/2019_7_8_17_43_5_poses.json";
+  bag_file_path = "/home/nick/results/ig_maps/libbeam_map_builder/testing/ig_scan_2019-02-13-19-44-24-loam-short1.bag";
 
   beam_mapping::MapBuilder map_builder(config_file_path);
   map_builder.OverrideBagFile(bag_file_path);

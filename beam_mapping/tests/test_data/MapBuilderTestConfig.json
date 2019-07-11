@@ -2,5 +2,55 @@
   "poses_file": "test",
   "bag_file_path": "test",
   "bag_file_name": "ig_scan_2019-02-13-19-44-24.bag",
-  "save_directory": "/home/nick/results/map_builder_testing/"
+  "save_directory": "/home/nick/results/ig_maps/libbeam_map_builder/testing/",
+  "extrinsics_file": "/home/nick/catkin_ws/src/beam_robotics/calibration/results/inspector_gadget/current/extrinsics/extrinsics.json",
+  "intermediary_map_size": 5,
+  "min_translation": 0.001,
+  "min_rotation_deg": 5,
+  "combine_lidar_scans": true,
+  "lidars": [
+    {
+      "topic": "/hvlp/velodyne_points",
+      "frame": "hvlp_link",
+      "use_cropbox": true,
+      "cropbox_min": [0, 0, 0],
+      "cropbox_max": [40, 40, 40],
+    },
+    {
+      "topic": "/vvlp/velodyne_points",
+      "frame": "vvlp_link",
+      "use_cropbox": true,
+      "cropbox_min": [0, 0, 0],
+      "cropbox_max": [40, 40, 40],
+    }
+  ],
+  "input_filters":[
+    {
+      "filter_type": "DROR",
+      "radius_multiplier": 3,
+      "azimuth_angle": 0.04,
+      "min_neighbors": 3,
+      "min_search_radius": 0.02
+    },
+    {
+      "filter_type": "VOXEL",
+      "cell_size": 0.05
+    }
+  ],
+  "intermediary_filters": [
+    {
+      "filter_type": "DROR",
+      "radius_multiplier": 2.5,
+      "azimuth_angle": 0.04,
+      "min_neighbors": 6,
+      "min_search_radius": 0.01
+    }
+  ],
+  "output_filters": [
+    {
+      "filter_type": "ROR",
+      "search_radius": 0.03,
+      "min_neighbors": 5,
+    }
+  ]
 }

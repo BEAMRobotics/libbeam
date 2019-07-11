@@ -28,10 +28,10 @@ public:
   ~Poses() = default;
 
   /**
-   * @brief for adding bag_name to pose file
+   * @brief for setting bag_name to pose file
    * @param _bag_name
    */
-  void AddBagName(const std::string& _bag_name);
+  void SetBagName(const std::string& _bag_name);
 
   /**
    * @brief for getting bag_name
@@ -40,10 +40,10 @@ public:
   std::string GetBagName();
 
   /**
-   * @brief for adding pose_file_date to pose file
+   * @brief for setting pose_file_date to pose file
    * @param _pose_file_date
    */
-  void AddPoseFileDate(const std::string& _pose_file_date);
+  void SetPoseFileDate(const std::string& _pose_file_date);
 
   /**
    * @brief for getting pose_file_date
@@ -52,10 +52,10 @@ public:
   std::string GetPoseFileDate();
 
   /**
-   * @brief for adding fixed_frame to pose file
+   * @brief for setting fixed_frame to pose file
    * @param _fixed_frame
    */
-  void AddFixedFrame(const std::string& _fixed_frame);
+  void SetFixedFrame(const std::string& _fixed_frame);
 
   /**
    * @brief for getting fixed_frame
@@ -64,10 +64,10 @@ public:
   std::string GetFixedFrame();
 
   /**
-   * @brief for adding moving_frame to pose file
+   * @brief for setting moving_frame to pose file
    * @param _moving_frame
    */
-  void AddMovingFrame(const std::string& _moving_frame);
+  void SetMovingFrame(const std::string& _moving_frame);
 
   /**
    * @brief for getting moving_frame
@@ -76,10 +76,10 @@ public:
   std::string GetMovingFrame();
 
   /**
-   * @brief for adding time stamps
+   * @brief for setting time stamps
    * @param _time_stamps
    */
-  void AddTimeStamps(const std::vector<ros::Time>& _time_stamps);
+  void SetTimeStamps(const std::vector<ros::Time>& _time_stamps);
 
   /**
    * @brief for getting the time stamps
@@ -94,10 +94,10 @@ public:
   void AddSingleTimeStamp(const ros::Time& time_stamp);
 
   /**
-   * @brief for adding poses
+   * @brief for setting poses
    * @param _poses
    */
-  void AddPoses(
+  void SetPoses(
       const std::vector<Eigen::Affine3d,
                         Eigen::aligned_allocator<Eigen::Affine3d>>& _poses);
 

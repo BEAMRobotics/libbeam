@@ -10,7 +10,7 @@
 
 namespace beam_mapping {
 
-void Poses::AddBagName(const std::string& _bag_name) {
+void Poses::SetBagName(const std::string& _bag_name) {
   bag_name = _bag_name;
 }
 
@@ -18,7 +18,7 @@ std::string Poses::GetBagName() {
   return bag_name;
 }
 
-void Poses::AddPoseFileDate(const std::string& _pose_file_date) {
+void Poses::SetPoseFileDate(const std::string& _pose_file_date) {
   pose_file_date = _pose_file_date;
 }
 
@@ -26,7 +26,7 @@ std::string Poses::GetPoseFileDate() {
   return pose_file_date;
 }
 
-void Poses::AddFixedFrame(const std::string& _fixed_frame) {
+void Poses::SetFixedFrame(const std::string& _fixed_frame) {
   fixed_frame = _fixed_frame;
 }
 
@@ -34,7 +34,7 @@ std::string Poses::GetFixedFrame() {
   return fixed_frame;
 }
 
-void Poses::AddMovingFrame(const std::string& _moving_frame) {
+void Poses::SetMovingFrame(const std::string& _moving_frame) {
   moving_frame = _moving_frame;
 }
 
@@ -42,7 +42,7 @@ std::string Poses::GetMovingFrame() {
   return moving_frame;
 }
 
-void Poses::AddTimeStamps(const std::vector<ros::Time>& _time_stamps) {
+void Poses::SetTimeStamps(const std::vector<ros::Time>& _time_stamps) {
   time_stamps = _time_stamps;
 }
 
@@ -54,7 +54,7 @@ void Poses::AddSingleTimeStamp(const ros::Time& _time_stamp) {
   time_stamps.push_back(_time_stamp);
 }
 
-void Poses::AddPoses(
+void Poses::SetPoses(
     const std::vector<Eigen::Affine3d,
                       Eigen::aligned_allocator<Eigen::Affine3d>>& _poses) {
   poses = _poses;
