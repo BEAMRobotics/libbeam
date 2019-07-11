@@ -54,6 +54,14 @@ public:
   beam::Vec2 ProjectPoint(beam::Vec4 point) override;
 
   /**
+   * @brief Method for projecting a point into an image plane without distortion
+   * @return Returns image coordinates after point has been projected into image
+   * plane.
+   * @param point to be projected. Not in homographic form
+   */
+  beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) override;
+
+  /**
    * @brief Method for undistorting an image based on camera's distortion
    * @return image
    */
@@ -65,6 +73,13 @@ public:
    * @param pixel_in point to be distorted
    */
   beam::Vec2 DistortPoint(beam::Vec2 pixel_in) override;
+
+  /**
+   * @brief Special undistortion using ladybug SDK
+   * @return Returns image coordinates after point has been undistorted
+   * @param pixel_in point to be undistorted
+   */
+  beam::Vec2 UndistortPoint(beam::Vec2 pixel_in) override;
 
   /**
    * @brief Method back projecting

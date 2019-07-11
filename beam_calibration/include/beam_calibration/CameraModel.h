@@ -155,11 +155,26 @@ public:
   virtual beam::Vec2 ProjectPoint(beam::Vec4 point) = 0;
 
   /**
+   * @brief Method for projecting a point into an image plane without distortion
+   * @return Returns image coordinates after point has been projected into image
+   * plane.
+   * @param point to be projected. Not in homographic form
+   */
+  virtual beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) = 0;
+
+  /**
    * @brief Method distorting a point
    * @return Returns distorted point
    * @param undistorted point
    */
   virtual beam::Vec2 DistortPoint(beam::Vec2 point) = 0;
+
+  /**
+   * @brief Method undistorting a point
+   * @return Returns undistorted point
+   * @param distorted point
+   */
+  virtual beam::Vec2 UndistortPoint(beam::Vec2 point) = 0;
 
   /**
    * @brief Method back projecting
@@ -199,6 +214,14 @@ public:
    * @param intrinsics of the camera
    */
   virtual void SetIntrinsics(beam::VecX instrinsics);
+
+  /**
+   * @brief Method for adding intrinsic values for undistorted image
+   * Pinhole: [fx,fy,cx,cy]
+   * Ladybug: [fx,fy,cy,cx]
+   * @param intrinsics of the camera
+   */
+  virtual void SetUndistortedIntrinsics(beam::VecX und_instrinsics);
 
   /**
    * @brief Method for adding the distortion model
@@ -244,14 +267,20 @@ public:
   virtual const beam::VecX GetIntrinsics() const;
 
   /**
+   * @brief Method for retrieving the intrinsic values of the model
+   * @return intrinsics of the camera
+   */
+  virtual const beam::VecX GetUndistortedIntrinsics() const;
+
+  /**
    * @brief Method for retrieving the distortion model
    * @return distortion model
    */
   virtual const beam::VecX GetDistortionCoefficients() const;
 
   /**
-   * @brief Method for setting distortion type
-   * @param distortion model
+   * @brief Method for getting distortion type
+   * @return distortion model
    */
   virtual DistortionType GetDistortionType() const;
 
@@ -302,11 +331,12 @@ protected:
   CameraType type_;
   std::string frame_id_, calibration_date_;
   uint32_t image_height_, image_width_;
-  beam::VecX intrinsics_, distortion_coefficients_;
+  beam::VecX intrinsics_, distortion_coefficients_, undistorted_intrinsics_;
   std::unique_ptr<Distortion> distortion_ = nullptr;
   // Boolean values to keep track of validity
   bool intrinsics_valid_ = false, distortion_coeffs_set_ = false,
-       calibration_date_set_ = false, distortion_set_ = false;
+       calibration_date_set_ = false, distortion_set_ = false,
+       und_intrinsics_valid_ = false;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
                                                 {CameraType::PINHOLE, 4}};

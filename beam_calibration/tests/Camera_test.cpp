@@ -53,6 +53,44 @@ TEST_CASE("Test projection and back project -- equid") {
   REQUIRE(beam::fltcmp(back_point[2], test_point[2], 0.01) == 0);
 }
 
+TEST_CASE("Test distortion and undistortion") {
+  std::string radtan_location = __FILE__;
+  radtan_location.erase(radtan_location.end() - 21, radtan_location.end());
+  radtan_location += "tests/test_data/F1.json";
+  std::shared_ptr<beam_calibration::CameraModel> radtan =
+      beam_calibration::CameraModel::LoadJSON(radtan_location);
+  std::string equid_location = __FILE__;
+  equid_location.erase(equid_location.end() - 21, equid_location.end());
+  equid_location += "tests/test_data/F2.json";
+  std::shared_ptr<beam_calibration::CameraModel> equid =
+      beam_calibration::CameraModel::LoadJSON(equid_location);
+
+  std::stringstream og1, og2, d1, und1, d2, und2;
+  beam::Vec2 original(30, 100);
+  beam::Vec2 distorted = equid->DistortPoint(original);
+  beam::Vec2 undistorted = equid->UndistortPoint(distorted);
+  REQUIRE(beam::fltcmp(original[0], undistorted[0]) == 0);
+  REQUIRE(beam::fltcmp(original[1], undistorted[1]) == 0);
+  og1 << original;
+  d1 << distorted;
+  und1 << undistorted;
+  INFO(og1.str());
+  INFO(d1.str());
+  INFO(und1.str());
+
+  beam::Vec2 original2(10, 10);
+  beam::Vec2 distorted2 = radtan->DistortPoint(original2);
+  beam::Vec2 undistorted2 = radtan->UndistortPoint(distorted2);
+  og2 << original2;
+  d2 << distorted2;
+  und2 << undistorted2;
+  INFO(og2.str());
+  INFO(d2.str());
+  INFO(und2.str());
+  REQUIRE(beam::fltcmp(original2[0], undistorted2[0]) == 0);
+  REQUIRE(beam::fltcmp(original2[1], undistorted2[1]) == 0);
+}
+
 TEST_CASE("Test factory method") {
   beam_calibration::CameraType type = beam_calibration::CameraType::PINHOLE;
   beam_calibration::DistortionType dist_type =

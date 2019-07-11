@@ -9,12 +9,9 @@ int main() {
   // radtan
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 14, radtan_location.end());
-  radtan_location += "tests/test_data/F2.json";
+  radtan_location += "tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> radtan =
       beam_calibration::CameraModel::LoadJSON(radtan_location);
-
-  beam::Vec3 point(-230, 4230, 304);
-  std::cout << radtan->ProjectPoint(point) << std::endl;
 
   // load equidistant
   std::string equidistant_location = __FILE__;
