@@ -270,10 +270,14 @@ beam::Vec2 Radtan::DistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
 
   double xx, yy, r2, k1 = coeffs[0], k2 = coeffs[1], k3 = coeffs[2],
                      p1 = coeffs[3], p2 = coeffs[4];
-  r2 = x * x + y * y;
-  double quotient = (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-  xx = x * quotient + 2 * p1 * x * y + p2 * (r2 + 2 * x * x);
-  yy = y * quotient + p1 * (r2 + 2 * y * y) + 2 * p2 * x * y;
+  double mx2_u = x * x;
+  double my2_u = y * y;
+  double mxy_u = x * y;
+  double rho2_u = mx2_u + my2_u;
+  double rad_dist_u =
+      k1 * rho2_u + k2 * rho2_u * rho2_u + k3 * rho2_u * rho2_u * rho2_u;
+  xx = x + (x * rad_dist_u + 2.0 * p1 * mxy_u + p2 * (rho2_u + 2.0 * mx2_u));
+  yy = y + (y * rad_dist_u + 2.0 * p2 * mxy_u + p1 * (rho2_u + 2.0 * my2_u));
 
   coords << xx, yy;
   return coords;
@@ -307,7 +311,7 @@ beam::Vec2 Equidistant::DistortPixel(beam::VecX coeffs,
 }
 
 beam::Vec2 Radtan::UndistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
-  constexpr int n = 30; // Max. number of iterations
+  constexpr int n = 200; // Max. number of iterations
   beam::Vec2 y = point;
   beam::Vec2 ybar = y;
   beam::Mat2 F;
