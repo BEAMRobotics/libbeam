@@ -35,13 +35,13 @@ TEST_CASE("Test Tree building and retrieving") {
   std::string to_frame3 = "BASELINK";
   std::string from_frame3 = "X1";
   TA_BASELINK_X1_calc.matrix() = TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
-  TA_BASELINK_X1_lookup = Tree.GetTransform(to_frame3, from_frame3);
+  TA_BASELINK_X1_lookup = Tree.GetTransformEigen(to_frame3, from_frame3);
   int round_precision = 7;
   REQUIRE(TA_X1_HVLP.matrix() ==
-          beam::RoundMatrix(Tree.GetTransform(to_frame2, from_frame2).matrix(),
+          beam::RoundMatrix(Tree.GetTransformEigen(to_frame2, from_frame2).matrix(),
                             round_precision));
   REQUIRE(TA_BASELINK_HVLP.matrix() ==
-          beam::RoundMatrix(Tree.GetTransform(to_frame1, from_frame1).matrix(),
+          beam::RoundMatrix(Tree.GetTransformEigen(to_frame1, from_frame1).matrix(),
                             round_precision));
   REQUIRE(beam::RoundMatrix(TA_BASELINK_X1_calc.matrix(), round_precision) ==
           beam::RoundMatrix(TA_BASELINK_X1_lookup.matrix(), round_precision));
@@ -86,9 +86,9 @@ TEST_CASE("Test loading tree from .json"){
   std::string to_frame3 = "BASELINK";
   std::string from_frame3 = "X1";
 
-  T_BASELINK_HVLP_JSON = Tree.GetTransform(to_frame1, from_frame1).matrix();
-  T_X1_HVLP_JSON = Tree.GetTransform(to_frame2, from_frame2).matrix();
-  T_BASELINK_X1_JSON = Tree.GetTransform(to_frame3, from_frame3).matrix();
+  T_BASELINK_HVLP_JSON = Tree.GetTransformEigen(to_frame1, from_frame1).matrix();
+  T_X1_HVLP_JSON = Tree.GetTransformEigen(to_frame2, from_frame2).matrix();
+  T_BASELINK_X1_JSON = Tree.GetTransformEigen(to_frame3, from_frame3).matrix();
 
   // perform tests
   REQUIRE(Tree.GetCalibrationDate() == calib_date);
@@ -133,16 +133,16 @@ TEST_CASE("Testing multiple parent case"){
 
    Tree1.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
    Tree1.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
-   REQUIRE_NOTHROW(T = Tree1.GetTransform(to_frame2, from_frame1));
+   REQUIRE_NOTHROW(T = Tree1.GetTransformEigen(to_frame2, from_frame1));
    Tree1.AddTransform(TA_X1_IMU1, to_frame3, from_frame3);
-   REQUIRE_NOTHROW(T = Tree1.GetTransform(to_frame2, from_frame1));
+   REQUIRE_NOTHROW(T = Tree1.GetTransformEigen(to_frame2, from_frame1));
    //
    // Tree2.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
    // Tree2.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
-   // REQUIRE_NOTHROW(T = Tree2.GetTransform(to_frame2, from_frame1));
+   // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(to_frame2, from_frame1));
    // Tree2.AddTransform(TA_IMU1_X1, from_frame3, to_frame3);
-   // REQUIRE_NOTHROW(T = Tree2.GetTransform(to_frame2, from_frame1));
-   // REQUIRE_NOTHROW(T = Tree2.GetTransform(from_frame1, from_frame3));
+   // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(to_frame2, from_frame1));
+   // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(from_frame1, from_frame3));
 }
 
 TEST_CASE("Test multiple parent case for TransformStamped messages"){
@@ -181,10 +181,10 @@ TEST_CASE("Test multiple parent case for TransformStamped messages"){
 
   Tree.AddTransform(tf_msg1);
   Tree.AddTransform(tf_msg2);
-  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame,
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransformROS(to_frame,
                                              from_frame1,
                                              transform_time));
-  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame,
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransformROS(to_frame,
                                              from_frame2,
                                              transform_time));
 }
@@ -224,7 +224,7 @@ TEST_CASE("Test same dynamic transform case with same timestamp"){
 
   Tree.AddTransform(tf_msg1);
   Tree.AddTransform(tf_msg2);
-  REQUIRE_NOTHROW(tf_msg = Tree.GetTransform(to_frame,
+  REQUIRE_NOTHROW(tf_msg = Tree.GetTransformROS(to_frame,
                                              from_frame,
                                              transform_time));
 }
