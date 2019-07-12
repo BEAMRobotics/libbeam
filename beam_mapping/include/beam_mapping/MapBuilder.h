@@ -4,22 +4,26 @@
 
 #include "beam_calibration/TfTree.h"
 #include "beam_mapping/Poses.h"
+#include "beam_utils/math.hpp"
 
 // PCL specific headers
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#pragma once
+// ROS headers
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 
-// beam
-#include "beam_utils/math.hpp"
+#pragma once
 
 namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
 using filter_params_type = std::pair<std::string, std::vector<double>>;
+using PointT = pcl::PointXYZI;
+using PointCloud = pcl::PointCloud<PointT>;
 
 /**
  * @brief class for map builder
@@ -74,12 +78,32 @@ private:
    */
   void LoadConfigFromJSON(const std::string& config_file);
 
-  beam_calibration::TfTree tree_;
-  beam_mapping::Poses poses_;
+  /**
+   * @brief checks the rotation and translation change between current pose and
+   * last pose and outputs bool of whether it was greater than specified the
+   * specified thresholds
+   * @return save_scan whether or not to save the current scan
+   */
+  bool CheckPoseChange();
+
+  /**
+   * @brief processes a point cloud message by first checking if the pose has
+   * changed more than the threshold, if so convert it and add to the scans and
+   * timestamp vectors
+   * @param iter rosbag iterator
+   */
+  void ProcessPointCloudMsg(rosbag::View::iterator &iter);
+
+  /**
+   * @brief loads all the scans from a specific lidar and builds the scans and
+   * timestamps vector.
+   * @param lidar_number
+   */
+   void LoadScans(uint8_t lidar_number);
+
+  // From Config file
   std::string pose_file_path_, bag_file_path_, bag_file_name_, save_dir_,
   config_file_, extrinsics_file_;
-  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> scans_;
-  std::vector<ros::Time> time_stamps_;
   int intermediary_map_size_;
   double min_translation_, min_rotation_deg_;
   bool combine_lidar_scans_;
@@ -88,6 +112,14 @@ private:
   std::vector<bool> lidar_cropbox_bool_;
   std::vector<filter_params_type> input_filters_, intermediary_filters_,
   output_filters_;
+
+  // New objects
+  beam_mapping::Poses poses_;
+  beam_calibration::TfTree tree_;
+  PointCloud::Ptr aggregate_;
+  std::vector<PointCloud::Ptr> scans_;
+  std::vector<ros::Time> time_stamps_;
+  Eigen::Affine3d scan_pose_last_, scan_pose_current_;
 };
 
 /** @} group mapping */
