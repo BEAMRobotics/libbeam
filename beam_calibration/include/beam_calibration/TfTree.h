@@ -96,8 +96,6 @@ public:
    */
   void SetCalibrationDate(std::string& calibration_date);
 
-  // ros::Time start_time_{0};
-
   /**
    * @brief Method for getting all the frames in TfTree
    * @return Return unordered_map. First strings are from (parent) frames and
