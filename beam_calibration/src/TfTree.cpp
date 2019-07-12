@@ -1,8 +1,8 @@
 #include "beam_calibration/TfTree.h"
 
 #include <beam_utils/log.hpp>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <tf2_eigen/tf2_eigen.h>
 
 using json = nlohmann::json;
@@ -76,7 +76,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     return;
   }
 
-  ros::Time time0 = start_time_; //(0);
+  ros::Time time0{0};
   std::string transform_error;
   bool transform_exists =
       Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
@@ -101,7 +101,7 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
 }
 
 void TfTree::AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
-                          std::string& from_frame, ros::Time time_stamp){
+                          std::string& from_frame, ros::Time time_stamp) {
   geometry_msgs::TransformStamped msg;
   msg = tf2::eigenToTransform(Tnew);
   msg.header.frame_id = from_frame;
@@ -157,17 +157,18 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
   InsertFrame(to_frame, from_frame);
 }
 
-Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
-                                     std::string& from_frame) {
+Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
+                                          std::string& from_frame) {
   Eigen::Affine3d TA_target_source;
   std::string transform_error;
-  ros::Time time0 = start_time_; //(0);
+  ros::Time lookup_time{0};
+
   bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
+      Tree_.canTransform(to_frame, from_frame, lookup_time, &transform_error);
 
   if (can_transform) {
     geometry_msgs::TransformStamped T_target_source;
-    T_target_source = Tree_.lookupTransform(to_frame, from_frame, time0);
+    T_target_source = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
     TA_target_source = tf2::transformToEigen(T_target_source);
   } else {
     LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
@@ -178,9 +179,31 @@ Eigen::Affine3d TfTree::GetTransform(std::string& to_frame,
   return TA_target_source;
 }
 
-geometry_msgs::TransformStamped TfTree::GetTransform(std::string& to_frame,
-                                                     std::string& from_frame,
-                                                     ros::Time lookup_time) {
+Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
+                                          std::string& from_frame,
+                                          ros::Time& lookup_time) {
+  Eigen::Affine3d TA_target_source;
+  std::string transform_error;
+
+  bool can_transform =
+      Tree_.canTransform(to_frame, from_frame, lookup_time, &transform_error);
+
+  if (can_transform) {
+    geometry_msgs::TransformStamped T_target_source;
+    T_target_source = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
+    TA_target_source = tf2::transformToEigen(T_target_source);
+  } else {
+    LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
+              "Message: %s",
+              from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
+    throw std::runtime_error{"Cannot look up transform."};
+  }
+  return TA_target_source;
+}
+
+geometry_msgs::TransformStamped
+    TfTree::GetTransformROS(std::string& to_frame, std::string& from_frame,
+                            ros::Time& lookup_time) {
   geometry_msgs::TransformStamped transform_msg;
   std::string transform_error;
 
@@ -218,7 +241,8 @@ void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
   Tgeo.header.seq = 1;
   Tgeo.header.frame_id = from_frame;
   Tgeo.child_frame_id = to_frame;
-  Tgeo.header.stamp = start_time_;
+  ros::Time time0{0};
+  Tgeo.header.stamp = time0;
   bool transform_valid = Tree_.setTransform(Tgeo, "TfTree", true);
   if (!transform_valid) {
     throw std::invalid_argument{"Cannot add transform. Transform invalid."};

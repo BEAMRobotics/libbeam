@@ -67,10 +67,20 @@ public:
                     bool is_static = false);
 
   /**
-   * @brief Method for retrieving a transformation
+   * @brief Method for retrieving a static transformation
    * @return Return the transformation requested as Affine3d object
    */
-  Eigen::Affine3d GetTransform(std::string& to_frame, std::string& from_frame);
+  Eigen::Affine3d GetTransformEigen(std::string& to_frame,
+                                    std::string& from_frame);
+
+  /**
+   * @brief Method for retrieving a dynamic transformation
+   * @return Return the transformation requested as Affine3d object
+   * @param lookup_time
+   */
+  Eigen::Affine3d GetTransformEigen(std::string& to_frame,
+                                    std::string& from_frame,
+                                    ros::Time& lookup_time);
 
   /**
    * @brief Method for looking up dynamic transform
@@ -79,9 +89,9 @@ public:
    * @param lookup_time
    * @return Transform Stamped
    */
-  geometry_msgs::TransformStamped GetTransform(std::string& to_frame,
-                                               std::string& from_frame,
-                                               ros::Time lookup_time);
+  geometry_msgs::TransformStamped GetTransformROS(std::string& to_frame,
+                                                  std::string& from_frame,
+                                                  ros::Time& lookup_time);
 
   /**
    * @brief Method for retrieving the date that the calibration was done
@@ -95,7 +105,7 @@ public:
    */
   void SetCalibrationDate(std::string& calibration_date);
 
-  ros::Time start_time_{0};
+  // ros::Time start_time_{0};
 
   /**
    * @brief Method for getting all the frames in TfTree
@@ -107,7 +117,6 @@ public:
   }
 
 private:
-
   /**
    * @brief Private method for setting a transform in the tf tree
    * @param Tnew Transform being added from from_frame to to_frame
