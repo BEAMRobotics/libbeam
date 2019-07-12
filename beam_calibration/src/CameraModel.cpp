@@ -14,7 +14,7 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
 
   int image_width = 0, image_height = 0;
   std::string camera_type, date, method, frame_id, distortion_model;
-  beam::VecX coeffs, intrinsics;
+  beam::VecX coeffs, intrinsics, undistorted_intrinsics;
   // Read values from JSON and populate variables
   camera_type = J["camera_type"];
   date = J["date"];
@@ -42,6 +42,17 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
     for (uint8_t k = 0; k < tmp_coeffs.size(); k++) {
       coeffs(k) = tmp_coeffs[k];
     }
+
+    if (calib.find("undistorted_intrinsics") != calib.end()) {
+      std::vector<double> tmp_coeffs;
+      for (const auto& value : calib["undistorted_intrinsics"]) {
+        tmp_coeffs.push_back(value.get<double>());
+      }
+      undistorted_intrinsics.resize(tmp_coeffs.size());
+      for (uint8_t k = 0; k < tmp_coeffs.size(); k++) {
+        undistorted_intrinsics(k) = tmp_coeffs[k];
+      }
+    }
   }
 
   CameraType cam_type;
@@ -57,8 +68,13 @@ std::shared_ptr<CameraModel> CameraModel::LoadJSON(std::string& file_location) {
   }
 
   // create camera model
-  return CameraModel::Create(cam_type, dist_type, intrinsics, coeffs,
-                             image_height, image_width, frame_id, date);
+  std::shared_ptr<CameraModel> camera =
+      CameraModel::Create(cam_type, dist_type, intrinsics, coeffs, image_height,
+                          image_width, frame_id, date);
+  if (undistorted_intrinsics.size() > 0) {
+    camera->SetUndistortedIntrinsics(undistorted_intrinsics);
+  }
+  return camera;
 
 } // namespace beam_calibration
 
@@ -101,6 +117,17 @@ void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
   }
 }
 
+void CameraModel::SetUndistortedIntrinsics(beam::VecX und_intrinsics) {
+  if (und_intrinsics.size() != intrinsics_size_[this->GetType()]) {
+    BEAM_CRITICAL("Invalid number of elements in intrinsics vector.");
+    throw std::runtime_error{
+        "Invalid number of elements in intrinsics vector."};
+  } else {
+    undistorted_intrinsics_ = und_intrinsics;
+    und_intrinsics_valid_ = true;
+  }
+}
+
 void CameraModel::SetDistortionCoefficients(beam::VecX distortion) {
   if (!distortion_set_) {
     BEAM_CRITICAL("Distortion has not been set");
@@ -132,6 +159,7 @@ void CameraModel::SetDistortionType(DistortionType dist) {
     distortion_ = std::make_unique<Equidistant>();
     distortion_set_ = true;
   }
+  BEAM_INFO("Distortion type changed, coefficients set to zero");
   this->SetDistortionCoefficients(coeffs);
 }
 
@@ -161,6 +189,14 @@ const beam::VecX CameraModel::GetIntrinsics() const {
     throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
   }
   return intrinsics_;
+}
+
+const beam::VecX CameraModel::GetUndistortedIntrinsics() const {
+  if (!und_intrinsics_valid_) {
+    BEAM_CRITICAL("cannot retrieve intrinsics, value not set.");
+    throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
+  }
+  return undistorted_intrinsics_;
 }
 
 const beam::VecX CameraModel::GetDistortionCoefficients() const {
@@ -234,10 +270,14 @@ beam::Vec2 Radtan::DistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
 
   double xx, yy, r2, k1 = coeffs[0], k2 = coeffs[1], k3 = coeffs[2],
                      p1 = coeffs[3], p2 = coeffs[4];
-  r2 = x * x + y * y;
-  double quotient = (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-  xx = x * quotient + 2 * p1 * x * y + p2 * (r2 + 2 * x * x);
-  yy = y * quotient + p1 * (r2 + 2 * y * y) + 2 * p2 * x * y;
+  double mx2_u = x * x;
+  double my2_u = y * y;
+  double mxy_u = x * y;
+  double rho2_u = mx2_u + my2_u;
+  double rad_dist_u =
+      k1 * rho2_u + k2 * rho2_u * rho2_u + k3 * rho2_u * rho2_u * rho2_u;
+  xx = x + (x * rad_dist_u + 2.0 * p1 * mxy_u + p2 * (rho2_u + 2.0 * mx2_u));
+  yy = y + (y * rad_dist_u + 2.0 * p2 * mxy_u + p1 * (rho2_u + 2.0 * my2_u));
 
   coords << xx, yy;
   return coords;
@@ -271,7 +311,7 @@ beam::Vec2 Equidistant::DistortPixel(beam::VecX coeffs,
 }
 
 beam::Vec2 Radtan::UndistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
-  constexpr int n = 30; // Max. number of iterations
+  constexpr int n = 200; // Max. number of iterations
   beam::Vec2 y = point;
   beam::Vec2 ybar = y;
   beam::Mat2 F;

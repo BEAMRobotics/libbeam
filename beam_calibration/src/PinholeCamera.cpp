@@ -40,11 +40,29 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
   } else if (!distortion_set_) {
     BEAM_CRITICAL("Distortion not set, cannot project point.");
     throw std::invalid_argument{"Distortion not set"};
-  } else if (!this->PixelInImage(out_point)) {
-    BEAM_CRITICAL("Projected point lies outside of image plane.");
-    throw std::invalid_argument{"Projected point lies outside of image plane."};
   }
 
+  return out_point;
+}
+
+beam::Vec2 PinholeCamera::ProjectUndistortedPoint(beam::Vec3 point) {
+  beam::Vec2 out_point;
+  if (und_intrinsics_valid_) {
+    // Project point
+    beam::VecX intrinsics = this->GetUndistortedIntrinsics();
+    const double fx = intrinsics[0], fy = intrinsics[1], cx = intrinsics[2],
+                 cy = intrinsics[3];
+    const double x = point[0], y = point[1], z = point[2];
+    const double rz = 1.0 / z;
+    out_point << (x * rz), (y * rz);
+    // flip the coordinate system to be consistent with opencv convention
+    double xx = out_point[0], yy = out_point[1];
+    out_point[0] = (fx * (-yy) + cx);
+    out_point[1] = (fy * xx + cy);
+  } else if (!und_intrinsics_valid_) {
+    BEAM_CRITICAL("Intrinsics not set, cannot project point.");
+    throw std::invalid_argument{"Intrinsics not set"};
+  }
   return out_point;
 }
 
@@ -68,6 +86,11 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec4 point) {
 beam::Vec2 PinholeCamera::DistortPoint(beam::Vec2 point) {
   beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
   return distortion_->DistortPixel(distortion_coeffs, point);
+}
+
+beam::Vec2 PinholeCamera::UndistortPoint(beam::Vec2 point) {
+  beam::VecX distortion_coeffs = this->GetDistortionCoefficients();
+  return distortion_->UndistortPixel(distortion_coeffs, point);
 }
 
 cv::Mat PinholeCamera::UndistortImage(cv::Mat input_image) {
