@@ -105,7 +105,7 @@ public:
    */
   void SetCalibrationDate(std::string& calibration_date);
 
-  // ros::Time start_time_{0};
+  ros::Time start_time{0};
 
   /**
    * @brief Method for getting all the frames in TfTree

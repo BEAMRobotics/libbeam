@@ -76,16 +76,15 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
     return;
   }
 
-  ros::Time time0{0};
   std::string transform_error;
   bool transform_exists =
-      Tree_.canTransform(to_frame, from_frame, time0, &transform_error);
+      Tree_.canTransform(to_frame, from_frame, start_time, &transform_error);
   if (transform_exists) {
     throw std::runtime_error{"Cannot add transform. Transform already exists."};
   }
 
   std::string parent;
-  bool parent_exists = Tree_._getParent(to_frame, time0, parent);
+  bool parent_exists = Tree_._getParent(to_frame, start_time, parent);
   if (parent_exists) {
     LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
              "has a parent (%s). Adding inverse of inputted transform.",
@@ -161,14 +160,13 @@ Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
                                           std::string& from_frame) {
   Eigen::Affine3d TA_target_source;
   std::string transform_error;
-  ros::Time lookup_time{0};
 
   bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, lookup_time, &transform_error);
+      Tree_.canTransform(to_frame, from_frame, start_time, &transform_error);
 
   if (can_transform) {
     geometry_msgs::TransformStamped T_target_source;
-    T_target_source = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
+    T_target_source = Tree_.lookupTransform(to_frame, from_frame, start_time);
     TA_target_source = tf2::transformToEigen(T_target_source);
   } else {
     LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
@@ -241,8 +239,7 @@ void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
   Tgeo.header.seq = 1;
   Tgeo.header.frame_id = from_frame;
   Tgeo.child_frame_id = to_frame;
-  ros::Time time0{0};
-  Tgeo.header.stamp = time0;
+  Tgeo.header.stamp = start_time;
   bool transform_valid = Tree_.setTransform(Tgeo, "TfTree", true);
   if (!transform_valid) {
     throw std::invalid_argument{"Cannot add transform. Transform invalid."};
