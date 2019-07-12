@@ -44,7 +44,7 @@ FIND_PACKAGE(Ceres 1.11)
 FIND_PACKAGE(GTSAM)
 FIND_PACKAGE(GeographicLib 1.49)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
-             roscpp std_msgs cv_bridge)
+             roscpp std_msgs cv_bridge rosbag)
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(Ladybug)
