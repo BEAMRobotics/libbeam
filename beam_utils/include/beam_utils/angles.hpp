@@ -5,6 +5,9 @@
 
 namespace beam {
 
+  #define DEG_TO_RAD 0.0174532925199433
+  #define RAD_TO_DEG 57.2957795130823209  
+
 /** Wraps input angle to the interval [-PI, PI).
  *
  * @param[in] angle the original angle.
