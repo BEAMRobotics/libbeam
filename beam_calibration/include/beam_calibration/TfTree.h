@@ -123,8 +123,9 @@ private:
    * @param to_frame child frame of a transform
    * @param from_frame parent frame of a transform
    */
-  void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
-                    std::string& from_frame);
+  void SetEigenTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
+                         std::string& from_frame,
+                         ros::Time& time_stamp);
 
   /**
    * @brief Method for storing frame names in frames_ variable

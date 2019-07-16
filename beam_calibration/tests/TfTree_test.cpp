@@ -34,15 +34,21 @@ TEST_CASE("Test Tree building and retrieving") {
 
   std::string to_frame3 = "BASELINK";
   std::string from_frame3 = "X1";
+
+  Eigen::Affine3d TA_BASELINK_HVLP_lookup = Tree.GetTransformEigen(to_frame1, from_frame1);
+  Eigen::Affine3d T_X1_HVLP_lookup = Tree.GetTransformEigen(to_frame2, from_frame2);
+
   TA_BASELINK_X1_calc.matrix() = TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
   TA_BASELINK_X1_lookup = Tree.GetTransformEigen(to_frame3, from_frame3);
   int round_precision = 7;
+  REQUIRE(TA_BASELINK_HVLP.matrix() ==
+          beam::RoundMatrix(TA_BASELINK_HVLP_lookup.matrix(), round_precision));
+  REQUIRE(T_X1_HVLP.matrix() ==
+          beam::RoundMatrix(T_X1_HVLP_lookup.matrix(), round_precision));
   REQUIRE(TA_X1_HVLP.matrix() ==
           beam::RoundMatrix(Tree.GetTransformEigen(to_frame2, from_frame2).matrix(),
                             round_precision));
-  REQUIRE(TA_BASELINK_HVLP.matrix() ==
-          beam::RoundMatrix(Tree.GetTransformEigen(to_frame1, from_frame1).matrix(),
-                            round_precision));
+
   REQUIRE(beam::RoundMatrix(TA_BASELINK_X1_calc.matrix(), round_precision) ==
           beam::RoundMatrix(TA_BASELINK_X1_lookup.matrix(), round_precision));
   REQUIRE(Tree.GetCalibrationDate() == calib_date);

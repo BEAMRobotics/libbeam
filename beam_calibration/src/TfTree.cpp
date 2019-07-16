@@ -84,27 +84,32 @@ void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
   }
 
   std::string parent;
-  bool parent_exists = Tree_._getParent(to_frame, start_time, parent);
+  bool parent_exists = Tree_._getParent(from_frame, start_time, parent);
   if (parent_exists) {
     LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
              "has a parent (%s). Adding inverse of inputted transform.",
              from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
              parent.c_str());
     Eigen::Affine3d TAnew_inverse = TAnew.inverse();
-    SetTransform(TAnew_inverse, from_frame, to_frame);
+    SetEigenTransform(TAnew_inverse, from_frame, to_frame, start_time);
     InsertFrame(from_frame, to_frame);
   } else {
-    SetTransform(TAnew, to_frame, from_frame);
+    SetEigenTransform(TAnew, to_frame, from_frame, start_time);
     InsertFrame(to_frame, from_frame);
   }
 }
 
 void TfTree::AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
                           std::string& from_frame, ros::Time time_stamp) {
+  if (!beam::IsTransformationMatrix(Tnew.matrix())) {
+    throw std::runtime_error{"Invalid transformation matrix"};
+    LOG_ERROR("Invalid transformation matrix input.");
+    return;
+  }
   geometry_msgs::TransformStamped msg;
   msg = tf2::eigenToTransform(Tnew);
-  msg.header.frame_id = from_frame;
-  msg.child_frame_id = to_frame;
+  msg.header.frame_id = to_frame;
+  msg.child_frame_id = from_frame;
   msg.header.stamp = time_stamp;
   this->AddTransform(msg, false);
 }
@@ -158,23 +163,23 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
 
 Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
                                           std::string& from_frame) {
-  Eigen::Affine3d TA_target_source;
+  Eigen::Affine3d TA_TOFRAME_FROMFRAME;
   std::string transform_error;
 
   bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, start_time, &transform_error);
+      Tree_.canTransform(from_frame, to_frame, start_time, &transform_error);
 
   if (can_transform) {
-    geometry_msgs::TransformStamped T_target_source;
-    T_target_source = Tree_.lookupTransform(to_frame, from_frame, start_time);
-    TA_target_source = tf2::transformToEigen(T_target_source);
+    geometry_msgs::TransformStamped T_FROMFRAME_TOFRAME;
+    T_FROMFRAME_TOFRAME = Tree_.lookupTransform(from_frame, to_frame, start_time);
+    TA_TOFRAME_FROMFRAME = tf2::transformToEigen(T_FROMFRAME_TOFRAME).inverse();
   } else {
     LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
               "Message: %s",
               from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
     throw std::runtime_error{"Cannot look up transform."};
   }
-  return TA_target_source;
+  return TA_TOFRAME_FROMFRAME;
 }
 
 Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
@@ -233,18 +238,19 @@ std::string TfTree::GetCalibrationDate() {
   return calibration_date_;
 }
 
-void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
-                          std::string& from_frame) {
-  geometry_msgs::TransformStamped Tgeo = tf2::eigenToTransform(TA.inverse());
+void TfTree::SetEigenTransform(Eigen::Affine3d& TA, std::string& to_frame,
+                               std::string& from_frame,
+                               ros::Time& time_stamp) {
+  geometry_msgs::TransformStamped Tgeo = tf2::eigenToTransform(TA);
   Tgeo.header.seq = 1;
-  Tgeo.header.frame_id = from_frame;
-  Tgeo.child_frame_id = to_frame;
+  Tgeo.header.frame_id = to_frame;
+  Tgeo.child_frame_id = from_frame;
   Tgeo.header.stamp = start_time;
   bool transform_valid = Tree_.setTransform(Tgeo, "TfTree", true);
   if (!transform_valid) {
     throw std::invalid_argument{"Cannot add transform. Transform invalid."};
-    LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
-              from_frame.c_str(), to_frame.c_str());
+    LOG_ERROR("Cannot add transform from frame %s to frame %s. Transform "
+              "invalid", from_frame.c_str(), to_frame.c_str());
   }
 }
 
