@@ -30,9 +30,26 @@ typedef std::chrono::time_point<Clock> TimePoint;
  * @param time_point
  * @param output_text
  */
-inline void LogTimePoint(const TimePoint time_point, const std::string output_text) {
+inline void LogTimePoint(const TimePoint time_point,
+                         const std::string output_text) {
   LOG_INFO("%s %f", output_text.c_str(),
            (double)time_point.time_since_epoch().count());
+}
+
+inline std::string
+    convertTimeToDate(std::chrono::system_clock::time_point time_) {
+  using namespace std;
+  using namespace std::chrono;
+  system_clock::duration tp = time_.time_since_epoch();
+  time_t tt = system_clock::to_time_t(time_);
+  tm local_tm = *localtime(&tt);
+
+  string outputTime =
+      to_string(local_tm.tm_year + 1900) + "_" +
+      to_string(local_tm.tm_mon + 1) + "_" + to_string(local_tm.tm_mday) + "_" +
+      to_string(local_tm.tm_hour) + "_" + to_string(local_tm.tm_min) + "_" +
+      to_string(local_tm.tm_sec);
+  return outputTime;
 }
 
 /**
@@ -41,7 +58,7 @@ inline void LogTimePoint(const TimePoint time_point, const std::string output_te
  * @param output_text
  */
 inline void OutputTimePoint(const TimePoint time_point,
-                     const std::string output_text) {
+                            const std::string output_text) {
   std::cout << output_text.c_str() << time_point.time_since_epoch().count()
             << "\n";
 }
