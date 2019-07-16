@@ -90,6 +90,14 @@ public:
    void Filter(pcl::PointCloud<pcl::PointXYZ> &input_cloud,
                pcl::PointCloud<pcl::PointXYZ> &cropped_cloud);
 
+   /**
+    * @brief Method for applying the cropbox
+    * @param input_cloud cloud to be cropped
+    * @param cropped_cloud cloud to save to
+    */
+    void Filter(pcl::PointCloud<pcl::PointXYZI> &input_cloud,
+                pcl::PointCloud<pcl::PointXYZI> &cropped_cloud);               
+
 private:
   Eigen::Vector3f  min_vec_, max_vec_;
   Eigen::Affine3f T_box_cloud_;
