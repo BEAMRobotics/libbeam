@@ -28,6 +28,12 @@ public:
   ~Poses() = default;
 
   /**
+   * @brief clears all content
+   */
+  void Clear();
+
+
+  /**
    * @brief for setting bag_name to pose file
    * @param _bag_name
    */

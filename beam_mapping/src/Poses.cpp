@@ -10,6 +10,16 @@
 
 namespace beam_mapping {
 
+void Poses::Clear(){
+  time_stamps.clear();
+  poses.clear();
+  bag_name = "";
+  pose_file_date = "";
+  fixed_frame = "";
+  moving_frame = "";
+}
+
+
 void Poses::SetBagName(const std::string& _bag_name) {
   bag_name = _bag_name;
 }

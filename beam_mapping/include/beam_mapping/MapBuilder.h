@@ -70,7 +70,25 @@ private:
    * @brief method to load poses from json and extrinsics
    * @param poses_file full path to poses file
    */
-  void LoadTree(const std::string& poses_file);
+  void LoadTrajectory(const std::string& poses_file);
+
+  /**
+   * @brief method for cropping the input point cloud
+   * @param cloud point cloud to crop
+   * @param lidar_number used for getting crop box parameters
+   * @return cropped_cloud
+   */
+  PointCloud::Ptr CropPointCloud(PointCloud::Ptr cloud, uint8_t lidar_number);
+
+  /**
+   * @brief method for filtering a point cloud based on a list of filters with
+   * their associated parameters
+   * @param cloud point cloud to filter
+   * @param filter_params
+   * @return filtered_cloud
+   */
+  PointCloud::Ptr FilterPointCloud(PointCloud::Ptr cloud,
+                                 std::vector<filter_params_type> filter_params);
 
   /**
    * @brief method to load configuration from json
@@ -91,34 +109,46 @@ private:
    * changed more than the threshold, if so convert it and add to the scans and
    * timestamp vectors
    * @param iter rosbag iterator
+   * @param lidar_number
    */
-  void ProcessPointCloudMsg(rosbag::View::iterator &iter);
+  void ProcessPointCloudMsg(rosbag::View::iterator& iter, uint8_t lidar_number);
 
   /**
    * @brief loads all the scans from a specific lidar and builds the scans and
    * timestamps vector.
    * @param lidar_number
    */
-   void LoadScans(uint8_t lidar_number);
+  void LoadScans(uint8_t lidar_number);
+
+
+  /**
+   * @brief creates an aggregate map for one lidar scan topic
+   * @param lidar_number
+   */
+  void GenerateMap(uint8_t lidar_number);
+
+  /**
+   * @brief outputs maps to save directory
+   */
+  void SaveMaps();
 
   // From Config file
   std::string pose_file_path_, bag_file_path_, bag_file_name_, save_dir_,
-  config_file_, extrinsics_file_;
+      config_file_, extrinsics_file_;
   int intermediary_map_size_;
   double min_translation_, min_rotation_deg_;
   bool combine_lidar_scans_;
   std::vector<std::string> lidar_topics_, lidar_frames_;
-  std::vector<std::vector<double>> lidar_cropbox_min_, lidar_cropbox_max_;
+  std::vector<std::vector<float>> lidar_cropbox_min_, lidar_cropbox_max_;
   std::vector<bool> lidar_cropbox_bool_;
   std::vector<filter_params_type> input_filters_, intermediary_filters_,
-  output_filters_;
+      output_filters_;
 
   // New objects
-  beam_mapping::Poses poses_;
-  beam_calibration::TfTree tree_;
+  beam_mapping::Poses slam_poses_, interpolated_poses_;
+  beam_calibration::TfTree trajectory_, extrinsics_;
   PointCloud::Ptr aggregate_;
-  std::vector<PointCloud::Ptr> scans_;
-  std::vector<ros::Time> time_stamps_;
+  std::vector<PointCloud::Ptr> scans_, maps_;
   Eigen::Affine3d scan_pose_last_, scan_pose_current_;
 };
 
