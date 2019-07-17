@@ -129,18 +129,6 @@ public:
 private:
   /**
    * @brief Private method for setting a transform in the tf tree
-   * @param Tnew Transform being added from from_frame to to_frame
-   * @param to_frame child frame of a transform
-   * @param from_frame parent frame of a transform
-   */
-  /*
-  void SetEigenTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
-                         std::string& from_frame,
-                         ros::Time& time_stamp bool is_static);
-  */
-
-  /**
-   * @brief Private method for setting a transform in the tf tree
    * @param T_ROS Transform being added from from_frame to to_frame
    * @param to_frame parent frame of a transform
    * @param from_frame child frame of a transform
