@@ -39,6 +39,12 @@ public:
   Defect() = default;
 
   /**
+   * @brief Construct with a point cloud
+   * @param pc
+   */
+  explicit Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+
+  /**
    * @brief Default destructor
    */
   virtual ~Defect() = default;
@@ -49,6 +55,8 @@ public:
    */
   virtual double GetSize() = 0;
 
+  std::vector<float> GetBoundingBox2D();
+
   /**
    * @brief Pure virtual method for returning type of defect
    * @return
@@ -58,7 +66,18 @@ public:
   virtual DefectOSIMSeverity GetOSIMSeverity() = 0;
 
   using Ptr = std::shared_ptr<Defect>;
-  
+
+protected:
+  // Variable for storing the defect point cloud 
+  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
+      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ = 
+      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr CalculateHull2D();
+
+  bool point_cloud_initialized_;
+
 };
 
 /** @} group defects */

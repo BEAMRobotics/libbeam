@@ -54,9 +54,6 @@ private:
 
   double crack_size_ = 0; // Variable to store crack size
 
-  // Variable for storing the defect point cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 };
 
 /** @} group defects */

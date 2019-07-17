@@ -3,7 +3,10 @@
 
 namespace beam_defects {
 
-Spall::Spall(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) : defect_cloud_(pc) {}
+Spall::Spall(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
+  defect_cloud_ = pc;
+  point_cloud_initialized_ = true;
+}
 
 double Spall::GetSize() {
   // Only calculate size first time this method is called
