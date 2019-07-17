@@ -14,16 +14,8 @@ namespace beam_defects {
  */
 class Crack : public Defect {
 public:
-  /**
-   * @brief Default constructor
-   */
-  Crack() = default;
-
-  /**
-   * @brief Construct with a point cloud
-   * @param pc
-   */
-  explicit Crack(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+  // Inherit base class constructors
+  using Defect::Defect;
 
   /**
    * @brief Default constructor

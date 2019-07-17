@@ -14,16 +14,8 @@ namespace beam_defects {
  */
 class Corrosion : public Defect {
 public:
-  /**
-   * @brief Default constructor
-   */
-  Corrosion() = default;
-
-  /**
-   * @brief Construct with a point cloud
-   * @param pc
-   */
-  explicit Corrosion(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+  // Inherit base class constructors
+  using Defect::Defect;
 
   /**
    * @brief Default constructor

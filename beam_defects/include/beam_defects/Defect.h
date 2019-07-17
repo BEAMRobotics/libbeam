@@ -55,6 +55,12 @@ public:
    */
   virtual double GetSize() = 0;
 
+  /**
+   * @brief Method for returning the 2D bounding box around the defect after
+   * projection into a 2D plane
+   * @return Returns a vector [min x, min y, delta x, delta y] representing the
+   * bounding box
+   */
   std::vector<float> GetBoundingBox2D();
 
   /**
@@ -68,16 +74,15 @@ public:
   using Ptr = std::shared_ptr<Defect>;
 
 protected:
-  // Variable for storing the defect point cloud 
+  // Variable for storing the defect point cloud
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ = 
+  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ =
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr CalculateHull2D();
 
-  bool point_cloud_initialized_;
-
+  bool defect_cloud_initialized_;
 };
 
 /** @} group defects */

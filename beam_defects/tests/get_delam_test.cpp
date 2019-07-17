@@ -14,7 +14,7 @@ TEST_CASE("Delam defect type is returned", "[GetType]") {
   beam_defects::Delam delam{};
 
   REQUIRE(delam.GetType() == beam_defects::DefectType::DELAM);
-  REQUIRE(delam.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::NONE);
+  REQUIRE_THROWS(delam.GetOSIMSeverity());
 }
 
 TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
@@ -33,13 +33,13 @@ TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   REQUIRE(delam.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
   REQUIRE(delam2.GetSize() == Approx(0.23996));
-  REQUIRE(delam2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(delam2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::VERY_SEVERE);
 }
 
 TEST_CASE("No Delam returns size of 0") {
   beam_defects::Delam delam;
 
-  REQUIRE(delam.GetSize() == Approx(0));
+  REQUIRE_THROWS(delam.GetSize());
 }
 
 TEST_CASE("Delam (xy-plane) extraction, size calculation, and LIGHT OSIM "
@@ -76,7 +76,7 @@ TEST_CASE("Delam (xy-plane) extraction, size calculation, and LIGHT OSIM "
   // Create a delam object
   beam_defects::Delam delam{cloud_xyz};
   REQUIRE(delam.GetSize() == Approx(0.0175));
-  REQUIRE(delam.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::LIGHT);
+  REQUIRE(delam.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
 }
 
 TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation, and "

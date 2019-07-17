@@ -10,36 +10,42 @@ double Delam::GetSize() {
 }
 
 double Delam::CalculateSize() {
-  if (defect_cloud_->width == 0) return 0;
-
-  // // code that calculates the size of a delam
-  // auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  // auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
-  // *calc_cloud = PCNoiseRemoval(defect_cloud_);
-  // *cloud_hull = ConcaveHull(calc_cloud);
-  // std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
-  // *calc_cloud = Project2Plane(cloud_hull, plane_norm_vect);
-  defect_cloud_hull_ = CalculateHull2D();
+  if (defect_cloud_hull_->width == 0) {
+    defect_cloud_hull_ = CalculateHull2D();
+  }
 
   double delam_area = HullArea(defect_cloud_hull_);
-
   return delam_area;
 }
 
 DefectOSIMSeverity Delam::GetOSIMSeverity() {
-  double delam_area = GetSize();
-  if (delam_area == 0) {
-    return DefectOSIMSeverity::NONE;
-  } else if (delam_area < 0.0225) {
+  std::vector<float> bounding_box = GetBoundingBox2D();
+  float largest_dimension;
+  if (bounding_box[2] > bounding_box[3]) {
+    largest_dimension = bounding_box[2];
+  } else {
+    largest_dimension = bounding_box[3];
+  }
+
+  if (largest_dimension < 0.15) {
     return DefectOSIMSeverity::LIGHT;
-  } else if (delam_area < 0.09) {
+  } else if (largest_dimension < 0.3) {
     return DefectOSIMSeverity::MEDIUM;
-  } else if (delam_area < 0.36) {
+  } else if (largest_dimension < 0.6 ) {
     return DefectOSIMSeverity::SEVERE;
   } else {
     return DefectOSIMSeverity::VERY_SEVERE;
   }
+  // double delam_area = GetSize();
+  // if (delam_area < 0.0225 ) {
+  //   return DefectOSIMSeverity::LIGHT;
+  // } else if (delam_area < 0.09) {
+  //   return DefectOSIMSeverity::MEDIUM;
+  // } else if (delam_area < 0.36) {
+  //   return DefectOSIMSeverity::SEVERE;
+  // } else {
+  //   return DefectOSIMSeverity::VERY_SEVERE;
+  // }
 }
 
 } // namespace beam_defects

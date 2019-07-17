@@ -14,7 +14,7 @@ TEST_CASE("Spall defect type is returned", "[GetType]") {
   beam_defects::Spall spall{};
 
   REQUIRE(spall.GetType() == beam_defects::DefectType::SPALL);
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::NONE);
+  REQUIRE_THROWS(spall.GetOSIMSeverity());
 }
 
 TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
@@ -39,7 +39,7 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
 TEST_CASE("No spall returns size of 0") {
   beam_defects::Spall spall;
 
-  REQUIRE(spall.GetSize() == Approx(0));
+  REQUIRE_THROWS(spall.GetSize());
 }
 
 TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "

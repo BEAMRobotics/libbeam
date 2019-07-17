@@ -14,8 +14,7 @@ TEST_CASE("Corrosion defect type is returned", "[GetType]") {
   beam_defects::Corrosion corrosion{};
 
   REQUIRE(corrosion.GetType() == beam_defects::DefectType::CORROSION);
-  REQUIRE(corrosion.GetOSIMSeverity() ==
-          beam_defects::DefectOSIMSeverity::NONE);
+  REQUIRE_THROWS(corrosion.GetOSIMSeverity());
 }
 
 TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
@@ -42,7 +41,7 @@ TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
 TEST_CASE("No Corrosion returns size of 0") {
   beam_defects::Corrosion corrosion;
 
-  REQUIRE(corrosion.GetSize() == Approx(0));
+  REQUIRE_THROWS(corrosion.GetSize());
 }
 
 TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "

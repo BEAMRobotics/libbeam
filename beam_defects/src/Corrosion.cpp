@@ -3,11 +3,6 @@
 
 namespace beam_defects {
 
-Corrosion::Corrosion(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
-  defect_cloud_ = pc;
-  point_cloud_initialized_ = true;
-}
-
 double Corrosion::GetSize() {
   // Only calculate size first time this method is called
   if (!corrosion_size_) corrosion_size_ = CalculateSize();
@@ -15,25 +10,17 @@ double Corrosion::GetSize() {
 }
 
 double Corrosion::CalculateSize() {
-  if (defect_cloud_->width == 0) return 0;
-
-  // code that calculates the size of corrosion
-  auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
-  *calc_cloud = PCNoiseRemoval(defect_cloud_);
-  *calc_cloud = ConcaveHull(calc_cloud);
-  std::vector<float> plane_norm_vect = PlaneNormalVector(calc_cloud);
-  *calc_cloud = Project2Plane(calc_cloud, plane_norm_vect);
-  double corrosion_area = HullArea(calc_cloud);
-
+  if (defect_cloud_hull_->width==0){
+    defect_cloud_hull_ = CalculateHull2D();
+  }
+  
+  double corrosion_area = HullArea(defect_cloud_hull_);
   return corrosion_area;
 }
 
 DefectOSIMSeverity Corrosion::GetOSIMSeverity() {
   double corrosion_area = GetSize();
-  if (corrosion_area == 0) {
-    return DefectOSIMSeverity::NONE;
-  } else if (corrosion_area < 0.0225) {
+  if (corrosion_area < 0.0225) {
     return DefectOSIMSeverity::LIGHT;
   } else if (corrosion_area < 0.09) {
     return DefectOSIMSeverity::MEDIUM;
