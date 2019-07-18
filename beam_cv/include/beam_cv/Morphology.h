@@ -12,18 +12,6 @@
 
 namespace beam_cv {
 
-class Morphology {
-public:
-  /**
-   * @brief Default constructor
-   */
-  Morphology() = default;
-
-  /**
-   * @brief Default destructor
-   */
-  ~Morphology() = default;
-
   /**
    * @brief Method for extracting skeleton of objects in scene
    * @return binary image of 1 pixel wide skeleton
@@ -40,13 +28,12 @@ public:
   cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold);
 
   /**
-   * @brief Method for removing holes in objects but keep the boundaries the same
+   * @brief Method for removing holes in objects but keep the boundaries the
+   * same
    * @return binary image with no holes
    * @param input image
    */
   cv::Mat CloseObjects(const cv::Mat& input_image);
 
-protected:
-};
 
 } // namespace beam_cv

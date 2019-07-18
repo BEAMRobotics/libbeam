@@ -5,17 +5,43 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "beam_cv/DepthMap.h"
 #include "beam_cv/Morphology.h"
 
 using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv) {
+  // load intrinsics
+  std::string intrinsics_location = __FILE__;
+  intrinsics_location.erase(intrinsics_location.end() - 15,
+                            intrinsics_location.end());
+  intrinsics_location += "tests/test_data/F1.json";
+  std::shared_ptr<beam_calibration::CameraModel> F1 =
+      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
+
+  // load Image
+  std::string image_location = __FILE__;
+  image_location.erase(image_location.end() - 15, image_location.end());
+  image_location += "tests/test_data/test.jpg";
+  cv::Mat image;
+  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+
+  // load pcd
+  std::string pcd_location = __FILE__;
+  pcd_location.erase(pcd_location.end() - 15, pcd_location.end());
+  pcd_location += "tests/test_data/test.pcd";
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+  // Create DepthMap object
+  std::shared_ptr<beam_cv::DepthMap> dm =
+      std::make_shared<beam_cv::DepthMap>(image, cloud, F1);
+
+  /*
   if (argc != 3) {
     cout << " Usage: imskeleton ImageToLoadAndDisplay BinaryThreshold" << endl;
     return -1;
   }
-  beam_cv::Morphology morph;
   Mat image = imread(argv[1], 0); // Read the file
   if (!image.data)                // Check for invalid input
   {
@@ -32,9 +58,9 @@ int main(int argc, char** argv) {
   cv::threshold(image, image, thresh, 255, cv::THRESH_BINARY);
   // Initialize skel image and temp storage
 
-  image = morph.RemoveClusters(image, 100);
-  image = morph.CloseObjects(image);
-  cv::Mat skeleton = morph.ExtractSkeleton(image);
+  image = beam_cv::RemoveClusters(image, 100);
+  image = beam_cv::CloseObjects(image);
+  cv::Mat skeleton = beam_cv::ExtractSkeleton(image);
 
   // Create a copy of the binary image
   cv::Mat image_copy = image.clone();
@@ -116,5 +142,5 @@ int main(int argc, char** argv) {
   imshow("Original Image", cm_skel);
   imshow("Image Skeleton", skeleton);
   waitKey(0); // Wait for a keystroke in the window
-  return 0;
+  return 0; */
 }

@@ -11,6 +11,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
   SOURCES
     src/Morphology.cpp
+    src/DepthMap.cpp
 )
 
 ############# Debug files #############
