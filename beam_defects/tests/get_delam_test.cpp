@@ -15,6 +15,7 @@ TEST_CASE("Delam defect type is returned", "[GetType]") {
 
   REQUIRE(delam.GetType() == beam_defects::DefectType::DELAM);
   REQUIRE_THROWS(delam.GetOSIMSeverity());
+  REQUIRE_THROWS(delam.GetMaxDim2D());
 }
 
 TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
@@ -32,18 +33,22 @@ TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   REQUIRE(delam.GetSize() == Approx(0.4803934));
   REQUIRE(delam.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(delam.GetMaxDim2D() == Approx(1.32481));
   REQUIRE(delam2.GetSize() == Approx(0.23996));
-  REQUIRE(delam2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(delam2.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(delam2.GetMaxDim2D() == Approx(0.733556));
 }
 
 TEST_CASE("No Delam returns size of 0") {
   beam_defects::Delam delam;
 
   REQUIRE_THROWS(delam.GetSize());
+  REQUIRE_THROWS(delam.GetOSIMSeverity());
+  REQUIRE_THROWS(delam.GetMaxDim2D());
 }
 
-TEST_CASE("Delam (xy-plane) extraction, size calculation, and LIGHT OSIM "
-          "severity check") {
+TEST_CASE("Delam (xy-plane) extraction, size calculation") {
   auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 10;
   cloud->height = 1;
@@ -77,10 +82,10 @@ TEST_CASE("Delam (xy-plane) extraction, size calculation, and LIGHT OSIM "
   beam_defects::Delam delam{cloud_xyz};
   REQUIRE(delam.GetSize() == Approx(0.0175));
   REQUIRE(delam.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
+  REQUIRE(delam.GetMaxDim2D() == Approx(0.25));
 }
 
-TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation, and "
-          "MEDIUM OSIM check") {
+TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation") {
   auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 40;
   cloud->height = 1;
@@ -144,8 +149,10 @@ TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation, and "
       cloud, threshold, tolerance, min_points, max_points);
   REQUIRE(delams_vector[0].GetSize() == Approx(0.1));
   REQUIRE(delams_vector[0].GetOSIMSeverity() ==
-          beam_defects::DefectOSIMSeverity::SEVERE);
+          beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(delams_vector[0].GetMaxDim2D() == Approx(1.00499));
   REQUIRE(delams_vector[1].GetSize() == Approx(0.0425));
   REQUIRE(delams_vector[1].GetOSIMSeverity() ==
-          beam_defects::DefectOSIMSeverity::MEDIUM);
+          beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(delams_vector[1].GetMaxDim2D() == Approx(0.452769));
 }

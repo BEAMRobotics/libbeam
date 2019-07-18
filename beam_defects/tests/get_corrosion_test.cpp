@@ -15,6 +15,7 @@ TEST_CASE("Corrosion defect type is returned", "[GetType]") {
 
   REQUIRE(corrosion.GetType() == beam_defects::DefectType::CORROSION);
   REQUIRE_THROWS(corrosion.GetOSIMSeverity());
+  REQUIRE_THROWS(corrosion.GetMaxDim2D());
 }
 
 TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
@@ -33,15 +34,19 @@ TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
   REQUIRE(corrosion.GetSize() == Approx(0.4803934));
   REQUIRE(corrosion.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(corrosion.GetMaxDim2D() == Approx(1.32481));
   REQUIRE(corrosion2.GetSize() == Approx(0.23996));
   REQUIRE(corrosion2.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(corrosion2.GetMaxDim2D() == Approx(0.733556));
 }
 
 TEST_CASE("No Corrosion returns size of 0") {
   beam_defects::Corrosion corrosion;
 
   REQUIRE_THROWS(corrosion.GetSize());
+  REQUIRE_THROWS(corrosion.GetOSIMSeverity());
+  REQUIRE_THROWS(corrosion.GetMaxDim2D());
 }
 
 TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "
@@ -80,6 +85,7 @@ TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "
   REQUIRE(corrosion.GetSize() == Approx(0.0175));
   REQUIRE(corrosion.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::LIGHT);
+  REQUIRE(corrosion.GetMaxDim2D() == Approx(0.25));
 }
 
 TEST_CASE("Corrosion (xz-plane and yz-plane) extraction, size calculation, and "
@@ -149,7 +155,9 @@ TEST_CASE("Corrosion (xz-plane and yz-plane) extraction, size calculation, and "
   REQUIRE(corrosion_vector[0].GetSize() == Approx(0.1));
   REQUIRE(corrosion_vector[0].GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(corrosion_vector[0].GetMaxDim2D() == Approx(1.00499));
   REQUIRE(corrosion_vector[1].GetSize() == Approx(0.0425));
   REQUIRE(corrosion_vector[1].GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::MEDIUM);
+  REQUIRE(corrosion_vector[1].GetMaxDim2D() == Approx(0.452769));
 }

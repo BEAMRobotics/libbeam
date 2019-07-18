@@ -19,33 +19,17 @@ double Delam::CalculateSize() {
 }
 
 DefectOSIMSeverity Delam::GetOSIMSeverity() {
-  std::vector<float> bounding_box = GetBoundingBox2D();
-  float largest_dimension;
-  if (bounding_box[2] > bounding_box[3]) {
-    largest_dimension = bounding_box[2];
-  } else {
-    largest_dimension = bounding_box[3];
-  }
+  float largest_dimension = GetMaxDim2D();
 
   if (largest_dimension < 0.15) {
     return DefectOSIMSeverity::LIGHT;
   } else if (largest_dimension < 0.3) {
     return DefectOSIMSeverity::MEDIUM;
-  } else if (largest_dimension < 0.6 ) {
+  } else if (largest_dimension < 0.6) {
     return DefectOSIMSeverity::SEVERE;
   } else {
     return DefectOSIMSeverity::VERY_SEVERE;
   }
-  // double delam_area = GetSize();
-  // if (delam_area < 0.0225 ) {
-  //   return DefectOSIMSeverity::LIGHT;
-  // } else if (delam_area < 0.09) {
-  //   return DefectOSIMSeverity::MEDIUM;
-  // } else if (delam_area < 0.36) {
-  //   return DefectOSIMSeverity::SEVERE;
-  // } else {
-  //   return DefectOSIMSeverity::VERY_SEVERE;
-  // }
 }
 
 } // namespace beam_defects

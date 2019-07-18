@@ -56,12 +56,14 @@ public:
   virtual double GetSize() = 0;
 
   /**
-   * @brief Method for returning the 2D bounding box around the defect after
-   * projection into a 2D plane
-   * @return Returns a vector [min x, min y, delta x, delta y] representing the
+   * @brief Method for returning the height and width dimensions of a 2D
+   * bounding box around the defect after projection into a 2D plane
+   * @return Returns a vector [delta x, delta y] representing the
    * bounding box
    */
-  std::vector<float> GetBoundingBox2D();
+  std::vector<float> GetBBoxDims2D();
+
+  float GetMaxDim2D();
 
   /**
    * @brief Pure virtual method for returning type of defect

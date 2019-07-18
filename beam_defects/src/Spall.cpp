@@ -19,12 +19,13 @@ double Spall::CalculateSize() {
 }
 
 DefectOSIMSeverity Spall::GetOSIMSeverity(){
-  double spall_area = GetSize();
-  if (spall_area < 0.0225) {
+  float largest_dimension = GetMaxDim2D();
+
+  if (largest_dimension < 0.15) {
     return DefectOSIMSeverity::LIGHT;
-  } else if (spall_area < 0.09) {
+  } else if (largest_dimension < 0.3) {
     return DefectOSIMSeverity::MEDIUM;
-  } else if (spall_area < 0.36) {
+  } else if (largest_dimension < 0.6) {
     return DefectOSIMSeverity::SEVERE;
   } else {
     return DefectOSIMSeverity::VERY_SEVERE;
