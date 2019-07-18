@@ -13,7 +13,12 @@ Defect::Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
   defect_cloud_initialized_ = true;
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::CalculateHull2D() {
+void Defect::SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc){
+  defect_cloud_ = pc;
+  defect_cloud_initialized_ = true;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
   // code that calculates the hull of a defect cloud
   auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -34,7 +39,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::CalculateHull2D() {
 
 std::vector<float> Defect::GetBBoxDims2D() {
   if (defect_cloud_hull_->width == 0) {
-    defect_cloud_hull_ = CalculateHull2D();
+    defect_cloud_hull_ = GetHull2D();
   }
 
   std::vector<float> bounding_box(2, 0);
@@ -48,7 +53,7 @@ std::vector<float> Defect::GetBBoxDims2D() {
 
 float Defect::GetMaxDim2D() {
   if (defect_cloud_hull_->width == 0) {
-    defect_cloud_hull_ = CalculateHull2D();
+    defect_cloud_hull_ = GetHull2D();
   }
   auto mock_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *mock_cloud = *defect_cloud_hull_;

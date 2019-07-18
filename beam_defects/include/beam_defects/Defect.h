@@ -50,6 +50,11 @@ public:
   virtual ~Defect() = default;
 
   /**
+   * @brief Method to set the point cloud attribute defect_cloud_
+   */
+  void SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+
+  /**
    * @brief Pure virtual method for returning the size of a defect
    * @return Returns size of defect
    */
@@ -62,6 +67,8 @@ public:
    * bounding box
    */
   std::vector<float> GetBBoxDims2D();
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr GetHull2D();
 
   /**
    * @brief Method for returning the maximum distance across the defect area,
@@ -88,9 +95,6 @@ protected:
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ =
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr CalculateHull2D();
-
   bool defect_cloud_initialized_;
 };
 

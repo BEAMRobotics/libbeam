@@ -11,7 +11,7 @@ double Spall::GetSize() {
 
 double Spall::CalculateSize() {
   if (defect_cloud_hull_->width == 0) {
-    defect_cloud_hull_ = CalculateHull2D();
+    defect_cloud_hull_ = GetHull2D();
   }
 
   double spall_area = HullArea(defect_cloud_hull_);

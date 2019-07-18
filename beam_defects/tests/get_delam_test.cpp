@@ -28,7 +28,9 @@ TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Delam delam{cloud}, delam2{cloud2};
+  beam_defects::Delam delam{cloud}, delam2;
+  REQUIRE_THROWS(delam2.GetSize());
+  delam2.SetPointCloud(cloud2); // Test the set point cloud function
 
   REQUIRE(delam.GetSize() == Approx(0.4803934));
   REQUIRE(delam.GetOSIMSeverity() ==

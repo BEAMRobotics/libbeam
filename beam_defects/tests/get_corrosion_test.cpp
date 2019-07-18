@@ -29,7 +29,9 @@ TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
   reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Corrosion corrosion{cloud}, corrosion2{cloud2};
+  beam_defects::Corrosion corrosion{cloud}, corrosion2;
+  REQUIRE_THROWS(corrosion2.GetSize());
+  corrosion2.SetPointCloud(cloud2);
 
   REQUIRE(corrosion.GetSize() == Approx(0.4803934));
   REQUIRE(corrosion.GetOSIMSeverity() ==

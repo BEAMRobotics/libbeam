@@ -11,7 +11,7 @@ double Crack::GetSize() {
 
 double Crack::CalculateSize() {
   if (defect_cloud_hull_->width==0){
-    defect_cloud_hull_ = CalculateHull2D();
+    defect_cloud_hull_ = GetHull2D();
   }
 
   double crack_length = MaxLength(defect_cloud_hull_);

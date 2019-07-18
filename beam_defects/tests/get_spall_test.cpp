@@ -28,7 +28,9 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Spall spall{cloud}, spall2{cloud2};
+  beam_defects::Spall spall{cloud}, spall2;
+  REQUIRE_THROWS(spall2.GetSize());
+  spall2.SetPointCloud(cloud2);
 
   REQUIRE(spall.GetSize() == Approx(0.4803934));
   REQUIRE(spall.GetOSIMSeverity() ==
