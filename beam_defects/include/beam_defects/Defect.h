@@ -63,6 +63,13 @@ public:
    */
   std::vector<float> GetBBoxDims2D();
 
+  /**
+   * @brief Method for returning the maximum distance across the defect area,
+   * after the defect has beed projected to a 2D plane. This is important when
+   * calculating OSIM severity for delaminations or spalls
+   * @return Returns a float that represents the maximum distance in any
+   * direction
+   */
   float GetMaxDim2D();
 
   /**

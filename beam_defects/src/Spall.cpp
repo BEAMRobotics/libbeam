@@ -10,15 +10,15 @@ double Spall::GetSize() {
 }
 
 double Spall::CalculateSize() {
-  if (defect_cloud_hull_->width==0){
+  if (defect_cloud_hull_->width == 0) {
     defect_cloud_hull_ = CalculateHull2D();
   }
-  
+
   double spall_area = HullArea(defect_cloud_hull_);
   return spall_area;
 }
 
-DefectOSIMSeverity Spall::GetOSIMSeverity(){
+DefectOSIMSeverity Spall::GetOSIMSeverity() {
   float largest_dimension = GetMaxDim2D();
 
   if (largest_dimension < 0.15) {
