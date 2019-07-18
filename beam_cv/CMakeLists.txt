@@ -6,7 +6,9 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     PCL::PCL
     beam::calibration
     beam::containers
+    beam::utils
     OpenCV::OpenCV
+    Eigen3::Eigen
   SOURCES
     src/Morphology.cpp
 )
@@ -18,4 +20,8 @@ add_executable(${PROJECT_NAME}_debug
 target_include_directories(${PROJECT_NAME}_debug
   PUBLIC
     include
+)
+target_link_libraries(${PROJECT_NAME}_debug
+  ${PROJECT_NAME}
+  Eigen3::Eigen
 )
