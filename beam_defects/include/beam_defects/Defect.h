@@ -26,7 +26,7 @@ enum class DefectType { CRACK = 0, SPALL, DELAM, CORROSION };
 /**
  * @brief Enum class for defect severity based on OSIM guidelines
  */
-enum class DefectOSIMSeverity { NONE = 0, LIGHT, MEDIUM, SEVERE, VERY_SEVERE };
+enum class DefectOSIMSeverity { LIGHT = 0, MEDIUM, SEVERE, VERY_SEVERE };
 
 /**
  * @brief Abstract class for defects
