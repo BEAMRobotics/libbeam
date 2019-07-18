@@ -4,7 +4,7 @@ using namespace cv;
 
 namespace beam_cv {
 
-Mat Morphology::ExtractSkeleton(const Mat& input_image) {
+Mat ExtractSkeleton(const Mat& input_image) {
   Mat output_image = input_image.clone();
   Mat skel(output_image.size(), CV_8UC1, Scalar(0));
   Mat temp(output_image.size(), CV_8UC1);
@@ -26,7 +26,7 @@ Mat Morphology::ExtractSkeleton(const Mat& input_image) {
   return skel;
 }
 
-Mat Morphology::RemoveClusters(const Mat& input_image, int threshold) {
+Mat RemoveClusters(const Mat& input_image, int threshold) {
   // Remove small pixel clusters
   Mat output_image = input_image.clone();
   Mat category(output_image.size(), CV_16UC1);
@@ -53,7 +53,7 @@ Mat Morphology::RemoveClusters(const Mat& input_image, int threshold) {
   return output_image;
 }
 
-Mat Morphology::CloseObjects(const Mat& input_image) {
+Mat CloseObjects(const Mat& input_image) {
   Mat output_image = input_image.clone();
   Mat element2 = getStructuringElement(MORPH_RECT, Size(3, 3));
   morphologyEx(output_image, output_image, MORPH_CLOSE, element2);
