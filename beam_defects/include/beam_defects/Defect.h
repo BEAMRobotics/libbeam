@@ -54,6 +54,8 @@ public:
    */
   void SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
+  void SetHullAlpha(float alpha = 0.1);
+
   /**
    * @brief Pure virtual method for returning the size of a defect
    * @return Returns size of defect
@@ -68,6 +70,13 @@ public:
    */
   std::vector<float> GetBBoxDims2D();
 
+  /**
+   * @brief Method to extract the 2D concave hull of of a defect object
+   * projected into the xy plane
+   * @param alpha Variable to limit the size of the resultant hull segments (the
+   * smaller, the more detailed the hull). Default = 0.1
+   * @return Retruns a XYZ point cloud object of the defect hull
+   */
   pcl::PointCloud<pcl::PointXYZ>::Ptr GetHull2D();
 
   /**
@@ -95,7 +104,8 @@ protected:
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ =
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  bool defect_cloud_initialized_;
+  float alpha_ = 0.1;
+  bool defect_cloud_initialized_ = false, cloud_hull_calculated_ = false;
 };
 
 /** @} group defects */

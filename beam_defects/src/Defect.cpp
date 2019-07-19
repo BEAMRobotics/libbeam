@@ -16,6 +16,13 @@ Defect::Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
 void Defect::SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc){
   defect_cloud_ = pc;
   defect_cloud_initialized_ = true;
+  BEAM_INFO("A new point cloud has been set.");
+}
+
+void Defect::SetHullAlpha(float alpha){
+  alpha_ = alpha;
+  cloud_hull_calculated_ = false;
+  BEAM_INFO("Alpha hull value changed to {}.", alpha_);
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
@@ -30,15 +37,16 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
   }
 
   *calc_cloud = PCNoiseRemoval(defect_cloud_);
-  *cloud_hull = ConcaveHull(calc_cloud);
+  *cloud_hull = ConcaveHull(calc_cloud, alpha_);
   std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
   *calc_cloud = Project2Plane(cloud_hull, plane_norm_vect);
 
+  cloud_hull_calculated_ = true; 
   return cloud_hull;
 };
 
 std::vector<float> Defect::GetBBoxDims2D() {
-  if (defect_cloud_hull_->width == 0) {
+  if (!cloud_hull_calculated_) {
     defect_cloud_hull_ = GetHull2D();
   }
 
@@ -52,9 +60,10 @@ std::vector<float> Defect::GetBBoxDims2D() {
 }
 
 float Defect::GetMaxDim2D() {
-  if (defect_cloud_hull_->width == 0) {
+  if (!cloud_hull_calculated_) {
     defect_cloud_hull_ = GetHull2D();
   }
+
   auto mock_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *mock_cloud = *defect_cloud_hull_;
   float max_dist = 0;
