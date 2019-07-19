@@ -168,7 +168,6 @@ geometry_msgs::TransformStamped TfTree::EigenToROS(Eigen::Affine3d& T,
 }
 
 Eigen::Affine3d TfTree::ROSToEigen(geometry_msgs::TransformStamped T_ROS) {
-  // return tf2::transformToEigen(T_ROS).inverse();
   return tf2::transformToEigen(T_ROS);
 }
 
