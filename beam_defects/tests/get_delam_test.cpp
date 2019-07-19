@@ -42,12 +42,12 @@ TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   REQUIRE(delam2.GetMaxDim2D() == Approx(0.733556));
 
   // Test SetHullAlpha()
-  float alpha = 0.2; delam.SetHullAlpha(alpha);
+  float alpha = 0.2;
+  delam.SetHullAlpha(alpha);
   REQUIRE(delam.GetSize() == Approx(0.531694));
   REQUIRE(delam.GetSize() == Approx(0.531694));
   delam.SetHullAlpha(); // sets as default (0.1)
   REQUIRE(delam.GetSize() == Approx(0.4803934));
-
 }
 
 TEST_CASE("No Delam returns size of 0") {
@@ -90,6 +90,7 @@ TEST_CASE("Delam (xy-plane) extraction, size calculation") {
 
   // Create a delam object
   beam_defects::Delam delam{cloud_xyz};
+  delam.SetHullAlpha(); // Test setting hull alpha to same value as initial
   REQUIRE(delam.GetSize() == Approx(0.0175));
   REQUIRE(delam.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
   REQUIRE(delam.GetMaxDim2D() == Approx(0.25));

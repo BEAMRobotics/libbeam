@@ -40,6 +40,14 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   REQUIRE(spall2.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
   REQUIRE(spall2.GetMaxDim2D() == Approx(0.733556));
+
+  // Test SetHullAlpha()
+  float alpha = 0.2;
+  spall.SetHullAlpha(alpha);
+  REQUIRE(spall.GetSize() == Approx(0.531694));
+  REQUIRE(spall.GetSize() == Approx(0.531694));
+  spall.SetHullAlpha(); // sets as default (0.1)
+  REQUIRE(spall.GetSize() == Approx(0.4803934));
 }
 
 TEST_CASE("No spall returns size of 0") {
@@ -83,6 +91,7 @@ TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "
 
   // Create a spall object
   beam_defects::Spall spall{cloud_xyz};
+  spall.SetHullAlpha(); // Test setting hull alpha to same value as initial
   REQUIRE(spall.GetSize() == Approx(0.0175));
   REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
   REQUIRE(spall.GetMaxDim2D() == Approx(0.25));

@@ -5,12 +5,16 @@ namespace beam_defects {
 
 double Spall::GetSize() {
   // Only calculate size first time this method is called
-  if (!spall_size_) spall_size_ = CalculateSize();
+  if (!spall_size_){
+    spall_size_ = CalculateSize();
+  } else if (!cloud_hull_calculated_){
+    spall_size_ = CalculateSize();
+  }
   return spall_size_;
 }
 
 double Spall::CalculateSize() {
-  if (defect_cloud_hull_->width == 0) {
+  if (!cloud_hull_calculated_) {
     defect_cloud_hull_ = GetHull2D();
   }
 

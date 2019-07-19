@@ -41,6 +41,14 @@ TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
   REQUIRE(corrosion2.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);
   REQUIRE(corrosion2.GetMaxDim2D() == Approx(0.733556));
+
+  // Test SetHullAlpha()
+  float alpha = 0.2;
+  corrosion.SetHullAlpha(alpha);
+  REQUIRE(corrosion.GetSize() == Approx(0.531694));
+  REQUIRE(corrosion.GetSize() == Approx(0.531694));
+  corrosion.SetHullAlpha(); // sets as default (0.1)
+  REQUIRE(corrosion.GetSize() == Approx(0.4803934));
 }
 
 TEST_CASE("No Corrosion returns size of 0") {
@@ -84,6 +92,7 @@ TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "
 
   // Create a corrosion object
   beam_defects::Corrosion corrosion{cloud_xyz};
+  corrosion.SetHullAlpha(); // Test setting hull alpha to same value as initial
   REQUIRE(corrosion.GetSize() == Approx(0.0175));
   REQUIRE(corrosion.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::LIGHT);

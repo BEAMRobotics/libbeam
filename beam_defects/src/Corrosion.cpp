@@ -5,12 +5,16 @@ namespace beam_defects {
 
 double Corrosion::GetSize() {
   // Only calculate size first time this method is called
-  if (!corrosion_size_) corrosion_size_ = CalculateSize();
+  if (!corrosion_size_){
+    corrosion_size_ = CalculateSize();
+  } else if (!cloud_hull_calculated_){
+    corrosion_size_ = CalculateSize();
+  }
   return corrosion_size_;
 }
 
 double Corrosion::CalculateSize() {
-  if (defect_cloud_hull_->width==0){
+  if (!cloud_hull_calculated_) {
     defect_cloud_hull_ = GetHull2D();
   }
   
