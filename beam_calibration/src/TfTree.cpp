@@ -10,7 +10,7 @@ using json = nlohmann::json;
 namespace beam_calibration {
 
 void TfTree::LoadJSON(std::string& file_location) {
-  LOG_INFO("Loading file: %s", file_location.c_str());
+  BEAM_INFO("Loading file: {}", file_location.c_str());
 
   json J;
   int calibration_counter = 0, value_counter = 0;
@@ -26,7 +26,7 @@ void TfTree::LoadJSON(std::string& file_location) {
   method = J["method"];
 
   if (type != "extrinsic_calibration") {
-    LOG_ERROR("Attempting to create TfTree with invalid json type. Type: %s",
+    BEAM_CRITICAL("Attempting to create TfTree with invalid json type. Type: {}",
               type.c_str());
     throw std::invalid_argument{
         "Attempting to create TfTree with invalid json type"};
@@ -35,9 +35,9 @@ void TfTree::LoadJSON(std::string& file_location) {
 
   SetCalibrationDate(date);
 
-  LOG_INFO("Type: %s", type.c_str());
-  LOG_INFO("Date: %s", date.c_str());
-  LOG_INFO("Method: %s", method.c_str());
+  BEAM_INFO("Type: {}", type.c_str());
+  BEAM_INFO("Date: {}", date.c_str());
+  BEAM_INFO("Method: {}", method.c_str());
 
   for (const auto& calibration : J["calibrations"]) {
     calibration_counter++;
@@ -58,166 +58,72 @@ void TfTree::LoadJSON(std::string& file_location) {
       }
     }
     if (value_counter != 16) {
-      LOG_ERROR("Invalid transform matrix in .json file.");
+      BEAM_CRITICAL("Invalid transform matrix in .json file.");
       throw std::invalid_argument{"Invalid transform matrix in .json file."};
       return;
     }
     TA.matrix() = T;
-    AddTransform(TA, to_frame, from_frame);
+    this->AddTransform(TA, to_frame, from_frame);
   }
-  LOG_INFO("Saved %d transforms", calibration_counter);
+  BEAM_INFO("Saved {} transforms", calibration_counter);
 }
 
-void TfTree::AddTransform(Eigen::Affine3d& TAnew, std::string& to_frame,
+void TfTree::AddTransform(Eigen::Affine3d& T, std::string& to_frame,
                           std::string& from_frame) {
-  if (!beam::IsTransformationMatrix(TAnew.matrix())) {
-    throw std::runtime_error{"Invalid transformation matrix"};
-    LOG_ERROR("Invalid transformation matrix input.");
-    return;
-  }
-
-  std::string transform_error;
-  bool transform_exists =
-      Tree_.canTransform(to_frame, from_frame, start_time, &transform_error);
-  if (transform_exists) {
-    throw std::runtime_error{"Cannot add transform. Transform already exists."};
-  }
-
-  std::string parent;
-  bool parent_exists = Tree_._getParent(to_frame, start_time, parent);
-  if (parent_exists) {
-    LOG_INFO("Attemping to add transform from %s to %s, but frame %s already "
-             "has a parent (%s). Adding inverse of inputted transform.",
-             from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
-             parent.c_str());
-    Eigen::Affine3d TAnew_inverse = TAnew.inverse();
-    SetTransform(TAnew_inverse, from_frame, to_frame);
-    InsertFrame(from_frame, to_frame);
-  } else {
-    SetTransform(TAnew, to_frame, from_frame);
-    InsertFrame(to_frame, from_frame);
-  }
+  ros::Time time_stamp = this->start_time;
+  geometry_msgs::TransformStamped T_ROS =
+      EigenToROS(T, to_frame, from_frame, time_stamp);
+  this->SetTransform(T_ROS, to_frame, from_frame, time_stamp, true);
 }
 
-void TfTree::AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
-                          std::string& from_frame, ros::Time time_stamp) {
-  geometry_msgs::TransformStamped msg;
-  msg = tf2::eigenToTransform(Tnew);
-  msg.header.frame_id = from_frame;
-  msg.child_frame_id = to_frame;
-  msg.header.stamp = time_stamp;
-  this->AddTransform(msg, false);
+void TfTree::AddTransform(Eigen::Affine3d& T, std::string& to_frame,
+                          std::string& from_frame, ros::Time& time_stamp) {
+  geometry_msgs::TransformStamped T_ROS =
+      EigenToROS(T, to_frame, from_frame, time_stamp);
+  this->SetTransform(T_ROS, to_frame, from_frame, time_stamp, false);
 }
 
-void TfTree::AddTransform(geometry_msgs::TransformStamped msg, bool is_static) {
-  std::string from_frame = msg.header.frame_id;
-  std::string to_frame = msg.child_frame_id;
-  ros::Time transform_time = msg.header.stamp;
-
-  std::string transform_error;
-
-  // if inputting static transform, first check to make sure it's not overriding
-  // a transform
-  if (is_static) {
-    // check to make sure the same static transform doesn't already exist
-    bool transform_exists = Tree_.canTransform(
-        to_frame, from_frame, transform_time, &transform_error);
-    if (transform_exists) {
-      throw std::runtime_error{
-          "Cannot add transform. Transform already exists."};
-    }
-  }
-  // check if parent already exists
-  std::string parent;
-  bool parent_exists = Tree_._getParent(to_frame, transform_time, parent);
-  if (parent_exists) {
-    // If the transform is static, or the parent is not the same as from_frame
-    // add inverse of the transform
-    if (is_static || parent != from_frame) {
-      tf2::Transform inverse_transform;
-      tf2::fromMsg(msg.transform, inverse_transform);
-      inverse_transform = inverse_transform.inverse();
-      msg.transform = tf2::toMsg(inverse_transform);
-      msg.header.frame_id = to_frame;
-      msg.child_frame_id = from_frame;
-
-      if (!Tree_.setTransform(msg, "TfTree", is_static)) {
-        std::cout << "Error adding transform" << std::endl;
-      }
-      InsertFrame(from_frame, to_frame);
-      return;
-    }
-  }
-  // If transform is static and doesn't exist, add normally
-  // If transform is dynamic and the parent equals from_frame, add normally
-  if (!Tree_.setTransform(msg, "TfTree", is_static)) {
-    std::cout << "Error adding transform" << std::endl;
-  }
-  InsertFrame(to_frame, from_frame);
+void TfTree::AddTransform(geometry_msgs::TransformStamped& T_ROS,
+                          bool is_static) {
+  std::string to_frame = T_ROS.header.frame_id;
+  std::string from_frame = T_ROS.child_frame_id;
+  ros::Time transform_time = T_ROS.header.stamp;
+  this->SetTransform(T_ROS, to_frame, from_frame, transform_time, is_static);
 }
 
 Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
                                           std::string& from_frame) {
-  Eigen::Affine3d TA_target_source;
-  std::string transform_error;
-
-  bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, start_time, &transform_error);
-
-  if (can_transform) {
-    geometry_msgs::TransformStamped T_target_source;
-    T_target_source = Tree_.lookupTransform(to_frame, from_frame, start_time);
-    TA_target_source = tf2::transformToEigen(T_target_source);
-  } else {
-    LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
-              "Message: %s",
-              from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
-    throw std::runtime_error{"Cannot look up transform."};
-  }
-  return TA_target_source;
+  geometry_msgs::TransformStamped T_ROS;
+  T_ROS = this->LookupTransform(to_frame, from_frame, this->start_time);
+  Eigen::Affine3d T = this->ROSToEigen(T_ROS);
+  return T;
 }
 
 Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
                                           std::string& from_frame,
                                           ros::Time& lookup_time) {
-  Eigen::Affine3d TA_target_source;
-  std::string transform_error;
-
-  bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, lookup_time, &transform_error);
-
-  if (can_transform) {
-    geometry_msgs::TransformStamped T_target_source;
-    T_target_source = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
-    TA_target_source = tf2::transformToEigen(T_target_source);
-  } else {
-    LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
-              "Message: %s",
-              from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
-    throw std::runtime_error{"Cannot look up transform."};
-  }
-  return TA_target_source;
+  geometry_msgs::TransformStamped T_ROS;
+  T_ROS = this->LookupTransform(to_frame, from_frame, lookup_time);
+  return this->ROSToEigen(T_ROS);
 }
 
 geometry_msgs::TransformStamped
     TfTree::GetTransformROS(std::string& to_frame, std::string& from_frame,
                             ros::Time& lookup_time) {
-  geometry_msgs::TransformStamped transform_msg;
-  std::string transform_error;
+  return this->LookupTransform(to_frame, from_frame, lookup_time);
+}
 
-  bool can_transform =
-      Tree_.canTransform(to_frame, from_frame, lookup_time, &transform_error);
+geometry_msgs::TransformStamped
+    TfTree::GetTransformROS(std::string& to_frame, std::string& from_frame) {
+  return this->LookupTransform(to_frame, from_frame, this->start_time);
+}
 
-  if (can_transform) {
-    transform_msg = Tree_.lookupTransform(to_frame, from_frame, lookup_time);
-  } else {
-    LOG_ERROR("Cannot look up transform from frame %s to %s. Transform Error "
-              "Message: %s",
-              from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
-    throw std::runtime_error{"Cannot look up transform."};
+std::string TfTree::GetCalibrationDate() {
+  if (!is_calibration_date_set_) {
+    throw std::runtime_error{"cannot retrieve calibration date, value not set"};
+    BEAM_CRITICAL("cannot retrieve calibration date, value not set.");
   }
-
-  return transform_msg;
+  return calibration_date_;
 }
 
 void TfTree::SetCalibrationDate(std::string& calibration_date) {
@@ -225,26 +131,157 @@ void TfTree::SetCalibrationDate(std::string& calibration_date) {
   is_calibration_date_set_ = true;
 }
 
-std::string TfTree::GetCalibrationDate() {
-  if (!is_calibration_date_set_) {
-    throw std::runtime_error{"cannot retrieve calibration date, value not set"};
-    LOG_ERROR("cannot retrieve calibration date, value not set.");
+geometry_msgs::TransformStamped TfTree::LookupTransform(std::string& to_frame,
+                                                        std::string& from_frame,
+                                                        ros::Time& time_stamp) {
+  geometry_msgs::TransformStamped T_ROS;
+  std::string transform_error;
+  bool can_transform =
+      Tree_.canTransform(to_frame, from_frame, time_stamp, &transform_error);
+
+  if (can_transform) {
+    T_ROS = Tree_.lookupTransform(to_frame, from_frame, time_stamp);
+  } else {
+    BEAM_CRITICAL(
+        "Cannot look up transform from frame {} to {}. Transform Error "
+        "Message: {}",
+        from_frame.c_str(), to_frame.c_str(), transform_error.c_str());
+    throw std::runtime_error{"Cannot look up transform."};
   }
-  return calibration_date_;
+  return T_ROS;
 }
 
-void TfTree::SetTransform(Eigen::Affine3d& TA, std::string& to_frame,
-                          std::string& from_frame) {
-  geometry_msgs::TransformStamped Tgeo = tf2::eigenToTransform(TA.inverse());
-  Tgeo.header.seq = 1;
-  Tgeo.header.frame_id = from_frame;
-  Tgeo.child_frame_id = to_frame;
-  Tgeo.header.stamp = start_time;
-  bool transform_valid = Tree_.setTransform(Tgeo, "TfTree", true);
-  if (!transform_valid) {
-    throw std::invalid_argument{"Cannot add transform. Transform invalid."};
-    LOG_ERROR("Cannot add transform from frame %s to %s. Transform invalid",
-              from_frame.c_str(), to_frame.c_str());
+geometry_msgs::TransformStamped TfTree::EigenToROS(Eigen::Affine3d& T,
+                                           std::string& to_frame,
+                                           std::string& from_frame,
+                                           ros::Time& time_stamp) {
+  if (!beam::IsTransformationMatrix(T.matrix())) {
+    BEAM_CRITICAL("Invalid transformation matrix input");
+    throw std::runtime_error{"Invalid transformation matrix"};
+  }
+  geometry_msgs::TransformStamped T_ROS = tf2::eigenToTransform(T);
+  T_ROS.header.seq = 1;
+  T_ROS.header.frame_id = to_frame;
+  T_ROS.child_frame_id = from_frame;
+  T_ROS.header.stamp = time_stamp;
+  return T_ROS;
+}
+
+Eigen::Affine3d TfTree::ROSToEigen(geometry_msgs::TransformStamped T_ROS) {
+  return tf2::transformToEigen(T_ROS);
+}
+
+void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
+                          std::string& to_frame, std::string& from_frame,
+                          ros::Time& time_stamp, bool is_static) {
+  /* ---------------------------------------------------------------------------
+  here's the logic:
+  if static and exact transform from child to parent exists, output error
+  if static and a child already has a parent, add the inverse
+  if static and child doesn't already have a parent, add normally
+  if dynamic and adding identical child-parent then add normally
+  if dynamic and adding child which already has a parent, add inverse
+  if both frames have a parent already then output error
+  ----------------------------------------------------------------------------*/
+
+  // Static case:
+  std::string transform_error;
+  if (is_static) {
+    // Check case the exact transform exists
+    bool transform_exists =
+        Tree_.canTransform(to_frame, from_frame, time_stamp, &transform_error);
+    if (transform_exists) {
+      BEAM_CRITICAL("Trying to add a static transform that already exists "
+                    "(to_frame: {}, from frame {})",
+                    to_frame.c_str(), from_frame.c_str());
+      throw std::runtime_error{
+          "Cannot add transform. Transform already exists."};
+    }
+
+    // Check for case where a child frame already has a parent
+    std::string parent;
+    bool parent_exists = Tree_._getParent(from_frame, time_stamp, parent);
+    if (parent_exists) {
+      // Then add inverse
+      BEAM_INFO("Attemping to add transform from {} to {}, but frame {} already "
+         "has a parent ({}). Adding inverse of inputted transform.",
+         from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
+         parent.c_str());
+      tf2::Transform inverse_transform;
+      tf2::fromMsg(T_ROS.transform, inverse_transform);
+      inverse_transform = inverse_transform.inverse();
+      T_ROS.transform = tf2::toMsg(inverse_transform);
+      T_ROS.header.frame_id = from_frame;
+      T_ROS.child_frame_id = to_frame;
+
+      if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+        BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
+                      to_frame.c_str());
+        throw std::runtime_error{"Cannot add transform."};
+      }
+      this->InsertFrame(from_frame, to_frame);
+      return;
+    } else {
+      // Add transform normally
+      if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+        BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
+                      to_frame.c_str());
+        throw std::runtime_error{"Cannot add transform."};
+      }
+      this->InsertFrame(to_frame, from_frame);
+      return;
+    }
+  }
+
+  // Dynamic transform case
+  std::string parent;
+  bool parent_exists = Tree_._getParent(from_frame, time_stamp, parent);
+  if (parent_exists && parent == to_frame) {
+    // add normally
+    if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+      BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
+                    to_frame.c_str());
+      throw std::runtime_error{"Cannot add transform."};
+    }
+    this->InsertFrame(to_frame, from_frame);
+    return;
+  } else if (parent_exists) {
+    // add inverse only if "new" child doesn't already have another parent
+    parent_exists = Tree_._getParent(to_frame, time_stamp, parent);
+    if (parent_exists && parent != from_frame) {
+      BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
+                    to_frame.c_str());
+      throw std::runtime_error{"Cannot add transform."};
+    } else {
+      // add inverse
+      BEAM_INFO("Attemping to add transform from {} to {}, but frame {} already "
+         "has a parent ({}). Adding inverse of inputted transform.",
+         from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
+         parent.c_str());
+      tf2::Transform inverse_transform;
+      tf2::fromMsg(T_ROS.transform, inverse_transform);
+      inverse_transform = inverse_transform.inverse();
+      T_ROS.transform = tf2::toMsg(inverse_transform);
+      T_ROS.header.frame_id = from_frame;
+      T_ROS.child_frame_id = to_frame;
+
+      if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+        BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
+                      to_frame.c_str());
+        throw std::runtime_error{"Cannot add transform."};
+      }
+      this->InsertFrame(from_frame, to_frame);
+      return;
+    }
+  } else {
+    // add normally
+    if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+      BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
+                    to_frame.c_str());
+      throw std::runtime_error{"Cannot add transform."};
+    }
+    this->InsertFrame(to_frame, from_frame);
+    return;
   }
 }
 
