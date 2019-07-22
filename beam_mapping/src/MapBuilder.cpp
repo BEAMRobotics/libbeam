@@ -1,11 +1,14 @@
 #include "beam_mapping/MapBuilder.h"
 
 #include "beam_filtering/CropBox.h"
+#include "beam_filtering/DROR.h"
 #include "beam_utils/angles.hpp"
 #include "beam_utils/log.hpp"
 #include "beam_utils/math.hpp"
 #include <fstream>
 #include <pcl/common/transforms.h>
+#include <pcl/filters/radius_outlier_removal.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -66,12 +69,40 @@ filter_params_type MapBuilder::GetFilterParams(const auto& filter) {
     params.push_back(search_radius);
     params.push_back(min_neighbors);
   } else if (filter_type == "VOXEL") {
-    double cell_size = filter["cell_size"];
-    if (!(cell_size > 0.01)) {
+    std::vector<double> cell_size;
+    for (const auto param : filter["cell_size"]) { cell_size.push_back(param); }
+    if (cell_size.size() != 3) {
+      BEAM_CRITICAL("Invalid cell size parameter in voxel grid filter from map "
+                    "builder config");
+      success = false;
+    }
+    if (cell_size[0] < 0.01 || cell_size[2] < 0.01 || cell_size[2] < 0.01) {
       BEAM_CRITICAL("Invalid cell_size parameter in map builder config");
       success = false;
     }
-    params.push_back(cell_size);
+    params = cell_size;
+  } else if (filter_type == "CROPBOX") {
+    std::vector<double> min, max;
+    for (const auto param : filter["max"]) { max.push_back(param); }
+    for (const auto param : filter["max"]) { max.push_back(param); }
+    double remove_outside_points = filter["remove_outside_points"];
+    if (!(remove_outside_points == 0 || remove_outside_points == 1)) {
+      BEAM_CRITICAL(
+          "Invalid remove_outside_points parameter in map builder config");
+      success = false;
+    }
+    if (min.size() != 3 || max.size() != 3) {
+      BEAM_CRITICAL(
+          "Invalid min or max parameter in cropbox from map builder config");
+      success = false;
+    }
+    params.push_back(min[0]);
+    params.push_back(min[1]);
+    params.push_back(min[2]);
+    params.push_back(max[0]);
+    params.push_back(max[1]);
+    params.push_back(max[2]);
+    params.push_back(remove_outside_points);
   } else {
     BEAM_CRITICAL("Invalid filter type in map builder config.");
     success = false;
@@ -94,7 +125,12 @@ filter_params_type MapBuilder::GetFilterParams(const auto& filter) {
               << "- min_neighbors (required > 1)\n"
               << "Type: VOXEL\n"
               << "Required inputs:\n"
-              << "- cell_size (required > 0.01)\n";
+              << "- cell_size (required vector of size 3)\n"
+              << "Type: CROPBOX\n"
+              << "Required inputs:\n"
+              << "- min (required vector of size 3)\n"
+              << "- max (required vector of size 3)\n"
+              << "- remove_outside_points (required 0 or 1)";
   }
   return std::make_pair(filter_type, params);
 }
@@ -164,8 +200,7 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
   extrinsics_.LoadJSON(extrinsics_file_);
   int num_poses = slam_poses_.time_stamps.size();
   for (int k = 0; k < num_poses; k++) {
-    trajectory_.AddTransform(slam_poses_.poses[k],
-                             slam_poses_.fixed_frame,
+    trajectory_.AddTransform(slam_poses_.poses[k], slam_poses_.fixed_frame,
                              slam_poses_.moving_frame,
                              slam_poses_.time_stamps[k]);
   }
@@ -183,16 +218,54 @@ PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
   cropper.SetMinVector(min_vec);
   cropper.SetMaxVector(max_vec);
   cropper.Filter(*cloud, *cropped_cloud);
-  // return cropped_cloud;
-  return cloud;
+  return cropped_cloud;
 }
 
 PointCloud::Ptr MapBuilder::FilterPointCloud(
     PointCloud::Ptr cloud, std::vector<filter_params_type> filter_params) {
-  PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>();
-  // *filtered_cloud = *cloud;
-  // return filtered_cloud;
-  return cloud;
+  PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>(*cloud);
+  for (uint8_t i = 0; i < filter_params.size(); i++) {
+    std::string filter_type = filter_params[i].first;
+    std::vector<double> params = filter_params[i].second;
+    if (filter_type == "DROR") {
+      beam_filtering::DROR outlier_removal;
+      outlier_removal.SetRadiusMultiplier(params[0]);
+      outlier_removal.SetAzimuthAngle(params[1]);
+      outlier_removal.SetMinNeighbors(params[2]);
+      outlier_removal.SetMinSearchRadius(params[3]);
+      outlier_removal.Filter(*filtered_cloud, *filtered_cloud);
+    } else if (filter_type == "ROR") {
+      pcl::RadiusOutlierRemoval<PointT> outlier_removal;
+      outlier_removal.setInputCloud(filtered_cloud);
+      outlier_removal.setRadiusSearch(params[0]);
+      outlier_removal.setMinNeighborsInRadius(params[2]);
+      outlier_removal.filter(*filtered_cloud);
+    } else if (filter_type == "VOXEL") {
+      pcl::PCLPointCloud2::Ptr cloud2 =
+          boost::make_shared<pcl::PCLPointCloud2>();
+      pcl::toPCLPointCloud2(*filtered_cloud, *cloud2);
+      pcl::VoxelGrid<pcl::PCLPointCloud2> downsampler;
+      downsampler.setInputCloud(cloud2);
+      downsampler.setLeafSize(params[0], params[1], params[2]);
+      downsampler.filter (*cloud2);
+      pcl::fromPCLPointCloud2(*cloud2, *filtered_cloud);
+    } else if (filter_type == "CROPBOX") {
+      Eigen::Vector3d min_vec(params[0], params[1], params[2]);
+      Eigen::Vector3d max_vec(params[3], params[4], params[5]);
+      Eigen::Vector3f min_vecf = min_vec.cast<float>();
+      Eigen::Vector3f max_vecf = max_vec.cast<float>();
+      beam_filtering::CropBox cropper;
+      cropper.SetMinVector(min_vecf);
+      cropper.SetMaxVector(max_vecf);
+      if (params[6] == 1) {
+        cropper.SetRemoveOutsidePoints(true);
+      } else {
+        cropper.SetRemoveOutsidePoints(false);
+      }
+      cropper.Filter(*filtered_cloud, *filtered_cloud);
+    }
+  }
+  return filtered_cloud;
 }
 
 bool MapBuilder::CheckPoseChange() {
@@ -280,7 +353,7 @@ void MapBuilder::LoadScans(uint8_t lidar_number) {
   std::string output_message = "Loading scans for lidar No. ";
   for (auto iter = view.begin(); iter != view.end(); iter++) {
     message_counter++;
-    output_message += std::to_string(lidar_number);
+    output_message += std::to_string(lidar_number + 1);
     beam::OutputPercentComplete(message_counter, total_messages,
                                 output_message);
     if (iter->getTopic() == scan_topic) {
@@ -299,24 +372,26 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
   Eigen::Affine3d T_MOVING_LIDAR =
       extrinsics_.GetTransformEigen(moving_frame, lidar_frame);
   Eigen::Affine3d T_FIXED_LIDAR;
-  // std::cout << "fixed_frame: " << fixed_frame.c_str() << "\n"
-  //           << "moving_frame: " << moving_frame.c_str() << "\n"
-  //           << "lidar_frame: " << lidar_frame.c_str() << "\n";
-  // std::cout << "\nT_" << moving_frame.c_str() << "_" << lidar_frame.c_str() << ": \n"
-  //           << T_MOVING_LIDAR.matrix();
 
   // iterate through all scans
+  int intermediary_size = 0;
   for (uint32_t k = 0; k < scans_.size(); k++) {
+    intermediary_size++;
     Eigen::Affine3d T_FIXED_MOVING = interpolated_poses_.poses[k];
-    T_FIXED_LIDAR.matrix() = T_FIXED_MOVING.matrix() * T_MOVING_LIDAR.inverse().matrix();
+    T_FIXED_LIDAR.matrix() =
+        T_FIXED_MOVING.matrix() * T_MOVING_LIDAR.inverse().matrix();
     PointCloud::Ptr scan_transformed = boost::make_shared<PointCloud>();
-    pcl::transformPointCloud(*scans_[k], *scan_transformed,
-                             T_FIXED_LIDAR);
-    *scan_aggregate += *scan_transformed;
-    // std::cout << "\nT_" << fixed_frame.c_str() << "_" << moving_frame.c_str() << ": \n"
-    //           << T_FIXED_MOVING.matrix();
+    pcl::transformPointCloud(*scans_[k], *scan_transformed, T_FIXED_LIDAR);
+    if (intermediary_size == this->intermediary_map_size_) {
+      *scan_aggregate +=
+          *this->FilterPointCloud(scan_intermediary, intermediary_filters_);
+      scan_intermediary->clear();
+      intermediary_size = 0;
+    } else {
+      *scan_intermediary += *scan_transformed;
+    }
   }
-  maps_.push_back(scan_aggregate);
+  maps_.push_back(this->FilterPointCloud(scan_aggregate, output_filters_));
 }
 
 void MapBuilder::SaveMaps() {
@@ -329,6 +404,14 @@ void MapBuilder::SaveMaps() {
                             lidar_frames_[i] + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     pcl::io::savePCDFileBinary(save_path, *maps_[i]);
+  }
+  if (this->combine_lidar_scans_) {
+    PointCloud::Ptr combined_map = boost::make_shared<PointCloud>();
+    for (uint8_t i = 0; i < maps_.size(); i++) { *combined_map += *maps_[i]; }
+    std::string save_path =
+        save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";
+    BEAM_INFO("Saving map to: {}", save_path);
+    pcl::io::savePCDFileBinary(save_path, *combined_map);
   }
 }
 

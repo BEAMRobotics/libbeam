@@ -141,6 +141,7 @@ private:
   std::vector<std::string> lidar_topics_, lidar_frames_;
   std::vector<std::vector<float>> lidar_cropbox_min_, lidar_cropbox_max_;
   std::vector<bool> lidar_cropbox_bool_;
+  // Note: filter_params_type = std::pair<std::string, std::vector<double>>;
   std::vector<filter_params_type> input_filters_, intermediary_filters_,
       output_filters_;
 

@@ -3,6 +3,7 @@
 #include "beam_utils/math.hpp"
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
+#include <pcl/common/transforms.h>
 
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 

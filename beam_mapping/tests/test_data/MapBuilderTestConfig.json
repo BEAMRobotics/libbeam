@@ -4,7 +4,7 @@
   "save_directory": "/home/nick/results/ig_maps/libbeam_map_builder/testing/",
   "extrinsics_file": "/home/nick/catkin_ws/src/beam_robotics/calibration/results/inspector_gadget/current/extrinsics/extrinsics.json",
   "intermediary_map_size": 5,
-  "min_translation": 2,
+  "min_translation": 0.2,
   "min_rotation_deg": 45,
   "combine_lidar_scans": true,
   "lidars": [
@@ -12,15 +12,15 @@
       "topic": "/hvlp/velodyne_points",
       "frame": "hvlp_link",
       "use_cropbox": true,
-      "cropbox_min": [0, 0, 0],
-      "cropbox_max": [40, 40, 40]
+      "cropbox_min": [-6, -6, -6],
+      "cropbox_max": [6, 6, 6]
     },
     {
       "topic": "/vvlp/velodyne_points",
       "frame": "vvlp_link",
       "use_cropbox": true,
-      "cropbox_min": [0, 0, 0],
-      "cropbox_max": [40, 40, 40]
+      "cropbox_min": [-3, -6, -1],
+      "cropbox_max": [3, 6, 10]
     }
   ],
   "input_filters":[
@@ -33,7 +33,13 @@
     },
     {
       "filter_type": "VOXEL",
-      "cell_size": 0.05
+      "cell_size": [0.05, 0.05, 0.05]
+    },
+    {
+      "filter_type": "CROPBOX",
+      "min": [-3, -6, -1],
+      "max": [3, 6, 10],
+      "remove_outside_points": 0
     }
   ],
   "intermediary_filters": [
