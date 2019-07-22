@@ -34,7 +34,7 @@ cv::Mat ExtractDepthMap(const cv::Mat& image,
       kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
       float distance = sqrt(point_distance[0]);
       // if the point is within 1cm then color it appropriately
-      if (distance < 0.02) {
+      if (distance < 0.001) {
         float point_dist = beam::distance(cloud->points[point_idx[0]], origin);
         pixel = point_dist;
         break;
@@ -67,6 +67,152 @@ cv::Mat VisualizeDepthImage(cv::Mat depth_image) {
   return gs_depth;
 }
 
+cv::Mat DepthInterpolation(cv::Mat depth_image, int window_size,
+                           float threshold) {
+  cv::Mat dst = depth_image.clone();
+  depth_image.forEach<float>([&](float& distance, const int* position) -> void {
+    if (distance > 0) {
+      int row = position[0], col = position[1];
+      beam::Vec2 point_f;
+      float min_dist = 1000.0;
+      float found_depth = 0.0;
+      bool found = false;
+      int start_x = col, end_x = col + window_size;
+      int start_y = row - 3, end_y = row + 3;
+      if (start_y > 0 && start_x > 0 && end_y < depth_image.rows &&
+          end_x < depth_image.cols) {
+        for (int i = start_y; i < end_y; i++) {
+          for (int j = start_x; j < end_x; j++) {
+            float depth = depth_image.at<float>(i, j);
+            float dist_to_point =
+                sqrt((row - j) * (row - j) + (col - i) * (col - i));
+            if (depth > 0 && dist_to_point > 2.0 &&
+                abs(depth - distance) < threshold && dist_to_point < min_dist) {
+              min_dist = dist_to_point;
+              point_f[0] = i;
+              point_f[1] = j;
+              found = true;
+              found_depth = depth;
+            }
+          }
+        }
+      }
+      if (found) {
+        int x = (point_f[0] + position[0]) / 2;
+        int y = (point_f[1] + position[1]) / 2;
+        float value = (distance + found_depth) / 2;
+        dst.at<float>(x, y) = value;
+        dst.at<float>(x + 1, y) = value;
+        dst.at<float>(x, y + 1) = value;
+        dst.at<float>(x - 1, y) = value;
+        dst.at<float>(x, y - 1) = value;
+      }
+
+      min_dist = 1000.0;
+      found = false;
+      start_x = col - 3, end_x = col + 3;
+      start_y = row - window_size, end_y = row;
+      if (start_y > 0 && start_x > 0 && end_y < depth_image.rows &&
+          end_x < depth_image.cols) {
+        for (int i = start_y; i < end_y; i++) {
+          for (int j = start_x; j < end_x; j++) {
+            float depth = depth_image.at<float>(i, j);
+            float dist_to_point =
+                sqrt((row - j) * (row - j) + (col - i) * (col - i));
+            if (depth > 0 && dist_to_point > 2.0 &&
+                abs(depth - distance) < threshold && dist_to_point < min_dist) {
+              min_dist = dist_to_point;
+              point_f[0] = i;
+              point_f[1] = j;
+              found = true;
+              found_depth = depth;
+            }
+          }
+        }
+      }
+      if (found) {
+        int x = (point_f[0] + position[0]) / 2;
+        int y = (point_f[1] + position[1]) / 2;
+        float value = (distance + found_depth) / 2;
+        dst.at<float>(x, y) = value;
+        dst.at<float>(x + 1, y) = value;
+        dst.at<float>(x, y + 1) = value;
+        dst.at<float>(x - 1, y) = value;
+        dst.at<float>(x, y - 1) = value;
+      }
+
+      min_dist = 1000.0;
+      found = false;
+      start_x = col - 3, end_x = col + 3;
+      start_y = row, end_y = row + window_size;
+      if (start_y > 0 && start_x > 0 && end_y < depth_image.rows &&
+          end_x < depth_image.cols) {
+        for (int i = start_y; i < end_y; i++) {
+          for (int j = start_x; j < end_x; j++) {
+            float depth = depth_image.at<float>(i, j);
+            float dist_to_point =
+                sqrt((row - j) * (row - j) + (col - i) * (col - i));
+            if (depth > 0 && dist_to_point > 2.0 &&
+                abs(depth - distance) < threshold && dist_to_point < min_dist) {
+              min_dist = dist_to_point;
+              point_f[0] = i;
+              point_f[1] = j;
+              found = true;
+              found_depth = depth;
+            }
+          }
+        }
+      }
+      if (found) {
+        int x = (point_f[0] + position[0]) / 2;
+        int y = (point_f[1] + position[1]) / 2;
+        float value = (distance + found_depth) / 2;
+        dst.at<float>(x, y) = value;
+        dst.at<float>(x + 1, y) = value;
+        dst.at<float>(x, y + 1) = value;
+        dst.at<float>(x - 1, y) = value;
+        dst.at<float>(x, y - 1) = value;
+      }
+
+      min_dist = 1000.0;
+      found = false;
+      start_x = col - window_size, end_x = col;
+      start_y = row - 3, end_y = row + 3;
+      if (start_y > 0 && start_x > 0 && end_y < depth_image.rows &&
+          end_x < depth_image.cols) {
+        for (int i = start_y; i < end_y; i++) {
+          for (int j = start_x; j < end_x; j++) {
+            float depth = depth_image.at<float>(i, j);
+            float dist_to_point =
+                sqrt((row - j) * (row - j) + (col - i) * (col - i));
+            if (depth > 0 && dist_to_point > 2.0 &&
+                abs(depth - distance) < threshold && dist_to_point < min_dist) {
+              min_dist = dist_to_point;
+              point_f[0] = i;
+              point_f[1] = j;
+              found = true;
+              found_depth = depth;
+            }
+          }
+        }
+      }
+      if (found) {
+        int x = (point_f[0] + position[0]) / 2;
+        int y = (point_f[1] + position[1]) / 2;
+        float value = (distance + found_depth) / 2;
+        dst.at<float>(x, y) = value;
+        dst.at<float>(x + 1, y) = value;
+        dst.at<float>(x, y + 1) = value;
+        dst.at<float>(x - 1, y) = value;
+        dst.at<float>(x, y - 1) = value;
+      }
+    }
+  });
+  cv::Mat kernel = beam::GetEllipseKernel(7);
+  // cv::dilate(dst, dst, kernel);
+  return dst;
+}
+
 cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel) {
   double max_depth = 0;
   depth_image.forEach<float>([&](float& distance, const int* position) -> void {
@@ -75,19 +221,20 @@ cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel) {
   depth_image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > 0.1) { distance = max_depth - distance; }
   });
+  cv::Mat full_k_9 = beam::GetFullKernel(9);
   cv::dilate(depth_image, depth_image, kernel);
   cv::dilate(depth_image, depth_image, kernel);
-  cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE,
-                   beam::FULL_KERNEL_9);
+  cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE, full_k_9);
   cv::Mat dilated = depth_image.clone();
-  cv::dilate(dilated, depth_image, beam::FULL_KERNEL_7);
+  cv::Mat full_k_7 = beam::GetFullKernel(7);
+  cv::dilate(dilated, depth_image, full_k_7);
   depth_image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > 0.1) {
       distance = dilated.at<float>(position[0], position[1]);
     }
   });
-  cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE,
-                   beam::FULL_KERNEL_11);
+  cv::Mat full_k_11 = beam::GetFullKernel(11);
+  cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE, full_k_11);
   cv::medianBlur(depth_image, depth_image, 5);
   cv::Mat dst = depth_image.clone();
   cv::bilateralFilter(depth_image, dst, 5, 1.5, 2.0);

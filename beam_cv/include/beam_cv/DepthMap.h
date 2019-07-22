@@ -35,4 +35,11 @@ cv::Mat VisualizeDepthImage(cv::Mat depth_image);
  */
 cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel);
 
+/**
+ * @brief Performs interpolation to densify depth map
+ * @return cv::Mat
+ */
+cv::Mat DepthInterpolation(cv::Mat depth_image, int window_size,
+                           float distance_threshold);
+
 } // namespace beam_cv

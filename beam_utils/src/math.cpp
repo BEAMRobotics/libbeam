@@ -39,6 +39,22 @@ double median(std::vector<double> v) {
     return (a + b) / 2.0;
   }
 }
+cv::Mat GetCrossKernel(int size) {
+  const cv::Mat kernel =
+      cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));
+  return kernel;
+}
+
+cv::Mat GetFullKernel(int size) {
+  cv::Mat kernel = cv::Mat::ones(size, size, CV_8U);
+  return kernel;
+}
+
+cv::Mat GetEllipseKernel(int size) {
+  const cv::Mat kernel =
+      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(size, size));
+  return kernel;
+}
 
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   int idx;
@@ -281,7 +297,8 @@ MatX RoundMatrix(const MatX& M, int precision) {
   MatX Mround(M.rows(), M.cols());
   for (int i = 0; i < M.rows(); i++) {
     for (int j = 0; j < M.cols(); j++) {
-      Mround(i, j) = std::round(M(i, j) * std::pow(10, precision)) / std::pow(10, precision);
+      Mround(i, j) = std::round(M(i, j) * std::pow(10, precision)) /
+                     std::pow(10, precision);
     }
   }
   return Mround;
