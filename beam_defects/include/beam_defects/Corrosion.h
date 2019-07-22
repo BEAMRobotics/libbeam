@@ -14,16 +14,8 @@ namespace beam_defects {
  */
 class Corrosion : public Defect {
 public:
-  /**
-   * @brief Default constructor
-   */
-  Corrosion() = default;
-
-  /**
-   * @brief Construct with a point cloud
-   * @param pc
-   */
-  explicit Corrosion(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+  // Inherit base class constructors
+  using Defect::Defect;
 
   /**
    * @brief Default constructor
@@ -54,9 +46,6 @@ private:
 
   double corrosion_size_ = 0; // Variable to store corrosion size
 
-  // Variable for storing the defect point cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 };
 
 /** @} group defects */

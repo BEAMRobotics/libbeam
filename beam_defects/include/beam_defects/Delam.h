@@ -14,19 +14,11 @@ namespace beam_defects {
  */
 class Delam : public Defect {
 public:
-  /**
-   * @brief Default constructor
-   */
-  Delam() = default;
+  // Inherit base class constructors
+  using Defect::Defect;
 
   /**
-   * @brief Construct with a point cloud
-   * @param pc
-   */
-  explicit Delam(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
-
-  /**
-   * @brief Default constructor
+   * @brief Default destructor
    */
   ~Delam() override = default;
 
@@ -54,9 +46,6 @@ private:
 
   double delam_size_ = 0; // Variable to store delam size
 
-  // Variable for storing the defect point cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 };
 
 /** @} group defects */

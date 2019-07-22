@@ -22,7 +22,13 @@ TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   // Instantiate the defect object with point cloud
   beam_defects::Crack crack{cloud};
 
-  REQUIRE(crack.GetSize() == Approx(1.479398));
+  REQUIRE(crack.GetSize() == Approx(1.478998));
+}
+
+TEST_CASE("No crack returns size of 0") {
+  beam_defects::Crack crack;
+
+  REQUIRE_THROWS(crack.GetSize());
 }
 
 TEST_CASE("Crack (xy-plane) size calculation and LIGHT OSIM check") {
