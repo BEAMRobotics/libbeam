@@ -45,29 +45,6 @@ typedef Eigen::Matrix<double, 7, 7> Mat7;
 typedef Eigen::Matrix<double, 9, 9> Mat9;
 typedef Eigen::MatrixXd MatX;
 
-/**
- * Kernel definitions
- */
-const cv::Mat FULL_KERNEL_3 = cv::Mat::ones(3, 3, CV_8U);
-const cv::Mat FULL_KERNEL_5 = cv::Mat::ones(5, 5, CV_8U);
-const cv::Mat FULL_KERNEL_7 = cv::Mat::ones(7, 7, CV_8U);
-const cv::Mat FULL_KERNEL_9 = cv::Mat::ones(9, 9, CV_8U);
-const cv::Mat FULL_KERNEL_11 = cv::Mat::ones(11, 11, CV_8U);
-const cv::Mat FULL_KERNEL_15 = cv::Mat::ones(15, 15, CV_8U);
-const cv::Mat FULL_KERNEL_21 = cv::Mat::ones(21, 21, CV_8U);
-const cv::Mat FULL_KERNEL_27 = cv::Mat::ones(27, 27, CV_8U);
-const cv::Mat FULL_KERNEL_31 = cv::Mat::ones(31, 31, CV_8U);
-const cv::Mat CROSS_KERNEL_3 =
-    cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
-const cv::Mat CROSS_KERNEL_5 =
-    cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(5, 5));
-const cv::Mat CROSS_KERNEL_7 =
-    cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(7, 7));
-const cv::Mat DIAMOND_KERNEL_5 =
-    cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
-const cv::Mat DIAMOND_KERNEL_7 =
-    cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(7, 7));
-
 typedef Eigen::Affine3d Affine3;
 
 typedef Eigen::Quaterniond Quaternion;
@@ -139,6 +116,15 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
   }
   return sqrt(dist);
 }
+
+/** Returns cross kernel */
+cv::Mat GetCrossKernel(int size);
+
+/** Returns cross kernel */
+cv::Mat GetFullKernel(int size);
+
+/** Returns cross kernel */
+cv::Mat GetEllipseKernel(int size);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);

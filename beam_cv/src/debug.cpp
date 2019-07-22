@@ -9,10 +9,11 @@ using namespace cv;
 using namespace std;
 
 void TestDepthMap();
-int TestCrackCalculation);
+int TestCrackCalculation(int argc, char** argv);
 
 int main(int argc, char** argv) {
-  TestCrackCalculation(argc, argv);
+  // TestCrackCalculation(argc, argv);
+  TestDepthMap();
 }
 
 void TestDepthMap() {
@@ -33,11 +34,14 @@ void TestDepthMap() {
 
   // Extract depth image, visualize, save
   cv::Mat depth_image = beam_cv::ExtractDepthMap(image, cloud, F1);
-  cv::Mat dm_viz = beam_cv::VisualizeDepthImage(depth_image);
+  // cv::Mat dm_viz = beam_cv::VisualizeDepthImage(depth_image);
+  cv::Mat dst1 = beam_cv::DepthInterpolation(depth_image, 70, 0.3);
+  cv::Mat dst2 = beam_cv::DepthInterpolation(dst1, 70, 0.3);
+  cv::Mat dm_viz = beam_cv::VisualizeDepthImage(dst2);
   cv::imwrite("/home/jake/depth.png", dm_viz);
   // perform depth completion, visualize, save
-
-  cv::Mat dst = beam_cv::DepthCompletion(depth_image, beam::DIAMOND_KERNEL_7);
+  cv::Mat kernel = beam::GetEllipseKernel(7);
+  cv::Mat dst = beam_cv::DepthCompletion(depth_image, kernel);
   cv::Mat dm_viz2 = beam_cv::VisualizeDepthImage(dst);
   cv::imwrite("/home/jake/depth2.png", dm_viz2);
 }
