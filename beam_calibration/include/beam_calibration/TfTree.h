@@ -42,28 +42,29 @@ public:
 
   /**
    * @brief Method for adding a transformation using an Affine3d
-   * @param Tnew new transform to add
+   * @param T new transform to add
    * @param to_frame
    * @param from_frame
    */
-  void AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
+  void AddTransform(Eigen::Affine3d& T, std::string& to_frame,
                     std::string& from_frame);
 
   /**
    * @brief Method for adding a transformation using an Affine3d
-   * @param Tnew new transform to add
+   * @param T new transform to add
    * @param to_frame
    * @param from_frame
    * @param time_stamp
    */
-  void AddTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
-                    std::string& from_frame, ros::Time time_stamp);
+  void AddTransform(Eigen::Affine3d& T, std::string& to_frame,
+                    std::string& from_frame, ros::Time& time_stamp);
 
   /**
    * @brief Method for adding transform via TransformStamped
-   * @param msg
+   * @param T_ROS
+   * @param is_static (default: false)
    */
-  void AddTransform(geometry_msgs::TransformStamped msg,
+  void AddTransform(geometry_msgs::TransformStamped& T_ROS,
                     bool is_static = false);
 
   /**
@@ -83,15 +84,24 @@ public:
                                     ros::Time& lookup_time);
 
   /**
-   * @brief Method for looking up dynamic transform
+   * @brief Method for looking up a dynamic transform
    * @param to_frame
    * @param from_frame
    * @param lookup_time
-   * @return Transform Stamped
+   * @return T_ROS
    */
   geometry_msgs::TransformStamped GetTransformROS(std::string& to_frame,
                                                   std::string& from_frame,
                                                   ros::Time& lookup_time);
+
+  /**
+   * @brief Method for looking up a static transform
+   * @param to_frame
+   * @param from_frame
+   * @return T_ROS
+   */
+  geometry_msgs::TransformStamped GetTransformROS(std::string& to_frame,
+                                                  std::string& from_frame);
 
   /**
    * @brief Method for retrieving the date that the calibration was done
@@ -119,12 +129,47 @@ public:
 private:
   /**
    * @brief Private method for setting a transform in the tf tree
-   * @param Tnew Transform being added from from_frame to to_frame
-   * @param to_frame child frame of a transform
-   * @param from_frame parent frame of a transform
+   * @param T_ROS Transform being added from from_frame to to_frame
+   * @param to_frame parent frame of a transform
+   * @param from_frame child frame of a transform
+   * @param time_stamp
+   * @param is_static
    */
-  void SetTransform(Eigen::Affine3d& Tnew, std::string& to_frame,
-                    std::string& from_frame);
+  void SetTransform(geometry_msgs::TransformStamped& T_ROS,
+                    std::string& to_frame, std::string& from_frame,
+                    ros::Time& time_stamp, bool is_static);
+
+  /**
+   * @brief Private method for looking up a transform
+   * @param to_frame parent frame of a transform
+   * @param from_frame child frame of a transform
+   * @param time_stamp
+   * @return T_ROS
+   */
+  geometry_msgs::TransformStamped LookupTransform(std::string& to_frame,
+                                                  std::string& from_frame,
+                                                  ros::Time& time_stamp);
+
+  /**
+   * @brief Private method for converting an Eigen transform to a ROS geometry
+   * message. It also does some checks
+   * @param T Transform from from_frame to to_frame to be converted
+   * @param to_frame parent frame of a transform
+   * @param from_frame child frame of a transform
+   * @param time_stamp
+   * @return T_ROS
+   */
+  geometry_msgs::TransformStamped EigenToROS(Eigen::Affine3d& T,
+                                             std::string& to_frame,
+                                             std::string& from_frame,
+                                             ros::Time& time_stamp);
+
+  /**
+   * @brief Private method for converting a ROS transform to Eigen transform
+   * @param T_ROS Transform from from_frame to to_frame to be converted
+   * @return T
+   */
+  Eigen::Affine3d ROSToEigen(geometry_msgs::TransformStamped T_ROS);
 
   /**
    * @brief Method for storing frame names in frames_ variable
