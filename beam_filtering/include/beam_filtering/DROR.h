@@ -18,11 +18,7 @@ using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 using PointCloudPtr = PointCloud::Ptr;
 
 namespace beam_filtering {
-/** @addtogroup filteringusing pcl::KdTreeFLANN<pcl::PointXYZ> KdTree;
-using KdTree::Ptr KdTreePtr;
-using pcl::PointCloud<pcl::PointXYZ> PointCloud;
-using PointCloud::Ptr PointCloudPtr;
-
+/** @addtogroup filtering
  *  @{ */
 
 /**
@@ -96,6 +92,14 @@ public:
    */
   void Filter(pcl::PointCloud<pcl::PointXYZ>& input_cloud,
               pcl::PointCloud<pcl::PointXYZ>& filtered_cloud);
+
+  /**
+   * @brief Method for applying the filter
+   * @param input_cloud cloud to be filtered
+   * @param filtered_cloud cloud to save to
+   */
+  void Filter(pcl::PointCloud<pcl::PointXYZI>& input_cloud,
+              pcl::PointCloud<pcl::PointXYZI>& filtered_cloud);
 
 private:
   double radius_multiplier_=3, azimuth_angle_=0.04, min_neighbors_=3,
