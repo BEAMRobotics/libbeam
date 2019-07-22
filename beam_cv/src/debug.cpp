@@ -41,7 +41,7 @@ void TestDepthMap() {
   cv::imwrite("/home/jake/depth.png", dm_viz);
   // perform depth completion, visualize, save
   cv::Mat kernel = beam::GetEllipseKernel(7);
-  cv::Mat dst = beam_cv::DepthCompletion(depth_image, kernel);
+  cv::Mat dst = beam_cv::DepthCompletion(dst2, kernel);
   cv::Mat dm_viz2 = beam_cv::VisualizeDepthImage(dst);
   cv::imwrite("/home/jake/depth2.png", dm_viz2);
 }
