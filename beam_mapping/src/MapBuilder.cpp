@@ -83,7 +83,7 @@ filter_params_type MapBuilder::GetFilterParams(const auto& filter) {
     params = cell_size;
   } else if (filter_type == "CROPBOX") {
     std::vector<double> min, max;
-    for (const auto param : filter["max"]) { max.push_back(param); }
+    for (const auto param : filter["min"]) { min.push_back(param); }
     for (const auto param : filter["max"]) { max.push_back(param); }
     double remove_outside_points = filter["remove_outside_points"];
     if (!(remove_outside_points == 0 || remove_outside_points == 1)) {
@@ -225,6 +225,7 @@ PointCloud::Ptr MapBuilder::FilterPointCloud(
     PointCloud::Ptr cloud, std::vector<filter_params_type> filter_params) {
   PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>(*cloud);
   for (uint8_t i = 0; i < filter_params.size(); i++) {
+    PointCloud::Ptr input_cloud = boost::make_shared<PointCloud>(*filtered_cloud);
     std::string filter_type = filter_params[i].first;
     std::vector<double> params = filter_params[i].second;
     if (filter_type == "DROR") {
@@ -233,22 +234,18 @@ PointCloud::Ptr MapBuilder::FilterPointCloud(
       outlier_removal.SetAzimuthAngle(params[1]);
       outlier_removal.SetMinNeighbors(params[2]);
       outlier_removal.SetMinSearchRadius(params[3]);
-      outlier_removal.Filter(*filtered_cloud, *filtered_cloud);
+      outlier_removal.Filter(*input_cloud, *filtered_cloud);
     } else if (filter_type == "ROR") {
       pcl::RadiusOutlierRemoval<PointT> outlier_removal;
-      outlier_removal.setInputCloud(filtered_cloud);
+      outlier_removal.setInputCloud(input_cloud);
       outlier_removal.setRadiusSearch(params[0]);
       outlier_removal.setMinNeighborsInRadius(params[2]);
       outlier_removal.filter(*filtered_cloud);
     } else if (filter_type == "VOXEL") {
-      pcl::PCLPointCloud2::Ptr cloud2 =
-          boost::make_shared<pcl::PCLPointCloud2>();
-      pcl::toPCLPointCloud2(*filtered_cloud, *cloud2);
-      pcl::VoxelGrid<pcl::PCLPointCloud2> downsampler;
-      downsampler.setInputCloud(cloud2);
+      pcl::VoxelGrid<PointT> downsampler;
       downsampler.setLeafSize(params[0], params[1], params[2]);
-      downsampler.filter (*cloud2);
-      pcl::fromPCLPointCloud2(*cloud2, *filtered_cloud);
+      downsampler.setInputCloud(input_cloud);
+      downsampler.filter(*filtered_cloud);
     } else if (filter_type == "CROPBOX") {
       Eigen::Vector3d min_vec(params[0], params[1], params[2]);
       Eigen::Vector3d max_vec(params[3], params[4], params[5]);
@@ -262,7 +259,7 @@ PointCloud::Ptr MapBuilder::FilterPointCloud(
       } else {
         cropper.SetRemoveOutsidePoints(false);
       }
-      cropper.Filter(*filtered_cloud, *filtered_cloud);
+      cropper.Filter(*input_cloud, *filtered_cloud);
     }
   }
   return filtered_cloud;
