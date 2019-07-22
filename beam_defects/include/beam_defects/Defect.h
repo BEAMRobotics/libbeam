@@ -51,9 +51,15 @@ public:
 
   /**
    * @brief Method to set the point cloud attribute defect_cloud_
+   * @param pc Pointer to a point cloud
    */
   void SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
+  /**
+   * @brief Method to set the alpha value used when calculating a hull.
+   * @param alpha Input value of alpha. If no value is specified, alpha is set
+   * to the default value of 0.1
+   */
   void SetHullAlpha(float alpha = 0.1);
 
   /**
