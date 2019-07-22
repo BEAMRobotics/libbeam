@@ -1,43 +1,48 @@
+#include "beam_cv/DepthMap.h"
+#include "beam_cv/Morphology.h"
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/opencv.hpp>
-
-#include "beam_cv/DepthMap.h"
-#include "beam_cv/Morphology.h"
+#include <pcl/io/pcd_io.h>
 
 using namespace cv;
 using namespace std;
 
+void TestDepthMap();
+int TestCrackCalculation);
+
 int main(int argc, char** argv) {
+  TestCrackCalculation(argc, argv);
+}
+
+void TestDepthMap() {
+  std::string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv";
   // load intrinsics
-  std::string intrinsics_location = __FILE__;
-  intrinsics_location.erase(intrinsics_location.end() - 15,
-                            intrinsics_location.end());
-  intrinsics_location += "tests/test_data/F1.json";
+  std::string intrinsics_location = cur_dir + "/tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       beam_calibration::CameraModel::LoadJSON(intrinsics_location);
 
   // load Image
-  std::string image_location = __FILE__;
-  image_location.erase(image_location.end() - 15, image_location.end());
-  image_location += "tests/test_data/test.jpg";
-  cv::Mat image;
-  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+  std::string image_location = cur_dir + "/tests/test_data/test.jpg";
+  cv::Mat image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
 
   // load pcd
-  std::string pcd_location = __FILE__;
-  pcd_location.erase(pcd_location.end() - 15, pcd_location.end());
-  pcd_location += "tests/test_data/test.pcd";
+  std::string pcd_location = cur_dir + "/tests/test_data/test.pcd";
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
 
-  // Create DepthMap object
-  std::shared_ptr<beam_cv::DepthMap> dm =
-      std::make_shared<beam_cv::DepthMap>(image, cloud, F1);
+  // Extract depth image, visualize, save
+  cv::Mat depth_image = beam_cv::ExtractDepthMap(image, cloud, F1);
+  cv::Mat dm_viz = beam_cv::VisualizeDepthImage(depth_image);
+  cv::imwrite("/home/jake/depth.png", dm_viz);
+  // perform depth completion, visualize, save
 
-  /*
+  cv::Mat dst = beam_cv::DepthCompletion(depth_image, beam::DIAMOND_KERNEL_7);
+  cv::Mat dm_viz2 = beam_cv::VisualizeDepthImage(dst);
+  cv::imwrite("/home/jake/depth2.png", dm_viz2);
+}
+
+int TestCrackCalculation(int argc, char** argv) {
   if (argc != 3) {
     cout << " Usage: imskeleton ImageToLoadAndDisplay BinaryThreshold" << endl;
     return -1;
@@ -142,5 +147,5 @@ int main(int argc, char** argv) {
   imshow("Original Image", cm_skel);
   imshow("Image Skeleton", skeleton);
   waitKey(0); // Wait for a keystroke in the window
-  return 0; */
+  return 0;
 }
