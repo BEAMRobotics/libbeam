@@ -39,20 +39,6 @@ cv::Mat DepthInterpolation(cv::Mat depth_image, int window_width,
                            int window_height, float threshold, int dilate);
 
 /**
- * @brief Performs interpolation to densify depth map
- * @return cv::Mat
-
-cv::Mat SegmentAndDilate(cv::Mat depth_image);
- */
-/**
- * @brief Performs point cloud densification from an interpolated depth image
- * @return cv::Mat
- */
-void DensifyPointCloud(cv::Mat depth_image,
-                       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                       std::shared_ptr<beam_calibration::CameraModel> model);
-
-/**
  * @brief Normalizes depth image and returns in COLORMAP_JET
  * @return cv::Mat
  */

@@ -147,7 +147,7 @@ cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel) {
   });
   cv::Mat full_k_11 = beam::GetFullKernel(11);
   cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE, full_k_11);
-  cv::medianBlur(depth_image, depth_image, 5);
+  cv::medianBlur(depth_image, depth_image, 9);
   cv::Mat dst = depth_image.clone();
   cv::bilateralFilter(depth_image, dst, 5, 1.5, 2.0);
 
@@ -155,21 +155,6 @@ cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel) {
     if (distance > 0.1) { distance = max_depth - distance; }
   });
   return dst;
-}
-
-void DensifyPointCloud(cv::Mat depth_image,
-                       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                       std::shared_ptr<beam_calibration::CameraModel> model) {
-  for (int i = 0; i < depth_image.rows; i++) {
-    for (int j = 0; j < depth_image.cols; j++) {
-      float distance = depth_image.at<float>(i, j);
-      beam::Vec2 input_point(j, i);
-      beam::Vec3 dir = model->BackProject(input_point);
-      beam::Vec3 coords = distance * dir;
-      pcl::PointXYZ cloud_point(coords[0], coords[1], coords[2]);
-      cloud->points.push_back(cloud_point);
-    }
-  }
 }
 
 cv::Mat VisualizeDepthImage(cv::Mat depth_image) {
@@ -188,53 +173,3 @@ cv::Mat VisualizeDepthImage(cv::Mat depth_image) {
 }
 
 } // namespace beam_cv
-
-/* cv::Mat SegmentAndDilate(cv::Mat depth_image) {
-  double max_depth = 0, min_depth = 1000;
-  depth_image.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance != 0) {
-      if (distance > max_depth) max_depth = distance;
-      if (distance < min_depth) min_depth = distance;
-    }
-  });
-  float channel_width = (max_depth - min_depth) / 4;
-  cv::Mat channel1 = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC1);
-  cv::Mat channel2 = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC1);
-  cv::Mat channel3 = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC1);
-  cv::Mat channel4 = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC1);
-
-  depth_image.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance >= min_depth && distance < (min_depth + channel_width)) {
-      channel1.at<float>(position[0], position[1]) = distance;
-    } else if (distance >= min_depth + channel_width &&
-               distance < min_depth + (2 * channel_width)) {
-      channel2.at<float>(position[0], position[1]) = distance;
-    } else if (distance >= min_depth + (2 * channel_width) &&
-               distance < min_depth + (3 * channel_width)) {
-      channel3.at<float>(position[0], position[1]) = distance;
-    } else if (distance >= min_depth + (3 * channel_width) &&
-               distance < min_depth + (4 * channel_width)) {
-      channel4.at<float>(position[0], position[1]) = distance;
-    }
-  });
-  cv::Mat dst = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC1);
-  cv::Mat kernel = beam::GetEllipseKernel(7);
-
-  channel1 = beam_cv::DepthCompletion(channel1, kernel);
-  channel2 = beam_cv::DepthCompletion(channel2, kernel);
-  channel3 = beam_cv::DepthCompletion(channel3, kernel);
-  channel4 = beam_cv::DepthCompletion(channel4, kernel);
-  channel4.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance != 0) { dst.at<float>(position[0], position[1]) = distance; }
-  });
-  channel3.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance != 0) { dst.at<float>(position[0], position[1]) = distance; }
-  });
-  channel2.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance != 0) { dst.at<float>(position[0], position[1]) = distance; }
-  });
-  channel1.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance != 0) { dst.at<float>(position[0], position[1]) = distance; }
-  });
-  return dst;
-}*/
