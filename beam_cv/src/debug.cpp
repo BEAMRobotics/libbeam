@@ -5,6 +5,8 @@
 #include <iostream>
 #include <map>
 #include <pcl/io/pcd_io.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_visualizer.h>
 #include <ros/time.h>
 #include <string>
 
@@ -40,15 +42,21 @@ void TestDepthMap() {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
 
+  beam_cv::DepthMap dm(F1, cloud, image);
+  cv::Mat di_viz;
   // Extract depth image, visualize, save
   cv::Mat kernel = beam::GetEllipseKernel(7);
-  cv::Mat depth_image = beam_cv::ExtractDepthMap(image, cloud, F1, 0.01, 0);
-  cv::Mat di1 = beam_cv::VisualizeDepthImage(depth_image);
-  cv::imwrite("/home/jake/ext.png", di1);
-  cv::Mat comp = beam_cv::DepthCompletion(depth_image, kernel);
-  cv::Mat di3 = beam_cv::VisualizeDepthImage(comp);
-  cv::imwrite("/home/jake/comp.png", di3);
-
+  dm.ExtractDepthMap(0.001, 0, 3);
+  di_viz = dm.VisualizeDepthImage();
+  cv::imwrite("/home/jake/ext.png", di_viz);
+  dm.DepthInterpolation(50, 5, 0.15, 0);
+  di_viz = dm.VisualizeDepthImage();
+  cv::imwrite("/home/jake/interp.png", di_viz);
+  // second attempt
+  dm.ExtractDepthMap(0.02, 0, 31);
+  dm.DepthCompletion(kernel);
+  di_viz = dm.VisualizeDepthImage();
+  cv::imwrite("/home/jake/comp.png", di_viz);
   /*
     cv::Mat comp2 = beam_cv::DepthCompletion(interp2, kernel);
     cv::Mat di5 = beam_cv::VisualizeDepthImage(comp2);
