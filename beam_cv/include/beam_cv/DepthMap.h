@@ -5,6 +5,7 @@
 #pragma once
 // beam
 #include "beam_calibration/CameraModel.h"
+#include "beam_cv/Morphology.h"
 #include "beam_utils/math.hpp"
 // OpenCV
 #include <opencv2/core/core.hpp>

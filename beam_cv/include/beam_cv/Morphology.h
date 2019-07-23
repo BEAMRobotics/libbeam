@@ -34,4 +34,12 @@ cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold);
  */
 cv::Mat CloseObjects(const cv::Mat& input_image);
 
+/**
+ * @brief Method for removing holes in objects but keep the boundaries the
+ * same
+ * @return binary image with no holes
+ * @param input image
+ */
+cv::Mat Dilate(const cv::Mat& input_image, int kernel_size);
+
 } // namespace beam_cv
