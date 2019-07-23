@@ -22,13 +22,8 @@ namespace beam_cv {
 cv::Mat
     ExtractDepthMap(const cv::Mat& input_image,
                     pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud,
-                    std::shared_ptr<beam_calibration::CameraModel> input_model);
-
-/**
- * @brief Normalizes depth image and returns in COLORMAP_JET
- * @return cv::Mat
- */
-cv::Mat VisualizeDepthImage(cv::Mat depth_image);
+                    std::shared_ptr<beam_calibration::CameraModel> input_model,
+                    double threshold, int dilate);
 
 /**
  * @brief Performs depth completion on sparse depth image
@@ -40,7 +35,27 @@ cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel);
  * @brief Performs interpolation to densify depth map
  * @return cv::Mat
  */
-cv::Mat DepthInterpolation(cv::Mat depth_image, int window_size,
-                           float distance_threshold);
+cv::Mat DepthInterpolation(cv::Mat depth_image, int window_width,
+                           int window_height, float threshold, int dilate);
+
+/**
+ * @brief Performs interpolation to densify depth map
+ * @return cv::Mat
+
+cv::Mat SegmentAndDilate(cv::Mat depth_image);
+ */
+/**
+ * @brief Performs point cloud densification from an interpolated depth image
+ * @return cv::Mat
+ */
+void DensifyPointCloud(cv::Mat depth_image,
+                       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                       std::shared_ptr<beam_calibration::CameraModel> model);
+
+/**
+ * @brief Normalizes depth image and returns in COLORMAP_JET
+ * @return cv::Mat
+ */
+cv::Mat VisualizeDepthImage(cv::Mat depth_image);
 
 } // namespace beam_cv

@@ -41,19 +41,24 @@ void TestDepthMap() {
   pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
 
   // Extract depth image, visualize, save
-  cv::Mat depth_image = beam_cv::ExtractDepthMap(image, cloud, F1);
-  // cv::Mat dm_viz = beam_cv::VisualizeDepthImage(depth_image);
-  cv::Mat dst1 = beam_cv::DepthInterpolation(depth_image, 10, 0.15);
-  cv::Mat dm_viz1 = beam_cv::VisualizeDepthImage(dst1);
-  cv::imwrite("/home/jake/iter1.png", dm_viz1);
-  /* cv::Mat dst2 = beam_cv::DepthInterpolation(dst1, 50, 0.3);
-  cv::Mat dm_viz2 = beam_cv::VisualizeDepthImage(dst2);
-  cv::imwrite("/home/jake/iter2.png", dm_viz2);*/
-  // perform depth completion, visualize, save
   cv::Mat kernel = beam::GetEllipseKernel(7);
-  cv::Mat dst = beam_cv::DepthCompletion(dst1, kernel);
-  cv::Mat dm_viz3 = beam_cv::VisualizeDepthImage(dst);
-  cv::imwrite("/home/jake/completed.png", dm_viz3);
+  cv::Mat depth_image = beam_cv::ExtractDepthMap(image, cloud, F1, 0.01, 0);
+  cv::Mat di1 = beam_cv::VisualizeDepthImage(depth_image);
+  cv::imwrite("/home/jake/ext.png", di1);
+  cv::Mat comp = beam_cv::DepthCompletion(depth_image, kernel);
+  cv::Mat di3 = beam_cv::VisualizeDepthImage(comp);
+  cv::imwrite("/home/jake/comp.png", di3);
+
+  /*
+    cv::Mat comp2 = beam_cv::DepthCompletion(interp2, kernel);
+    cv::Mat di5 = beam_cv::VisualizeDepthImage(comp2);
+    cv::imwrite("/home/jake/comp2.png", di5);
+    cv::Mat interp = beam_cv::DepthInterpolation(depth_image, 70, 5, 0.15, 0);
+    cv::Mat di2 = beam_cv::VisualizeDepthImage(interp);
+    cv::imwrite("/home/jake/interp.png", di2);
+    cv::Mat interp2 = beam_cv::DepthInterpolation(interp, 40, 5, 0.08, 17);
+    cv::Mat di4 = beam_cv::VisualizeDepthImage(interp2);
+    cv::imwrite("/home/jake/interp2.png", di4);*/
 }
 
 int TestCrackCalculation(int argc, char** argv) {
@@ -168,7 +173,14 @@ void fillPosesVector(std::string file_location) {
   std::string delim = " ";
   std::ifstream file(file_location);
   std::string str;
+  ros::Time start;
   while (std::getline(file, str)) {
+    if (str.substr(0, 11) == "comment UTC") {
+      str.erase(0, 26);
+      double time = std::stof(str);
+      ros::Time temp(time);
+      start = temp;
+    }
     if (str == "end_header") { break; }
   }
   std::string s;
