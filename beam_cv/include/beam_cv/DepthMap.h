@@ -15,33 +15,44 @@
 #include <pcl/point_types.h>
 
 namespace beam_cv {
-/**
- * @brief Computes the depth image based on the given point cloud and image
- * @return cv::Mat
- */
-cv::Mat
-    ExtractDepthMap(const cv::Mat& input_image,
-                    pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud,
-                    std::shared_ptr<beam_calibration::CameraModel> input_model,
-                    double threshold, int dilate);
+class DepthMap {
+public:
+  DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
+           const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input,
+           const cv::Mat& image_input);
 
-/**
- * @brief Performs depth completion on sparse depth image
- * @return cv::Mat
- */
-cv::Mat DepthCompletion(cv::Mat depth_image, cv::Mat kernel);
+  virtual ~DepthMap() = default;
+  /**
+   * @brief Computes the depth image based on the given point cloud and image
+   * @return cv::Mat
+   */
+  void ExtractDepthMap(double threshold, int dilate, int mask_size);
 
-/**
- * @brief Performs interpolation to densify depth map
- * @return cv::Mat
- */
-cv::Mat DepthInterpolation(cv::Mat depth_image, int window_width,
-                           int window_height, float threshold, int dilate);
+  /**
+   * @brief Performs depth completion on sparse depth image
+   * @return cv::Mat
+   */
+  void DepthCompletion(cv::Mat kernel);
 
-/**
- * @brief Normalizes depth image and returns in COLORMAP_JET
- * @return cv::Mat
- */
-cv::Mat VisualizeDepthImage(cv::Mat depth_image);
+  /**
+   * @brief Performs interpolation to densify depth map
+   * @return cv::Mat
+   */
+  void DepthInterpolation(int window_width, int window_height, float threshold,
+                          int dilate);
 
+  /**
+   * @brief Normalizes depth image and returns in COLORMAP_JET
+   * @return cv::Mat
+   */
+  cv::Mat VisualizeDepthImage();
+
+protected:
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_;
+  std::shared_ptr<cv::Mat> image_;
+  std::shared_ptr<cv::Mat> depth_image_;
+  std::shared_ptr<beam_calibration::CameraModel> model_;
+  bool point_cloud_initialized_ = false, image_initialized_ = false,
+       model_initialized_ = false, depth_image_extracted_ = false;
+};
 } // namespace beam_cv
