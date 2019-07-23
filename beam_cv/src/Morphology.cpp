@@ -60,4 +60,10 @@ Mat CloseObjects(const Mat& input_image) {
   return output_image;
 }
 
+Mat Dilate(const Mat& input_image, int size) {
+  Mat dst = input_image.clone();
+  cv::Mat kernel = beam::GetEllipseKernel(size);
+  cv::dilate(dst, dst, kernel);
+  return dst;
+}
 } // namespace beam_cv

@@ -1,19 +1,27 @@
 #include "beam_cv/DepthMap.h"
 #include "beam_cv/Morphology.h"
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <pcl/io/pcd_io.h>
+#include <ros/time.h>
+#include <string>
 
 using namespace cv;
 using namespace std;
 
 void TestDepthMap();
 int TestCrackCalculation(int argc, char** argv);
+void fillPosesVector(std::string file);
+std::vector<Eigen::Affine3d> poses;
+std::vector<ros::Time> poses_time;
 
 int main(int argc, char** argv) {
   // TestCrackCalculation(argc, argv);
   TestDepthMap();
+  /* std::string file = "/home/jake/Downloads/test.ply";
+  fillPosesVector(file);*/
 }
 
 void TestDepthMap() {
@@ -35,15 +43,17 @@ void TestDepthMap() {
   // Extract depth image, visualize, save
   cv::Mat depth_image = beam_cv::ExtractDepthMap(image, cloud, F1);
   // cv::Mat dm_viz = beam_cv::VisualizeDepthImage(depth_image);
-  cv::Mat dst1 = beam_cv::DepthInterpolation(depth_image, 70, 0.3);
-  cv::Mat dst2 = beam_cv::DepthInterpolation(dst1, 70, 0.3);
-  cv::Mat dm_viz = beam_cv::VisualizeDepthImage(dst2);
-  cv::imwrite("/home/jake/depth.png", dm_viz);
+  cv::Mat dst1 = beam_cv::DepthInterpolation(depth_image, 10, 0.15);
+  cv::Mat dm_viz1 = beam_cv::VisualizeDepthImage(dst1);
+  cv::imwrite("/home/jake/iter1.png", dm_viz1);
+  /* cv::Mat dst2 = beam_cv::DepthInterpolation(dst1, 50, 0.3);
+  cv::Mat dm_viz2 = beam_cv::VisualizeDepthImage(dst2);
+  cv::imwrite("/home/jake/iter2.png", dm_viz2);*/
   // perform depth completion, visualize, save
   cv::Mat kernel = beam::GetEllipseKernel(7);
-  cv::Mat dst = beam_cv::DepthCompletion(dst2, kernel);
-  cv::Mat dm_viz2 = beam_cv::VisualizeDepthImage(dst);
-  cv::imwrite("/home/jake/depth2.png", dm_viz2);
+  cv::Mat dst = beam_cv::DepthCompletion(dst1, kernel);
+  cv::Mat dm_viz3 = beam_cv::VisualizeDepthImage(dst);
+  cv::imwrite("/home/jake/completed.png", dm_viz3);
 }
 
 int TestCrackCalculation(int argc, char** argv) {
@@ -152,4 +162,38 @@ int TestCrackCalculation(int argc, char** argv) {
   imshow("Image Skeleton", skeleton);
   waitKey(0); // Wait for a keystroke in the window
   return 0;
+}
+
+void fillPosesVector(std::string file_location) {
+  std::string delim = " ";
+  std::ifstream file(file_location);
+  std::string str;
+  while (std::getline(file, str)) {
+    if (str == "end_header") { break; }
+  }
+  std::string s;
+  while (std::getline(file, s)) {
+    size_t pos = 0;
+    std::vector<float> vals;
+    while ((pos = s.find(delim)) != std::string::npos) {
+      float val = std::stof(s.substr(0, pos));
+      s.erase(0, pos + delim.length());
+      vals.push_back(val);
+    }
+    float x = vals[0], y = vals[1], z = vals[2];
+    float roll = vals[3], pitch = vals[4], yaw = vals[5];
+    float time = vals[6];
+    ros::Time t(time);
+    Eigen::Affine3d TA;
+    Eigen::RowVector3d transl;
+    transl << x, y, z;
+    Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitZ());
+    Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitY());
+    Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitX());
+    Eigen::Quaternion<double> q = rollAngle * yawAngle * pitchAngle;
+    TA.linear() = q.matrix();
+    TA.translation() = transl;
+    poses.push_back(TA);
+    poses_time.push_back(t);
+  }
 }
