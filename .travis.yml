@@ -22,12 +22,12 @@ install:
   - cd $CI_SOURCE_PATH
   - travis_wait 120 bash ./scripts/install.bash
 
-# # Run unit test scripts
-# jobs:
-#   include: 
-#     - stage: beam_calibration_tests
+# Run unit test scripts
+jobs:
+  include: 
+    - stage: beam_calibration_tests
 #     script: cd $HOME/catkin_ws/build/libbeam/beam_calibration
-#     script: ./beam_calibration_extrinsics_tests
+    script: ./beam_calibration_extrinsics_tests
 #     script: ./beam_calibration_camera_tests
 #     - stage: beam_defects_tests
 #     script: cd $HOME/catkin_ws/build/libbeam/beam_defects
