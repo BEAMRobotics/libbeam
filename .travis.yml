@@ -1,6 +1,6 @@
 # Specify generic linux distribution of linux
 sudo: required
-language: generic
+language: minimal
 dist: xenial
 
 # Setup build cache
