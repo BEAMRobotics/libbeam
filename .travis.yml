@@ -16,7 +16,6 @@ matrix:
   include:
     - name: "Xenial kinetic"
       dist: xenial
-      env: ROS_DISTRO=kinetic
 
 ################################################################################
 env:
