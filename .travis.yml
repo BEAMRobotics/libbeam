@@ -1,5 +1,9 @@
-
+# Specify generic linux distribution of linux
+language: generic
+dist: xenial
 sudo: required
+
+# Setup build cache
 cache:
   apt: true
   ccache: true
@@ -7,17 +11,7 @@ cache:
     - $HOME/.ccache
     - /tmp/beam_dependencies
 
-# Specify what combinations of Ubuntu/ROS we want to build
-# Limited to what is available on Travis VMs.
-language: generic
-matrix:
-  allow_failures:
-    - env: CHECK_COMMIT_FORMAT=ON
-  include:
-    - name: "Xenial kinetic"
-      dist: xenial
-
-################################################################################
+# Set global variables
 env:
   global:
     - CI_SOURCE_PATH=$(pwd)
@@ -27,14 +21,20 @@ env:
 install:
   - cd $CI_SOURCE_PATH
   - travis_wait 120 bash ./scripts/install.bash
-script:
-  - cd $HOME/catkin_ws/build/libbeam/beam_calibration
-  - ./beam_calibration_extrinsics_tests
-  - ./beam_calibration_camera_tests
-  - cd $HOME/catkin_ws/build/libbeam/beam_defects
-  - ./beam_defects_delam_tests
-  - ./beam_defects_spall_tests
-  - ./beam_defects_crack_tests
-  - ./beam_defects_corrosion_tests
-  - cd $HOME/catkin_ws/build/libbeam/beam_colorize
-  - ./beam_colorize_tests
+
+# Run unit test scripts
+jobs:
+  include: 
+    - stage: beam_calibration_tests
+    script: cd $HOME/catkin_ws/build/libbeam/beam_calibration
+    script: ./beam_calibration_extrinsics_tests
+    script: ./beam_calibration_camera_tests
+    - stage: beam_defects_tests
+    script: cd $HOME/catkin_ws/build/libbeam/beam_defects
+    script: ./beam_defects_delam_tests
+    script: ./beam_defects_spall_tests
+    script: ./beam_defects_crack_tests
+    script: ./beam_defects_corrosion_tests
+    - stage: beam_colorize_tests
+    script: cd $HOME/catkin_ws/build/libbeam/beam_colorize
+    script: ./beam_colorize_tests
