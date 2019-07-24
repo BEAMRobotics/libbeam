@@ -1,7 +1,7 @@
 # Specify generic linux distribution of linux
+sudo: required
 language: generic
 dist: xenial
-sudo: required
 
 # Setup build cache
 cache:
