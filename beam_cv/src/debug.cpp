@@ -32,41 +32,40 @@ void TestDepthMap() {
   std::string intrinsics_location = cur_dir + "/tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       beam_calibration::CameraModel::LoadJSON(intrinsics_location);
-
   // load Image
   std::string image_location = cur_dir + "/tests/test_data/test.jpg";
   cv::Mat image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
-
   // load pcd
   std::string pcd_location = cur_dir + "/tests/test_data/test.pcd";
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
 
+  /*
+   * Test depth map filling
+   */
   beam_cv::DepthMap dm(F1, cloud, image);
   cv::Mat di_viz;
   // Extract depth image, visualize, save
-  cv::Mat kernel = beam::GetEllipseKernel(7);
+  cv::Mat kernel = beam::GetCrossKernel(5);
+  // extract depth map with pixel threshold of 0.1 cm, 0 dilation, and a hit
+  // mask of size 3
   dm.ExtractDepthMap(0.001, 0, 3);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext.png", di_viz);
-  dm.DepthInterpolation(50, 5, 0.15, 0);
+  dm.DepthInterpolation(70, 10, 0.15, 0, 3);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/interp.png", di_viz);
-  // second attempt
-  dm.ExtractDepthMap(0.02, 0, 31);
-  dm.DepthCompletion(kernel);
-  di_viz = dm.VisualizeDepthImage();
-  cv::imwrite("/home/jake/comp.png", di_viz);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud = dm.ExtractPointCloud();
   /*
-    cv::Mat comp2 = beam_cv::DepthCompletion(interp2, kernel);
-    cv::Mat di5 = beam_cv::VisualizeDepthImage(comp2);
-    cv::imwrite("/home/jake/comp2.png", di5);
-    cv::Mat interp = beam_cv::DepthInterpolation(depth_image, 70, 5, 0.15, 0);
-    cv::Mat di2 = beam_cv::VisualizeDepthImage(interp);
-    cv::imwrite("/home/jake/interp.png", di2);
-    cv::Mat interp2 = beam_cv::DepthInterpolation(interp, 40, 5, 0.08, 17);
-    cv::Mat di4 = beam_cv::VisualizeDepthImage(interp2);
-    cv::imwrite("/home/jake/interp2.png", di4);*/
+   * Test with newly created point cloud
+   */
+  beam_cv::DepthMap dm2(F1, new_cloud, image);
+  dm2.ExtractDepthMap(0.02, 0, 31);
+  di_viz = dm2.VisualizeDepthImage();
+  cv::imwrite("/home/jake/ext2.png", di_viz);
+  dm2.DepthCompletion(kernel);
+  di_viz = dm2.VisualizeDepthImage();
+  cv::imwrite("/home/jake/comp2.png", di_viz);
 }
 
 int TestCrackCalculation(int argc, char** argv) {
