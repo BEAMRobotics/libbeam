@@ -65,6 +65,30 @@ public:
    */
   void BuildMap();
 
+  /**
+   * @brief sets moving frame for poses
+   * @param moving_frame
+   */
+  void SetPosesMovingFrame(std::string& moving_frame);
+
+  /**
+   * @brief returns moving frame for poses
+   * @return poses_moving_frame_
+   */
+  std::string GetPosesMovingFrame();
+
+  /**
+   * @brief sets fixed frame for poses
+   * @param fixed_frame
+   */
+  void SetPosesFixedFrame(std::string& fixed_frame);
+
+  /**
+   * @brief returns fixed frame for poses
+   * @return poses_fixed_frame_
+   */
+  std::string GetPosesFixedFrame();
+
 private:
   /**
    * @brief method to load poses from json and extrinsics
@@ -141,11 +165,11 @@ private:
   std::vector<std::string> lidar_topics_, lidar_frames_;
   std::vector<std::vector<float>> lidar_cropbox_min_, lidar_cropbox_max_;
   std::vector<bool> lidar_cropbox_bool_;
-  // Note: filter_params_type = std::pair<std::string, std::vector<double>>;
   std::vector<filter_params_type> input_filters_, intermediary_filters_,
       output_filters_;
 
   // New objects
+  std::string poses_moving_frame_, poses_fixed_frame_;
   beam_mapping::Poses slam_poses_, interpolated_poses_;
   beam_calibration::TfTree trajectory_, extrinsics_;
   PointCloud::Ptr aggregate_;

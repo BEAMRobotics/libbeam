@@ -21,6 +21,8 @@ using PointCloud = pcl::PointCloud<PointT>;
 
 MapBuilder::MapBuilder(const std::string& config_file) {
   config_file_ = config_file;
+  poses_moving_frame_ = "";
+  poses_fixed_frame_ = "";
   this->LoadConfigFromJSON(config_file);
 }
 
@@ -185,23 +187,44 @@ void MapBuilder::OverridePoseFile(const std::string& pose_file) {
 }
 
 void MapBuilder::LoadTrajectory(const std::string& pose_file) {
-  slam_poses_.LoadPoseFile(pose_file);
+  std::string pose_type =
+      pose_file_path_.substr(pose_file_path_.rfind("."), pose_file_path_.size());
+  if (pose_type == ".json") {
+    slam_poses_.LoadFromJSON(pose_file);
+    poses_moving_frame_ = slam_poses_.moving_frame;
+    poses_fixed_frame_ = slam_poses_.fixed_frame;
+  } else if (pose_type == ".ply") {
+    slam_poses_.LoadFromPLY(pose_file);
+  } else {
+    BEAM_CRITICAL("Invalid pose file type. Valid extensions: .ply, .json");
+    throw std::invalid_argument{
+        "Invalid pose file type. Valid extensions: .ply, .json"};
+  }
 
   if (slam_poses_.GetBagName() != bag_file_name_) {
-    BEAM_CRITICAL("Bag file name from MapBuilder config file is not the same "
+    BEAM_WARN("Bag file name from MapBuilder config file is not the same "
                   "as the name listed in the pose file.\nMapBuilderConfig: "
                   "{}\nPoseFile: {}",
                   bag_file_name_.c_str(), slam_poses_.GetBagName().c_str());
-    throw std::invalid_argument{
-        "Bag file name from MapBuilder config file is "
-        "not the same as the name listed in the pose file."};
+    // throw std::invalid_argument{
+    //     "Bag file name from MapBuilder config file is "
+    //     "not the same as the name listed in the pose file."};
   }
 
   extrinsics_.LoadJSON(extrinsics_file_);
+
+  if(poses_moving_frame_ == ""){
+    BEAM_CRITICAL("Set moving frame in map builder before building map.");
+    throw std::runtime_error{"Set moving frame in map builder before building map."};
+  } else if (poses_fixed_frame_ == ""){
+    BEAM_CRITICAL("Set fixed frame in map builder before building map");
+    throw std::runtime_error{"Set fixed frame in map builder before building map"};
+  }
+
   int num_poses = slam_poses_.time_stamps.size();
   for (int k = 0; k < num_poses; k++) {
-    trajectory_.AddTransform(slam_poses_.poses[k], slam_poses_.fixed_frame,
-                             slam_poses_.moving_frame,
+    trajectory_.AddTransform(slam_poses_.poses[k], poses_fixed_frame_,
+                             poses_moving_frame_,
                              slam_poses_.time_stamps[k]);
   }
 }
@@ -225,7 +248,8 @@ PointCloud::Ptr MapBuilder::FilterPointCloud(
     PointCloud::Ptr cloud, std::vector<filter_params_type> filter_params) {
   PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>(*cloud);
   for (uint8_t i = 0; i < filter_params.size(); i++) {
-    PointCloud::Ptr input_cloud = boost::make_shared<PointCloud>(*filtered_cloud);
+    PointCloud::Ptr input_cloud =
+        boost::make_shared<PointCloud>(*filtered_cloud);
     std::string filter_type = filter_params[i].first;
     std::vector<double> params = filter_params[i].second;
     if (filter_type == "DROR") {
@@ -306,8 +330,8 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
       (scan_time > slam_poses_.time_stamps.back())) {
     return;
   }
-  std::string to_frame = slam_poses_.fixed_frame;
-  std::string from_frame = slam_poses_.moving_frame;
+  std::string to_frame = poses_fixed_frame_;
+  std::string from_frame = poses_moving_frame_;
   scan_pose_current_ =
       trajectory_.GetTransformEigen(to_frame, from_frame, scan_time);
   save_scan = CheckPoseChange();
@@ -361,8 +385,8 @@ void MapBuilder::LoadScans(uint8_t lidar_number) {
 }
 
 void MapBuilder::GenerateMap(uint8_t lidar_number) {
-  std::string fixed_frame = slam_poses_.fixed_frame;
-  std::string moving_frame = slam_poses_.moving_frame;
+  std::string fixed_frame = poses_fixed_frame_;
+  std::string moving_frame = poses_moving_frame_;
   std::string lidar_frame = lidar_frames_[lidar_number];
   PointCloud::Ptr scan_aggregate = boost::make_shared<PointCloud>();
   PointCloud::Ptr scan_intermediary = boost::make_shared<PointCloud>();
@@ -410,6 +434,22 @@ void MapBuilder::SaveMaps() {
     BEAM_INFO("Saving map to: {}", save_path);
     pcl::io::savePCDFileBinary(save_path, *combined_map);
   }
+}
+
+void MapBuilder::SetPosesMovingFrame(std::string& moving_frame){
+  poses_moving_frame_ = moving_frame;
+}
+
+std::string MapBuilder::GetPosesMovingFrame(){
+  return poses_moving_frame_;
+}
+
+void MapBuilder::SetPosesFixedFrame(std::string& fixed_frame){
+  poses_fixed_frame_ = fixed_frame;
+}
+
+std::string MapBuilder::GetPosesFixedFrame(){
+  return poses_fixed_frame_;
 }
 
 void MapBuilder::BuildMap() {

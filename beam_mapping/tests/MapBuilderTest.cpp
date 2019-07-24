@@ -11,7 +11,7 @@ std::string GetFullFile(std::string current_rel_path, std::string new_rel_path){
   return path;
 }
 
-TEST_CASE("Testing map building") {
+TEST_CASE("Testing map building with JSON") {
   std::string current_file_rel, config_file_rel, pose_file_rel, bag_file_rel,
               bag_file_path, pose_file_path, config_file_path;
   current_file_rel = "/tests/MapBuilderTest.cpp";
@@ -30,6 +30,34 @@ TEST_CASE("Testing map building") {
   beam_mapping::MapBuilder map_builder(config_file_path);
   map_builder.OverrideBagFile(bag_file_path);
   map_builder.OverridePoseFile(pose_file_path);
+  map_builder.BuildMap();
+  REQUIRE(1 == 1);
+}
+
+
+TEST_CASE("Testing map building with PLY") {
+  std::string current_file_rel, config_file_rel, pose_file_rel, bag_file_rel,
+              bag_file_path, pose_file_path, config_file_path;
+  current_file_rel = "/tests/MapBuilderTest.cpp";
+  config_file_rel = "/tests/test_data/MapBuilderTestConfigKaarta.json";
+  pose_file_rel = "/tests/test_data/PosesTestKaarta.ply";
+  bag_file_rel = "/tests/test_data/BagTestKaarta.bag";
+
+  config_file_path = GetFullFile(current_file_rel, config_file_rel);
+  pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
+  bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
+
+  // TODO: Change this back to test files
+  pose_file_path = "/home/nick/results/ig_maps/libbeam_map_builder/testing/trajectory_2019-07-22-23-00-44_loop_closed.ply";
+  bag_file_path = "/home/nick/results/ig_maps/libbeam_map_builder/testing/ig_scan_2019-07-22-23-00-36-kaarta.bag";
+
+  beam_mapping::MapBuilder map_builder(config_file_path);
+  map_builder.OverrideBagFile(bag_file_path);
+  map_builder.OverridePoseFile(pose_file_path);
+  std::string moving_frame = "hvlp_link";
+  std::string fixed_frame = "odom";
+  map_builder.SetPosesMovingFrame(moving_frame);
+  map_builder.SetPosesFixedFrame(fixed_frame);
   map_builder.BuildMap();
   REQUIRE(1 == 1);
 }

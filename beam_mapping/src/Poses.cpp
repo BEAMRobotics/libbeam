@@ -79,7 +79,7 @@ void Poses::AddSinglePose(const Eigen::Affine3d& pose) {
   poses.push_back(pose);
 }
 
-void Poses::WriteToPoseFile(const std::string output_dir) {
+void Poses::WriteToJSON(const std::string output_dir) {
   if (poses.size() != time_stamps.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
@@ -130,7 +130,7 @@ void Poses::WriteToPoseFile(const std::string output_dir) {
   filejson << std::setw(4) << J << std::endl;
 }
 
-void Poses::LoadPoseFile(const std::string input_pose_file_path) {
+void Poses::LoadFromJSON(const std::string input_pose_file_path) {
   BEAM_INFO("Loading pose file: {}", input_pose_file_path.c_str());
   nlohmann::json J;
   std::ifstream file(input_pose_file_path);
@@ -170,6 +170,50 @@ void Poses::LoadPoseFile(const std::string input_pose_file_path) {
     }
   }
   BEAM_INFO("Read {} poses.", pose_counter);
+}
+
+void Poses::WriteToPLY(const std::string output_dir){
+  //
+}
+
+void Poses::LoadFromPLY(const std::string input_pose_file_path){
+  std::string delim = " ";
+  std::ifstream file(input_pose_file_path);
+  std::string str;
+  double time_start = 0;
+  while (std::getline(file, str)) {
+    if (str.substr(0, 11) == "comment UTC") {
+      str.erase(0, 26);
+      time_start = std::stod(str);
+    }
+    if (str == "end_header") { break; }
+  }
+  std::string s;
+  while (std::getline(file, s)) {
+    size_t pos = 0;
+    std::vector<double> vals;
+    while ((pos = s.find(delim)) != std::string::npos) {
+      double val = std::stof(s.substr(0, pos));
+      s.erase(0, pos + delim.length());
+      vals.push_back(val);
+    }
+    double x = vals[0], y = vals[1], z = vals[2];
+    double roll = vals[3], pitch = vals[4], yaw = vals[5];
+    double time_since_start = vals[6];
+    double time_stamp_sec = time_since_start + time_start;
+    ros::Time t(time_stamp_sec);
+    Eigen::Affine3d TA;
+    Eigen::RowVector3d transl;
+    transl << x, y, z;
+    Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
+    Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
+    Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
+    Eigen::Quaternion<double> q = rollAngle * pitchAngle * yawAngle;
+    TA.linear() = q.matrix();
+    TA.translation() = transl;
+    this->poses.push_back(TA);
+    this->time_stamps.push_back(t);
+  }
 }
 
 } // namespace beam_mapping

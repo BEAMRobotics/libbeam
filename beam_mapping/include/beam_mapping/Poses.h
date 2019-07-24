@@ -121,17 +121,30 @@ public:
   void AddSinglePose(const Eigen::Affine3d& pose);
 
   /**
-   * @brief writes the pose file to the specified directory. The file will be
-   * named: "poses_file_date"_poses.json
+   * @brief writes the pose file to the specified directory as JSON type. The
+   * file will be named: "poses_file_date"_poses.json
    * @param output_dir full path to directory at which to save pose file
    */
-  void WriteToPoseFile(const std::string output_dir);
+  void WriteToJSON(const std::string output_dir);
 
   /**
-   * @brief loads the pose file
+   * @brief loads the pose file in JSON format
    * @param input_pose_file_path full path to pose file
    */
-  void LoadPoseFile(const std::string input_pose_file_path);
+  void LoadFromJSON(const std::string input_pose_file_path);
+
+  /**
+   * @brief writes the pose file to the specified directory as JSON type. The
+   * file will be named: "poses_file_date"_poses.json
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteToPLY(const std::string output_dir);
+
+  /**
+   * @brief loads the pose file in PLY format
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromPLY(const std::string input_pose_file_path);
 
   std::vector<ros::Time> time_stamps;
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> poses;
