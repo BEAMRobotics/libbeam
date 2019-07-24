@@ -52,7 +52,7 @@ void TestDepthMap() {
   dm.ExtractDepthMap(0.001, 0, 3);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext.png", di_viz);
-  dm.DepthInterpolation(70, 10, 0.15, 0, 3);
+  dm.DepthInterpolation(70, 10, 0.15, 0, 1);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/interp.png", di_viz);
   pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud = dm.ExtractPointCloud();
