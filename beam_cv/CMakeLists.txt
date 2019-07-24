@@ -12,6 +12,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Morphology.cpp
     src/DepthMap.cpp
+    src/RayCast.cpp
 )
 
 ############# Debug files #############

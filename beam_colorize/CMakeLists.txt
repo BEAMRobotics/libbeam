@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     PCL::PCL
     beam::calibration
     beam::containers
+    beam::cv
     OpenCV::OpenCV
   SOURCES
     src/Colorizer.cpp
