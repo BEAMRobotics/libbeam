@@ -1,4 +1,4 @@
-# Specify generic linux distribution of linux
+# Specify xenial linux distribution and minimal language support
 sudo: required
 language: minimal
 dist: xenial
