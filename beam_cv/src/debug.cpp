@@ -20,8 +20,8 @@ std::vector<Eigen::Affine3d> poses;
 std::vector<ros::Time> poses_time;
 
 int main(int argc, char** argv) {
-  TestCrackCalculation(argc, argv);
-  // TestDepthMap();
+  // TestCrackCalculation(argc, argv);
+  TestDepthMap();
 }
 
 void TestDepthMap() {
@@ -38,37 +38,35 @@ void TestDepthMap() {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
 
+  cv::Mat kernel = beam::GetCrossKernel(5);
+  cv::Mat kernel2 = beam::GetEllipseKernel(5);
   /*
    * Test depth map filling
    */
   beam_cv::DepthMap dm(F1, cloud);
   cv::Mat di_viz;
-  // Extract depth image, visualize, save
-  cv::Mat kernel = beam::GetCrossKernel(5);
-  cv::Mat kernel2 = beam::GetEllipseKernel(5);
-  // extract depth map with pixel threshold of 0.1 cm, 0 dilation, and a hit
-  // mask of size 3
-  /*
+
   dm.ExtractDepthMap(0.001, 3);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext.png", di_viz);
-  dm.DepthInterpolation(70, 5, 0.05, 2);
+  dm.DepthInterpolation(70, 5, 0.05, 4);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/interp.png", di_viz);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud = dm.ExtractPointCloud(); */
+  dm.DepthCompletion(kernel);
+  di_viz = dm.VisualizeDepthImage();
+  cv::imwrite("/home/jake/comp.png", di_viz);
   /*
-   * Test with newly created point cloud
-
-  beam_cv::DepthMap dm2(F1, new_cloud, image);
+  beam_cv::DepthMap dm2(F1, new_cloud);
   dm2.ExtractDepthMap(0.02, 21);
   di_viz = dm2.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext2.png", di_viz);
+
   dm2.DepthCompletion(kernel);
   di_viz = dm2.VisualizeDepthImage();
   cv::imwrite("/home/jake/completed.png", di_viz);
   dm2.VerticalDepthExtrapolation();
   di_viz = dm2.VisualizeDepthImage();
-  cv::imwrite("/home/jake/extrapolated.png", di_viz);  */
+  cv::imwrite("/home/jake/extrapolated.png", di_viz);
 
   beam_cv::DepthMap dm3(F1, cloud);
   dm3.ExtractDepthMap(0.02, 31);
@@ -76,7 +74,7 @@ void TestDepthMap() {
   cv::imwrite("/home/jake/extracted.png", di_viz);
   dm3.DepthCompletion(kernel);
   di_viz = dm3.VisualizeDepthImage();
-  cv::imwrite("/home/jake/full.png", di_viz);
+  cv::imwrite("/home/jake/full.png", di_viz);*/
 }
 
 int TestCrackCalculation(int argc, char** argv) {
@@ -101,5 +99,7 @@ int TestCrackCalculation(int argc, char** argv) {
   cv::Mat element2 = cv::getStructuringElement(cv::MORPH_RECT, Size(3, 3));
   morphologyEx(image, image, cv::MORPH_CLOSE, element2);
   cv::Mat skeleton = beam_cv::ExtractSkeleton(image);
+  cv::imshow("skeleton", skeleton);
+  cv::waitKey(0);
   std::vector<cv::Mat> seg_skels = beam_cv::SegmentComponents(image);
 }
