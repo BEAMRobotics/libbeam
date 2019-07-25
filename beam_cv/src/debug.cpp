@@ -22,8 +22,6 @@ std::vector<ros::Time> poses_time;
 int main(int argc, char** argv) {
   TestCrackCalculation(argc, argv);
   // TestDepthMap();
-  /* std::string file = "/home/jake/Downloads/test.ply";
-  fillPosesVector(file);*/
 }
 
 void TestDepthMap() {
@@ -97,90 +95,11 @@ int TestCrackCalculation(int argc, char** argv) {
   int thresh;
   std::stringstream ss(argv[2]);
   ss >> thresh;
-
   // process image used (just temp with example image)
   cv::threshold(image, image, thresh, 255, cv::THRESH_BINARY);
-  // Initialize skel image and temp storage
-
   image = beam_cv::RemoveClusters(image, 100);
   cv::Mat element2 = cv::getStructuringElement(cv::MORPH_RECT, Size(3, 3));
   morphologyEx(image, image, cv::MORPH_CLOSE, element2);
   cv::Mat skeleton = beam_cv::ExtractSkeleton(image);
-
-  // Create a copy of the binary image
-
-  // Initialize map for widths
-
-  std::vector<cv::Mat> seg_skels = beam_cv::SegmentSkeleton(skeleton, image);
-  int i = 0;
-  for (cv::Mat skel : seg_skels) {
-    std::string name = std::to_string(i) + ".png";
-    imwrite("/home/jake/" + name, skel);
-    i++;
-  }
-
-  /*
-  for (int i = 1; i < num_comp; ++i) // 0 is all points not showing crack
-  {
-    std::cout << "Results for Crack: " << i << std::endl;
-    if (crack_map[i].size() > 50) {
-      std::cout << "Crack Length: " << crack_map[i].size() << std::endl;
-      double max_width = *max_element(crack_map[i].begin(), crack_map[i].end());
-      double min_width = *min_element(crack_map[i].begin(), crack_map[i].end());
-      std::cout << "Max: " << max_width << " and Min: " << min_width
-                << std::endl;
-    } else {
-      std::cout << "Not enough data to yield meaningful results" << std::endl;
-    };
-  }
-
-  applyColorMap(cm_skel, cm_skel, COLORMAP_HOT);
-
-  namedWindow("Original Image", WINDOW_NORMAL);
-  namedWindow("Image Skeleton", WINDOW_NORMAL);
-  imshow("Original Image", cm_skel);
-  imshow("Image Skeleton", skeleton);
-  waitKey(0); // Wait for a keystroke in the window
-  return 0;*/
-}
-
-void fillPosesVector(std::string file_location) {
-  std::string delim = " ";
-  std::ifstream file(file_location);
-  std::string str;
-  ros::Time start;
-  while (std::getline(file, str)) {
-    if (str.substr(0, 11) == "comment UTC") {
-      str.erase(0, 26);
-      double time = std::stof(str);
-      ros::Time temp(time);
-      start = temp;
-    }
-    if (str == "end_header") { break; }
-  }
-  std::string s;
-  while (std::getline(file, s)) {
-    size_t pos = 0;
-    std::vector<float> vals;
-    while ((pos = s.find(delim)) != std::string::npos) {
-      float val = std::stof(s.substr(0, pos));
-      s.erase(0, pos + delim.length());
-      vals.push_back(val);
-    }
-    float x = vals[0], y = vals[1], z = vals[2];
-    float roll = vals[3], pitch = vals[4], yaw = vals[5];
-    float time = vals[6];
-    ros::Time t(time);
-    Eigen::Affine3d TA;
-    Eigen::RowVector3d transl;
-    transl << x, y, z;
-    Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitZ());
-    Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitY());
-    Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitX());
-    Eigen::Quaternion<double> q = rollAngle * yawAngle * pitchAngle;
-    TA.linear() = q.matrix();
-    TA.translation() = transl;
-    poses.push_back(TA);
-    poses_time.push_back(t);
-  }
+  std::vector<cv::Mat> seg_skels = beam_cv::SegmentComponents(image);
 }
