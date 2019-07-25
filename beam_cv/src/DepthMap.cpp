@@ -13,24 +13,14 @@
 
 namespace beam_cv {
 
-void HitBehaviour(std::shared_ptr<cv::Mat> image,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                  const int* position, int index) {
-  pcl::PointXYZ origin(0, 0, 0);
-  image->at<float>(position[0], position[1]) =
-      beam::distance(cloud->points[index], origin);
-}
-
 DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
-                   const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input,
-                   const cv::Mat& image_input) {
+                   const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input) {
   this->SetCloud(cloud_input);
-  this->SetImage(image_input);
   this->SetModel(model);
 }
 
-void DepthMap::ExtractDepthMap(double threshold, int dilate, int mask_size) {
-  if (!point_cloud_initialized_ || !model_initialized_ || !image_initialized_) {
+void DepthMap::ExtractDepthMap(double threshold, int mask_size) {
+  if (!point_cloud_initialized_ || !model_initialized_) {
     BEAM_CRITICAL("Variables not properly initialized.");
     throw std::runtime_error{"Variables not properly initialized."};
   }
@@ -38,14 +28,14 @@ void DepthMap::ExtractDepthMap(double threshold, int dilate, int mask_size) {
   // create image mask where white pixels = projection hit
   cv::Mat hit_mask = this->CreateHitMask(mask_size);
   /// create image with 3 channels for coordinates
-  depth_image_ =
-      std::make_shared<cv::Mat>(image_->rows, image_->cols, CV_32FC1);
-  // perform ray casting on depth_image_
+  depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
+                                           model_->GetWidth(), CV_32FC1);
+  // perform ray casting of cloud to create depth_image_
   beam_cv::RayCastXYZ(depth_image_, cloud_, hit_mask, threshold, model_,
                       HitBehaviour);
 
-  if (dilate > 0) { *depth_image_ = beam_cv::Dilate(*depth_image_, dilate); }
   depth_image_extracted_ = true;
+  // compute min and max depth in the image
   min_depth_ = 1000, max_depth_ = 0;
   depth_image_->forEach<float>(
       [&](float& distance, const int* position) -> void {
@@ -54,8 +44,11 @@ void DepthMap::ExtractDepthMap(double threshold, int dilate, int mask_size) {
       });
 }
 
+/*
+ * TODO: parallelize the window searching
+ */
 void DepthMap::DepthInterpolation(int window_width, int window_height,
-                                  float threshold, int dilate, int iterations) {
+                                  float threshold, int iterations) {
   if (!this->CheckState()) {
     BEAM_CRITICAL("Variables not properly set.");
     throw std::runtime_error{"Variables not properly set."};
@@ -114,7 +107,6 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
         }
       }
     });
-    if (dilate > 0) { dst = beam_cv::Dilate(dst, dilate); }
     *depth_image_ = dst;
   }
 }
@@ -134,7 +126,8 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   cv::dilate(image, image, kernel);
   cv::morphologyEx(image, image, cv::MORPH_CLOSE, full_k_9);
   // dilate, then fill image with dilated
-  cv::Mat dilated = beam_cv::Dilate(image, 7);
+  cv::Mat dilated;
+  cv::dilate(image, dilated, full_k_7);
   image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > 0.1) {
       distance = dilated.at<float>(position[0], position[1]);
@@ -152,48 +145,6 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
     if (distance > 0.1) { distance = max_depth_ - distance; }
   });
   *depth_image_ = dst;
-}
-
-/*
- * TODO: add weighting based on which is closer (up or down)
- */
-void DepthMap::VerticalDepthExtrapolation() {
-  BEAM_INFO("Performing Depth Extrapolation...");
-  cv::Mat dst = depth_image_->clone();
-  depth_image_->forEach<float>(
-      [&](float& distance, const int* position) -> void {
-        if (distance < 0.1) {
-          beam::Vec2 pixel(position[0], position[1]);
-          beam::Vec2 found_pixel_up;
-          beam::Vec2 found_pixel_down;
-          float up = this->FindClosestNonZero(depth_image_, Direction::UP,
-                                              pixel, found_pixel_up);
-          float down = this->FindClosestNonZero(depth_image_, Direction::DOWN,
-                                                pixel, found_pixel_down);
-          double total_dif = beam::distance(found_pixel_up, found_pixel_down);
-          double down_dist = beam::distance(pixel, found_pixel_down);
-          double up_dist = beam::distance(pixel, found_pixel_up);
-          double up_weight = up_dist / total_dif,
-                 down_weight = down_dist / total_dif;
-          int valid_pixels = 0;
-          float total_depth = 0.0;
-          if (up > 0.1) {
-            valid_pixels++;
-            total_depth += up * up_weight;
-          }
-          if (down > 0.1) {
-            valid_pixels++;
-            total_depth += down * down_weight;
-          }
-          float avg_depth = total_depth / valid_pixels;
-          dst.at<float>(position[0], position[1]) = avg_depth;
-        }
-      });
-  cv::Mat img = dst.clone();
-  // bilateral filter preserves structure
-  cv::GaussianBlur(dst, img, cv::Size(5, 5), 0);
-
-  *depth_image_ = img;
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
@@ -223,7 +174,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
 
 cv::Mat DepthMap::CreateHitMask(int mask_size) {
   // create image mask where white pixels = projection hit
-  cv::Mat tmp = cv::Mat::zeros(image_->size(), CV_8UC3);
+  cv::Size image_s(model_->GetHeight(), model_->GetWidth());
+  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
   cv::Mat hit_mask;
   for (uint32_t i = 0; i < cloud_->points.size(); i++) {
     beam::Vec3 point;
@@ -231,7 +183,7 @@ cv::Mat DepthMap::CreateHitMask(int mask_size) {
     beam::Vec2 coords;
     coords = model_->ProjectPoint(point);
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
+    if (u > 0 && v > 0 && v < model_->GetHeight() && u < model_->GetWidth()) {
       tmp.at<cv::Vec3b>(v, u).val[0] = 255;
     }
   }
@@ -258,45 +210,44 @@ cv::Mat DepthMap::VisualizeDepthImage() {
 
 bool DepthMap::CheckState() {
   bool state = false;
-  if (point_cloud_initialized_ && image_initialized_ &&
-      depth_image_extracted_ && model_initialized_) {
+  if (point_cloud_initialized_ && depth_image_extracted_ &&
+      model_initialized_) {
     state = true;
   }
   return state;
 }
 
-float DepthMap::FindClosestNonZero(std::shared_ptr<cv::Mat> depth_image,
-                                   Direction dir, beam::Vec2 pixel,
+float DepthMap::FindClosestNonZero(Direction dir, beam::Vec2 search_pixel,
                                    beam::Vec2& found_pixel) {
   float depth = 0.0;
-  int x = pixel[0], y = pixel[1];
+  int x = search_pixel[0], y = search_pixel[1];
   switch (dir) {
     case Direction::UP:
       while (depth < 0.1) {
-        depth = depth_image->at<float>(x, y);
+        depth = depth_image_->at<float>(x, y);
         x--;
         if (x <= 0) { break; }
       }
       break;
     case Direction::DOWN:
       while (depth < 0.1) {
-        depth = depth_image->at<float>(x, y);
+        depth = depth_image_->at<float>(x, y);
         x++;
-        if (x >= depth_image->rows) { break; }
+        if (x >= depth_image_->rows) { break; }
       }
       break;
     case Direction::LEFT:
       while (depth < 0.1) {
-        depth = depth_image->at<float>(x, y);
+        depth = depth_image_->at<float>(x, y);
         y--;
         if (y <= 0) { break; }
       }
       break;
     case Direction::RIGHT:
       while (depth < 0.1) {
-        depth = depth_image->at<float>(x, y);
+        depth = depth_image_->at<float>(x, y);
         y++;
-        if (y >= depth_image->cols) { break; }
+        if (y >= depth_image_->cols) { break; }
       }
       break;
   }
@@ -329,19 +280,6 @@ std::shared_ptr<cv::Mat> DepthMap::GetDepthImage() {
   return depth_image_;
 }
 
-void DepthMap::SetImage(const cv::Mat& image_input) {
-  image_ = std::make_shared<cv::Mat>(image_input);
-  image_initialized_ = true;
-}
-
-std::shared_ptr<cv::Mat> DepthMap::GetImage() {
-  if (!image_initialized_) {
-    BEAM_CRITICAL("Image not set.");
-    throw std::runtime_error{"Image not set."};
-  }
-  return image_;
-}
-
 std::shared_ptr<beam_calibration::CameraModel> DepthMap::GetModel() {
   if (!model_initialized_) {
     BEAM_CRITICAL("Camera model not set.");
@@ -354,6 +292,14 @@ void DepthMap::SetModel(
     std::shared_ptr<beam_calibration::CameraModel> input_model) {
   model_ = input_model;
   model_initialized_ = true;
+}
+
+void HitBehaviour(std::shared_ptr<cv::Mat> image,
+                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                  const int* position, int index) {
+  pcl::PointXYZ origin(0, 0, 0);
+  image->at<float>(position[0], position[1]) =
+      beam::distance(cloud->points[index], origin);
 }
 
 } // namespace beam_cv

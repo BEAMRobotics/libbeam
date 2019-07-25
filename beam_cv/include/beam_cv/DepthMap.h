@@ -15,6 +15,14 @@
 namespace beam_cv {
 
 enum class Direction { UP = 0, DOWN, LEFT, RIGHT };
+
+/*
+ * @brief behaviour for raytrace
+ */
+void HitBehaviour(std::shared_ptr<cv::Mat> image,
+                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                  const int* position, int index);
+
 class DepthMap {
 public:
   /**
@@ -26,13 +34,12 @@ public:
    * @brief Custom constructor
    */
   DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
-           const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input,
-           const cv::Mat& image_input);
+           const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input);
 
   /**
    * @brief Default destructor
    */
-  virtual ~DepthMap() = default;
+  ~DepthMap() = default;
 
   /***********************Getters/Setters**********************/
   /**
@@ -48,14 +55,6 @@ public:
    */
   std::shared_ptr<cv::Mat> GetDepthImage();
   /**
-   * @brief Sets cloud
-   */
-  void SetImage(const cv::Mat& image_input);
-  /**
-   * @brief Sets cloud
-   */
-  std::shared_ptr<cv::Mat> GetImage();
-  /**
    * @brief Gets cloud
    */
   std::shared_ptr<beam_calibration::CameraModel> GetModel();
@@ -69,7 +68,7 @@ public:
    * @brief Computes the depth image based on the given point cloud and image
    * @return cv::Mat
    */
-  void ExtractDepthMap(double threshold, int dilate, int mask_size);
+  void ExtractDepthMap(double threshold, int mask_size);
 
   /**
    * @brief Performs depth completion on sparse depth image
@@ -82,12 +81,7 @@ public:
    * @return cv::Mat
    */
   void DepthInterpolation(int window_width, int window_height, float threshold,
-                          int dilate, int iterations);
-
-  /*
-   * @brief Performs extrapolation downwards to fill voids
-   */
-  void VerticalDepthExtrapolation();
+                          int iterations);
 
   /*
    * @brief Creates point cloud form interpolated depth image
@@ -120,20 +114,21 @@ public:
    * direction
    * @return bool
    */
-  float FindClosestNonZero(std::shared_ptr<cv::Mat> depth_image, Direction dir,
-                           beam::Vec2 pixel, beam::Vec2& found_pixel);
+  float FindClosestNonZero(Direction dir, beam::Vec2 search_pixel,
+                           beam::Vec2& found_pixel);
 
   /***********************Member variables**********************/
 protected:
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_;
-  std::shared_ptr<cv::Mat> image_;
   std::shared_ptr<cv::Mat> depth_image_;
   std::shared_ptr<beam_calibration::CameraModel> model_;
   double min_depth_, max_depth_;
-  bool point_cloud_initialized_ = false, image_initialized_ = false,
-       model_initialized_ = false, depth_image_extracted_ = false;
-  cv::Mat full_k_5 = beam::GetFullKernel(5), full_k_9 = beam::GetFullKernel(9),
+  bool point_cloud_initialized_ = false, model_initialized_ = false,
+       depth_image_extracted_ = false;
+  cv::Mat full_k_5 = beam::GetFullKernel(5), full_k_7 = beam::GetFullKernel(7),
+          full_k_9 = beam::GetFullKernel(9),
           full_k_15 = beam::GetFullKernel(15),
-          full_k_21 = beam::GetFullKernel(21);
+          full_k_21 = beam::GetFullKernel(21),
+          full_k_31 = beam::GetFullKernel(31);
 };
 } // namespace beam_cv
