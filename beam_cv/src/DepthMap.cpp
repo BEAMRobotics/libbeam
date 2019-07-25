@@ -58,57 +58,60 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
     cv::Mat dst = depth_image_->clone();
     depth_image_->forEach<float>([&](float& distance,
                                      const int* position) -> void {
-      int row = position[0], col = position[1];
-      // each window contains: start_x, end_x, start_y, end_y
-      std::vector<int> window_right{col, col + window_width,
-                                    row - window_height, row + window_height};
-      std::vector<int> window_left{col - window_width, col, row - window_height,
-                                   row + window_height};
-      std::vector<int> window_up{col - window_height, col + window_height,
-                                 row - window_width, row};
-      std::vector<int> window_down{col - window_height, col + window_height,
-                                   row, row + window_width};
-      std::vector<std::vector<int>> windows;
-      windows.push_back(window_right);
-      windows.push_back(window_left);
-      windows.push_back(window_up);
-      windows.push_back(window_down);
-      float outside = iterations * 1.0 + 2.0;
-      for (std::vector<int> window : windows) {
-        int start_x = window[0], end_x = window[1], start_y = window[2],
-            end_y = window[3];
-        beam::Vec2 point_f;
-        float min_dist = 2 * (window_height * window_width);
-        float found_depth = 0.0;
-        bool found = false;
-        if (start_y > 0 && start_x > 0 && end_y < depth_image_->rows &&
-            end_x < depth_image_->cols) {
-          for (int i = start_y; i < end_y; i++) {
-            for (int j = start_x; j < end_x; j++) {
-              float depth = depth_image_->at<float>(i, j);
-              float dist_to_point =
-                  sqrt((row - i) * (row - i) + (col - j) * (col - j));
-              if (depth > 0 && abs(depth - distance) < threshold &&
-                  dist_to_point < min_dist && dist_to_point > outside) {
-                min_dist = dist_to_point;
-                point_f[0] = i;
-                point_f[1] = j;
-                found = true;
-                found_depth = depth;
+      if (distance != 0.0) {
+        int row = position[0], col = position[1];
+        // each window contains: start_x, end_x, start_y, end_y
+        std::vector<int> window_right{col, col + window_width,
+                                      row - window_height, row + window_height};
+        std::vector<int> window_left{col - window_width, col,
+                                     row - window_height, row + window_height};
+        std::vector<int> window_up{col - window_height, col + window_height,
+                                   row - window_width, row};
+        std::vector<int> window_down{col - window_height, col + window_height,
+                                     row, row + window_width};
+        std::vector<std::vector<int>> windows;
+        windows.push_back(window_right);
+        windows.push_back(window_left);
+        windows.push_back(window_up);
+        windows.push_back(window_down);
+        float outside = iter * 1.0 + 2.0;
+        for (std::vector<int> window : windows) {
+          int start_x = window[0], end_x = window[1], start_y = window[2],
+              end_y = window[3];
+          beam::Vec2 point_f;
+          float min_dist = 2 * (window_height * window_width);
+          float found_depth = 0.0;
+          bool found = false;
+          if (start_y > 0 && start_x > 0 && end_y < depth_image_->rows &&
+              end_x < depth_image_->cols) {
+            for (int i = start_y; i < end_y; i++) {
+              for (int j = start_x; j < end_x; j++) {
+                float depth = depth_image_->at<float>(i, j);
+                float dist_to_point =
+                    sqrt((row - i) * (row - i) + (col - j) * (col - j));
+                if (depth > 0 && abs(depth - distance) < threshold &&
+                    dist_to_point < min_dist && dist_to_point > outside) {
+                  min_dist = dist_to_point;
+                  point_f[0] = i;
+                  point_f[1] = j;
+                  found = true;
+                  found_depth = depth;
+                }
               }
             }
-          }
-          if (found) {
-            int x = (point_f[0] + row) / 2;
-            int y = (point_f[1] + col) / 2;
-            float value = (distance + found_depth) / 2;
-            dst.at<float>(x, y) = value;
+            if (found) {
+              int x = (point_f[0] + row) / 2;
+              int y = (point_f[1] + col) / 2;
+              float value = (distance + found_depth) / 2;
+              dst.at<float>(x, y) = value;
+            }
           }
         }
       }
     });
     *depth_image_ = dst;
   }
+  BEAM_INFO("Depth Interpolation Completed");
 }
 
 void DepthMap::DepthCompletion(cv::Mat kernel) {
