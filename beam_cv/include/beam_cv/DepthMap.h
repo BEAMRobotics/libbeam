@@ -112,10 +112,21 @@ public:
   /**
    * @brief Returns nearest pixel to input point with non-zero value in
    * direction
-   * @return bool
+   * @return Vec2
    */
-  float FindClosestNonZero(Direction dir, beam::Vec2 search_pixel,
-                           beam::Vec2& found_pixel);
+  beam::Vec2 FindClosestNonZero(beam::Vec2 search_pixel);
+
+  /**
+   * @brief Returns XYZ coordinates of a pixel in the depth map
+   * @return Vec3
+   */
+  beam::Vec3 GetXYZ(beam::Vec2 pixel);
+
+  /**
+   * @brief returns distance in world between two pixels in depth map
+   * @return Vec2
+   */
+  float GetDistance(beam::Vec2 p1, beam::Vec2 p2);
 
   /***********************Member variables**********************/
 protected:
