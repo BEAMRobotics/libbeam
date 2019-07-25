@@ -3,8 +3,6 @@
  */
 
 #pragma once
-// beam
-#include "beam_utils/math.hpp"
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>

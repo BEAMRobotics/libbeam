@@ -1,5 +1,15 @@
+// beam
 #include "beam_cv/DepthMap.h"
+#include "beam_cv/Morphology.h"
 #include "beam_cv/RayCast.h"
+#include "beam_utils/math.hpp"
+// PCL
+#include <pcl/io/pcd_io.h>
+// std
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <vector>
 
 namespace beam_cv {
 
@@ -24,6 +34,7 @@ void DepthMap::ExtractDepthMap(double threshold, int dilate, int mask_size) {
     BEAM_CRITICAL("Variables not properly initialized.");
     throw std::runtime_error{"Variables not properly initialized."};
   }
+  BEAM_INFO("Extracting Depth Image...");
   // create image mask where white pixels = projection hit
   cv::Mat hit_mask = this->CreateHitMask(mask_size);
   /// create image with 3 channels for coordinates
@@ -49,6 +60,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
     BEAM_CRITICAL("Variables not properly set.");
     throw std::runtime_error{"Variables not properly set."};
   }
+  BEAM_INFO("Performing Depth Interpolation...");
   for (int iter = 0; iter < iterations; iter++) {
     cv::Mat dst = depth_image_->clone();
     depth_image_->forEach<float>([&](float& distance,
@@ -68,6 +80,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
       windows.push_back(window_left);
       windows.push_back(window_up);
       windows.push_back(window_down);
+      float outside = iterations * 1.0 + 2.0;
       for (std::vector<int> window : windows) {
         int start_x = window[0], end_x = window[1], start_y = window[2],
             end_y = window[3];
@@ -83,7 +96,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
               float dist_to_point =
                   sqrt((row - i) * (row - i) + (col - j) * (col - j));
               if (depth > 0 && abs(depth - distance) < threshold &&
-                  dist_to_point < min_dist && dist_to_point > 2.0) {
+                  dist_to_point < min_dist && dist_to_point > outside) {
                 min_dist = dist_to_point;
                 point_f[0] = i;
                 point_f[1] = j;
@@ -111,6 +124,7 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
     BEAM_CRITICAL("Variables not properly set.");
     throw std::runtime_error{"Variables not properly set."};
   }
+  BEAM_INFO("Performing Depth Completion...");
   // invert depth image
   cv::Mat image = depth_image_->clone();
   image.forEach<float>([&](float& distance, const int* position) -> void {
@@ -128,8 +142,10 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   });
   // close large holes
   cv::morphologyEx(image, image, cv::MORPH_CLOSE, full_k_15);
+  // median blur to reduce noise
   cv::medianBlur(image, image, 5);
   cv::Mat dst = image.clone();
+  // bilateral filter preserves structure
   cv::bilateralFilter(image, dst, 5, 0.5, 2.0);
   // invert back
   dst.forEach<float>([&](float& distance, const int* position) -> void {
@@ -138,11 +154,54 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   *depth_image_ = dst;
 }
 
+/*
+ * TODO: add weighting based on which is closer (up or down)
+ */
+void DepthMap::VerticalDepthExtrapolation() {
+  BEAM_INFO("Performing Depth Extrapolation...");
+  cv::Mat dst = depth_image_->clone();
+  depth_image_->forEach<float>(
+      [&](float& distance, const int* position) -> void {
+        if (distance < 0.1) {
+          beam::Vec2 pixel(position[0], position[1]);
+          beam::Vec2 found_pixel_up;
+          beam::Vec2 found_pixel_down;
+          float up = this->FindClosestNonZero(depth_image_, Direction::UP,
+                                              pixel, found_pixel_up);
+          float down = this->FindClosestNonZero(depth_image_, Direction::DOWN,
+                                                pixel, found_pixel_down);
+          double total_dif = beam::distance(found_pixel_up, found_pixel_down);
+          double down_dist = beam::distance(pixel, found_pixel_down);
+          double up_dist = beam::distance(pixel, found_pixel_up);
+          double up_weight = up_dist / total_dif,
+                 down_weight = down_dist / total_dif;
+          int valid_pixels = 0;
+          float total_depth = 0.0;
+          if (up > 0.1) {
+            valid_pixels++;
+            total_depth += up * up_weight;
+          }
+          if (down > 0.1) {
+            valid_pixels++;
+            total_depth += down * down_weight;
+          }
+          float avg_depth = total_depth / valid_pixels;
+          dst.at<float>(position[0], position[1]) = avg_depth;
+        }
+      });
+  cv::Mat img = dst.clone();
+  // bilateral filter preserves structure
+  cv::GaussianBlur(dst, img, cv::Size(5, 5), 0);
+
+  *depth_image_ = img;
+}
+
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   if (!this->CheckState()) {
     BEAM_CRITICAL("Variables not properly set.");
     throw std::runtime_error{"Variables not properly set."};
   }
+  BEAM_INFO("Performing Point Cloud Construction...");
   pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud(
       new pcl::PointCloud<pcl::PointXYZ>);
   for (int row = 0; row < depth_image_->rows; row++) {
@@ -204,6 +263,46 @@ bool DepthMap::CheckState() {
     state = true;
   }
   return state;
+}
+
+float DepthMap::FindClosestNonZero(std::shared_ptr<cv::Mat> depth_image,
+                                   Direction dir, beam::Vec2 pixel,
+                                   beam::Vec2& found_pixel) {
+  float depth = 0.0;
+  int x = pixel[0], y = pixel[1];
+  switch (dir) {
+    case Direction::UP:
+      while (depth < 0.1) {
+        depth = depth_image->at<float>(x, y);
+        x--;
+        if (x <= 0) { break; }
+      }
+      break;
+    case Direction::DOWN:
+      while (depth < 0.1) {
+        depth = depth_image->at<float>(x, y);
+        x++;
+        if (x >= depth_image->rows) { break; }
+      }
+      break;
+    case Direction::LEFT:
+      while (depth < 0.1) {
+        depth = depth_image->at<float>(x, y);
+        y--;
+        if (y <= 0) { break; }
+      }
+      break;
+    case Direction::RIGHT:
+      while (depth < 0.1) {
+        depth = depth_image->at<float>(x, y);
+        y++;
+        if (y >= depth_image->cols) { break; }
+      }
+      break;
+  }
+  found_pixel[0] = x;
+  found_pixel[1] = y;
+  return depth;
 }
 
 /***********************Getters/Setters**********************/

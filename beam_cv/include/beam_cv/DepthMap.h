@@ -5,8 +5,6 @@
 #pragma once
 // beam
 #include "beam_calibration/CameraModel.h"
-#include "beam_cv/Morphology.h"
-#include "beam_utils/math.hpp"
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
@@ -15,6 +13,8 @@
 #include <pcl/point_types.h>
 
 namespace beam_cv {
+
+enum class Direction { UP = 0, DOWN, LEFT, RIGHT };
 class DepthMap {
 public:
   /**
@@ -85,6 +85,11 @@ public:
                           int dilate, int iterations);
 
   /*
+   * @brief Performs extrapolation downwards to fill voids
+   */
+  void VerticalDepthExtrapolation();
+
+  /*
    * @brief Creates point cloud form interpolated depth image
    * @return point cloud
    */
@@ -109,6 +114,14 @@ public:
    * @return bool
    */
   bool CheckState();
+
+  /**
+   * @brief Returns nearest pixel to input point with non-zero value in
+   * direction
+   * @return bool
+   */
+  float FindClosestNonZero(std::shared_ptr<cv::Mat> depth_image, Direction dir,
+                           beam::Vec2 pixel, beam::Vec2& found_pixel);
 
   /***********************Member variables**********************/
 protected:

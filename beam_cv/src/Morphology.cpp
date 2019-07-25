@@ -1,4 +1,5 @@
 #include "beam_cv/Morphology.h"
+#include "beam_utils/math.hpp"
 
 using namespace cv;
 
