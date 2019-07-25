@@ -24,20 +24,6 @@ cv::Mat ExtractSkeleton(const cv::Mat& input_image);
  */
 cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold);
 
-/**
- * @brief Method for removing holes in objects but keep the boundaries the
- * same
- * @return binary image with no holes
- * @param input image
- */
-cv::Mat CloseObjects(const cv::Mat& input_image);
-
-/**
- * @brief Method for removing holes in objects but keep the boundaries the
- * same
- * @return binary image with no holes
- * @param input image
- */
-cv::Mat Dilate(const cv::Mat& input_image, int kernel_size);
-
+std::vector<cv::Mat> SegmentSkeleton(const cv::Mat& skeleton,
+                                     const cv::Mat& image);
 } // namespace beam_cv

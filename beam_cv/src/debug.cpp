@@ -20,8 +20,8 @@ std::vector<Eigen::Affine3d> poses;
 std::vector<ros::Time> poses_time;
 
 int main(int argc, char** argv) {
-  // TestCrackCalculation(argc, argv);
-  TestDepthMap();
+  TestCrackCalculation(argc, argv);
+  // TestDepthMap();
   /* std::string file = "/home/jake/Downloads/test.ply";
   fillPosesVector(file);*/
 }
@@ -43,24 +43,26 @@ void TestDepthMap() {
   /*
    * Test depth map filling
    */
-  beam_cv::DepthMap dm(F1, cloud, image);
+  beam_cv::DepthMap dm(F1, cloud);
   cv::Mat di_viz;
   // Extract depth image, visualize, save
   cv::Mat kernel = beam::GetCrossKernel(5);
+  cv::Mat kernel2 = beam::GetEllipseKernel(5);
   // extract depth map with pixel threshold of 0.1 cm, 0 dilation, and a hit
   // mask of size 3
-  dm.ExtractDepthMap(0.001, 0, 3);
+  /*
+  dm.ExtractDepthMap(0.001, 3);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext.png", di_viz);
-  dm.DepthInterpolation(70, 5, 0.05, 0, 2);
+  dm.DepthInterpolation(70, 5, 0.05, 2);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/interp.png", di_viz);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud = dm.ExtractPointCloud();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud = dm.ExtractPointCloud(); */
   /*
    * Test with newly created point cloud
-   */
+
   beam_cv::DepthMap dm2(F1, new_cloud, image);
-  dm2.ExtractDepthMap(0.02, 0, 21);
+  dm2.ExtractDepthMap(0.02, 21);
   di_viz = dm2.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext2.png", di_viz);
   dm2.DepthCompletion(kernel);
@@ -68,7 +70,15 @@ void TestDepthMap() {
   cv::imwrite("/home/jake/completed.png", di_viz);
   dm2.VerticalDepthExtrapolation();
   di_viz = dm2.VisualizeDepthImage();
-  cv::imwrite("/home/jake/extrapolated.png", di_viz);
+  cv::imwrite("/home/jake/extrapolated.png", di_viz);  */
+
+  beam_cv::DepthMap dm3(F1, cloud);
+  dm3.ExtractDepthMap(0.02, 31);
+  di_viz = dm3.VisualizeDepthImage();
+  cv::imwrite("/home/jake/extracted.png", di_viz);
+  dm3.DepthCompletion(kernel);
+  di_viz = dm3.VisualizeDepthImage();
+  cv::imwrite("/home/jake/full.png", di_viz);
 }
 
 int TestCrackCalculation(int argc, char** argv) {
@@ -93,68 +103,23 @@ int TestCrackCalculation(int argc, char** argv) {
   // Initialize skel image and temp storage
 
   image = beam_cv::RemoveClusters(image, 100);
-  image = beam_cv::CloseObjects(image);
+  cv::Mat element2 = cv::getStructuringElement(cv::MORPH_RECT, Size(3, 3));
+  morphologyEx(image, image, cv::MORPH_CLOSE, element2);
   cv::Mat skeleton = beam_cv::ExtractSkeleton(image);
 
   // Create a copy of the binary image
-  cv::Mat image_copy = image.clone();
-
-  cv::Mat im_category(image.size(), CV_16UC1);
-  cv::Mat my_stats, my_centroids;
-  int connectivity = 8;
-  int itype = CV_16U;
-  int num_comp = cv::connectedComponentsWithStats(
-      image, im_category, my_stats, my_centroids, connectivity, itype);
-  im_category.convertTo(im_category, CV_8UC1);
 
   // Initialize map for widths
-  std::map<int, std::vector<double>> crack_map;
 
-  // Calc the length of the crack
-  int crack_length = cv::sum(skeleton)[0] / 255;
-  std::cout << "Total Length : " << crack_length << std::endl;
-
-  // Calc average width (pixels) by dividing total area by total length
-  double avg_width = cv::sum(image_copy)[0] / cv::sum(skeleton)[0];
-  std::cout << "Average width: " << avg_width << " pixels." << std::endl;
-
-  // Example forced width calculation
-  int resolution = std::nearbyint(std::sqrt(avg_width) * 0.5f) * 2.0f * 5 + 1;
-  // int resolution = 9;
-  std::cout << "Filter Resolution: " << resolution << std::endl;
-  int stepper = (resolution - 1) / 2;
-  double scale = std::floor(1.0 / num_comp * 255); // scale for colormap
-
-  // initialize smaller window matrices
-  cv::Mat im_orig(resolution, resolution, CV_8UC1);
-  cv::Mat im_skel(resolution, resolution, CV_8UC1);
-  cv::Mat cm_skel(image.size(), CV_8UC1, cv::Scalar(0));
-  for (int x = 0; x < skeleton.rows; ++x) // iterate over skeleton image
-  {
-    for (int y = 0; y < skeleton.cols; ++y) // iterate over skeleton image
-    {
-      int crack_num = int(im_category.at<uchar>(x, y));
-      cm_skel.at<uchar>(x, y) = crack_num * scale;
-      if (skeleton.at<uchar>(x, y) == 255) // if skeleton pixel
-      {
-        for (int i = 0; i < im_skel.rows; ++i) // iterate over window
-        {
-          for (int j = 0; j < im_skel.cols; ++j) {
-            // populate window with the values from skeleton and binary image
-            int idx_1 = x + i - stepper;
-            int idx_2 = y + j - stepper;
-
-            im_orig.at<uchar>(i, j) = image_copy.at<uchar>(idx_1, idx_2);
-            im_skel.at<uchar>(i, j) = skeleton.at<uchar>(idx_1, idx_2);
-          }
-        }
-
-        double width = cv::sum(im_orig)[0] / cv::sum(im_skel)[0];
-        crack_map[crack_num].push_back(width);
-      }
-    }
+  std::vector<cv::Mat> seg_skels = beam_cv::SegmentSkeleton(skeleton, image);
+  int i = 0;
+  for (cv::Mat skel : seg_skels) {
+    std::string name = std::to_string(i) + ".png";
+    imwrite("/home/jake/" + name, skel);
+    i++;
   }
 
+  /*
   for (int i = 1; i < num_comp; ++i) // 0 is all points not showing crack
   {
     std::cout << "Results for Crack: " << i << std::endl;
@@ -176,7 +141,7 @@ int TestCrackCalculation(int argc, char** argv) {
   imshow("Original Image", cm_skel);
   imshow("Image Skeleton", skeleton);
   waitKey(0); // Wait for a keystroke in the window
-  return 0;
+  return 0;*/
 }
 
 void fillPosesVector(std::string file_location) {
