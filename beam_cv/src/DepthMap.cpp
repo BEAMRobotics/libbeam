@@ -220,43 +220,52 @@ bool DepthMap::CheckState() {
   return state;
 }
 
-float DepthMap::FindClosestNonZero(Direction dir, beam::Vec2 search_pixel,
-                                   beam::Vec2& found_pixel) {
-  float depth = 0.0;
+beam::Vec2 DepthMap::FindClosestNonZero(beam::Vec2 search_pixel) {
+  beam::Vec2 found_pixel;
+  float depth_l = 0.0, depth_r = 0.0, depth_u = 0.0, depth_d = 0.0;
   int x = search_pixel[0], y = search_pixel[1];
-  switch (dir) {
-    case Direction::UP:
-      while (depth < 0.1) {
-        depth = depth_image_->at<float>(x, y);
-        x--;
-        if (x <= 0) { break; }
-      }
-      break;
-    case Direction::DOWN:
-      while (depth < 0.1) {
-        depth = depth_image_->at<float>(x, y);
-        x++;
-        if (x >= depth_image_->rows) { break; }
-      }
-      break;
-    case Direction::LEFT:
-      while (depth < 0.1) {
-        depth = depth_image_->at<float>(x, y);
-        y--;
-        if (y <= 0) { break; }
-      }
-      break;
-    case Direction::RIGHT:
-      while (depth < 0.1) {
-        depth = depth_image_->at<float>(x, y);
-        y++;
-        if (y >= depth_image_->cols) { break; }
-      }
-      break;
+  int yr = y, yl = y, xu = x, xd = x;
+  while (depth_l < 0.1 && depth_r < 0.1 && depth_u < 0.1 && depth_d < 0.1) {
+    depth_u = depth_image_->at<float>(xu, y);
+    xu--;
+    depth_d = depth_image_->at<float>(xd, y);
+    xd++;
+    depth_l = depth_image_->at<float>(x, yl);
+    yl--;
+    depth_r = depth_image_->at<float>(x, yr);
+    yr++;
+    if (xu <= 0 || xd <= 0 || yl <= 0 || yr <= 0) { break; }
   }
-  found_pixel[0] = x;
-  found_pixel[1] = y;
-  return depth;
+  if (depth_l > 0.1) {
+    found_pixel[0] = x;
+    found_pixel[1] = yl;
+  } else if (depth_r > 0.1) {
+    found_pixel[0] = x;
+    found_pixel[1] = yr;
+  } else if (depth_u > 0.1) {
+    found_pixel[0] = xu;
+    found_pixel[1] = y;
+  } else if (depth_d > 0.1) {
+    found_pixel[0] = xd;
+    found_pixel[1] = y;
+  }
+  return found_pixel;
+}
+
+beam::Vec3 DepthMap::GetXYZ(beam::Vec2 pixel) {
+  float distance = depth_image_->at<float>(pixel[0], pixel[1]);
+  if (distance == 0.0) {
+    beam::Vec2 c = FindClosestNonZero(pixel);
+    distance = depth_image_->at<float>(c[0], c[1]);
+  }
+  beam::Vec3 direction = model_->BackProject(pixel);
+  beam::Vec3 coords = distance * direction;
+  return coords;
+}
+
+float DepthMap::GetDistance(beam::Vec2 p1, beam::Vec2 p2) {
+  beam::Vec3 coord1 = GetXYZ(p1), coord2 = GetXYZ(p2);
+  return beam::distance(coord1, coord2);
 }
 
 /***********************Getters/Setters**********************/

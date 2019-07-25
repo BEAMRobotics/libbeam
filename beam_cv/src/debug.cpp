@@ -20,8 +20,8 @@ std::vector<Eigen::Affine3d> poses;
 std::vector<ros::Time> poses_time;
 
 int main(int argc, char** argv) {
-  // TestCrackCalculation(argc, argv);
-  TestDepthMap();
+  TestCrackCalculation(argc, argv);
+  // TestDepthMap();
 }
 
 void TestDepthMap() {
@@ -30,9 +30,6 @@ void TestDepthMap() {
   std::string intrinsics_location = cur_dir + "/tests/test_data/F1.json";
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       beam_calibration::CameraModel::LoadJSON(intrinsics_location);
-  // load Image
-  std::string image_location = cur_dir + "/tests/test_data/test.jpg";
-  cv::Mat image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
   // load pcd
   std::string pcd_location = cur_dir + "/tests/test_data/test.pcd";
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -78,28 +75,127 @@ void TestDepthMap() {
 }
 
 int TestCrackCalculation(int argc, char** argv) {
-  if (argc != 3) {
-    cout << " Usage: imskeleton ImageToLoadAndDisplay BinaryThreshold" << endl;
-    return -1;
-  }
-  Mat image = imread(argv[1], 0); // Read the file
-  if (!image.data)                // Check for invalid input
-  {
-    cout << "Could not open or find the image" << std::endl;
-    return -1;
-  }
-
-  // Get theshold of input
-  int thresh;
-  std::stringstream ss(argv[2]);
-  ss >> thresh;
+  Mat image = imread("/home/jake/Downloads/crack-mask1.png", 0);
+  std::string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv";
+  // load intrinsics
+  std::string intrinsics_location = cur_dir + "/tests/test_data/F1.json";
+  std::shared_ptr<beam_calibration::CameraModel> F1 =
+      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
+  // load pcd
+  std::string pcd_location = cur_dir + "/tests/test_data/test.pcd";
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
+  cv::Mat kernel2 = beam::GetEllipseKernel(5);
+  beam_cv::DepthMap dm(F1, cloud);
+  dm.ExtractDepthMap(0.02, 31);
+  dm.DepthCompletion(kernel2);
   // process image used (just temp with example image)
-  cv::threshold(image, image, thresh, 255, cv::THRESH_BINARY);
+  cv::threshold(image, image, 0, 255, cv::THRESH_BINARY);
   image = beam_cv::RemoveClusters(image, 100);
   cv::Mat element2 = cv::getStructuringElement(cv::MORPH_RECT, Size(3, 3));
   morphologyEx(image, image, cv::MORPH_CLOSE, element2);
-  cv::Mat skeleton = beam_cv::ExtractSkeleton(image);
+  std::vector<cv::Mat> cracks = beam_cv::SegmentComponents(image);
+  cv::Mat chosen_crack = cracks[2];
+  cv::Mat skeleton = beam_cv::ExtractSkeleton(chosen_crack);
+  /*
+
+  make this a function to find start_point
+  // returns start point
+  */
+  int window_width = 11;
+  beam::Vec2 startp;
+  beam::Vec2 endp;
+  bool found = false;
+  // use normal iteration so you always get the furthest left/top
+  skeleton.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
+    if (pixel == 255) {
+      int sur_zeros = 0;
+      uchar up, down, left, right, upleft, upright, downleft, downright;
+      up = skeleton.at<uchar>(position[0] - 1, position[1]);
+      upleft = skeleton.at<uchar>(position[0] - 1, position[1] - 1);
+      upright = skeleton.at<uchar>(position[0] - 1, position[1] + 1);
+      down = skeleton.at<uchar>(position[0] + 1, position[1]);
+      downleft = skeleton.at<uchar>(position[0] + 1, position[1] - 1);
+      downright = skeleton.at<uchar>(position[0] + 1, position[1] + 1);
+      left = skeleton.at<uchar>(position[0], position[1] - 1);
+      right = skeleton.at<uchar>(position[0], position[1] + 1);
+      if (up == 0) { sur_zeros++; }
+      if (down == 0) { sur_zeros++; }
+      if (left == 0) { sur_zeros++; }
+      if (right == 0) { sur_zeros++; }
+      if (downleft == 0) { sur_zeros++; }
+      if (downright == 0) { sur_zeros++; }
+      if (upleft == 0) { sur_zeros++; }
+      if (upright == 0) { sur_zeros++; }
+      if (sur_zeros > 6 && !found) {
+        startp[0] = position[0];
+        startp[1] = position[1];
+        found = true;
+      }
+    }
+  });
+
+  /*
+
+  this is also a function to find endpoint
+  //takes in startpoint to find endpoint
+  */
+  int start_row = startp[0], end_row = startp[0] + window_width;
+  int start_col = startp[1] - (window_width - 1) / 2,
+      end_col = startp[1] + (window_width - 1) / 2;
+  for (int row = start_row; row < end_row; row++) {
+    if (skeleton.at<uchar>(row, start_col) == 255) {
+      endp[0] = row;
+      endp[1] = start_col;
+    } else {
+      skeleton.at<uchar>(row, start_col) = 100;
+    }
+  }
+  for (int row = start_row; row < end_row; row++) {
+    if (skeleton.at<uchar>(row, end_col) == 255) {
+      endp[0] = row;
+      endp[1] = end_col;
+    } else {
+      skeleton.at<uchar>(row, end_col) = 100;
+    }
+  }
+  for (int col = start_col; col < end_col; col++) {
+    if (skeleton.at<uchar>(end_row, col) == 255) {
+      endp[0] = end_row;
+      endp[1] = col;
+    } else {
+      skeleton.at<uchar>(end_row, col) = 100;
+    }
+  }
+
+  /*
+
+  this should be a function to return width of the current window
+  // takes in both start and endpoint
+  */
+  float slope = (endp[0] - startp[0]) / (startp[1] - endp[1]);
+  if (abs(slope) > 0) {
+    int row = (start_row + end_row) / 2;
+    beam::Vec2 p1, p2;
+    for (int col = start_col; col < end_col; col++) {
+      if (chosen_crack.at<uchar>(row, col) == 255) {
+        beam::Vec2 pixel(row, col);
+        p1 = pixel;
+      }
+    }
+    for (int col = end_col; col > start_col; col--) {
+      if (chosen_crack.at<uchar>(row, col) == 255) {
+        beam::Vec2 pixel(row, col);
+        p2 = pixel;
+      }
+    }
+    std::cout << dm.GetDistance(p1, p2) << std::endl;
+    // measure horizontal
+  } else if (abs(slope) < 0) {
+    // measure vertical
+  } else {
+    // measure on slant
+  }
   cv::imshow("skeleton", skeleton);
   cv::waitKey(0);
-  std::vector<cv::Mat> seg_skels = beam_cv::SegmentComponents(image);
 }
