@@ -52,7 +52,7 @@ void TestDepthMap() {
   dm.ExtractDepthMap(0.001, 0, 3);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext.png", di_viz);
-  dm.DepthInterpolation(70, 10, 0.15, 0, 1);
+  dm.DepthInterpolation(70, 5, 0.05, 0, 2);
   di_viz = dm.VisualizeDepthImage();
   cv::imwrite("/home/jake/interp.png", di_viz);
   pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud = dm.ExtractPointCloud();
@@ -60,12 +60,15 @@ void TestDepthMap() {
    * Test with newly created point cloud
    */
   beam_cv::DepthMap dm2(F1, new_cloud, image);
-  dm2.ExtractDepthMap(0.02, 0, 31);
+  dm2.ExtractDepthMap(0.02, 0, 21);
   di_viz = dm2.VisualizeDepthImage();
   cv::imwrite("/home/jake/ext2.png", di_viz);
   dm2.DepthCompletion(kernel);
   di_viz = dm2.VisualizeDepthImage();
-  cv::imwrite("/home/jake/comp2.png", di_viz);
+  cv::imwrite("/home/jake/completed.png", di_viz);
+  dm2.VerticalDepthExtrapolation();
+  di_viz = dm2.VisualizeDepthImage();
+  cv::imwrite("/home/jake/extrapolated.png", di_viz);
 }
 
 int TestCrackCalculation(int argc, char** argv) {

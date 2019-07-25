@@ -5,13 +5,10 @@
 #pragma once
 // beam
 #include "beam_calibration/CameraModel.h"
-#include "beam_utils/math.hpp"
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 // PCL
-#include <pcl/io/pcd_io.h>
-#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
