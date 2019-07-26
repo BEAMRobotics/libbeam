@@ -31,4 +31,12 @@ cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold);
  * @param original binary image of all cracks
  */
 std::vector<cv::Mat> SegmentComponents(const cv::Mat& image);
+
+/**
+ * @brief Method for segmenting connected components into seperate mats
+ * @return vector of cracks
+ * @param skeleton image of cracks
+ * @param original binary image of all cracks
+ */
+cv::Mat ConnectSkeleton(const cv::Mat& image);
 } // namespace beam_cv

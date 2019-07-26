@@ -83,4 +83,6 @@ std::vector<Mat> SegmentComponents(const Mat& image) {
   cracks.erase(cracks.begin());
   return cracks;
 }
+
+Mat ConnectSkeleton(const Mat& image) {}
 } // namespace beam_cv
