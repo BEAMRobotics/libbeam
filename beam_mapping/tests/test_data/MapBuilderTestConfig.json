@@ -32,13 +32,6 @@
     }
   ],
   "intermediary_filters": [
-    {
-      "filter_type": "DROR",
-      "radius_multiplier": 2.5,
-      "azimuth_angle": 0.04,
-      "min_neighbors": 6,
-      "min_search_radius": 0.01
-    }
   ],
   "output_filters": [
   ]

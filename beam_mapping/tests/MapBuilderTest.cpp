@@ -11,6 +11,7 @@ std::string GetFullFile(std::string current_rel_path, std::string new_rel_path){
   return path;
 }
 
+//TODO: add test bag and pose files then remove generated maps 
 TEST_CASE("Testing map building with JSON") {
   std::string current_file_rel, config_file_rel, pose_file_rel, bag_file_rel,
               bag_file_path, pose_file_path, config_file_path;
@@ -34,7 +35,8 @@ TEST_CASE("Testing map building with JSON") {
   REQUIRE(1 == 1);
 }
 
-
+//TODO: add test bag and pose files then remove generated maps
+/*
 TEST_CASE("Testing map building with PLY") {
   std::string current_file_rel, config_file_rel, pose_file_rel, bag_file_rel,
               bag_file_path, pose_file_path, config_file_path;
@@ -61,3 +63,4 @@ TEST_CASE("Testing map building with PLY") {
   map_builder.BuildMap();
   REQUIRE(1 == 1);
 }
+*/

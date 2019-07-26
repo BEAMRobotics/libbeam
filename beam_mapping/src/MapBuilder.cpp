@@ -392,24 +392,38 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
   PointCloud::Ptr scan_intermediary = boost::make_shared<PointCloud>();
   Eigen::Affine3d T_MOVING_LIDAR =
       extrinsics_.GetTransformEigen(moving_frame, lidar_frame);
-  Eigen::Affine3d T_FIXED_LIDAR;
+  Eigen::Affine3d T_FIXED_LIDAR, T_FIXED_MOVING;
 
   // iterate through all scans
   int intermediary_size = 0;
+  Eigen::Affine3d T_FIXED_INT, T_INT_LIDAR;
+  T_FIXED_INT.matrix().setIdentity();
+  T_INT_LIDAR.matrix().setIdentity();
+
   for (uint32_t k = 0; k < scans_.size(); k++) {
     intermediary_size++;
-    Eigen::Affine3d T_FIXED_MOVING = interpolated_poses_.poses[k];
-    T_FIXED_LIDAR.matrix() =
-        T_FIXED_MOVING.matrix() * T_MOVING_LIDAR.inverse().matrix();
-    PointCloud::Ptr scan_transformed = boost::make_shared<PointCloud>();
-    pcl::transformPointCloud(*scans_[k], *scan_transformed, T_FIXED_LIDAR);
+
+    // get the transforms we will need:
+    T_FIXED_MOVING = interpolated_poses_.poses[k];
+    T_FIXED_LIDAR =
+        T_FIXED_MOVING * T_MOVING_LIDAR;
+    if(intermediary_size == 1){
+      T_FIXED_INT = T_FIXED_LIDAR;
+    }
+    T_INT_LIDAR = T_FIXED_INT.inverse() * T_FIXED_LIDAR;
+
+    PointCloud::Ptr scan_intermediate_frame = boost::make_shared<PointCloud>();
+    PointCloud::Ptr intermediary_transformed = boost::make_shared<PointCloud>();
+    pcl::transformPointCloud(*scans_[k], *scan_intermediate_frame, T_INT_LIDAR);
+    *scan_intermediary += *scan_intermediate_frame;
+
     if (intermediary_size == this->intermediary_map_size_) {
-      *scan_aggregate +=
+      *scan_intermediate_frame =
           *this->FilterPointCloud(scan_intermediary, intermediary_filters_);
+      pcl::transformPointCloud(*scan_intermediate_frame, *intermediary_transformed, T_FIXED_INT);
+      *scan_aggregate += *intermediary_transformed;
       scan_intermediary->clear();
       intermediary_size = 0;
-    } else {
-      *scan_intermediary += *scan_transformed;
     }
   }
   maps_.push_back(this->FilterPointCloud(scan_aggregate, output_filters_));
