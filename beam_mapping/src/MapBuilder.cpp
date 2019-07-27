@@ -263,7 +263,7 @@ PointCloud::Ptr MapBuilder::FilterPointCloud(
       pcl::RadiusOutlierRemoval<PointT> outlier_removal;
       outlier_removal.setInputCloud(input_cloud);
       outlier_removal.setRadiusSearch(params[0]);
-      outlier_removal.setMinNeighborsInRadius(params[2]);
+      outlier_removal.setMinNeighborsInRadius(params[1]);
       outlier_removal.filter(*filtered_cloud);
     } else if (filter_type == "VOXEL") {
       pcl::VoxelGrid<PointT> downsampler;
@@ -417,7 +417,7 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
     pcl::transformPointCloud(*scans_[k], *scan_intermediate_frame, T_INT_LIDAR);
     *scan_intermediary += *scan_intermediate_frame;
 
-    if (intermediary_size == this->intermediary_map_size_) {
+    if (intermediary_size == this->intermediary_map_size_ || k == scans_.size()){
       *scan_intermediate_frame =
           *this->FilterPointCloud(scan_intermediary, intermediary_filters_);
       pcl::transformPointCloud(*scan_intermediate_frame, *intermediary_transformed, T_FIXED_INT);
