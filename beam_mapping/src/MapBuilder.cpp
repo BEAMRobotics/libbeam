@@ -186,6 +186,14 @@ void MapBuilder::OverridePoseFile(const std::string& pose_file) {
   pose_file_path_ = pose_file;
 }
 
+void MapBuilder::OverrideExtrinsicsFile(const std::string& extrinsics_file) {
+  extrinsics_file_ = extrinsics_file;
+}
+
+void MapBuilder::OverrideOutputDir(const std::string& output_dir) {
+  save_dir_ = output_dir;
+}
+
 void MapBuilder::LoadTrajectory(const std::string& pose_file) {
   std::string pose_type =
       pose_file_path_.substr(pose_file_path_.rfind("."), pose_file_path_.size());

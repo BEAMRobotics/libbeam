@@ -13,7 +13,7 @@ std::string GetFullFile(std::string current_rel_path,
 }
 
 TEST_CASE("Test JSON read and write functionality") {
-  std::string pose_file_rel = "/tests/test_data/PosesTest.json";
+  std::string pose_file_rel = "/tests/test_data/PosesTests/PosesTest.json";
   std::string current_file_rel = "/tests/PosesTest.cpp";
   std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
 
@@ -54,7 +54,7 @@ TEST_CASE("Test JSON read and write functionality") {
   // Now output to new file, and repeat with new file. This should test the
   // write method
   std::string pose_output_path_rel, pose_output_path, pose_file_path2;
-  pose_output_path_rel = "/tests/test_data/";
+  pose_output_path_rel = "/tests/test_data/PosesTests/";
   pose_output_path = GetFullFile(current_file_rel, pose_output_path_rel);
   pose_file_path2 = pose_output_path + "2019_4_23_10_1_44_poses.json";
 
@@ -75,7 +75,7 @@ TEST_CASE("Test JSON read and write functionality") {
 }
 
 TEST_CASE("Test PLY read and write functionality") {
-  std::string pose_file_rel = "/tests/test_data/PosesTestKaarta.ply";
+  std::string pose_file_rel = "/tests/test_data/PosesTests/PosesTestKaarta.ply";
   std::string current_file_rel = "/tests/PosesTest.cpp";
   std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
   beam_mapping::Poses poses_read;

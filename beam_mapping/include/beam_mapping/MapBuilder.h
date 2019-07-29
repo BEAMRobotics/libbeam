@@ -61,6 +61,18 @@ public:
   void OverridePoseFile(const std::string& poses_file);
 
   /**
+   * @brief for overriding the extrinsics file specified in the config file
+   * @param extrinsics_file full path to new extrinsics file
+   */
+  void OverrideExtrinsicsFile(const std::string& extrinsics_file);
+
+  /**
+   * @brief for overriding the output directory
+   * @param output_dir output directory
+   */
+  void OverrideOutputDir(const std::string& output_dir);
+
+  /**
    * @brief performs the map building
    */
   void BuildMap();
