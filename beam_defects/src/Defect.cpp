@@ -77,4 +77,13 @@ float Defect::GetMaxDim2D() {
   return max_dist;
 }
 
+double Defect::CompareSize(beam_defects::Defect& target) {
+  if (this->GetType() == target.GetType()) {
+    double size1 = this->GetSize();
+    double size2 = target.GetSize();
+    double size_change = (size2 - size1) / size1;
+    return size_change;
+  } else { return 0; }
+};
+
 } // namespace beam_defects

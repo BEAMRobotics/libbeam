@@ -69,6 +69,13 @@ public:
   virtual double GetSize() = 0;
 
   /**
+   * @brief Method to compare the size of two defects
+   * @return The perctenage difference in size of the current defect object
+   * relative to another defect object
+   */
+  double CompareSize(beam_defects::Defect& target);
+
+  /**
    * @brief Method for returning the height and width dimensions of a 2D
    * bounding box around the defect after projection into a 2D plane
    * @return Returns a vector [delta x, delta y] representing the
