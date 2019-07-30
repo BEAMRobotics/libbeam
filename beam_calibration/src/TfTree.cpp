@@ -26,8 +26,9 @@ void TfTree::LoadJSON(std::string& file_location) {
   method = J["method"];
 
   if (type != "extrinsic_calibration") {
-    BEAM_CRITICAL("Attempting to create TfTree with invalid json type. Type: {}",
-              type.c_str());
+    BEAM_CRITICAL(
+        "Attempting to create TfTree with invalid json type. Type: {}",
+        type.c_str());
     throw std::invalid_argument{
         "Attempting to create TfTree with invalid json type"};
     return;
@@ -152,9 +153,9 @@ geometry_msgs::TransformStamped TfTree::LookupTransform(std::string& to_frame,
 }
 
 geometry_msgs::TransformStamped TfTree::EigenToROS(Eigen::Affine3d& T,
-                                           std::string& to_frame,
-                                           std::string& from_frame,
-                                           ros::Time& time_stamp) {
+                                                   std::string& to_frame,
+                                                   std::string& from_frame,
+                                                   ros::Time& time_stamp) {
   if (!beam::IsTransformationMatrix(T.matrix())) {
     BEAM_CRITICAL("Invalid transformation matrix input");
     throw std::runtime_error{"Invalid transformation matrix"};
@@ -203,10 +204,11 @@ void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
     bool parent_exists = Tree_._getParent(from_frame, time_stamp, parent);
     if (parent_exists) {
       // Then add inverse
-      BEAM_INFO("Attemping to add transform from {} to {}, but frame {} already "
-         "has a parent ({}). Adding inverse of inputted transform.",
-         from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
-         parent.c_str());
+      BEAM_INFO(
+          "Attemping to add transform from {} to {}, but frame {} already "
+          "has a parent ({}). Adding inverse of inputted transform.",
+          from_frame.c_str(), to_frame.c_str(), from_frame.c_str(),
+          parent.c_str());
       tf2::Transform inverse_transform;
       tf2::fromMsg(T_ROS.transform, inverse_transform);
       inverse_transform = inverse_transform.inverse();
@@ -254,10 +256,11 @@ void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
       throw std::runtime_error{"Cannot add transform."};
     } else {
       // add inverse
-      BEAM_INFO("Attemping to add transform from {} to {}, but frame {} already "
-         "has a parent ({}). Adding inverse of inputted transform.",
-         from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
-         parent.c_str());
+      // BEAM_INFO("Attemping to add transform from {} to {}, but frame {}
+      // already "
+      //   "has a parent ({}). Adding inverse of inputted transform.",
+      //   from_frame.c_str(), to_frame.c_str(), to_frame.c_str(),
+      //   parent.c_str());
       tf2::Transform inverse_transform;
       tf2::fromMsg(T_ROS.transform, inverse_transform);
       inverse_transform = inverse_transform.inverse();
