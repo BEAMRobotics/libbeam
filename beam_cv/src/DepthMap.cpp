@@ -1,7 +1,7 @@
 // beam
 #include "beam_cv/DepthMap.h"
-#include "beam_cv/Morphology.h"
 #include "beam_cv/RayCast.h"
+#include "beam_cv/Utils.h"
 #include "beam_utils/math.hpp"
 // PCL
 #include <pcl/io/pcd_io.h>
@@ -26,7 +26,7 @@ void DepthMap::ExtractDepthMap(double threshold, int mask_size) {
   }
   BEAM_INFO("Extracting Depth Image...");
   // create image mask where white pixels = projection hit
-  cv::Mat hit_mask = this->CreateHitMask(mask_size);
+  cv::Mat hit_mask = beam_cv::CreateHitMask(mask_size, model_, cloud_);
   /// create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
                                            model_->GetWidth(), CV_32FC1);
@@ -39,14 +39,13 @@ void DepthMap::ExtractDepthMap(double threshold, int mask_size) {
   min_depth_ = 1000, max_depth_ = 0;
   depth_image_->forEach<float>(
       [&](float& distance, const int* position) -> void {
-        if (distance > max_depth_) { max_depth_ = distance; }
-        if (distance < min_depth_) { min_depth_ = distance; }
+        if (distance != 0.0) {
+          if (distance > max_depth_) { max_depth_ = distance; }
+          if (distance < min_depth_) { min_depth_ = distance; }
+        }
       });
 }
 
-/*
- * TODO: parallelize the window searching
- */
 void DepthMap::DepthInterpolation(int window_width, int window_height,
                                   float threshold, int iterations) {
   if (!this->CheckState()) {
@@ -79,7 +78,8 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
           int start_x = window[0], end_x = window[1], start_y = window[2],
               end_y = window[3];
           beam::Vec2 point_f;
-          float min_dist = 2 * (window_height * window_width);
+          float min_dist = sqrt((window_width * window_width) +
+                                (window_height * window_height));
           float found_depth = 0.0;
           bool found = false;
           if (start_y > 0 && start_x > 0 && end_y < depth_image_->rows &&
@@ -89,8 +89,8 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
                 float depth = depth_image_->at<float>(i, j);
                 float dist_to_point =
                     sqrt((row - i) * (row - i) + (col - j) * (col - j));
-                if (depth > 0 && abs(depth - distance) < threshold &&
-                    dist_to_point < min_dist && dist_to_point > outside) {
+                if (depth > 0 && dist_to_point < min_dist &&
+                    dist_to_point > outside) {
                   min_dist = dist_to_point;
                   point_f[0] = i;
                   point_f[1] = j;
@@ -103,7 +103,10 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
               int x = (point_f[0] + row) / 2;
               int y = (point_f[1] + col) / 2;
               float value = (distance + found_depth) / 2;
-              dst.at<float>(x, y) = value;
+              if (dst.at<float>(x, y) == 0.0 &&
+                  abs(found_depth - distance) < threshold) {
+                dst.at<float>(x, y) = value;
+              }
             }
           }
         }
@@ -127,17 +130,17 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   });
   // dilate and close small holes
   cv::dilate(image, image, kernel);
-  cv::morphologyEx(image, image, cv::MORPH_CLOSE, full_k_9);
+  cv::morphologyEx(image, image, cv::MORPH_CLOSE, FULL_KERNEL_[9]);
   // dilate, then fill image with dilated
   cv::Mat dilated;
-  cv::dilate(image, dilated, full_k_7);
+  cv::dilate(image, dilated, FULL_KERNEL_[7]);
   image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > 0.1) {
       distance = dilated.at<float>(position[0], position[1]);
     }
   });
   // close large holes
-  cv::morphologyEx(image, image, cv::MORPH_CLOSE, full_k_15);
+  cv::morphologyEx(image, image, cv::MORPH_CLOSE, FULL_KERNEL_[15]);
   // median blur to reduce noise
   cv::medianBlur(image, image, 5);
   cv::Mat dst = image.clone();
@@ -148,6 +151,7 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
     if (distance > 0.1) { distance = max_depth_ - distance; }
   });
   *depth_image_ = dst;
+  BEAM_INFO("Depth Completion Done");
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
@@ -173,43 +177,91 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   return dense_cloud;
 }
 
-/***********************Helper Functions**********************/
+void DepthMap::DepthMeshing() {
+  BEAM_INFO("Extracting Depth Mesh...");
+  // find dimensions of grid
+  std::vector<std::vector<beam::Vec2>> grid;
+  int d = (beam::gcd(model_->GetWidth(), model_->GetHeight())) / 4;
+  int cell_width = model_->GetWidth() / d,
+      cell_height = model_->GetHeight() / d;
+  for (int i = 0; i <= model_->GetHeight(); i += cell_height) {
+    std::vector<beam::Vec2> row;
+    for (int j = 0; j <= model_->GetWidth(); j += cell_width) {
+      beam::Vec2 grid_point(i, j);
+      row.push_back(grid_point);
+    }
+    grid.push_back(row);
+  }
 
-cv::Mat DepthMap::CreateHitMask(int mask_size) {
-  // create image mask where white pixels = projection hit
-  cv::Size image_s(model_->GetHeight(), model_->GetWidth());
-  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
-  cv::Mat hit_mask;
-  for (uint32_t i = 0; i < cloud_->points.size(); i++) {
-    beam::Vec3 point;
-    point << cloud_->points[i].x, cloud_->points[i].y, cloud_->points[i].z;
-    beam::Vec2 coords;
-    coords = model_->ProjectPoint(point);
-    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    if (u > 0 && v > 0 && v < model_->GetHeight() && u < model_->GetWidth()) {
-      tmp.at<cv::Vec3b>(v, u).val[0] = 255;
+  cv::Mat mesh = cv::Mat(model_->GetHeight(), model_->GetWidth(), CV_32FC1);
+  mesh.forEach<float>(
+      [&](float& distance, const int* position) -> void { distance = 0; });
+  // populate grid
+  for (int i = 0; i < grid.size() - 1; i++) {
+    for (int j = 0; j < grid[i].size() - 1; j++) {
+      beam::Vec2 grid_point = grid[i][j];
+
+      beam::Vec2 top_left = grid_point, top_right = grid_point,
+                 bottom_left = grid_point, bottom_right = grid_point;
+      if (i - 1 >= 0 && j - 1 >= 0) { top_left = grid[i - 1][j - 1]; }
+      if (i - 1 >= 0 && j + 1 <= depth_image_->cols) {
+        top_right = grid[i - 1][j + 1];
+      }
+      if (i + 1 <= depth_image_->rows && j + 1 <= depth_image_->cols) {
+        bottom_right = grid[i + 1][j + 1];
+      }
+      if (i + 1 <= depth_image_->rows && j - 1 <= depth_image_->cols) {
+        bottom_left = grid[i + 1][j - 1];
+      }
+
+      int start_x = top_left[0], start_y = top_left[1];
+      int end_x = bottom_right[0], end_y = bottom_right[1];
+      float min_depth = 255.0;
+      for (int k = start_x; k <= end_x; k++) {
+        for (int l = start_y; l <= end_y; l++) {
+          float depth = depth_image_->at<float>(k, l);
+          if (depth > 0.0 && depth < min_depth) { min_depth = depth; }
+        }
+      }
+      if (min_depth == 255.0) {
+        mesh.at<float>(grid_point[0], grid_point[1]) = 0.0;
+      } else {
+        mesh.at<float>(grid_point[0], grid_point[1]) = min_depth;
+      }
     }
   }
-  cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
-             cv::Point(-1, -1), 1, 1, 1);
-  return hit_mask;
+  /*
+  cv::Mat dst;
+  cv::dilate(mesh, dst, FULL_KERNEL_[5]);
+  for (int i = 0; i < grid.size() - 1; i++) {
+    for (int j = 0; j < grid[i].size() - 1; j++) {
+      beam::Vec2 p = grid[i][j];
+      if (dst.at<float>(p[0], p[1]) == 0.0) {
+        std::vector<beam::Vec2> sur_points{
+            this->FindClosestLeft(p, dst), this->FindClosestRight(p, dst),
+            this->FindClosestUp(p, dst), this->FindClosestDown(p, dst)};
+        std::vector<float> sur_depths;
+        for (beam::Vec2 point : sur_points) {
+          float depth = dst.at<float>(point[0], point[1]);
+          if (depth > 0.0) { sur_depths.push_back(depth); }
+        }
+        float max_depth = 0;
+        for (float d : sur_depths) {
+          if (d > max_depth) { max_depth = d; }
+        }
+        mesh.at<float>(p[0], p[1]) = max_depth;
+      }
+    }
+  }*/
+  cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS,
+                                             cv::Size(cell_width, cell_height));
+  cv::dilate(mesh, mesh, kernel);
+  // cv::morphologyEx(mesh, mesh, cv::MORPH_CLOSE, beam::GetEllipseKernel(13));
+  *depth_image_ = mesh;
+  BEAM_INFO("Done Extracting Depth Mesh.");
 }
 
-cv::Mat DepthMap::VisualizeDepthImage() {
-  if (!depth_image_extracted_) {
-    BEAM_CRITICAL("Depth image not extracted.");
-    throw std::runtime_error{"Depth image not extracted."};
-  }
-  cv::Mat gs_depth = cv::Mat(depth_image_->rows, depth_image_->cols, CV_8UC1);
-  depth_image_->forEach<float>(
-      [&](float& distance, const int* position) -> void {
-        int scale = 255 / max_depth_;
-        uint8_t pixel_value = (scale * distance);
-        gs_depth.at<uchar>(position[0], position[1]) = pixel_value;
-      });
-  cv::applyColorMap(gs_depth, gs_depth, cv::COLORMAP_JET);
-  return gs_depth;
-}
+/***********************Helper Functions**********************/
 
 bool DepthMap::CheckState() {
   bool state = false;
@@ -220,7 +272,7 @@ bool DepthMap::CheckState() {
   return state;
 }
 
-beam::Vec2 DepthMap::FindClosestNonZero(beam::Vec2 search_pixel) {
+beam::Vec2 DepthMap::FindClosest(beam::Vec2 search_pixel) {
   beam::Vec2 found_pixel;
   float depth_l = 0.0, depth_r = 0.0, depth_u = 0.0, depth_d = 0.0;
   int x = search_pixel[0], y = search_pixel[1];
@@ -252,10 +304,63 @@ beam::Vec2 DepthMap::FindClosestNonZero(beam::Vec2 search_pixel) {
   return found_pixel;
 }
 
+beam::Vec2 DepthMap::FindClosestLeft(beam::Vec2 search_pixel, cv::Mat mesh) {
+  float depth = 0.0;
+  beam::Vec2 found_pixel;
+  int x = search_pixel[0], y = search_pixel[1];
+  while (depth <= 0.0) {
+    depth = mesh.at<float>(x, y);
+    y--;
+    if (y <= 0) { break; }
+  }
+  found_pixel[0] = x;
+  found_pixel[1] = y;
+  return found_pixel;
+}
+beam::Vec2 DepthMap::FindClosestRight(beam::Vec2 search_pixel, cv::Mat mesh) {
+  float depth = 0.0;
+  beam::Vec2 found_pixel;
+  int x = search_pixel[0], y = search_pixel[1];
+  while (depth <= 0.0) {
+    depth = mesh.at<float>(x, y);
+    y++;
+    if (y >= mesh.cols) { break; }
+  }
+  found_pixel[0] = x;
+  found_pixel[1] = y;
+  return found_pixel;
+}
+beam::Vec2 DepthMap::FindClosestUp(beam::Vec2 search_pixel, cv::Mat mesh) {
+  float depth = 0.0;
+  beam::Vec2 found_pixel;
+  int x = search_pixel[0], y = search_pixel[1];
+  while (depth <= 0.0) {
+    depth = mesh.at<float>(x, y);
+    x--;
+    if (x <= 0) { break; }
+  }
+  found_pixel[0] = x;
+  found_pixel[1] = y;
+  return found_pixel;
+}
+beam::Vec2 DepthMap::FindClosestDown(beam::Vec2 search_pixel, cv::Mat mesh) {
+  float depth = 0.0;
+  beam::Vec2 found_pixel;
+  int x = search_pixel[0], y = search_pixel[1];
+  while (depth <= 0.0) {
+    depth = mesh.at<float>(x, y);
+    x++;
+    if (x >= mesh.rows) { break; }
+  }
+  found_pixel[0] = x;
+  found_pixel[1] = y;
+  return found_pixel;
+}
+
 beam::Vec3 DepthMap::GetXYZ(beam::Vec2 pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    beam::Vec2 c = FindClosestNonZero(pixel);
+    beam::Vec2 c = FindClosest(pixel);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   beam::Vec3 direction = model_->BackProject(pixel);
@@ -290,6 +395,19 @@ std::shared_ptr<cv::Mat> DepthMap::GetDepthImage() {
     throw std::runtime_error{"Depth image not extracted."};
   }
   return depth_image_;
+}
+
+void DepthMap::SetDepthImage(cv::Mat input) {
+  depth_image_ = std::make_shared<cv::Mat>(input);
+  depth_image_extracted_ = true;
+  min_depth_ = 1000, max_depth_ = 0;
+  depth_image_->forEach<float>(
+      [&](float& distance, const int* position) -> void {
+        if (distance != 0.0) {
+          if (distance > max_depth_) { max_depth_ = distance; }
+          if (distance < min_depth_) { min_depth_ = distance; }
+        }
+      });
 }
 
 std::shared_ptr<beam_calibration::CameraModel> DepthMap::GetModel() {

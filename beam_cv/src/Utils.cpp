@@ -1,5 +1,5 @@
 // beam
-#include "beam_cv/Morphology.h"
+#include "beam_cv/Utils.h"
 #include "beam_utils/math.hpp"
 // std
 #include <algorithm>
@@ -7,6 +7,64 @@
 using namespace cv;
 
 namespace beam_cv {
+
+Mat VisualizeDepthImage(const Mat& input) {
+  Mat image = input.clone();
+  float max_depth = 0;
+  image.forEach<float>([&](float& distance, const int* position) -> void {
+    if (distance > max_depth) { max_depth = distance; }
+  });
+  Mat gs_depth = Mat(image.rows, image.cols, CV_8UC1);
+  image.forEach<float>([&](float& distance, const int* position) -> void {
+    int scale = 255 / max_depth;
+    uint8_t pixel_value = (scale * distance);
+    gs_depth.at<uchar>(position[0], position[1]) = pixel_value;
+  });
+  applyColorMap(gs_depth, gs_depth, COLORMAP_JET);
+  return gs_depth;
+}
+
+Mat AdaptiveHistogram(const Mat& input) {
+  Mat lab_image;
+  cvtColor(input, lab_image, CV_BGR2Lab);
+  std::vector<Mat> lab_planes(6);
+  split(lab_image, lab_planes);
+  Ptr<CLAHE> clahe = createCLAHE();
+  clahe->setClipLimit(3);
+  Mat dst;
+  clahe->apply(lab_planes[0], dst);
+  dst.copyTo(lab_planes[0]);
+  merge(lab_planes, lab_image);
+  Mat new_image;
+  cvtColor(lab_image, new_image, CV_Lab2BGR);
+  return new_image;
+}
+
+Mat KMeans(const Mat& input, int K) {
+  Mat image = input.clone();
+  Mat data;
+  image.convertTo(data, CV_32F);
+  data = data.reshape(1, data.total());
+  // do kmeans
+  Mat labels, centers;
+  kmeans(data, K, labels, TermCriteria(CV_TERMCRIT_ITER, 10, 1.0), 3,
+         KMEANS_PP_CENTERS, centers);
+  // reshape both to a single row of Vec3f pixels:
+  centers = centers.reshape(3, centers.rows);
+  data = data.reshape(3, data.rows);
+  // replace pixel values with their center value:
+  Vec3f* p = data.ptr<Vec3f>();
+  for (size_t i = 0; i < data.rows; i++) {
+    int center_id = labels.at<int>(i);
+    p[i] = centers.at<Vec3f>(center_id);
+  }
+  // back to 2d, and uchar:
+  image = data.reshape(3, image.rows);
+  image.convertTo(image, CV_8UC1);
+  Mat grey;
+  cvtColor(image, grey, CV_BGR2GRAY);
+  return grey;
+}
 
 Mat ExtractSkeleton(const Mat& input_image) {
   Mat output_image = input_image.clone();
@@ -67,9 +125,9 @@ std::vector<Mat> SegmentComponents(const Mat& image) {
       image, im_category, my_stats, my_centroids, connectivity, itype);
   im_category.convertTo(im_category, CV_8UC1);
   // initialize smaller window matrices
-  std::vector<cv::Mat> cracks;
+  std::vector<Mat> cracks;
   for (int i = 0; i < num_comp; i++) {
-    cv::Mat crack(image.size(), CV_8UC1);
+    Mat crack(image.size(), CV_8UC1);
     cracks.push_back(crack);
   }
   for (int x = 0; x < image.rows; ++x) // iterate over skeleton image
@@ -84,5 +142,4 @@ std::vector<Mat> SegmentComponents(const Mat& image) {
   return cracks;
 }
 
-Mat ConnectSkeleton(const Mat& image) {}
 } // namespace beam_cv

@@ -117,6 +117,8 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
   return sqrt(dist);
 }
 
+/** Computes greatest common divisor**/
+int gcd(int a, int b);
 /** Returns cross kernel */
 cv::Mat GetCrossKernel(int size);
 
