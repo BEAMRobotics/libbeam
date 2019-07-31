@@ -11,6 +11,7 @@ void UF::Initialize(int n) {
 
 int UF::FindSet(int p) {
   if (p != id_[p]) { id_[p] = this->FindSet(id_[p]); }
+  return id_[p];
 }
 
 void UF::UnionSets(int p, int q) {
