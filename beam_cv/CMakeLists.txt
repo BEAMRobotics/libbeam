@@ -13,7 +13,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Utils.cpp
     src/DepthMap.cpp
     src/RayCast.cpp
-    src/UF.cpp
 )
 
 ############# Debug files #############
