@@ -1,5 +1,5 @@
 #include "beam_cv/DepthMap.h"
-#include "beam_cv/Morphology.h"
+#include "beam_cv/Utils.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -42,32 +42,49 @@ int main(int argc, char* argv[]) {
 }
 
 void TestDepthMap() {
-  std::string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv";
+  std::string cur_dir =
+      "/home/jake/projects/beam_robotics/libbeam/beam_cv/tests/test_data/";
   // load intrinsics
-  std::string intrinsics_location = cur_dir + "/tests/test_data/F1.json";
+  std::string intrinsics_location = cur_dir + "F1.json";
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       beam_calibration::CameraModel::LoadJSON(intrinsics_location);
   // load pcd
-  std::string pcd_location = cur_dir + "/tests/test_data/test.pcd";
+  std::string pcd_location = cur_dir + "test.pcd";
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud);
-  /*
-   * Test depth map filling
-   */
-  dm.SetCloud(cloud);
-  dm.SetModel(F1);
-  cv::Mat di_viz;
 
-  dm.ExtractDepthMap(0.003, 3);
-  di_viz = dm.VisualizeDepthImage();
-  cv::imwrite("/home/jake/ext.png", di_viz);
-  dm.DepthInterpolation(70, 5, 0.05, 4);
-  di_viz = dm.VisualizeDepthImage();
-  cv::imwrite("/home/jake/interp.png", di_viz);
+  /* std::string image_location = cur_dir + "test.jpg";
+  cv::Mat image = cv::imread(image_location, IMREAD_GRAYSCALE);
+  cv::imwrite("/home/jake/output.png", image);*/
+
+  // load depth map
+  std::string image_location = "/home/jake/original.jpg";
+
+  cv::Mat image = cv::imread(image_location, IMREAD_COLOR);
+  image = beam_cv::AdaptiveHistogram(image);
+  image = beam_cv::KMeans(image, 8);
+
+  cv::imwrite("/home/jake/kmeans.png", image);
+
+  /*
+    dm.SetCloud(cloud);
+    dm.SetModel(F1);
+    cv::Mat di_viz;
+
+    dm.ExtractDepthMap(0.001, 5);
+    dm.DepthInterpolation(70, 5, 0.1, 2);
+    di_viz = dm.VisualizeDepthImage();
+    cv::imwrite("/home/jake/interp.png", di_viz);
+
+    dm.DepthMeshing();
+    di_viz = dm.VisualizeDepthImage();
+
+    cv::imwrite("/home/jake/mesh.png", di_viz);*/
+  // cv::waitKey(0);
 }
 
 void TestCrackCalculation() {
-  Mat image = imread("/home/jake/Downloads/test2.png", 0);
+  Mat image = imread("/home/jake/Downloads/test1.png", 0);
   std::string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv";
   // load intrinsics
   std::string intrinsics_location = cur_dir + "/tests/test_data/F1.json";

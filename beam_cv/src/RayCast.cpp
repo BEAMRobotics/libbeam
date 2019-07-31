@@ -104,4 +104,27 @@ void RayCastXYZRGB(std::shared_ptr<cv::Mat> image,
     }
   });
 }
+
+cv::Mat CreateHitMask(int mask_size,
+                      std::shared_ptr<beam_calibration::CameraModel> model,
+                      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud) {
+  // create image mask where white pixels = projection hit
+  cv::Size image_s(model->GetHeight(), model->GetWidth());
+  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
+  cv::Mat hit_mask;
+  for (uint32_t i = 0; i < cloud->points.size(); i++) {
+    beam::Vec3 point;
+    point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+    beam::Vec2 coords;
+    coords = model->ProjectPoint(point);
+    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
+    if (u > 0 && v > 0 && v < model->GetHeight() && u < model->GetWidth()) {
+      tmp.at<cv::Vec3b>(v, u).val[0] = 255;
+    }
+  }
+  cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
+             cv::Point(-1, -1), 1, 1, 1);
+  return hit_mask;
+}
+
 } // namespace beam_cv

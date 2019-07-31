@@ -39,6 +39,12 @@ double median(std::vector<double> v) {
     return (a + b) / 2.0;
   }
 }
+
+int gcd(int a, int b) {
+  if (b == 0) return a;
+  return gcd(b, a % b);
+}
+
 cv::Mat GetCrossKernel(int size) {
   const cv::Mat kernel =
       cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));

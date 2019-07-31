@@ -10,9 +10,10 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     OpenCV::OpenCV
     Eigen3::Eigen
   SOURCES
-    src/Morphology.cpp
+    src/Utils.cpp
     src/DepthMap.cpp
     src/RayCast.cpp
+    src/UF.cpp
 )
 
 ############# Debug files #############

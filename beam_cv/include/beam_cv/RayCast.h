@@ -34,4 +34,12 @@ void RayCastXYZRGB(std::shared_ptr<cv::Mat> image,
                    void (*f)(std::shared_ptr<cv::Mat> image_i,
                              pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_i,
                              const int* position, int index));
+
+/*
+ * @brief Creates hit mask to speed up ray casting
+ * @return cv::Mat
+ */
+cv::Mat CreateHitMask(int mask_size,
+                      std::shared_ptr<beam_calibration::CameraModel> model,
+                      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
 } // namespace beam_cv

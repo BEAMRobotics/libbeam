@@ -10,6 +10,27 @@
 namespace beam_cv {
 
 /**
+ * @brief Method for perform histogram equalization
+ * @return equalized image
+ * @param input image
+ */
+cv::Mat AdaptiveHistogram(const cv::Mat&);
+
+/**
+ * @brief Method for visualizing depth image
+ * @return image with colormap jet
+ * @param input image
+ */
+cv::Mat VisualizeDepthImage(const cv::Mat&);
+
+/**
+ * @brief Method for performing k means on image
+ * @return k mean image
+ * @param input image
+ */
+cv::Mat KMeans(const cv::Mat&, int);
+
+/**
  * @brief Method for extracting skeleton of objects in scene
  * @return binary image of 1 pixel wide skeleton
  * @param input image of detected objects
@@ -17,7 +38,7 @@ namespace beam_cv {
 cv::Mat ExtractSkeleton(const cv::Mat& input_image);
 
 /**
- * @brief Method for removing unconnected skeleton under certain pixel size
+ * @brief Method for removing unconnected components
  * threshold
  * @return binary image of reduced noise skeleton image
  * @param input image and pixel threshold
@@ -32,11 +53,5 @@ cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold);
  */
 std::vector<cv::Mat> SegmentComponents(const cv::Mat& image);
 
-/**
- * @brief Method for segmenting connected components into seperate mats
- * @return vector of cracks
- * @param skeleton image of cracks
- * @param original binary image of all cracks
- */
-cv::Mat ConnectSkeleton(const cv::Mat& image);
+
 } // namespace beam_cv
