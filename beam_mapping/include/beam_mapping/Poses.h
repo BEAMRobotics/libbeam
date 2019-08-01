@@ -101,7 +101,7 @@ public:
 
   /**
    * @brief for setting poses
-   * @param _poses
+   * @param _poses transforms from fixed frame to moving frame
    */
   void SetPoses(
       const std::vector<Eigen::Affine3d,
@@ -109,14 +109,14 @@ public:
 
   /**
    * @brief for getting the poses
-   * @return poses
+   * @return poses transforms from fixed frame to moving frame
    */
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
       GetPoses();
 
   /**
    * @brief for adding a single pose
-   * @param pose
+   * @param pose transform from fixed frame to moving frame
    */
   void AddSinglePose(const Eigen::Affine3d& pose);
 
@@ -145,6 +145,14 @@ public:
    * @param input_pose_file_path full path to pose file
    */
   void LoadFromPLY(const std::string input_pose_file_path);
+
+  /**
+   * @brief loads the pose object using the odometry from a bag file
+   * @param bag_file_path full path to bag file
+   * @param odom_topic
+   */
+  void LoadFromBAG(const std::string bag_file_path,
+                   const std::string odom_topic);
 
   std::vector<ros::Time> time_stamps;
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> poses;

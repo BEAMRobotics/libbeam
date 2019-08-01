@@ -6,11 +6,15 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
+#include <nav_msgs/Odometry.h>
 #include <nlohmann/json.hpp>
+#include <tf2_eigen/tf2_eigen.h>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 
 namespace beam_mapping {
 
-void Poses::Clear(){
+void Poses::Clear() {
   time_stamps.clear();
   poses.clear();
   bag_name = "";
@@ -18,7 +22,6 @@ void Poses::Clear(){
   fixed_frame = "";
   moving_frame = "";
 }
-
 
 void Poses::SetBagName(const std::string& _bag_name) {
   bag_name = _bag_name;
@@ -107,21 +110,20 @@ void Poses::WriteToJSON(const std::string output_dir) {
     beam::Mat4 Tk = poses[k].matrix();
     J_pose_k = {{"time_stamp_sec", time_stamps[k].sec},
                 {"time_stamp_nsec", time_stamps[k].nsec},
-                {"transform", {Tk(0, 0), Tk(0, 1), Tk(0, 2), Tk(0, 3),
-                               Tk(1, 0), Tk(1, 1), Tk(1, 2), Tk(1, 3),
-                               Tk(2, 0), Tk(2, 1), Tk(2, 2), Tk(2, 3),
-                               Tk(3, 0), Tk(3, 1), Tk(3, 2), Tk(3, 3)}}};
+                {"transform",
+                 {Tk(0, 0), Tk(0, 1), Tk(0, 2), Tk(0, 3), Tk(1, 0), Tk(1, 1),
+                  Tk(1, 2), Tk(1, 3), Tk(2, 0), Tk(2, 1), Tk(2, 2), Tk(2, 3),
+                  Tk(3, 0), Tk(3, 1), Tk(3, 2), Tk(3, 3)}}};
     J_pose_k_string = J_pose_k.dump();
-    J_poses_string.erase(J_poses_string.end()-2, J_poses_string.end()); // erase end ]}
-    if(k>0){
-      J_poses_string = J_poses_string + ", ";
-    }
+    J_poses_string.erase(J_poses_string.end() - 2,
+                         J_poses_string.end()); // erase end ]}
+    if (k > 0) { J_poses_string = J_poses_string + ", "; }
     J_poses_string = J_poses_string + J_pose_k_string + "]}"; // add new pose
   }
 
-  J_string.erase(J_string.end()-1, J_string.end()); // erase end }
-  J_poses_string.erase(0,1); // erase start {
-  J_string = J_string + "," + J_poses_string; // add poses
+  J_string.erase(J_string.end() - 1, J_string.end()); // erase end }
+  J_poses_string.erase(0, 1);                         // erase start {
+  J_string = J_string + "," + J_poses_string;         // add poses
   J = nlohmann::json::parse(J_string);
 
   std::string output_file = output_dir + pose_file_date + "_poses.json";
@@ -172,11 +174,12 @@ void Poses::LoadFromJSON(const std::string input_pose_file_path) {
   BEAM_INFO("Read {} poses.", pose_counter);
 }
 
-void Poses::WriteToPLY(const std::string output_dir){
-  //
+void Poses::WriteToPLY(const std::string output_dir) {
+  //TODO: implement WriteToPLY
+  BEAM_CRITICAL("WriteToPLY function not yet implemented");
 }
 
-void Poses::LoadFromPLY(const std::string input_pose_file_path){
+void Poses::LoadFromPLY(const std::string input_pose_file_path) {
   std::string delim = " ";
   std::ifstream file(input_pose_file_path);
   std::string str;
@@ -214,6 +217,42 @@ void Poses::LoadFromPLY(const std::string input_pose_file_path){
     this->poses.push_back(TA);
     this->time_stamps.push_back(t);
   }
+}
+
+void Poses::LoadFromBAG(const std::string bag_file_path,
+                        const std::string odom_topic) {
+  bag_name = bag_file_path.substr(bag_file_path.rfind("/") + 1,
+                                  bag_file_path.rfind(".bag"));
+  // open bag
+  rosbag::Bag bag;
+  try {
+    bag.open(bag_file_path, rosbag::bagmode::Read);
+  } catch (rosbag::BagException& ex) {
+    BEAM_CRITICAL("Bag exception : {}}", ex.what());
+  }
+  rosbag::View view(bag, rosbag::TopicQuery(odom_topic), ros::TIME_MIN,
+                    ros::TIME_MAX, true);
+  int total_messages = view.size();
+  int message_counter = 0;
+  std::string output_message = "Loading odom messages from bag...";
+  for (auto iter = view.begin(); iter != view.end(); iter++) {
+    message_counter++;
+    beam::OutputPercentComplete(message_counter, total_messages,
+                                output_message);
+    auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
+    if (fixed_frame.size() < 2) {
+      fixed_frame = odom_msg->header.frame_id;
+    }
+    if (moving_frame.size() < 2) {
+      moving_frame = odom_msg->child_frame_id;
+    }
+    time_stamps.push_back(odom_msg->header.stamp);
+    Eigen::Affine3d T_MOVING_FIXED;
+    Eigen::fromMsg(odom_msg->pose.pose, T_MOVING_FIXED);
+    poses.push_back(T_MOVING_FIXED);
+  }
+  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
+            message_counter);
 }
 
 } // namespace beam_mapping
