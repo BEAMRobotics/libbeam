@@ -3,38 +3,33 @@
 
 namespace beam_defects {
 
-Spall::Spall(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) : defect_cloud_(pc) {}
-
 double Spall::GetSize() {
   // Only calculate size first time this method is called
-  if (!spall_size_) spall_size_ = CalculateSize();
+  if (!spall_size_){
+    spall_size_ = CalculateSize();
+  } else if (!cloud_hull_calculated_){
+    spall_size_ = CalculateSize();
+  }
   return spall_size_;
 }
 
 double Spall::CalculateSize() {
-  if (defect_cloud_->width == 0) return 0;
+  if (!cloud_hull_calculated_) {
+    defect_cloud_hull_ = GetHull2D();
+  }
 
-  // code that calculates the area of a spall
-  auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
-  *calc_cloud = PCNoiseRemoval(defect_cloud_);
-  *calc_cloud = ConcaveHull(calc_cloud);
-  std::vector<float> plane_norm_vect = PlaneNormalVector(calc_cloud);
-  *calc_cloud = Project2Plane(calc_cloud, plane_norm_vect);
-  double spall_area = HullArea(calc_cloud);
-
+  double spall_area = HullArea(defect_cloud_hull_);
   return spall_area;
 }
 
-DefectOSIMSeverity Spall::GetOSIMSeverity(){
-  double spall_area = GetSize();
-  if (spall_area == 0) {
-    return DefectOSIMSeverity::NONE;
-  } else if (spall_area < 0.0225) {
+DefectOSIMSeverity Spall::GetOSIMSeverity() {
+  float largest_dimension = GetMaxDim2D();
+
+  if (largest_dimension < 0.15) {
     return DefectOSIMSeverity::LIGHT;
-  } else if (spall_area < 0.09) {
+  } else if (largest_dimension < 0.3) {
     return DefectOSIMSeverity::MEDIUM;
-  } else if (spall_area < 0.36) {
+  } else if (largest_dimension < 0.6) {
     return DefectOSIMSeverity::SEVERE;
   } else {
     return DefectOSIMSeverity::VERY_SEVERE;

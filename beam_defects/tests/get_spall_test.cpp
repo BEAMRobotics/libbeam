@@ -14,7 +14,8 @@ TEST_CASE("Spall defect type is returned", "[GetType]") {
   beam_defects::Spall spall{};
 
   REQUIRE(spall.GetType() == beam_defects::DefectType::SPALL);
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::NONE);
+  REQUIRE_THROWS(spall.GetOSIMSeverity());
+  REQUIRE_THROWS(spall.GetMaxDim2D());
 }
 
 TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
@@ -27,19 +28,34 @@ TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
   reader.read("test_data/cloud_cluster_1.pcd", *cloud2);
 
   // Instantiate the defect object with point cloud
-  beam_defects::Spall spall{cloud}, spall2{cloud2};
+  beam_defects::Spall spall{cloud}, spall2;
+  REQUIRE_THROWS(spall2.GetSize());
+  spall2.SetPointCloud(cloud2);
 
   REQUIRE(spall.GetSize() == Approx(0.4803934));
   REQUIRE(spall.GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(spall.GetMaxDim2D() == Approx(1.32481));
   REQUIRE(spall2.GetSize() == Approx(0.23996));
-  REQUIRE(spall2.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(spall2.GetOSIMSeverity() ==
+          beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(spall2.GetMaxDim2D() == Approx(0.733556));
+
+  // Test SetHullAlpha()
+  float alpha = 0.2;
+  spall.SetHullAlpha(alpha);
+  REQUIRE(spall.GetSize() == Approx(0.531694));
+  REQUIRE(spall.GetSize() == Approx(0.531694));
+  spall.SetHullAlpha(); // sets as default (0.1)
+  REQUIRE(spall.GetSize() == Approx(0.4803934));
 }
 
 TEST_CASE("No spall returns size of 0") {
   beam_defects::Spall spall;
 
-  REQUIRE(spall.GetSize() == Approx(0));
+  REQUIRE_THROWS(spall.GetSize());
+  REQUIRE_THROWS(spall.GetOSIMSeverity());
+  REQUIRE_THROWS(spall.GetMaxDim2D());
 }
 
 TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "
@@ -75,8 +91,10 @@ TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "
 
   // Create a spall object
   beam_defects::Spall spall{cloud_xyz};
+  spall.SetHullAlpha(); // Test setting hull alpha to same value as initial
   REQUIRE(spall.GetSize() == Approx(0.0175));
-  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::LIGHT);
+  REQUIRE(spall.GetOSIMSeverity() == beam_defects::DefectOSIMSeverity::MEDIUM);
+  REQUIRE(spall.GetMaxDim2D() == Approx(0.25));
 }
 
 TEST_CASE("Spall (xz-plane and yz-plane) extraction, size calculation, and "
@@ -144,8 +162,10 @@ TEST_CASE("Spall (xz-plane and yz-plane) extraction, size calculation, and "
       cloud, threshold, tolerance, min_points, max_points);
   REQUIRE(spalls_vector[0].GetSize() == Approx(0.1));
   REQUIRE(spalls_vector[0].GetOSIMSeverity() ==
-          beam_defects::DefectOSIMSeverity::SEVERE);
+          beam_defects::DefectOSIMSeverity::VERY_SEVERE);
+  REQUIRE(spalls_vector[0].GetMaxDim2D() == Approx(1.00499));
   REQUIRE(spalls_vector[1].GetSize() == Approx(0.0425));
   REQUIRE(spalls_vector[1].GetOSIMSeverity() ==
-          beam_defects::DefectOSIMSeverity::MEDIUM);
+          beam_defects::DefectOSIMSeverity::SEVERE);
+  REQUIRE(spalls_vector[1].GetMaxDim2D() == Approx(0.452769));
 }
