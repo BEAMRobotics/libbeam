@@ -56,7 +56,7 @@ public:
    * @brief Method to set the point cloud attribute defect_cloud_
    * @param pc Pointer to a point cloud
    */
-  void SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+  void SetPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr GetPointCloud();
 
@@ -80,7 +80,7 @@ public:
    * @return An integer representing the location of where the matching defect
    * is in the input defect vector
    */
-  int GetMatchingDefect(std::vector<Defect::Ptr>& defect_vector);
+  int GetMatchingDefect(const std::vector<Defect::Ptr>& defect_vector);
 
   /**
    * @brief Method for returning the height and width dimensions of a 2D

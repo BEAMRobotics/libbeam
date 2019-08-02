@@ -16,7 +16,7 @@ Defect::Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
   defect_cloud_initialized_ = true;
 }
 
-void Defect::SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
+void Defect::SetPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
   defect_cloud_ = pc;
   defect_cloud_initialized_ = true;
   BEAM_INFO("A new point cloud has been set.");
@@ -80,20 +80,17 @@ float Defect::GetMaxDim2D() {
   return max_dist;
 }
 
-int Defect::GetMatchingDefect(std::vector<Defect::Ptr>& defect_vector) {
-  double match_score = 100;
-  auto temp_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+int Defect::GetMatchingDefect(const std::vector<Defect::Ptr>& defect_vector) {
   int ind = 0;
   int match_ind = 0;
+  float match_dist = 100;
 
   for (auto& defect : defect_vector) {
     if (this->GetType() == defect->GetType()) {
-      pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-      icp.setInputSource(defect_cloud_);
-      icp.setInputTarget(defect->GetPointCloud());
-      icp.align(*temp_cloud);
-      if (icp.getFitnessScore() / temp_cloud->points.size() < match_score) {
-        match_score = icp.getFitnessScore() / temp_cloud->points.size();
+      float hausdorff_dist =
+          HausdorffDist(defect_cloud_, defect->GetPointCloud());
+      if (hausdorff_dist < match_dist) {
+        match_dist = hausdorff_dist;
         match_ind = ind;
       }
       ++ind;
