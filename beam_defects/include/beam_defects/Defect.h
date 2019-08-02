@@ -49,11 +49,16 @@ public:
    */
   virtual ~Defect() = default;
 
+  // alias for clarity
+  using Ptr = std::shared_ptr<Defect>;
+
   /**
    * @brief Method to set the point cloud attribute defect_cloud_
    * @param pc Pointer to a point cloud
    */
   void SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr GetPointCloud();
 
   /**
    * @brief Method to set the alpha value used when calculating a hull.
@@ -69,11 +74,13 @@ public:
   virtual double GetSize() = 0;
 
   /**
-   * @brief Method to compare the size of two defects
-   * @return The perctenage difference in size of the current defect object
-   * relative to another defect object
+   * @brief Method that uses icp to get the best matching defect from a vector
+   * of defect objects
+   * @param defect_vector A vector of pointers to defect objects
+   * @return An integer representing the location of where the matching defect
+   * is in the input defect vector
    */
-  double CompareSize(beam_defects::Defect& target);
+  int GetMatchingDefect(std::vector<Defect::Ptr>& defect_vector);
 
   /**
    * @brief Method for returning the height and width dimensions of a 2D
@@ -108,8 +115,6 @@ public:
   virtual DefectType GetType() const = 0;
 
   virtual DefectOSIMSeverity GetOSIMSeverity() = 0;
-
-  using Ptr = std::shared_ptr<Defect>;
 
 protected:
   // Variable for storing the defect point cloud

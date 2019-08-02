@@ -158,14 +158,16 @@ TEST_CASE("Spall (xz-plane and yz-plane) extraction, size calculation, and "
   auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.5, tolerance = 0.2;
   int min_points = 5, max_points = 1000;
-  std::vector<beam_defects::Spall> spalls_vector = beam_defects::GetSpalls(
+  std::vector<beam_defects::Defect::Ptr> spalls_vector = beam_defects::GetSpalls(
       cloud, threshold, tolerance, min_points, max_points);
-  REQUIRE(spalls_vector[0].GetSize() == Approx(0.1));
-  REQUIRE(spalls_vector[0].GetOSIMSeverity() ==
+  REQUIRE(spalls_vector[0]->GetSize() == Approx(0.1));
+  REQUIRE(spalls_vector[0]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
-  REQUIRE(spalls_vector[0].GetMaxDim2D() == Approx(1.00499));
-  REQUIRE(spalls_vector[1].GetSize() == Approx(0.0425));
-  REQUIRE(spalls_vector[1].GetOSIMSeverity() ==
+  REQUIRE(spalls_vector[0]->GetMaxDim2D() == Approx(1.00499));
+  REQUIRE(spalls_vector[0]->GetMatchingDefect(spalls_vector) == 0);
+  REQUIRE(spalls_vector[1]->GetSize() == Approx(0.0425));
+  REQUIRE(spalls_vector[1]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);
-  REQUIRE(spalls_vector[1].GetMaxDim2D() == Approx(0.452769));
+  REQUIRE(spalls_vector[1]->GetMaxDim2D() == Approx(0.452769));
+  REQUIRE(spalls_vector[1]->GetMatchingDefect(spalls_vector) == 1);
 }

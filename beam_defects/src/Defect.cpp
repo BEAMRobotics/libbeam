@@ -5,6 +5,9 @@
 
 #include <pcl/common/common.h>
 #include <pcl/common/distances.h>
+#include <pcl/registration/icp.h>
+
+#include <cmath>
 namespace beam_defects {
 
 // Common code will go here
@@ -13,13 +16,17 @@ Defect::Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
   defect_cloud_initialized_ = true;
 }
 
-void Defect::SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc){
+void Defect::SetPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
   defect_cloud_ = pc;
   defect_cloud_initialized_ = true;
   BEAM_INFO("A new point cloud has been set.");
 }
 
-void Defect::SetHullAlpha(float alpha){
+pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetPointCloud() {
+  return defect_cloud_;
+}
+
+void Defect::SetHullAlpha(float alpha) {
   alpha_ = alpha;
   cloud_hull_calculated_ = false;
   BEAM_INFO("Alpha hull value changed to {}.", alpha_);
@@ -41,14 +48,12 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
   std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
   *calc_cloud = Project2Plane(cloud_hull, plane_norm_vect);
 
-  cloud_hull_calculated_ = true; 
+  cloud_hull_calculated_ = true;
   return cloud_hull;
 };
 
 std::vector<float> Defect::GetBBoxDims2D() {
-  if (!cloud_hull_calculated_) {
-    defect_cloud_hull_ = GetHull2D();
-  }
+  if (!cloud_hull_calculated_) { defect_cloud_hull_ = GetHull2D(); }
 
   std::vector<float> bounding_box(2, 0);
   pcl::PointXYZ minPt, maxPt;
@@ -60,9 +65,7 @@ std::vector<float> Defect::GetBBoxDims2D() {
 }
 
 float Defect::GetMaxDim2D() {
-  if (!cloud_hull_calculated_) {
-    defect_cloud_hull_ = GetHull2D();
-  }
+  if (!cloud_hull_calculated_) { defect_cloud_hull_ = GetHull2D(); }
 
   auto mock_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *mock_cloud = *defect_cloud_hull_;
@@ -77,13 +80,26 @@ float Defect::GetMaxDim2D() {
   return max_dist;
 }
 
-double Defect::CompareSize(beam_defects::Defect& target) {
-  if (this->GetType() == target.GetType()) {
-    double size1 = this->GetSize();
-    double size2 = target.GetSize();
-    double size_change = (size2 - size1) / size1;
-    return size_change;
-  } else { return 0; }
-};
+int Defect::GetMatchingDefect(std::vector<Defect::Ptr>& defect_vector) {
+  double match_score = 100;
+  auto temp_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  int ind = 0;
+  int match_ind = 0;
+
+  for (auto& defect : defect_vector) {
+    if (this->GetType() == defect->GetType()) {
+      pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+      icp.setInputSource(defect_cloud_);
+      icp.setInputTarget(defect->GetPointCloud());
+      icp.align(*temp_cloud);
+      if (icp.getFitnessScore() / temp_cloud->points.size() < match_score) {
+        match_score = icp.getFitnessScore() / temp_cloud->points.size();
+        match_ind = ind;
+      }
+      ++ind;
+    }
+  }
+  return match_ind;
+}
 
 } // namespace beam_defects

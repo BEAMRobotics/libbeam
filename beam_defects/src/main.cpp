@@ -15,21 +15,26 @@
 int main() {
   // Read in the cloud data
   pcl::PCDReader reader;
-  auto cloud = boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  auto cloud =
+      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   reader.read("test_data/20190515_raytrace_label_PB.pcd", *cloud);
 
   // Example code for extracting defects and their size
   float threshold = 0.8;
-  std::vector<beam_defects::Delam> delam_vector_ = beam_defects::GetDelams(cloud, threshold);
+  std::vector<beam_defects::Defect::Ptr> delam_vector_ =
+      beam_defects::GetDelams(cloud, threshold);
 
   for (auto& defect : delam_vector_) {
-    std::cout << "Delam size is: " << defect.GetSize() << "m^2" <<std::endl;
+    std::cout << "Delam size is: " << defect->GetSize() << "m^2" << std::endl;
   }
 
-  // Check size comparison
-  double comparison = delam_vector_[0].CompareSize(delam_vector_[1]);
-  std::cout << comparison << std::endl;
-
+  // Code to get the matching vector
+  int ind = 0;
+  for (auto& defect : delam_vector_) {
+    int match_ind = defect->GetMatchingDefect(delam_vector_);
+    std::cout << "Index: " << ind << " vs. " << match_ind << std::endl;
+    ++ind;
+  }
 
   // Read in new cloud data
   auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();

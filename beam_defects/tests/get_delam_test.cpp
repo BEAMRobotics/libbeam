@@ -156,14 +156,17 @@ TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation") {
   auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.5, tolerance = 0.2;
   int min_points = 5, max_points = 1000;
-  std::vector<beam_defects::Delam> delams_vector = beam_defects::GetDelams(
-      cloud, threshold, tolerance, min_points, max_points);
-  REQUIRE(delams_vector[0].GetSize() == Approx(0.1));
-  REQUIRE(delams_vector[0].GetOSIMSeverity() ==
+  std::vector<beam_defects::Defect::Ptr> delams_vector =
+      beam_defects::GetDelams(cloud, threshold, tolerance, min_points,
+                              max_points);
+  REQUIRE(delams_vector[0]->GetSize() == Approx(0.1));
+  REQUIRE(delams_vector[0]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::VERY_SEVERE);
-  REQUIRE(delams_vector[0].GetMaxDim2D() == Approx(1.00499));
-  REQUIRE(delams_vector[1].GetSize() == Approx(0.0425));
-  REQUIRE(delams_vector[1].GetOSIMSeverity() ==
+  REQUIRE(delams_vector[0]->GetMaxDim2D() == Approx(1.00499));
+  REQUIRE(delams_vector[0]->GetMatchingDefect(delams_vector) == 0);
+  REQUIRE(delams_vector[1]->GetSize() == Approx(0.0425));
+  REQUIRE(delams_vector[1]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);
-  REQUIRE(delams_vector[1].GetMaxDim2D() == Approx(0.452769));
+  REQUIRE(delams_vector[1]->GetMaxDim2D() == Approx(0.452769));
+  REQUIRE(delams_vector[1]->GetMatchingDefect(delams_vector) == 1);
 }

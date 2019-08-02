@@ -138,7 +138,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
 
 // function to extract cracks
 // return type is a vector of crack objects
-std::vector<beam_defects::Crack> GetCracks(
+std::vector<beam_defects::Defect::Ptr> GetCracks(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
   auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -146,9 +146,12 @@ std::vector<beam_defects::Crack> GetCracks(
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
 
-  std::vector<beam_defects::Crack> crack_vector;
+  std::vector<beam_defects::Defect::Ptr> crack_vector;
   for (auto& cloud : cloud_vector) {
-    crack_vector.push_back(beam_defects::Crack(cloud));
+    beam_defects::Defect::Ptr temp_defect =
+        std::make_shared<beam_defects::Crack>();
+    temp_defect->SetPointCloud(cloud);
+    crack_vector.push_back(temp_defect);
   }
 
   return crack_vector;
@@ -156,7 +159,7 @@ std::vector<beam_defects::Crack> GetCracks(
 
 // function to extract spalls
 // return type is a vector of spall objects
-std::vector<beam_defects::Spall> GetSpalls(
+std::vector<beam_defects::Defect::Ptr> GetSpalls(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
   auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -164,9 +167,12 @@ std::vector<beam_defects::Spall> GetSpalls(
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
 
-  std::vector<beam_defects::Spall> spall_vector;
+  std::vector<beam_defects::Defect::Ptr> spall_vector;
   for (auto& cloud : cloud_vector) {
-    spall_vector.push_back(beam_defects::Spall(cloud));
+    beam_defects::Defect::Ptr temp_defect =
+        std::make_shared<beam_defects::Spall>();
+    temp_defect->SetPointCloud(cloud);
+    spall_vector.push_back(temp_defect);
   }
 
   return spall_vector;
@@ -174,7 +180,7 @@ std::vector<beam_defects::Spall> GetSpalls(
 
 // function to extract delams
 // return type is a vector of delam objects
-std::vector<beam_defects::Delam> GetDelams(
+std::vector<beam_defects::Defect::Ptr> GetDelams(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
   auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -182,9 +188,12 @@ std::vector<beam_defects::Delam> GetDelams(
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
 
-  std::vector<beam_defects::Delam> delam_vector;
+  std::vector<beam_defects::Defect::Ptr> delam_vector;
   for (auto& cloud : cloud_vector) {
-    delam_vector.push_back(beam_defects::Delam(cloud));
+    beam_defects::Defect::Ptr temp_defect =
+        std::make_shared<beam_defects::Delam>();
+    temp_defect->SetPointCloud(cloud);
+    delam_vector.push_back(temp_defect);
   }
 
   return delam_vector;
@@ -192,7 +201,7 @@ std::vector<beam_defects::Delam> GetDelams(
 
 // function to extract corrosion
 // return type is a vector of corrosion objects
-std::vector<beam_defects::Corrosion> GetCorrosion(
+std::vector<beam_defects::Defect::Ptr> GetCorrosion(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
   auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -200,9 +209,12 @@ std::vector<beam_defects::Corrosion> GetCorrosion(
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
 
-  std::vector<beam_defects::Corrosion> corrosion_vector;
+  std::vector<beam_defects::Defect::Ptr> corrosion_vector;
   for (auto& cloud : cloud_vector) {
-    corrosion_vector.push_back(beam_defects::Corrosion(cloud));
+    beam_defects::Defect::Ptr temp_defect =
+        std::make_shared<beam_defects::Corrosion>();
+    temp_defect->SetPointCloud(cloud);
+    corrosion_vector.push_back(temp_defect);
   }
 
   return corrosion_vector;
