@@ -41,6 +41,7 @@ Mat AdaptiveHistogram(const Mat& input) {
 }
 
 Mat KMeans(const Mat& input, int K) {
+  BEAM_INFO("Performing K Means Segmentation...");
   Mat image = input.clone();
   Mat data;
   image.convertTo(data, CV_32F);
@@ -63,6 +64,7 @@ Mat KMeans(const Mat& input, int K) {
   image.convertTo(image, CV_8UC1);
   Mat grey;
   cvtColor(image, grey, CV_BGR2GRAY);
+  BEAM_INFO("K Means Segmentation Complete");
   return grey;
 }
 

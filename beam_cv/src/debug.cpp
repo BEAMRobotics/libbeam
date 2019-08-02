@@ -5,8 +5,6 @@
 #include <iostream>
 #include <map>
 #include <pcl/io/pcd_io.h>
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/visualization/pcl_visualizer.h>
 #include <ros/time.h>
 #include <string>
 
