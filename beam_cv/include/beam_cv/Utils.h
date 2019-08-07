@@ -4,6 +4,7 @@
 
 #pragma once
 // OpenCV
+#include "beam_utils/math.hpp"
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -53,5 +54,26 @@ cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold);
  */
 std::vector<cv::Mat> SegmentComponents(const cv::Mat& image);
 
+/**
+ * @brief Finds connected components for grayscale image of arbitrary color
+ * depth
+ * @return vector of sets
+ * @param image
+ */
+std::map<int, std::vector<cv::Point2i>>
+    ConnectedComponents(const cv::Mat& image);
 
+/**
+ * @brief Fits plane to set of points
+ * @return centroid:normal
+ * @param vector of points
+ */
+std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
+
+/**
+ * @brief Computes intersection point of line and plane
+ * @return {x,y,z}
+ */
+beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
+                          beam::Vec3 plane_normal, beam::Vec3 plane_point);
 } // namespace beam_cv

@@ -100,6 +100,8 @@ public:
    */
   void DepthMeshing();
 
+  cv::Mat KMeansCompletion(int K, cv::Mat img);
+
   /***********************Helper Functions**********************/
 
   /**

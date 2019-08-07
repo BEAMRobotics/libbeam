@@ -230,37 +230,54 @@ void DepthMap::DepthMeshing() {
       }
     }
   }
-  /*
-  cv::Mat dst;
-  cv::dilate(mesh, dst, FULL_KERNEL_[5]);
-  for (int i = 0; i < grid.size() - 1; i++) {
-    for (int j = 0; j < grid[i].size() - 1; j++) {
-      beam::Vec2 p = grid[i][j];
-      if (dst.at<float>(p[0], p[1]) == 0.0) {
-        std::vector<beam::Vec2> sur_points{
-            this->FindClosestLeft(p, dst), this->FindClosestRight(p, dst),
-            this->FindClosestUp(p, dst), this->FindClosestDown(p, dst)};
-        std::vector<float> sur_depths;
-        for (beam::Vec2 point : sur_points) {
-          float depth = dst.at<float>(point[0], point[1]);
-          if (depth > 0.0) { sur_depths.push_back(depth); }
-        }
-        float max_depth = 0;
-        for (float d : sur_depths) {
-          if (d > max_depth) { max_depth = d; }
-        }
-        mesh.at<float>(p[0], p[1]) = max_depth;
-      }
-    }
-  }*/
-  cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS,
-                                             cv::Size(cell_width, cell_height));
-  cv::dilate(mesh, mesh, kernel);
   // cv::morphologyEx(mesh, mesh, cv::MORPH_CLOSE, beam::GetEllipseKernel(13));
   *depth_image_ = mesh;
   BEAM_INFO("Done Extracting Depth Mesh.");
 }
 
+cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
+  cv::Mat completed = cv::Mat::zeros(img.rows, img.cols, CV_32FC1);
+  img = beam_cv::AdaptiveHistogram(img);
+  img = beam_cv::KMeans(img, K);
+  // find connected components
+  std::map<int, std::vector<cv::Point2i>> sets =
+      beam_cv::ConnectedComponents(img);
+  // iterate over each component
+  for (auto const& c : sets) {
+    std::vector<cv::Point2i> points = c.second;
+    std::vector<double> depth_points;
+    // create vector of xyz points that are within the component
+    for (int i = 0; i < points.size(); i++) {
+      double dist = depth_image_->at<float>(points[i].x, points[i].y);
+      if (dist > 0.0) {
+        float rounded = roundf(dist * 100) / 100;
+        depth_points.push_back(rounded);
+      }
+    }
+    std::vector<int> counts;
+    for (int i = 0; i < depth_points.size(); i++) {
+      float val = depth_points[i];
+      float c = std::count(depth_points.begin(), depth_points.end(), val);
+      counts.push_back(c);
+    }
+    int index = std::distance(counts.begin(),
+                              std::max_element(counts.begin(), counts.end()));
+    // if the component has more than 3
+    if (depth_points.size() >= 1) {
+      float average =
+          std::accumulate(depth_points.begin(), depth_points.end(), 0.0) /
+          depth_points.size();
+      // for each pixel in the component find its intersection with the plane
+      for (int i = 0; i < points.size(); i++) {
+        completed.at<float>(points[i].x, points[i].y) = average;
+      }
+    }
+  }
+  cv::dilate(completed, completed, beam::GetEllipseKernel(11));
+  cv::morphologyEx(completed, completed, cv::MORPH_CLOSE,
+                   beam::GetFullKernel(15));
+  return completed;
+}
 /***********************Helper Functions**********************/
 
 bool DepthMap::CheckState() {

@@ -1,6 +1,7 @@
 // beam
 #include "beam_cv/Utils.h"
 #include "beam_utils/math.hpp"
+#include "beam_utils/uf.hpp"
 // std
 #include <algorithm>
 
@@ -43,6 +44,9 @@ Mat AdaptiveHistogram(const Mat& input) {
 Mat KMeans(const Mat& input, int K) {
   BEAM_INFO("Performing K Means Segmentation...");
   Mat image = input.clone();
+  cv::Size og(image.cols, image.rows);
+  cv::Size half(image.cols / 2, image.rows / 2);
+  cv::resize(image, image, half);
   Mat data;
   image.convertTo(data, CV_32F);
   data = data.reshape(1, data.total());
@@ -64,6 +68,8 @@ Mat KMeans(const Mat& input, int K) {
   image.convertTo(image, CV_8UC1);
   Mat grey;
   cvtColor(image, grey, CV_BGR2GRAY);
+  cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, beam::GetFullKernel(5));
+  cv::resize(grey, grey, og);
   BEAM_INFO("K Means Segmentation Complete");
   return grey;
 }
@@ -142,6 +148,66 @@ std::vector<Mat> SegmentComponents(const Mat& image) {
   }
   cracks.erase(cracks.begin());
   return cracks;
+}
+
+std::map<int, std::vector<cv::Point2i>>
+    ConnectedComponents(const cv::Mat& image) {
+  auto UnionCoords = [](cv::Mat image, int x, int y, int x2, int y2,
+                        beam::UF& uf) {
+    if (y2 < image.cols && x2 < image.rows &&
+        image.at<uchar>(x, y) == image.at<uchar>(x2, y2)) {
+      uf.UnionSets(x * image.cols + y, x2 * image.cols + y2);
+    }
+  };
+  beam::UF uf;
+  uf.Initialize(image.rows * image.cols);
+  for (int x = 0; x < image.rows; x++) {
+    for (int y = 0; y < image.cols; y++) {
+      UnionCoords(image, x, y, x + 1, y, uf);
+      UnionCoords(image, x, y, x, y + 1, uf);
+    }
+  }
+  std::map<int, std::vector<cv::Point2i>> sets;
+  for (int i = 0; i < image.rows * image.cols; i++) {
+    int seti = uf.FindSet(i);
+    if (sets.count(seti) != 0) {
+      cv::Point2i p(i / image.cols, i % image.cols);
+      sets[seti].push_back(p);
+    } else {
+      std::vector<cv::Point2i> points;
+      sets.insert({seti, points});
+    }
+  }
+  return sets;
+}
+
+std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
+  // copy coordinates to  matrix in Eigen format
+  size_t num_atoms = c.size();
+  Eigen::Matrix<beam::Vec3::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(
+      3, num_atoms);
+  for (size_t i = 0; i < num_atoms; ++i) coord.col(i) = c[i];
+  // calculate centroid
+  beam::Vec3 centroid(coord.row(0).mean(), coord.row(1).mean(),
+                      coord.row(2).mean());
+  // subtract centroid
+  coord.row(0).array() -= centroid(0);
+  coord.row(1).array() -= centroid(1);
+  coord.row(2).array() -= centroid(2);
+  // we only need the left-singular matrix here
+  //  http://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
+  auto svd = coord.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
+  beam::Vec3 plane_normal = svd.matrixU().rightCols<1>();
+  return std::make_pair(centroid, plane_normal);
+}
+
+beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
+                          beam::Vec3 plane_normal, beam::Vec3 plane_point) {
+  beam::Vec3 diff = ray_point - plane_point;
+  double prod1 = diff.dot(plane_normal);
+  double prod2 = ray_vector.dot(plane_normal);
+  double prod3 = prod1 / prod2;
+  return ray_point - ray_vector * prod3;
 }
 
 } // namespace beam_cv
