@@ -246,7 +246,7 @@ cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
   for (auto const& c : sets) {
     std::vector<cv::Point2i> points = c.second;
     std::vector<double> depth_points;
-    // create vector of xyz points that are within the component
+    // create vector of depth points that are within the component
     for (int i = 0; i < points.size(); i++) {
       double dist = depth_image_->at<float>(points[i].x, points[i].y);
       if (dist > 0.0) {
@@ -254,22 +254,32 @@ cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
         depth_points.push_back(rounded);
       }
     }
-    std::vector<int> counts;
-    for (int i = 0; i < depth_points.size(); i++) {
-      float val = depth_points[i];
-      float c = std::count(depth_points.begin(), depth_points.end(), val);
-      counts.push_back(c);
-    }
-    int index = std::distance(counts.begin(),
-                              std::max_element(counts.begin(), counts.end()));
-    // if the component has more than 3
     if (depth_points.size() >= 1) {
-      float average =
+      float mean =
           std::accumulate(depth_points.begin(), depth_points.end(), 0.0) /
           depth_points.size();
-      // for each pixel in the component find its intersection with the plane
+      float var = 0;
+      for (int n = 0; n < depth_points.size(); n++) {
+        var = var + ((depth_points[n] - mean) * (depth_points[n] - mean));
+      }
+      var /= depth_points.size();
+      float sd = sqrt(var);
       for (int i = 0; i < points.size(); i++) {
-        completed.at<float>(points[i].x, points[i].y) = average;
+        float di_depth = depth_image_->at<double>(points[i].x, points[i].y);
+        if (di_depth > mean + sd || di_depth < mean - sd) {
+          depth_image_->at<double>(points[i].x, points[i].y) = 0.0;
+        }
+      }
+      for (int i = 0; i < depth_points.size; i++) {
+        if (depth_points[i] > mean + sd || depth_points[i] < mean - sd) {
+          depth_points.erase(depth_points.begin() + i);
+        }
+      }
+      mean = std::accumulate(depth_points.begin(), depth_points.end(), 0.0) /
+             depth_points.size();
+      // for each 0.0 pixel in the CC, find the closest up,down,left,right
+      for (int i = 0; i < points.size(); i++) {
+        completed.at<float>(points[i].x, points[i].y) = mean;
       }
     }
   }
