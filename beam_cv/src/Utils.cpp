@@ -42,7 +42,6 @@ Mat AdaptiveHistogram(const Mat& input) {
 }
 
 Mat KMeans(const Mat& input, int K) {
-  BEAM_INFO("Performing K Means Segmentation...");
   Mat image = input.clone();
   cv::Size og(image.cols, image.rows);
   cv::Size half(image.cols / 2, image.rows / 2);
@@ -70,7 +69,6 @@ Mat KMeans(const Mat& input, int K) {
   cvtColor(image, grey, CV_BGR2GRAY);
   cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, beam::GetFullKernel(5));
   cv::resize(grey, grey, og);
-  BEAM_INFO("K Means Segmentation Complete");
   return grey;
 }
 
@@ -208,6 +206,12 @@ beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
   double prod2 = ray_vector.dot(plane_normal);
   double prod3 = prod1 / prod2;
   return ray_point - ray_vector * prod3;
+}
+
+double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
+  double distance =
+      sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+  return distance;
 }
 
 } // namespace beam_cv

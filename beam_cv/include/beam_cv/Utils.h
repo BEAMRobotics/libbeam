@@ -76,4 +76,10 @@ std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
  */
 beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
                           beam::Vec3 plane_normal, beam::Vec3 plane_point);
+
+/**
+ * @brief Computes distance between two pixels
+ * @return double
+ */
+double PixelDistance(cv::Point2i p1, cv::Point2i p2);
 } // namespace beam_cv

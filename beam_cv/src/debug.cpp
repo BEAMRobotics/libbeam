@@ -42,31 +42,25 @@ void TestDepthMap() {
   beam_cv::DepthMap dm(F1, cloud);
   cv::Mat di_viz;
   dm.ExtractDepthMap(0.001, 3);
-  // dm.DepthInterpolation(70, 5, 0.1, 2);
-  // dm.DepthMeshing();
+
   std::shared_ptr<cv::Mat> depth_image = dm.GetDepthImage();
   di_viz = beam_cv::VisualizeDepthImage(*depth_image);
-  cv::imwrite("/home/jake/mesh.png", di_viz);
+  cv::imwrite("/home/jake/depth.png", di_viz);
 
   cv::Mat completed = cv::Mat::zeros(F1->GetHeight(), F1->GetWidth(), CV_32FC1);
   // load color image
   std::string image_location = "/home/jake/original.jpg";
   cv::Mat img = cv::imread(image_location, IMREAD_COLOR);
-  cv::Mat comp1 = dm.KMeansCompletion(11, img);
-  cv::Mat comp2 = dm.KMeansCompletion(7, img);
-  cv::Mat comp3 = dm.KMeansCompletion(5, img);
+  cv::Mat comp1 = dm.KMeansCompletion(17, img);
 
-  comp1.forEach<float>([&](float& distance, const int* position) -> void {
-    float comp2_dist = comp2.at<float>(position[0], position[1]);
-    float comp3_dist = comp3.at<float>(position[0], position[1]);
-    if (distance == 0.0 && comp2_dist != 0.0) {
-      distance = comp2_dist;
-    } else if (distance == 0.0 && comp3_dist != 0.0) {
-      distance = comp3_dist;
-    }
-  });
-  di_viz = beam_cv::VisualizeDepthImage(comp1);
-  cv::imwrite("/home/jake/comp1.png", di_viz);
+  dm.SetDepthImage(comp1);
+  dm.ExtractPointCloud();
+  // set comp1 as depth image then extract point cloud here
+  cv::Mat dst = comp1.clone();
+  // bilateral filter preserves structure
+  cv::GaussianBlur(comp1, dst, cv::Size(7, 7), 9);
+  di_viz = beam_cv::VisualizeDepthImage(dst);
+  cv::imwrite("/home/jake/comp.png", di_viz);
 
   BEAM_INFO("Program finished.");
 }

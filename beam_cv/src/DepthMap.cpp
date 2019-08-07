@@ -174,6 +174,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
       }
     }
   }
+  dense_cloud->width = 1;
+  dense_cloud->height = dense_cloud->points.size();
+  pcl::io::savePCDFileBinary("/home/jake/test_pcd.pcd", *dense_cloud);
   return dense_cloud;
 }
 
@@ -236,6 +239,8 @@ void DepthMap::DepthMeshing() {
 }
 
 cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
+  BEAM_INFO("K means completion...");
+  cv::Mat di_copy = depth_image_->clone();
   cv::Mat completed = cv::Mat::zeros(img.rows, img.cols, CV_32FC1);
   img = beam_cv::AdaptiveHistogram(img);
   img = beam_cv::KMeans(img, K);
@@ -245,47 +250,68 @@ cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
   // iterate over each component
   for (auto const& c : sets) {
     std::vector<cv::Point2i> points = c.second;
-    std::vector<double> depth_points;
+    std::vector<std::pair<double, cv::Point2i>> depth_points;
     // create vector of depth points that are within the component
-    for (int i = 0; i < points.size(); i++) {
-      double dist = depth_image_->at<float>(points[i].x, points[i].y);
-      if (dist > 0.0) {
-        float rounded = roundf(dist * 100) / 100;
-        depth_points.push_back(rounded);
-      }
+    for (cv::Point2i p : points) {
+      double dist = di_copy.at<float>(p.x, p.y);
+      if (dist > 0.0) { depth_points.push_back(std::make_pair(dist, p)); }
     }
     if (depth_points.size() >= 1) {
-      float mean =
-          std::accumulate(depth_points.begin(), depth_points.end(), 0.0) /
-          depth_points.size();
+      // calculate mean of depth points
+      float sum = 0;
+      for (int n = 0; n < depth_points.size(); n++) {
+        sum += depth_points[n].first;
+      }
+      float mean = sum / depth_points.size();
+      // calculate standard deviation of depth_points
       float var = 0;
       for (int n = 0; n < depth_points.size(); n++) {
-        var = var + ((depth_points[n] - mean) * (depth_points[n] - mean));
+        var = var +
+              ((depth_points[n].first - mean) * (depth_points[n].first - mean));
       }
       var /= depth_points.size();
       float sd = sqrt(var);
-      for (int i = 0; i < points.size(); i++) {
-        float di_depth = depth_image_->at<double>(points[i].x, points[i].y);
-        if (di_depth > mean + sd || di_depth < mean - sd) {
-          depth_image_->at<double>(points[i].x, points[i].y) = 0.0;
+      // remove outliers
+      for (int n = 0; n < depth_points.size(); n++) {
+        float d = depth_points[n].first;
+        cv::Point2i p = depth_points[n].second;
+        if (d > 0.0 && (d > mean + 1.5 * (sd) || d < mean - 1.5 * (sd))) {
+          depth_points.erase(depth_points.begin() + n);
+          di_copy.at<double>(p.x, p.y) = 0.0;
+          n--;
         }
       }
-      for (int i = 0; i < depth_points.size; i++) {
-        if (depth_points[i] > mean + sd || depth_points[i] < mean - sd) {
-          depth_points.erase(depth_points.begin() + i);
-        }
+      // recalculate mean without outliers
+      sum = 0;
+      for (int n = 0; n < depth_points.size(); n++) {
+        sum += depth_points[n].first;
       }
-      mean = std::accumulate(depth_points.begin(), depth_points.end(), 0.0) /
-             depth_points.size();
-      // for each 0.0 pixel in the CC, find the closest up,down,left,right
+      mean = sum / depth_points.size();
+
       for (int i = 0; i < points.size(); i++) {
-        completed.at<float>(points[i].x, points[i].y) = mean;
+        std::vector<std::pair<double, double>> closest_depths;
+        for (auto const& d : depth_points) {
+          double distance = beam_cv::PixelDistance(points[i], d.second);
+          double depth = d.first;
+          closest_depths.push_back(std::make_pair(distance, depth));
+        }
+        if (closest_depths.size() >= 3) {
+          std::sort(closest_depths.begin(), closest_depths.end());
+          closest_depths.resize(3);
+          float sum = 0;
+          for (auto const& cd : closest_depths) { sum += cd.second; }
+          float avg_depth = sum / 3;
+          completed.at<float>(points[i].x, points[i].y) = avg_depth;
+        } else {
+          completed.at<float>(points[i].x, points[i].y) = mean;
+        }
       }
     }
   }
   cv::dilate(completed, completed, beam::GetEllipseKernel(11));
   cv::morphologyEx(completed, completed, cv::MORPH_CLOSE,
                    beam::GetFullKernel(15));
+  BEAM_INFO("Done.");
   return completed;
 }
 /***********************Helper Functions**********************/
