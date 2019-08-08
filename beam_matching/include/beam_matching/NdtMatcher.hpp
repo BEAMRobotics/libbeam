@@ -16,70 +16,76 @@
  * negative), use this resolution
  */
 
-#ifndef BEAM_MATCHING_NDT_HPP
-#define BEAM_MATCHING_NDT_HPP
+#ifndef BEAM_MATCHING_NDT_MATCHER_HPP
+#define BEAM_MATCHING_NDT_MATCHER_HPP
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/registration/ndt.h>
 
-#include "beam_matching/matcher.hpp"
+#include "beam_matching/Matcher.hpp"
 #include "beam_matching/pcl_common.hpp"
 
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-struct NDTMatcherParams {
-    NDTMatcherParams(){};
-    NDTMatcherParams(const std::string &config_path);
+struct NdtMatcherParams {
+  NdtMatcherParams(const std::string &config_path);
+  NdtMatcherParams() {}
 
-    int step_size = 3;
-    int max_iter = 100;
-    double t_eps = 1e-8;
-    float res = 5;
-    const float min_res = 0.05f;
+  int step_size = 3;
+  int max_iter = 100;
+  double t_eps = 1e-8;
+  float res = 5;
+  float min_res = 0.05f;
 };
 
-class NDTMatcher : public Matcher<PCLPointCloudPtr> {
- public:
-    /** This constructor takes an argument in order to specify resolution. The
-     * resolution given takes precedence over the one in the config file. If
-     * both resolutions are finer than the `min_res` class member, the
-     * resolution is set to `min_res.`
-     */
-    explicit NDTMatcher(NDTMatcherParams params1);
-    ~NDTMatcher();
+class NdtMatcher : public Matcher<PCLPointCloudPtr> {
+public:
+  NdtMatcher() = default;
+  /** This constructor takes an argument in order to specify resolution. The
+   * resolution given takes precedence over the one in the config file. If
+   * both resolutions are finer than the `min_res` class member, the
+   * resolution is set to `min_res.`
+   */
+  explicit NdtMatcher(NdtMatcherParams params);
+  ~NdtMatcher();
 
-    /** sets the reference pointcloud for the matcher
-     * @param ref - Pointcloud
-     */
-    void setRef(const PCLPointCloudPtr &ref);
+  void SetParams(NdtMatcherParams params);
 
-    /** sets the target (or scene) pointcloud for the matcher
-     * @param targer - Pointcloud
-     */
-    void setTarget(const PCLPointCloudPtr &target);
+  NdtMatcherParams GetParams() { return params_; }
 
-    /** runs the matcher, blocks until finished.
-     * Note that this version of ndt is SLOW
-     * Returns true if successful
-     */
-    bool match();
+  /** sets the reference pointcloud for the matcher
+   * @param ref - Pointcloud
+   */
+  void SetRef(const PCLPointCloudPtr &ref);
 
- private:
-    /** An instance of the NDT class from PCL */
-    pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
+  /** sets the target (or scene) pointcloud for the matcher
+   * @param targer - Pointcloud
+   */
+  void SetTarget(const PCLPointCloudPtr &target);
 
-    /** Pointers to the reference and target pointclouds. The "final" pointcloud
-     * is not exposed. PCL's NDT class creates an aligned verison of the target
-     * pointcloud after matching, so the "final" member is used as a sink for
-     * it. */
-    PCLPointCloudPtr ref, target, final;
-    NDTMatcherParams params;
+  /** runs the matcher, blocks until finished.
+   * Note that this version of ndt is SLOW
+   * Returns true if successful
+   */
+  bool Match();
+
+private:
+  void SetNdtParams();
+  /** An instance of the NDT class from PCL */
+  pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt_;
+
+  /** Pointers to the reference and target pointclouds. The "final" pointcloud
+    * is not exposed. PCL's NDT class creates an aligned verison of the target
+    * pointcloud after matching, so the "final" member is used as a sink for
+    * it. */
+  PCLPointCloudPtr ref_, target_, final_;
+  NdtMatcherParams params_;
 };
 
 /** @} group matching */
 }  // namespace beam_matching
 
-#endif  // BEAM_MATCHING_ICP_HPP
+#endif  // BEAM_MATCHING_NDT_MATCHER_HPP

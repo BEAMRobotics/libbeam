@@ -15,8 +15,8 @@
  * by more than this quantity, stop.
  */
 
-#ifndef BEAM_MATCHING_ICP_HPP
-#define BEAM_MATCHING_ICP_HPP
+#ifndef BEAM_MATCHING_ICP_MATCHER_HPP
+#define BEAM_MATCHING_ICP_MATCHER_HPP
 
 #include <pcl/registration/icp.h>
 
@@ -129,4 +129,4 @@ private:
 /** @} group matching */
 } // namespace beam_matching
 
-#endif // BEAM_MATCHING_ICP_HPP
+#endif // BEAM_MATCHING_ICP_MATCHER_HPP

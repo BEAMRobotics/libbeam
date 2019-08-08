@@ -96,7 +96,7 @@ IcpMatcher::~IcpMatcher() {
 }
 
 void IcpMatcher::SetParams(IcpMatcherParams params) {
-  params_ = params;
+  this->params_ = params;
   SetIcpParams();
 }
 

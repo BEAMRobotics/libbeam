@@ -1,64 +1,82 @@
-#include "beam_utils/utils.hpp"
-#include "beam_matching/ndt.hpp"
+#include "beam_matching/NdtMatcher.hpp"
+
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
+
+#include <beam_utils/utils.hpp>
+#include <beam_utils/log.hpp>
+
+using json = nlohmann::json;
 
 namespace beam_matching {
 
-NDTMatcherParams::NDTMatcherParams(const std::string &config_path) {
-    ConfigParser parser;
-    parser.addParam("step_size", &this->step_size);
-    parser.addParam("max_iter", &this->max_iter);
-    parser.addParam("t_eps", &this->t_eps);
-    parser.addParam("res", &this->res);
+NdtMatcherParams::NdtMatcherParams(const std::string &config_path) {
+  BEAM_INFO("Loading file: {}", config_path.c_str());
 
-    if (parser.load(config_path) != ConfigStatus::OK) {
-        throw std::runtime_error{"Failed to Load Matcher Config"};
+  json J;
+  std::ifstream file(config_path);
+  file >> J;
+
+  this->step_size = J["step_size"];
+  this->max_iter = J["max_iter"];
+  this->t_eps = J["t_eps"];
+  this->res = J["res"];
+}
+
+NdtMatcher::NdtMatcher(NdtMatcherParams params) : params_(params) {
+  SetNdtParams();
+}
+
+NdtMatcher::~NdtMatcher() {
+    if (this->ref_) {
+        this->ref_.reset();
+    }
+    if (this->target_) {
+        this->target_.reset();
+    }
+    if (this->final_) {
+        this->final_.reset();
     }
 }
 
-NDTMatcher::NDTMatcher(NDTMatcherParams params1) : params(params1) {
-    this->ref = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    this->target = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    this->final = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
-    if (this->params.res < this->params.min_res) {
-        LOG_ERROR("Invalid resolution given, using minimum");
-        this->params.res = this->params.min_res;
-    }
-
-    this->resolution = this->params.res;
-
-    this->ndt.setTransformationEpsilon(this->params.t_eps);
-    this->ndt.setStepSize(this->params.step_size);
-    this->ndt.setResolution(this->params.res);
-    this->ndt.setMaximumIterations(this->params.max_iter);
+void NdtMatcher::SetParams(NdtMatcherParams params) {
+  this->params_ = params;
+  SetNdtParams();
 }
 
-NDTMatcher::~NDTMatcher() {
-    if (this->ref) {
-        this->ref.reset();
-    }
-    if (this->target) {
-        this->target.reset();
-    }
-    if (this->final) {
-        this->final.reset();
-    }
+void NdtMatcher::SetNdtParams() {
+  this->ref_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->target_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->final_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+
+  if (this->params_.res < this->params_.min_res) {
+      LOG_ERROR("Invalid resolution given, using minimum");
+      this->params_.res = this->params_.min_res;
+  }
+
+  this->resolution_ = this->params_.res;
+
+  this->ndt_.setTransformationEpsilon(this->params_.t_eps);
+  this->ndt_.setStepSize(this->params_.step_size);
+  this->ndt_.setResolution(this->params_.res);
+  this->ndt_.setMaximumIterations(this->params_.max_iter);
 }
 
-void NDTMatcher::setRef(const PCLPointCloudPtr &ref) {
-    this->ref = ref;
-    this->ndt.setInputSource(this->ref);
+void NdtMatcher::SetRef(const PCLPointCloudPtr &ref) {
+    this->ref_ = ref;
+    this->ndt_.setInputSource(this->ref_);
 }
 
-void NDTMatcher::setTarget(const PCLPointCloudPtr &target) {
-    this->target = target;
-    this->ndt.setInputTarget(this->target);
+void NdtMatcher::SetTarget(const PCLPointCloudPtr &target) {
+    this->target_ = target;
+    this->ndt_.setInputTarget(this->target_);
 }
 
-bool NDTMatcher::match() {
-    this->ndt.align(*(this->final));
-    if (this->ndt.hasConverged()) {
-        this->result.matrix() = ndt.getFinalTransformation().cast<double>();
+bool NdtMatcher::Match() {
+    this->ndt_.align(*(this->final_));
+    if (this->ndt_.hasConverged()) {
+        this->result_.matrix() = ndt_.getFinalTransformation().cast<double>();
         return true;
     }
     return false;

@@ -1,104 +1,108 @@
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+
 #include <pcl/io/pcd_io.h>
 
-#include "wave/wave_test.hpp"
-#include "beam_matching/ndt.hpp"
+#include "beam_matching/NdtMatcher.hpp"
 
-namespace wave {
+namespace beam_matching {
 
-const auto TEST_SCAN = "tests/data/testscan.pcd";
-const auto TEST_CONFIG = "tests/config/ndt.yaml";
+std::string scan_path;
+std::string config_path;
+std::string test_path = __FILE__;
+std::string current_file = "ndt_tests.cpp";
+const float threshold = 0.12;
 
-// Fixture to load same pointcloud all the time
-class NDTTest : public testing::Test {
- protected:
-    NDTTest() {}
+NdtMatcher matcher;
 
-    virtual ~NDTTest() {
-        if (this->matcher) {
-            delete this->matcher;
-        }
-    }
+void FileSetUp() {
+  test_path.erase(test_path.end() - current_file.size(), test_path.end());
+  scan_path = test_path + "data/testscan.pcd";
+  config_path = test_path + "config/ndt_config.json";
+}
 
-    virtual void SetUp() {
-        this->ref = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-        this->target = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-        pcl::io::loadPCDFile(TEST_SCAN, *(this->ref));
-    }
+void SetUp(const NdtMatcherParams params, const Eigen::Affine3d perturb) {
+  matcher.SetParams(params);
 
-    void initMatcher(const NDTMatcherParams params,
-                     const Eigen::Affine3d perturb) {
-        this->matcher = new NDTMatcher(params);
-        pcl::transformPointCloud(*(this->ref), *(this->target), perturb);
-        this->matcher->setup(this->ref, this->target);
-    }
+  pcl::PointCloud<pcl::PointXYZ>::Ptr test_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile(scan_path, *test_cloud);
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr ref, target;
-    NDTMatcher *matcher;
-    const float threshold = 0.12;
-};
+  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_test_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::transformPointCloud(*test_cloud, *transformed_test_cloud, perturb);
 
-TEST(NDTTests, initialization) {
-    NDTMatcher matcher(NDTMatcherParams());
+  matcher.Setup(test_cloud, transformed_test_cloud);
+}
+
+TEST_CASE("Test initialization") {
+  auto params = matcher.GetParams();
+  REQUIRE(params.step_size == 3);
+  REQUIRE(params.max_iter == 100);
+  REQUIRE(params.t_eps == 1e-8);
+  REQUIRE(params.res == 5);
 }
 
 // Zero displacement using resolution from config
-TEST_F(NDTTest, fullResNullMatch) {
-    Affine3 perturb;
-    Affine3 result;
-    bool match_success = false;
+TEST_CASE("Zero displacement using resolution from config") {
+  FileSetUp();
 
-    // setup
-    perturb = Affine3::Identity();
-    perturb.translation() << 0, 0, 0;
-    NDTMatcherParams params(TEST_CONFIG);
-    this->initMatcher(params, perturb);
+  Eigen::Affine3d perturb;
+  Eigen::Affine3d result;
+  bool match_success = false;
 
-    // test and assert
-    match_success = matcher->match();
-    double diff = (matcher->getResult().matrix() - perturb.matrix()).norm();
-    EXPECT_TRUE(match_success);
-    EXPECT_LT(diff, this->threshold);
+  // setup
+  perturb = Eigen::Affine3d::Identity();
+  perturb.translation() << 0, 0, 0;
+  NdtMatcherParams params(config_path);
+  SetUp(params, perturb);
+
+  // test and assert
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
+  REQUIRE(match_success == true);
+  REQUIRE(diff < threshold);
 }
 
 // Zero displacement using resolution set by constructor
-TEST_F(NDTTest, nullDisplacement) {
-    Affine3 perturb;
-    Affine3 result;
-    bool match_success = false;
+TEST_CASE("Zero displacement using resolution set by constructor") {
+  Eigen::Affine3d perturb;
+  Eigen::Affine3d result;
+  bool match_success = false;
 
-    // setup
-    perturb = Affine3::Identity();
-    perturb.translation() << 0, 0, 0;
+  // setup
+  perturb = Eigen::Affine3d::Identity();
+  perturb.translation() << 0, 0, 0;
 
-    NDTMatcherParams params(TEST_CONFIG);
-    params.res = 0.1f;
-    this->initMatcher(params, perturb);
+  NdtMatcherParams params(config_path);
+  params.res = 0.1f;
+  SetUp(params, perturb);
 
-    // test and assert
-    match_success = matcher->match();
-    double diff = (matcher->getResult().matrix() - perturb.matrix()).norm();
-    EXPECT_TRUE(match_success);
-    EXPECT_LT(diff, this->threshold);
+  // test and assert
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
+  REQUIRE(match_success == true);
+  REQUIRE(diff < threshold);
 }
 
 // Small displacement using resolution set by constructor
-TEST_F(NDTTest, smallDisplacement) {
-    Affine3 perturb;
-    Affine3 result;
-    bool match_success = false;
+TEST_CASE("Small displacement using resolution set by constructor") {
+  Eigen::Affine3d perturb;
+  Eigen::Affine3d result;
+  bool match_success = false;
 
-    // setup
-    perturb = Affine3::Identity();
-    perturb.translation() << 0.2, 0, 0;
-    NDTMatcherParams params(TEST_CONFIG);
-    params.res = 0.3f;
-    this->initMatcher(params, perturb);
+  // setup
+  perturb = Eigen::Affine3d::Identity();
+  perturb.translation() << 0.2, 0, 0;
+  NdtMatcherParams params(config_path);
+  params.res = 0.3f;
+  SetUp(params, perturb);
 
-    // test and assert
-    match_success = matcher->match();
-    double diff = (matcher->getResult().matrix() - perturb.matrix()).norm();
-    EXPECT_TRUE(match_success);
-    EXPECT_LT(diff, this->threshold);
+  // test and assert
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
+  REQUIRE(match_success == true);
+  REQUIRE(diff < threshold);
 }
 
-}  // namespace wave
+} // namespace beam_matching
