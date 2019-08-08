@@ -29,25 +29,25 @@ class Matcher {
      * downsampled using a voxel filter.
      * @param res the edge length of each voxel.
      */
-    Matcher(float res) : resolution(res) {}
+    Matcher(float res) : resolution_(res) {}
 
     /** Default constructor. Sets up the instance of the matcher to attempt to
      * match using the full resolution of each point cloud (if possible).
      */
     Matcher() {
-        resolution = -1;
+        resolution_ = -1;
     }
 
     virtual ~Matcher() {}
 
-    const Eigen::Affine3d getResult() {
-        return this->result;
+    const Eigen::Affine3d GetResult() {
+        return this->result_;
     };
-    const Eigen::Matrix<double, 6, 6> &getInfo() {
-        return this->information;
+    const Eigen::Matrix<double, 6, 6> &GetInfo() {
+        return this->information_;
     };
-    float getRes() {
-        return this->resolution;
+    float GetRes() {
+        return this->resolution_;
     };
 
     /**
@@ -59,46 +59,43 @@ class Matcher {
      * be transformed by it before being passed to the class as some algorithms
      * require a good initial estimate to perform well.
      */
-    virtual void setRef(const T &ref) = 0;
-    virtual void setTarget(const T &target) = 0;
-    void setup(const T &ref, const T &target) {
-        this->setRef(ref);
-        this->setTarget(target);
+    virtual void SetRef(const T &ref) = 0;
+    virtual void SetTarget(const T &target) = 0;
+    void Setup(const T &ref, const T &target) {
+        this->SetRef(ref);
+        this->SetTarget(target);
     };
 
     /** Actually performs the match. Any heavy processing is done here.
      * @returns true if match was successful, false if match was not successful
      */
-    virtual bool match() {
+    virtual bool Match() {
         return 0;
     }
 
-    virtual void estimateInfo() {
-        this->information = Eigen::Matrix<double, 6, 6>::Identity(6, 6);
+    virtual void EstimateInfo() {
+        this->information_ = Eigen::Matrix<double, 6, 6>::Identity(6, 6);
     }
 
  protected:
-    void estimateLUMold();
-
-    void estimateLUM();
     /** The edge length (in the same distance-units as those used in the
      * pointcloud) of a downsampling voxel filter. If no downsampling is
      * happening, this will be -1
      */
-    float resolution;
+    float resolution_;
 
     /** The transformation calculated by the scan registration algorithm. It is
      * the transformation needed to transform the target pointcloud to the
      * reference pointcloud in the reference frame of the reference pointcloud.
      */
-    Eigen::Affine3d result;
+    Eigen::Affine3d result_;
     /** The information matrix calculated by the scan-matching algorithm. The
      * diagonal elements correpond to translational perturbations in the x, y,
      * and z directions and angular perturbations on the 3-2-1 euler angles, in
      * that order and in the frame of the reference pointcloud. This may change
      * as the kinematics module of libbeam progresses.
      */
-    Eigen::Matrix<double, 6, 6> information;
+    Eigen::Matrix<double, 6, 6> information_;
 };
 
 /** @} group matching */

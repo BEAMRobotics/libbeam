@@ -33,7 +33,7 @@ void SetUp(const IcpMatcherParams params, const Eigen::Affine3d perturb) {
       new pcl::PointCloud<pcl::PointXYZ>);
   pcl::transformPointCloud(*test_cloud, *transformed_test_cloud, perturb);
 
-  matcher.setup(test_cloud, transformed_test_cloud);
+  matcher.Setup(test_cloud, transformed_test_cloud);
 }
 
 TEST_CASE("Test initialization") {
@@ -63,8 +63,8 @@ TEST_CASE("Test zero displacement case without downsampling") {
   SetUp(params, perturb);
 
   // test and assert
-  match_success = matcher.match();
-  double diff = (matcher.getResult().matrix() - perturb.matrix()).norm();
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
   REQUIRE(match_success == true);
   REQUIRE(diff < threshold);
 }
@@ -83,8 +83,8 @@ TEST_CASE("Test zero displacement case using voxel downsampling") {
   SetUp(params, perturb);
 
   // test and assert
-  match_success = matcher.match();
-  double diff = (matcher.getResult().matrix() - perturb.matrix()).norm();
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
   REQUIRE(match_success == true);
   REQUIRE(diff < threshold);
 }
@@ -103,8 +103,8 @@ TEST_CASE("Test mall displacement case using voxel downsampling") {
   SetUp(params, perturb);
 
   // test and assert
-  match_success = matcher.match();
-  double diff = (matcher.getResult().matrix() - perturb.matrix()).norm();
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
   REQUIRE(match_success == true);
   REQUIRE(diff < threshold);
 }
@@ -123,10 +123,10 @@ TEST_CASE("Test small information case using voxel downsampling") {
   SetUp(params, perturb);
 
   // test and assert
-  match_success = matcher.match();
-  matcher.estimateInfo();
-  auto info = matcher.getInfo();
-  double diff = (matcher.getResult().matrix() - perturb.matrix()).norm();
+  match_success = matcher.Match();
+  matcher.EstimateInfo();
+  auto info = matcher.GetInfo();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
   REQUIRE(match_success == true);
   REQUIRE(info(0, 0) > 0);
   REQUIRE(diff < threshold);
@@ -148,9 +148,9 @@ TEST_CASE("Test small displacement case using voxel downsampling and "
   SetUp(params, perturb);
 
   // test and assert
-  match_success = matcher.match();
-  matcher.estimateInfo();
-  double diff = (matcher.getResult().matrix() - perturb.matrix()).norm();
+  match_success = matcher.Match();
+  matcher.EstimateInfo();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
   REQUIRE(match_success == true);
   REQUIRE(diff < threshold);
 }
@@ -185,17 +185,17 @@ TEST_CASE("Test small information case using voxel downsampling and different "
   params.covar_estimator = IcpMatcherParams::covar_method::LUMold;
   IcpMatcher matcher1(params);
 
-  matcher1.setup(ref, target);
-  matcher1.match();
-  matcher1.estimateInfo();
-  auto info1 = matcher1.getInfo();
+  matcher1.Setup(ref, target);
+  matcher1.Match();
+  matcher1.EstimateInfo();
+  auto info1 = matcher1.GetInfo();
 
   params.covar_estimator = IcpMatcherParams::covar_method::LUM;
   IcpMatcher matcher2(params);
-  matcher2.setup(ref, target);
-  matcher2.match();
-  matcher2.estimateInfo();
-  auto info2 = matcher2.getInfo();
+  matcher2.Setup(ref, target);
+  matcher2.Match();
+  matcher2.EstimateInfo();
+  auto info2 = matcher2.GetInfo();
 
   double diff = (info1 - info2).norm();
   REQUIRE(info1(0, 0) > 0);
