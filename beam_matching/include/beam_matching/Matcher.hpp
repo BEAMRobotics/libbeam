@@ -43,7 +43,7 @@ class Matcher {
     const Eigen::Affine3d getResult() {
         return this->result;
     };
-    const Mat6 &getInfo() {
+    const Eigen::Matrix<double, 6, 6> &getInfo() {
         return this->information;
     };
     float getRes() {
@@ -74,10 +74,13 @@ class Matcher {
     }
 
     virtual void estimateInfo() {
-        this->information = Mat6::Identity(6, 6);
+        this->information = Eigen::Matrix<double, 6, 6>::Identity(6, 6);
     }
 
  protected:
+    void estimateLUMold();
+
+    void estimateLUM();
     /** The edge length (in the same distance-units as those used in the
      * pointcloud) of a downsampling voxel filter. If no downsampling is
      * happening, this will be -1
@@ -88,14 +91,14 @@ class Matcher {
      * the transformation needed to transform the target pointcloud to the
      * reference pointcloud in the reference frame of the reference pointcloud.
      */
-    Affine3 result;
+    Eigen::Affine3d result;
     /** The information matrix calculated by the scan-matching algorithm. The
      * diagonal elements correpond to translational perturbations in the x, y,
      * and z directions and angular perturbations on the 3-2-1 euler angles, in
      * that order and in the frame of the reference pointcloud. This may change
      * as the kinematics module of libbeam progresses.
      */
-    Mat6 information;
+    Eigen::Matrix<double, 6, 6> information;
 };
 
 /** @} group matching */

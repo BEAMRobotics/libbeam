@@ -1,17 +1,18 @@
 PROJECT(beam_matching)
 
+SET(CMAKE_CXX_STANDARD 17)
+
 BEAM_ADD_MODULE(${PROJECT_NAME}
-    DEPENDS
+  DEPENDS
+    beam::utils
     Eigen3::Eigen
+    Catch2::Catch2
     Boost::boost
     PCL::PCL
-    SOURCES
-    src/gicp.cpp
-    src/icp.cpp
-    src/icp_pcl_functions.cpp
-    src/ndt.cpp
-    src/ground_segmentation.cpp
-    src/pointcloud_display.cpp)
+    nlohmann_json::nlohmann_json
+  SOURCES
+    src/IcpMatcher.cpp
+)
 
 # Unit tests
 #IF(BUILD_TESTING)
@@ -32,15 +33,20 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 #    DISABLED  # Uses viewer to check results
 #)
 
-target_include_directories(${PROJECT_NAME}_main
+add_executable(${PROJECT_NAME}_icp_tests
+  tests/icp_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_icp_tests
   PUBLIC
     include
 )
 
-TARGET_LINK_LIBRARIES(
-    ${PROJECT_NAME}_main
+target_link_libraries(${PROJECT_NAME}_icp_tests
     ${PROJECT_NAME}
-    beam_utils
+    beam::utils
+    Eigen3::Eigen
+    Catch2::Catch2
 )
 
 #TARGET_LINK_LIBRARIES(
@@ -62,5 +68,5 @@ TARGET_LINK_LIBRARIES(
 #)
 
 # Copy the test data
-#file(COPY tests/data tests/config DESTINATION ${PROJECT_BINARY_DIR}/tests)
+file(COPY tests/data tests/config DESTINATION ${PROJECT_BINARY_DIR}/tests)
 #ENDIF(BUILD_TESTING)

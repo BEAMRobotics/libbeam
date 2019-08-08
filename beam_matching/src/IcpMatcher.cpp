@@ -1,53 +1,86 @@
-#include "wave/matching/IcpMatcher.hpp"
-#include "wave/utils/config.hpp"
+// Software License Agreement (BSD License)
+//
+// Point Cloud Library (PCL) - www.pointclouds.org
+// Copyright (c) 2009-2012, Willow Garage, Inc.
+// Copyright (c) 2012-, Open Perception, Inc.
+// Copyright (c) XXX, respective authors.
+//
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+//        modification, are permitted provided that the following conditions
+// are met:
+//
+//* Redistributions of source code must retain the above copyright
+//        notice, this list of conditions and the following disclaimer.
+//* Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following
+//        disclaimer in the documentation and/or other materials provided
+//        with the distribution.
+//* Neither the name of the copyright holder(s) nor the names of its
+//        contributors may be used to endorse or promote products derived
+//        from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+//"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+//        LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+//        FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+//        COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+//        INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+//                                                                  BUT NOT
+//                                                                  LIMITED TO,
+//                                                                  PROCUREMENT
+//                                                                  OF
+//                                                                  SUBSTITUTE
+//                                                                  GOODS OR
+//                                                                  SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+//        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+//        POSSIBILITY OF SUCH DAMAGE.
 
-namespace wave {
+#include "beam_matching/IcpMatcher.hpp"
 
-IcpMatcherParams::IcpMatcherParams(const std::string &config_path) {
-    ConfigParser parser;
-    int covar_est_temp;
-    parser.addParam("max_corr", &(this->max_corr));
-    parser.addParam("max_iter", &(this->max_iter));
-    parser.addParam("t_eps", &(this->t_eps));
-    parser.addParam("lidar_ang_covar", &(this->lidar_ang_covar));
-    parser.addParam("lidar_lin_covar", &(this->lidar_lin_covar));
-    parser.addParam("covar_estimator", &covar_est_temp);
-    parser.addParam("res", &(this->res));
-    parser.addParam("multiscale_steps", &(this->multiscale_steps));
+#include <beam_utils/log.hpp>
+#include <nlohmann/json.hpp>
+#include <Eigen/Geometry>
+#include <fstream>
+#include <iostream>
 
-    if (parser.load(config_path) != ConfigStatus::OK) {
-        throw std::runtime_error{"Failed to Load Matcher Config"};
-    }
+using json = nlohmann::json;
 
-    if ((covar_est_temp >= IcpMatcherParams::covar_method::LUM) &&
-        (covar_est_temp <= IcpMatcherParams::covar_method::LUMold)) {
-        this->covar_estimator =
-          static_cast<IcpMatcherParams::covar_method>(covar_est_temp);
-    } else {
-        LOG_ERROR("Invalid covariance estimate method, using LUM");
-        this->covar_estimator = IcpMatcherParams::covar_method::LUM;
-    }
+namespace beam_matching {
+
+IcpMatcherParams::IcpMatcherParams(std::string &param_config) {
+  BEAM_INFO("Loading file: {}", param_config.c_str());
+
+  json J;
+  std::ifstream file(param_config);
+  file >> J;
+
+  int covar_est_temp;
+  this->max_corr = J["max_corr"];
+  this->max_iter = J["max_iter"];
+  this->t_eps = J["t_eps"];
+  this->lidar_ang_covar = J["lidar_ang_covar"];
+  this->lidar_lin_covar = J["lidar_lin_covar"];
+  covar_est_temp = J["covar_estimator"];
+  this->res = J["res"];
+  this->multiscale_steps = J["multiscale_steps"];
+
+  if ((covar_est_temp >= IcpMatcherParams::covar_method::LUM) &&
+      (covar_est_temp <= IcpMatcherParams::covar_method::LUMold)) {
+      this->covar_estimator =
+        static_cast<IcpMatcherParams::covar_method>(covar_est_temp);
+  } else {
+      LOG_ERROR("Invalid covariance estimate method, using LUM");
+      this->covar_estimator = IcpMatcherParams::covar_method::LUM;
+  }
 }
 
-IcpMatcher::IcpMatcher(IcpMatcherParams params1) : params(params1) {
-    this->ref = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    this->target = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    this->final = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    this->downsampled_ref =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    this->downsampled_target =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
-    if (this->params.res > 0) {
-        this->filter.setLeafSize(
-          this->params.res, this->params.res, this->params.res);
-    }
-    this->resolution = this->params.res;
-
-    this->icp.setMaxCorrespondenceDistance(this->params.max_corr);
-    this->icp.setMaximumIterations(this->params.max_iter);
-    this->icp.setTransformationEpsilon(this->params.t_eps);
-    this->icp.setEuclideanFitnessEpsilon(this->params.fit_eps);
+IcpMatcher::IcpMatcher(IcpMatcherParams params) : params_(params) {
+  SetIcpParams();
 }
 
 IcpMatcher::~IcpMatcher() {
@@ -64,6 +97,32 @@ IcpMatcher::~IcpMatcher() {
     }
 }
 
+void IcpMatcher::SetParams(IcpMatcherParams params) {
+  params_ = params;
+  SetIcpParams();
+}
+
+void IcpMatcher::SetIcpParams() {
+  this->ref = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->target = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->final = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->downsampled_ref =
+    boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->downsampled_target =
+    boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+
+  if (this->params_.res > 0) {
+      this->filter.setLeafSize(
+        this->params_.res, this->params_.res, this->params_.res);
+  }
+  this->resolution = this->params_.res;
+
+  this->icp.setMaxCorrespondenceDistance(this->params_.max_corr);
+  this->icp.setMaximumIterations(this->params_.max_iter);
+  this->icp.setTransformationEpsilon(this->params_.t_eps);
+  this->icp.setEuclideanFitnessEpsilon(this->params_.fit_eps);
+}
+
 void IcpMatcher::setRef(const PCLPointCloudPtr &ref) {
     this->ref = ref;
 }
@@ -73,11 +132,11 @@ void IcpMatcher::setTarget(const PCLPointCloudPtr &target) {
 }
 
 bool IcpMatcher::match() {
-    if (this->params.res > 0) {
-        if (this->params.multiscale_steps > 0) {
-            Affine3 running_transform = Affine3::Identity();
-            for (int i = this->params.multiscale_steps; i >= 0; i--) {
-                float leaf_size = pow(2, i) * this->params.res;
+    if (this->params_.res > 0) {
+        if (this->params_.multiscale_steps > 0) {
+            Eigen::Affine3d running_transform = Eigen::Affine3d::Identity();
+            for (int i = this->params_.multiscale_steps; i >= 0; i--) {
+                float leaf_size = pow(2, i) * this->params_.res;
                 this->filter.setLeafSize(leaf_size, leaf_size, leaf_size);
                 this->filter.setInputCloud(this->ref);
                 this->filter.filter(*(this->downsampled_ref));
@@ -91,7 +150,7 @@ bool IcpMatcher::match() {
                 this->icp.setInputTarget(this->downsampled_target);
 
                 this->icp.setMaxCorrespondenceDistance(pow(2, i) *
-                                                       this->params.max_corr);
+                                                       this->params_.max_corr);
                 this->icp.align(*(this->final));
                 if (!icp.hasConverged()) {
                     return false;
@@ -104,7 +163,7 @@ bool IcpMatcher::match() {
             return true;
         } else {
             this->filter.setLeafSize(
-              this->params.res, this->params.res, this->params.res);
+              this->params_.res, this->params_.res, this->params_.res);
             this->filter.setInputCloud(this->ref);
             this->filter.filter(*(this->downsampled_ref));
             this->icp.setInputSource(this->downsampled_ref);
@@ -133,7 +192,7 @@ bool IcpMatcher::match() {
 }
 
 void IcpMatcher::estimateInfo() {
-    switch (this->params.covar_estimator) {
+    switch (this->params_.covar_estimator) {
         case IcpMatcherParams::covar_method::LUM: this->estimateLUM(); break;
         case IcpMatcherParams::covar_method::CENSI:
             this->estimateCensi();
@@ -171,7 +230,7 @@ void IcpMatcher::estimateInfo() {
 void IcpMatcher::estimateCensi() {
     auto &ref = this->ref;
     auto &target = this->target;
-    if (this->params.res > 0) {
+    if (this->params_.res > 0) {
         ref = this->downsampled_ref;
         target = this->downsampled_target;
     }
@@ -192,10 +251,10 @@ void IcpMatcher::estimateCensi() {
         sy = sin(eulers[2]);
 
         Eigen::DiagonalMatrix<double, 6> sphere_cov;
-        sphere_cov.diagonal() << this->params.lidar_lin_covar,
-          this->params.lidar_ang_covar, this->params.lidar_ang_covar,
-          this->params.lidar_lin_covar, this->params.lidar_ang_covar,
-          this->params.lidar_ang_covar;
+        sphere_cov.diagonal() << this->params_.lidar_lin_covar,
+          this->params_.lidar_ang_covar, this->params_.lidar_ang_covar,
+          this->params_.lidar_lin_covar, this->params_.lidar_ang_covar,
+          this->params_.lidar_ang_covar;
         Eigen::MatrixXd cov_Z(Eigen::MatrixXd::Zero(6, 6));
         Eigen::MatrixXd j(Eigen::MatrixXd::Zero(6, 6));
         double az, br, rg;  // azimuth, bearing and range
@@ -400,6 +459,250 @@ void IcpMatcher::estimateCensi() {
         //
         // To get the information matrix, we apply the inverse
         this->information = (d2J_dX2 * middle.inverse() * d2J_dX2);
+    }
+}
+
+/// 3D formulation of the approach by Lu & Milios
+/// http://www-robotics.usc.edu/~gaurav/CS547/milios_map.pdf
+/// Implementation from PCL
+
+void IcpMatcher::estimateLUMold() {
+    auto &source_trans = this->final;
+    PCLPointCloudPtr targetc;
+    if (this->params_.res > 0) {
+        targetc = this->downsampled_target;
+    } else {
+        targetc = this->target;
+    }
+    uint64_t numSourcePts = source_trans->size();
+    std::vector<Eigen::Vector3f> corrs_aver{numSourcePts};
+    std::vector<Eigen::Vector3f> corrs_diff{numSourcePts};
+    int numCorr = 0;
+
+    Eigen::Matrix<double, 6, 6> edgeCov = Eigen::Matrix<double, 6, 6>::Identity();
+
+    // build kd tree for source points
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud(targetc);
+
+    // iterate through the source cloud and compute match covariance
+
+    for (uint64_t i = 0; i < numSourcePts; i++) {
+        pcl::PointXYZ qpt = source_trans->points[i];
+        std::vector<int> nn_idx;
+        std::vector<float> nn_sqr_dist;
+        kdtree.nearestKSearch(
+          qpt,
+          1,
+          nn_idx,
+          nn_sqr_dist);  // returns the index of the nn point in the targetc
+
+        if (nn_sqr_dist[0] < this->params_.max_corr *
+                               this->params_.max_corr)  // if the distance to
+        // point is less than max
+        // correspondence
+        // distance, use it to
+        // calculate
+        {
+            Eigen::Vector3f source_pt = qpt.getVector3fMap();
+            Eigen::Vector3f target_pt =
+              targetc->points[nn_idx[0]].getVector3fMap();
+
+            // Compute the point pair average and difference and store for later
+            // use
+            corrs_aver[numCorr] = 0.5 * (source_pt + target_pt);
+            corrs_diff[numCorr] = source_pt - target_pt;
+            numCorr++;
+        } else {
+            continue;
+        }
+    }
+    corrs_aver.resize(numCorr);
+    corrs_diff.resize(numCorr);
+
+    // now compute the M matrix
+    Eigen::Matrix<double, 6, 6> MM = Eigen::Matrix<double, 6, 6>::Zero();
+    Eigen::Matrix<double, 6, 1> MZ = Eigen::Matrix<double, 6, 1>::Zero();
+    for (int ci = 0; ci != numCorr; ++ci)  // ci = correspondence iterator
+    {
+        // Fast computation of summation elements of M'M
+        MM(0, 4) -= corrs_aver[ci](1);
+        MM(0, 5) += corrs_aver[ci](2);
+        MM(1, 3) -= corrs_aver[ci](2);
+        MM(1, 4) += corrs_aver[ci](0);
+        MM(2, 3) += corrs_aver[ci](1);
+        MM(2, 5) -= corrs_aver[ci](0);
+        MM(3, 4) -= corrs_aver[ci](0) * corrs_aver[ci](2);
+        MM(3, 5) -= corrs_aver[ci](0) * corrs_aver[ci](1);
+        MM(4, 5) -= corrs_aver[ci](1) * corrs_aver[ci](2);
+        MM(3, 3) += corrs_aver[ci](1) * corrs_aver[ci](1) +
+                    corrs_aver[ci](2) * corrs_aver[ci](2);
+        MM(4, 4) += corrs_aver[ci](0) * corrs_aver[ci](0) +
+                    corrs_aver[ci](1) * corrs_aver[ci](1);
+        MM(5, 5) += corrs_aver[ci](0) * corrs_aver[ci](0) +
+                    corrs_aver[ci](2) * corrs_aver[ci](2);
+
+        // Fast computation of M'Z
+        MZ(0) += corrs_diff[ci](0);
+        MZ(1) += corrs_diff[ci](1);
+        MZ(2) += corrs_diff[ci](2);
+        MZ(3) += corrs_aver[ci](1) * corrs_diff[ci](2) -
+                 corrs_aver[ci](2) * corrs_diff[ci](1);
+        MZ(4) += corrs_aver[ci](0) * corrs_diff[ci](1) -
+                 corrs_aver[ci](1) * corrs_diff[ci](0);
+        MZ(5) += corrs_aver[ci](2) * corrs_diff[ci](0) -
+                 corrs_aver[ci](0) * corrs_diff[ci](2);
+    }
+    // Remaining elements of M'M
+    MM(0, 0) = MM(1, 1) = MM(2, 2) = static_cast<float>(numCorr);
+    MM(4, 0) = MM(0, 4);
+    MM(5, 0) = MM(0, 5);
+    MM(3, 1) = MM(1, 3);
+    MM(4, 1) = MM(1, 4);
+    MM(3, 2) = MM(2, 3);
+    MM(5, 2) = MM(2, 5);
+    MM(4, 3) = MM(3, 4);
+    MM(5, 3) = MM(3, 5);
+    MM(5, 4) = MM(4, 5);
+
+    // Compute pose difference estimation
+    Eigen::Matrix<double, 6, 1> D = static_cast<Eigen::Matrix<double, 6, 1>>(MM.inverse() * MZ);
+
+    // Compute s^2
+    float ss = 0.0f;
+    for (int ci = 0; ci != numCorr; ++ci)  // ci = correspondence iterator
+    {
+        ss += static_cast<float>(
+          pow(corrs_diff[ci](0) -
+                (D(0) + corrs_aver[ci](2) * D(5) - corrs_aver[ci](1) * D(4)),
+              2.0f) +
+          pow(corrs_diff[ci](1) -
+                (D(1) + corrs_aver[ci](0) * D(4) - corrs_aver[ci](2) * D(3)),
+              2.0f) +
+          pow(corrs_diff[ci](2) -
+                (D(2) + corrs_aver[ci](1) * D(3) - corrs_aver[ci](0) * D(5)),
+              2.0f));
+    }
+
+    // When reaching the limitations of computation due to linearization
+    if (ss < 0.0000000000001 || !pcl_isfinite(ss)) {
+        LOG_ERROR("Covariance matrix calculation was unsuccessful");
+        this->information = Eigen::Matrix<double, 6, 6>::Identity();
+    }
+
+    // Store the results in the slam graph
+    edgeCov = MM * (1.0f / ss);
+
+    this->information = edgeCov;
+}
+
+// Taken from the Lu and Milios matcher in PCL
+void IcpMatcher::estimateLUM() {
+    auto &ref = this->final;
+    PCLPointCloudPtr targetc;
+    if (this->params_.res > 0) {
+        targetc = this->downsampled_target;
+    } else {
+        targetc = this->target;
+    }
+    if (this->icp.hasConverged()) {
+        auto list = this->icp.correspondences_.get();
+        Eigen::Matrix<double, 6, 6> MM = Eigen::Matrix<double, 6, 6>::Zero();
+        Eigen::Matrix<double, 6, 1> MZ = Eigen::Matrix<double, 6, 1>::Zero();
+        std::vector<Eigen::Vector3f> corrs_aver;
+        std::vector<Eigen::Vector3f> corrs_diff;
+
+
+        int numCorr = 0;
+        for (auto it = list->begin(); it != list->end(); ++it) {
+            if (it->index_match > -1) {
+                corrs_aver.push_back(
+                  Eigen::Vector3f(0.5f * (ref->points[it->index_query].x +
+                                          targetc->points[it->index_match].x),
+                                  0.5f * (ref->points[it->index_query].y +
+                                          targetc->points[it->index_match].y),
+                                  0.5f * (ref->points[it->index_query].z +
+                                          targetc->points[it->index_match].z)));
+                corrs_diff.push_back(
+                  Eigen::Vector3f(ref->points[it->index_query].x -
+                                    targetc->points[it->index_match].x,
+                                  ref->points[it->index_query].y -
+                                    targetc->points[it->index_match].y,
+                                  ref->points[it->index_query].z -
+                                    targetc->points[it->index_match].z));
+                numCorr++;
+            }
+        }
+
+        for (int ci = 0; ci != numCorr; ++ci)  // ci = correspondence iterator
+        {
+            // Fast computation of summation elements of M'M
+            MM(0, 4) -= corrs_aver[ci](1);
+            MM(0, 5) += corrs_aver[ci](2);
+            MM(1, 3) -= corrs_aver[ci](2);
+            MM(1, 4) += corrs_aver[ci](0);
+            MM(2, 3) += corrs_aver[ci](1);
+            MM(2, 5) -= corrs_aver[ci](0);
+            MM(3, 4) -= corrs_aver[ci](0) * corrs_aver[ci](2);
+            MM(3, 5) -= corrs_aver[ci](0) * corrs_aver[ci](1);
+            MM(4, 5) -= corrs_aver[ci](1) * corrs_aver[ci](2);
+            MM(3, 3) += corrs_aver[ci](1) * corrs_aver[ci](1) +
+                        corrs_aver[ci](2) * corrs_aver[ci](2);
+            MM(4, 4) += corrs_aver[ci](0) * corrs_aver[ci](0) +
+                        corrs_aver[ci](1) * corrs_aver[ci](1);
+            MM(5, 5) += corrs_aver[ci](0) * corrs_aver[ci](0) +
+                        corrs_aver[ci](2) * corrs_aver[ci](2);
+
+            // Fast computation of M'Z
+            MZ(0) += corrs_diff[ci](0);
+            MZ(1) += corrs_diff[ci](1);
+            MZ(2) += corrs_diff[ci](2);
+            MZ(3) += corrs_aver[ci](1) * corrs_diff[ci](2) -
+                     corrs_aver[ci](2) * corrs_diff[ci](1);
+            MZ(4) += corrs_aver[ci](0) * corrs_diff[ci](1) -
+                     corrs_aver[ci](1) * corrs_diff[ci](0);
+            MZ(5) += corrs_aver[ci](2) * corrs_diff[ci](0) -
+                     corrs_aver[ci](0) * corrs_diff[ci](2);
+        }
+        // Remaining elements of M'M
+        MM(0, 0) = MM(1, 1) = MM(2, 2) = static_cast<float>(numCorr);
+        MM(4, 0) = MM(0, 4);
+        MM(5, 0) = MM(0, 5);
+        MM(3, 1) = MM(1, 3);
+        MM(4, 1) = MM(1, 4);
+        MM(3, 2) = MM(2, 3);
+        MM(5, 2) = MM(2, 5);
+        MM(4, 3) = MM(3, 4);
+        MM(5, 3) = MM(3, 5);
+        MM(5, 4) = MM(4, 5);
+
+        // Compute pose difference estimation
+        Eigen::Matrix<double, 6, 1> D = static_cast<Eigen::Matrix<double, 6, 1>>(MM.inverse() * MZ);
+
+        // Compute s^2
+        float ss = 0.0f;
+        for (int ci = 0; ci != numCorr; ++ci)  // ci = correspondence iterator
+        {
+            ss += static_cast<float>(
+              pow(corrs_diff[ci](0) - (D(0) + corrs_aver[ci](2) * D(5) -
+                                       corrs_aver[ci](1) * D(4)),
+                  2.0f) +
+              pow(corrs_diff[ci](1) - (D(1) + corrs_aver[ci](0) * D(4) -
+                                       corrs_aver[ci](2) * D(3)),
+                  2.0f) +
+              pow(corrs_diff[ci](2) - (D(2) + corrs_aver[ci](1) * D(3) -
+                                       corrs_aver[ci](0) * D(5)),
+                  2.0f));
+        }
+
+        // When reaching the limitations of computation due to linearization
+        if (ss < 0.0000000000001 || !pcl_isfinite(ss)) {
+            LOG_ERROR("Covariance matrix calculation was unsuccessful");
+            this->information = Eigen::Matrix<double, 6, 6>::Identity();
+            return;
+        }
+
+        this->information = MM * (1.0f / ss);
     }
 }
 

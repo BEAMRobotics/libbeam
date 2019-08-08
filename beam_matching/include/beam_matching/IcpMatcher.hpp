@@ -21,14 +21,14 @@
 #include <pcl/registration/icp.h>
 
 #include "beam_matching/pcl_common.hpp"
-#include "beam_matching/matcher.hpp"
+#include "beam_matching/Matcher.hpp"
 
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
 struct IcpMatcherParams {
-    IcpMatcherParams(const std::string &config_path);
+    IcpMatcherParams(std::string &param_config);
     IcpMatcherParams() {}
 
     /// Maximum distance to correspond points for icp
@@ -66,13 +66,16 @@ struct IcpMatcherParams {
 
 class IcpMatcher : public Matcher<PCLPointCloudPtr> {
  public:
+   IcpMatcher() = default;
     /** This constructor takes an argument in order to adjust how much
      * downsampling is done before matching is attempted. Pointclouds are
      * downsampled using a voxel filter, the argument is the edge length of
      * each voxel. If resolution is non-positive, no downsampling is used.
      */
-    explicit IcpMatcher(IcpMatcherParams params1);
+    explicit IcpMatcher(IcpMatcherParams params);
     ~IcpMatcher();
+
+    void SetParams(IcpMatcherParams params);
 
     /** sets the reference pointcloud for the matcher
      * @param ref - Pointcloud
@@ -93,7 +96,7 @@ class IcpMatcher : public Matcher<PCLPointCloudPtr> {
      */
     void estimateInfo();
 
-    IcpMatcherParams params;
+    IcpMatcherParams GetParams() { return params_; }
 
  private:
     /** An instance of the ICP class from PCL */
@@ -107,6 +110,8 @@ class IcpMatcher : public Matcher<PCLPointCloudPtr> {
      * it. */
     PCLPointCloudPtr ref, target, final, downsampled_ref, downsampled_target;
 
+    IcpMatcherParams params_;
+
     /**
      * Calculates a covariance estimate based on Lu and Milios Scan Matching
      */
@@ -117,6 +122,8 @@ class IcpMatcher : public Matcher<PCLPointCloudPtr> {
      * Calculates a covariance estimate based on Censi
      */
     void estimateCensi();
+
+    void SetIcpParams();
 };
 
 /** @} group matching */
