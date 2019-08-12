@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 #include <vector>
 
@@ -109,6 +109,12 @@ float HullArea(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
  * @return Returns the scalar maximum length
  */
 float MaxLength(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud);
+
+/**
+ *
+ */
+float HausdorffDist(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_a,
+                    const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_b);
 
 /** @} group defects */
 
