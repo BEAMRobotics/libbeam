@@ -23,6 +23,10 @@ void Defect::SetPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetPointCloud() {
+  if (!defect_cloud_initialized_) {
+    BEAM_WARN("Point cloud not initialized. GetPointCloud() returning empty "
+              "point cloud");
+  }
   return defect_cloud_;
 }
 
@@ -38,8 +42,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
   auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   if (!defect_cloud_initialized_) {
+    BEAM_CRITICAL("Point cloud not initialized before call to GetHull2D().");
     throw std::runtime_error{"Point cloud not initialized."};
-    BEAM_CRITICAL("Point cloud not initialized.");
     return cloud_hull;
   }
 
