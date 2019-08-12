@@ -225,7 +225,7 @@ float HausdorffDist(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_a,
     }
   }
   
-  hausdorff_dist = max_dist;
+  hausdorff_dist = std::sqrt(max_dist);
 
   return hausdorff_dist;
 }
