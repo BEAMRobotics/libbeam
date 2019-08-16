@@ -27,3 +27,14 @@ target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
   Eigen3::Eigen
 )
+add_executable(${PROJECT_NAME}_slic
+  src/slic.cpp
+)
+target_include_directories(${PROJECT_NAME}_slic
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_slic
+  ${PROJECT_NAME}
+  Eigen3::Eigen
+)

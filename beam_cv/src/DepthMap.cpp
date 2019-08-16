@@ -133,7 +133,7 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   cv::morphologyEx(image, image, cv::MORPH_CLOSE, FULL_KERNEL_[9]);
   // dilate, then fill image with dilated
   cv::Mat dilated;
-  cv::dilate(image, dilated, FULL_KERNEL_[7]);
+  cv::dilate(image, dilated, FULL_KERNEL_[15]);
   image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > 0.1) {
       distance = dilated.at<float>(position[0], position[1]);
@@ -162,8 +162,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   BEAM_INFO("Performing Point Cloud Construction...");
   pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud(
       new pcl::PointCloud<pcl::PointXYZ>);
-  for (int row = 0; row < depth_image_->rows; row++) {
-    for (int col = 0; col < depth_image_->cols; col++) {
+  for (int row = 0; row < depth_image_->rows; row += 2) {
+    for (int col = 0; col < depth_image_->cols; col += 2) {
       float distance = depth_image_->at<float>(row, col);
       if (distance > 0) {
         beam::Vec2 pixel(col, row);
@@ -275,7 +275,7 @@ cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
       for (int n = 0; n < depth_points.size(); n++) {
         float d = depth_points[n].first;
         cv::Point2i p = depth_points[n].second;
-        if (d > 0.0 && (d > mean + 1.5 * (sd) || d < mean - 1.5 * (sd))) {
+        if (d > 0.0 && (d > mean + 1 * (sd) || d < mean - 1 * (sd))) {
           depth_points.erase(depth_points.begin() + n);
           di_copy.at<double>(p.x, p.y) = 0.0;
           n--;
@@ -288,32 +288,36 @@ cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
       }
       mean = sum / depth_points.size();
 
-      for (int i = 0; i < points.size(); i++) {
+      for (int i = 0; i < points.size(); i += 3) {
+        // find closest depth points to pixel
         std::vector<std::pair<double, double>> closest_depths;
         for (auto const& d : depth_points) {
           double distance = beam_cv::PixelDistance(points[i], d.second);
           double depth = d.first;
           closest_depths.push_back(std::make_pair(distance, depth));
         }
-        if (closest_depths.size() >= 3) {
+        if (closest_depths.size() >= 5) {
           std::sort(closest_depths.begin(), closest_depths.end());
           closest_depths.resize(3);
-          float sum = 0;
-          for (auto const& cd : closest_depths) { sum += cd.second; }
-          float avg_depth = sum / 3;
-          completed.at<float>(points[i].x, points[i].y) = avg_depth;
-        } else {
-          completed.at<float>(points[i].x, points[i].y) = mean;
+          float d1 = closest_depths[0].first, d2 = closest_depths[1].first,
+                d3 = closest_depths[2].first;
+          float w1 = 1 / d1, w2 = 1 / d2, w3 = 1 / d3;
+          float w_avg =
+              (w1 * closest_depths[0].second + w2 * closest_depths[1].second +
+               w3 * closest_depths[2].second) /
+              (w1 + w2 + w3);
+          completed.at<float>(points[i].x, points[i].y) = w_avg;
         }
       }
     }
   }
   cv::dilate(completed, completed, beam::GetEllipseKernel(11));
   cv::morphologyEx(completed, completed, cv::MORPH_CLOSE,
-                   beam::GetFullKernel(15));
+                   beam::GetFullKernel(11));
   BEAM_INFO("Done.");
   return completed;
 }
+
 /***********************Helper Functions**********************/
 
 bool DepthMap::CheckState() {
@@ -442,12 +446,12 @@ void DepthMap::SetCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud) {
   point_cloud_initialized_ = true;
 }
 
-std::shared_ptr<cv::Mat> DepthMap::GetDepthImage() {
+cv::Mat DepthMap::GetDepthImage() {
   if (!depth_image_extracted_) {
     BEAM_CRITICAL("Depth image not extracted.");
     throw std::runtime_error{"Depth image not extracted."};
   }
-  return depth_image_;
+  return *depth_image_;
 }
 
 void DepthMap::SetDepthImage(cv::Mat input) {

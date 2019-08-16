@@ -72,6 +72,8 @@ Mat KMeans(const Mat& input, int K) {
   return grey;
 }
 
+Mat HierarchicalCluster(const Mat& input) {}
+
 Mat ExtractSkeleton(const Mat& input_image) {
   Mat output_image = input_image.clone();
   Mat skel(output_image.size(), CV_8UC1, Scalar(0));

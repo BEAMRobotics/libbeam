@@ -54,7 +54,7 @@ public:
   /**
    * @brief Gets depth image
    */
-  std::shared_ptr<cv::Mat> GetDepthImage();
+  cv::Mat GetDepthImage();
   /**
    * @brief Gets depth image
    */
@@ -100,6 +100,9 @@ public:
    */
   void DepthMeshing();
 
+  /*
+   * @brief Performs Completiion using k means
+   */
   cv::Mat KMeansCompletion(int K, cv::Mat img);
 
   /***********************Helper Functions**********************/
