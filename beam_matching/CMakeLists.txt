@@ -13,6 +13,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
+    src/GicpMatcher.cpp
 )
 
 ##################### TESTS #########################
@@ -43,6 +44,22 @@ target_include_directories(${PROJECT_NAME}_ndt_tests
 )
 
 target_link_libraries(${PROJECT_NAME}_ndt_tests
+    ${PROJECT_NAME}
+    beam::utils
+    Eigen3::Eigen
+    Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_gicp_tests
+  tests/gicp_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_gicp_tests
+  PUBLIC
+    include
+)
+
+target_link_libraries(${PROJECT_NAME}_gicp_tests
     ${PROJECT_NAME}
     beam::utils
     Eigen3::Eigen

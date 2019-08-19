@@ -1,102 +1,109 @@
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+
 #include <pcl/io/pcd_io.h>
 
-#include "wave/wave_test.hpp"
-#include "beam_matching/gicp.hpp"
+#include "beam_matching/GicpMatcher.hpp"
 
-namespace wave {
+namespace beam_matching {
+
+std::string scan_path;
+std::string config_path;
+std::string test_path = __FILE__;
+std::string current_file = "gicp_tests.cpp";
 
 const auto TEST_SCAN = "tests/data/testscan.pcd";
 const auto TEST_CONFIG = "tests/config/gicp.yaml";
 
-// Fixture to load same pointcloud all the time
-class GICPTest : public testing::Test {
- protected:
-    GICPTest() {}
+GicpMatcher matcher;
 
-    virtual ~GICPTest() {
-        if (this->matcher) {
-            delete this->matcher;
-        }
-    }
+void FileSetup() {
+  test_path.erase(test_path.end() - current_file.size(), test_path.end());
+  scan_path = test_path + "data/testscan.pcd";
+  config_path = test_path + "config/gicp_config.json";
+}
 
-    virtual void SetUp() {
-        this->ref = boost::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
-        this->target = boost::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
-        pcl::io::loadPCDFile(TEST_SCAN, *(this->ref));
-    }
+void SetUp(const GicpMatcherParams params, const Eigen::Affine3d perturb) {
+  matcher.SetParams(params);
 
-    void setParams(const GICPMatcherParams params, const Affine3 perturb) {
-        this->matcher = new GICPMatcher(params);
-        pcl::transformPointCloud(*(this->ref), *(this->target), perturb);
-        this->matcher->setup(this->ref, this->target);
-    }
+  pcl::PointCloud<pcl::PointXYZ>::Ptr test_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::io::loadPCDFile(scan_path, *test_cloud);
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr ref, target;
-    GICPMatcher *matcher;
-};
+  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_test_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::transformPointCloud(*test_cloud, *transformed_test_cloud, perturb);
 
-TEST(gicp_tests, initialization) {
-    GICPMatcher matcher(GICPMatcherParams());
+  matcher.Setup(test_cloud, transformed_test_cloud);
+}
+
+TEST_CASE("Test initialization") {
+  auto params = matcher.GetParams();
+  REQUIRE(params.corr_rand == 10);
+  REQUIRE(params.max_iter == 100);
+  REQUIRE(params.r_eps == 1e-8);
+  REQUIRE(params.fit_eps == 1e-2);
+  REQUIRE(params.res == 0.1f);
 }
 
 // Zero displacement without downsampling
-TEST_F(GICPTest, fullResNullMatch) {
-    Affine3 perturb;
-    Affine3 result;
-    bool match_success = false;
+TEST_CASE("Test zero displacement without downsampling") {
+  FileSetup();
 
-    // setup
-    perturb = Affine3::Identity();
-    perturb.translation() << 0, 0, 0;
-    GICPMatcherParams params(TEST_CONFIG);
-    params.res = -1;
-    this->setParams(params, perturb);
+  Eigen::Affine3d perturb;
+  Eigen::Affine3d result;
+  bool match_success = false;
 
-    // test and assert
-    match_success = matcher->match();
-    double diff = (matcher->getResult().matrix() - perturb.matrix()).norm();
-    EXPECT_TRUE(match_success);
-    EXPECT_LT(diff, 0.1);
+  // setup
+  perturb = Eigen::Affine3d::Identity();
+  perturb.translation() << 0, 0, 0;
+  GicpMatcherParams params(config_path);
+  params.res = -1;
+  SetUp(params, perturb);
+
+  // test and assert
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
+  REQUIRE(match_success == true);
+  REQUIRE(diff < 0.1);
 }
 
-// Zero displacement using voxel downsampling
-TEST_F(GICPTest, nullDisplacement) {
-    Affine3 perturb;
-    Affine3 result;
-    bool match_success = false;
+TEST_CASE("Test zero displacement using voxel downsampling") {
+  Eigen::Affine3d perturb;
+  Eigen::Affine3d result;
+  bool match_success = false;
 
-    // setup
-    perturb = Affine3::Identity();
-    perturb.translation() << 0, 0, 0;
-    GICPMatcherParams params(TEST_CONFIG);
-    params.res = 0.05f;
-    this->setParams(params, perturb);
+  // setup
+  perturb = Eigen::Affine3d::Identity();
+  perturb.translation() << 0, 0, 0;
+  GicpMatcherParams params(config_path);
+  params.res = 0.05f;
+  SetUp(params, perturb);
 
-    // test and assert
-    match_success = matcher->match();
-    double diff = (matcher->getResult().matrix() - perturb.matrix()).norm();
-    EXPECT_TRUE(match_success);
-    EXPECT_LT(diff, 0.1);
+  // test and assert
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
+  REQUIRE(match_success == true);
+  REQUIRE(diff < 0.1);
 }
 
-// Small displacement using voxel downsampling
-TEST_F(GICPTest, smallDisplacement) {
-    Affine3 perturb;
-    Affine3 result;
-    bool match_success = false;
+TEST_CASE("Test small displacement using voxel downsampling") {
+  Eigen::Affine3d perturb;
+  Eigen::Affine3d result;
+  bool match_success = false;
 
-    // setup
-    perturb = Affine3::Identity();
-    perturb.translation() << 0.2, 0, 0;
-    GICPMatcherParams params(TEST_CONFIG);
-    params.res = 0.05f;
-    this->setParams(params, perturb);
+  // setup
+  perturb = Eigen::Affine3d::Identity();
+  perturb.translation() << 0.2, 0, 0;
+  GicpMatcherParams params(config_path);
+  params.res = 0.05f;
+  SetUp(params, perturb);
 
-    // test and assert
-    match_success = matcher->match();
-    double diff = (matcher->getResult().matrix() - perturb.matrix()).norm();
-    EXPECT_TRUE(match_success);
-    EXPECT_LT(diff, 0.1);
+  // test and assert
+  match_success = matcher.Match();
+  double diff = (matcher.GetResult().matrix() - perturb.matrix()).norm();
+  REQUIRE(match_success == true);
+  REQUIRE(diff < 0.1);
 }
 
-}  // namespace wave
+}  // namespace beam_matching
