@@ -48,6 +48,9 @@ public:
    */
   void SetParams(const GicpMatcherParams params);
 
+  /** gets the parameters for the matcher
+   * @return GicpMatcherParams
+   */
   GicpMatcherParams GetParams() { return params_; }
 
   /** sets the reference pointcloud for the matcher
@@ -66,6 +69,9 @@ public:
   bool Match();
 
 private:
+  /**
+   * configures the gicp matcher
+   */
   void SetGicpParams();
   pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> gicp_;
   pcl::VoxelGrid<pcl::PointXYZ> filter_;

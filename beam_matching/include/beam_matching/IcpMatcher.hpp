@@ -75,6 +75,9 @@ public:
   explicit IcpMatcher(IcpMatcherParams params);
   ~IcpMatcher();
 
+  /** sets the parameters for the matcher
+   * @param params - IcpMatcherParams
+   */
   void SetParams(IcpMatcherParams params);
 
   /** sets the reference pointcloud for the matcher
@@ -96,6 +99,9 @@ public:
    */
   void EstimateInfo();
 
+  /** gets the parameters for the matcher
+   * @return IcpMatcherParams
+   */
   IcpMatcherParams GetParams() { return params_; }
 
 private:
@@ -123,6 +129,9 @@ private:
    */
   void EstimateCensi();
 
+  /**
+   * configures icp matcher with the parameters
+   */
   void SetIcpParams();
 };
 

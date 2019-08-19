@@ -52,8 +52,14 @@ public:
   explicit NdtMatcher(NdtMatcherParams params);
   ~NdtMatcher();
 
+  /** sets the parameters for the matcher
+   * @param params - NdtMatcherParams
+   */
   void SetParams(NdtMatcherParams params);
 
+  /** Gets the parameters for the matcher
+   * @return NdtMatcherParams
+   */
   NdtMatcherParams GetParams() { return params_; }
 
   /** sets the reference pointcloud for the matcher
@@ -73,6 +79,9 @@ public:
   bool Match();
 
 private:
+  /**
+   * configures ndt matcher with the parameters
+   */
   void SetNdtParams();
   /** An instance of the NDT class from PCL */
   pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt_;
