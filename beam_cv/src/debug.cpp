@@ -51,14 +51,16 @@ void TestDepthMap() {
   Mat viz;
   dm.ExtractDepthMap(0.001, 3);
   Mat depth_map = dm.GetDepthImage();
+  viz = beam_cv::VisualizeDepthImage(depth_map);
+  imwrite("/home/jake/depth.png", viz);
   // load color image
   string image_location = "/home/jake/original.jpg";
   Mat img = imread(image_location, IMREAD_COLOR);
   // preprocess image
-  img = beam_cv::AdaptiveHistogram(img);
   Mat img2 = img.clone();
   // GaussianBlur(img, img, Size(11, 11), 7, 7);
   bilateralFilter(img2, img, 11, 30, 30);
+
   cv::Size half(img.cols / 2, img.rows / 2);
   cv::resize(img, img, half);
   Mat src;
@@ -72,13 +74,11 @@ void TestDepthMap() {
   Mat labels;
   slic->getLabels(labels);
 
-  /*
   Mat result = img.clone();
   Mat mask;
   slic->getLabelContourMask(mask, true);
   result.setTo(Scalar(0, 0, 255), mask);
-  imshow("window", result);
-  waitKey(0);*/
+  imwrite("/home/jake/result.png", result);
 
   int N = slic->getNumberOfSuperpixels();
   BEAM_INFO("Superpixels computed: {}", N);
@@ -118,8 +118,5 @@ void TestDepthMap() {
     }*/
   }
   BEAM_INFO("Centroids computed: {}", num);
-
-  imwrite("/home/jake/superpixels.png", img);
-
   BEAM_INFO("Program finished.");
 }

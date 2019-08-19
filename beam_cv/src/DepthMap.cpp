@@ -39,6 +39,7 @@ void DepthMap::ExtractDepthMap(double threshold, int mask_size) {
           if (distance < min_depth_) { min_depth_ = distance; }
         }
       });
+  cv::dilate(*depth_image_, *depth_image_, beam::GetFullKernel(5));
 }
 
 void DepthMap::DepthInterpolation(int window_width, int window_height,
