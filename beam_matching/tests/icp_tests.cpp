@@ -189,6 +189,13 @@ TEST_CASE("Test small information case using voxel downsampling and different "
   matcher1.Match();
   matcher1.EstimateInfo();
   auto info1 = matcher1.GetInfo();
+  Eigen::Matrix<double, 6, 6> expected_info1;
+  expected_info1 <<  78.5015,        0,        0,        0, -80.0395, -45.9599,
+                           0,  78.5015,        0,  45.9599, -16.7882,        0,
+                           0,        0,  78.5015,  80.0395,        0,  16.7882,
+                           0,  45.9599,  80.0395,  1740.08,  37.3178,  527.515,
+                    -80.0395, -16.7882,        0,  37.3178,  9518.46, -9.33379,
+                    -45.9599,        0,  16.7882,  527.515, -9.33379,  8061.41;
 
   params.covar_estimator = IcpMatcherParams::covar_method::LUM;
   IcpMatcher matcher2(params);
@@ -196,10 +203,20 @@ TEST_CASE("Test small information case using voxel downsampling and different "
   matcher2.Match();
   matcher2.EstimateInfo();
   auto info2 = matcher2.GetInfo();
+  Eigen::Matrix<double, 6, 6> expected_info2;
+  expected_info2 << 78.0082,        0,        0,        0,  -79.588, -45.6311,
+                          0,  78.0082,        0,  45.6311, -16.9183,        0,
+                          0,        0,  78.0082,   79.588,        0,  16.9183,
+                          0,  45.6311,   79.588,  1729.19,   36.857,  524.577,
+                    -79.588, -16.9183,        0,   36.857,  9458.81, -9.24851,
+                   -45.6311,        0,  16.9183,  524.577, -9.24851,  8010.75;
 
-  double diff = (info1 - info2).norm();
+  double diff1 = (info1 - expected_info1).norm();
+  double diff2 = (info2 - expected_info2).norm();
   REQUIRE(info1(0, 0) > 0);
-  REQUIRE(diff < 0.01);
+  REQUIRE(info2(0, 0) > 0);
+  REQUIRE(diff1 < 0.01);
+  REQUIRE(diff2 < 0.01);
 }
 
 } // namespace beam_matching
