@@ -74,6 +74,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
         windows.push_back(window_up);
         windows.push_back(window_down);
         float outside = iter * 1.0 + 2.0;
+        // iterate through each window
         for (std::vector<int> window : windows) {
           int start_x = window[0], end_x = window[1], start_y = window[2],
               end_y = window[3];
@@ -84,6 +85,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
           bool found = false;
           if (start_y > 0 && start_x > 0 && end_y < depth_image_->rows &&
               end_x < depth_image_->cols) {
+            // find closest point in window
             for (int i = start_y; i < end_y; i++) {
               for (int j = start_x; j < end_x; j++) {
                 float depth = depth_image_->at<float>(i, j);
@@ -103,6 +105,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
               int x = (point_f[0] + row) / 2;
               int y = (point_f[1] + col) / 2;
               float value = (distance + found_depth) / 2;
+              // input value if the found point is within threshold
               if (dst.at<float>(x, y) == 0.0 &&
                   abs(found_depth - distance) < threshold) {
                 dst.at<float>(x, y) = value;
@@ -117,44 +120,11 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
   BEAM_INFO("Depth Interpolation Completed");
 }
 
-void DepthMap::DepthCompletion(cv::Mat kernel) {
+void DepthMap::KMeansCompletion(int K, cv::Mat img) {
   if (!this->CheckState()) {
     BEAM_CRITICAL("Variables not properly set.");
     throw std::runtime_error{"Variables not properly set."};
   }
-  BEAM_INFO("Performing Depth Completion...");
-  // invert depth image
-  cv::Mat image = depth_image_->clone();
-  image.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance > 0.1) { distance = max_depth_ - distance; }
-  });
-  // dilate and close small holes
-  cv::dilate(image, image, kernel);
-  cv::morphologyEx(image, image, cv::MORPH_CLOSE, beam::GetFullKernel(9));
-  // dilate, then fill image with dilated
-  cv::Mat dilated;
-  cv::dilate(image, dilated, beam::GetFullKernel(15));
-  image.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance > 0.1) {
-      distance = dilated.at<float>(position[0], position[1]);
-    }
-  });
-  // close large holes
-  cv::morphologyEx(image, image, cv::MORPH_CLOSE, beam::GetFullKernel(15));
-  // median blur to reduce noise
-  cv::medianBlur(image, image, 5);
-  cv::Mat dst = image.clone();
-  // bilateral filter preserves structure
-  cv::bilateralFilter(image, dst, 5, 0.5, 2.0);
-  // invert back
-  dst.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance > 0.1) { distance = max_depth_ - distance; }
-  });
-  *depth_image_ = dst;
-  BEAM_INFO("Depth Completion Done");
-}
-
-void DepthMap::KMeansCompletion(int K, cv::Mat img) {
   BEAM_INFO("K means completion...");
   cv::Mat di_copy = depth_image_->clone();
   cv::Mat completed = cv::Mat::zeros(img.rows, img.cols, CV_32FC1);

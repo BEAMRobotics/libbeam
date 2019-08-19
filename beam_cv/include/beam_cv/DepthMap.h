@@ -14,8 +14,6 @@
 
 namespace beam_cv {
 
-enum class Direction { UP = 0, DOWN, LEFT, RIGHT };
-
 /*
  * @brief behaviour for raytrace
  */
@@ -77,12 +75,6 @@ public:
   void ExtractDepthMap(double threshold, int mask_size);
 
   /**
-   * @brief Performs depth completion on sparse depth image
-   * @return cv::Mat
-   */
-  void DepthCompletion(cv::Mat kernel);
-
-  /**
    * @brief Performs interpolation to densify depth map
    * @return cv::Mat
    */
@@ -90,15 +82,17 @@ public:
                           int iterations);
 
   /*
+   * @brief Performs Completiion using k means
+   * @param K number of segments, img: color image
+   */
+  void KMeansCompletion(int K, cv::Mat img);
+
+  /*
    * @brief Creates point cloud form interpolated depth image
    * @return point cloud
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr ExtractPointCloud();
 
-  /*
-   * @brief Performs Completiion using k means
-   */
-  void KMeansCompletion(int K, cv::Mat img);
 
   /***********************Helper Functions**********************/
 
