@@ -93,7 +93,6 @@ public:
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr ExtractPointCloud();
 
-
   /***********************Helper Functions**********************/
 
   /**
@@ -134,5 +133,4 @@ protected:
   bool point_cloud_initialized_ = false, model_initialized_ = false,
        depth_image_extracted_ = false;
 };
-}; // namespace beam_cv
 } // namespace beam_cv

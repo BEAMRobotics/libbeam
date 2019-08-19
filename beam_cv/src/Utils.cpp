@@ -5,102 +5,100 @@
 // std
 #include <algorithm>
 
-using namespace cv;
-
 namespace beam_cv {
 
-Mat VisualizeDepthImage(const Mat& input) {
-  Mat image = input.clone();
+cv::Mat VisualizeDepthImage(const cv::Mat& input) {
+  cv::Mat image = input.clone();
   float max_depth = 0;
   image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > max_depth) { max_depth = distance; }
   });
-  Mat gs_depth = Mat(image.rows, image.cols, CV_8UC1);
+  cv::Mat gs_depth = cv::Mat(image.rows, image.cols, CV_8UC1);
   image.forEach<float>([&](float& distance, const int* position) -> void {
     int scale = 255 / max_depth;
     uint8_t pixel_value = (scale * distance);
     gs_depth.at<uchar>(position[0], position[1]) = pixel_value;
   });
-  applyColorMap(gs_depth, gs_depth, COLORMAP_JET);
+  applyColorMap(gs_depth, gs_depth, cv::COLORMAP_JET);
   return gs_depth;
 }
 
-Mat AdaptiveHistogram(const Mat& input) {
-  Mat lab_image;
-  cvtColor(input, lab_image, CV_BGR2Lab);
-  std::vector<Mat> lab_planes(6);
-  split(lab_image, lab_planes);
-  Ptr<CLAHE> clahe = createCLAHE();
+cv::Mat AdaptiveHistogram(const cv::Mat& input) {
+  cv::Mat lab_image;
+  cv::cvtColor(input, lab_image, CV_BGR2Lab);
+  std::vector<cv::Mat> lab_planes(6);
+  cv::split(lab_image, lab_planes);
+  cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
   clahe->setClipLimit(3);
-  Mat dst;
+  cv::Mat dst;
   clahe->apply(lab_planes[0], dst);
   dst.copyTo(lab_planes[0]);
-  merge(lab_planes, lab_image);
-  Mat new_image;
-  cvtColor(lab_image, new_image, CV_Lab2BGR);
+  cv::merge(lab_planes, lab_image);
+  cv::Mat new_image;
+  cv::cvtColor(lab_image, new_image, CV_Lab2BGR);
   return new_image;
 }
 
-Mat KMeans(const Mat& input, int K) {
-  Mat image = input.clone();
+cv::Mat KMeans(const cv::Mat& input, int K) {
+  cv::Mat image = input.clone();
   cv::Size og(image.cols, image.rows);
   cv::Size half(image.cols / 2, image.rows / 2);
   cv::resize(image, image, half);
-  Mat data;
+  cv::Mat data;
   image.convertTo(data, CV_32F);
   data = data.reshape(1, data.total());
   // do kmeans
-  Mat labels, centers;
-  kmeans(data, K, labels, TermCriteria(CV_TERMCRIT_ITER, 10, 1.0), 3,
-         KMEANS_PP_CENTERS, centers);
+  cv::Mat labels, centers;
+  cv::kmeans(data, K, labels, cv::TermCriteria(CV_TERMCRIT_ITER, 10, 1.0), 3,
+             cv::KMEANS_PP_CENTERS, centers);
   // reshape both to a single row of Vec3f pixels:
   centers = centers.reshape(3, centers.rows);
   data = data.reshape(3, data.rows);
   // replace pixel values with their center value:
-  Vec3f* p = data.ptr<Vec3f>();
+  cv::Vec3f* p = data.ptr<cv::Vec3f>();
   for (size_t i = 0; i < data.rows; i++) {
     int center_id = labels.at<int>(i);
-    p[i] = centers.at<Vec3f>(center_id);
+    p[i] = centers.at<cv::Vec3f>(center_id);
   }
   // back to 2d, and uchar:
   image = data.reshape(3, image.rows);
   image.convertTo(image, CV_8UC1);
-  Mat grey;
-  cvtColor(image, grey, CV_BGR2GRAY);
+  cv::Mat grey;
+  cv::cvtColor(image, grey, CV_BGR2GRAY);
   cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, beam::GetFullKernel(5));
   cv::resize(grey, grey, og);
   return grey;
 }
 
-Mat ExtractSkeleton(const Mat& input_image) {
-  Mat output_image = input_image.clone();
-  Mat skel(output_image.size(), CV_8UC1, Scalar(0));
-  Mat temp(output_image.size(), CV_8UC1);
+cv::Mat ExtractSkeleton(const cv::Mat& input_image) {
+  cv::Mat output_image = input_image.clone();
+  cv::Mat skel(output_image.size(), CV_8UC1, cv::Scalar(0));
+  cv::Mat temp(output_image.size(), CV_8UC1);
   // Declare structuring element for open function
-  Mat element = getStructuringElement(MORPH_CROSS, Size(3, 3));
+  cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
   bool done = false;
   while (!done) {
-    morphologyEx(output_image, temp, MORPH_OPEN, element);
-    bitwise_not(temp, temp);
-    bitwise_and(output_image, temp, temp);
-    bitwise_or(skel, temp, skel);
-    erode(output_image, output_image, element);
+    cv::morphologyEx(output_image, temp, cv::MORPH_OPEN, element);
+    cv::bitwise_not(temp, temp);
+    cv::bitwise_and(output_image, temp, temp);
+    cv::bitwise_or(skel, temp, skel);
+    cv::erode(output_image, output_image, element);
 
     double max;
-    minMaxLoc(output_image, 0, &max);
+    cv::minMaxLoc(output_image, 0, &max);
     done = (max == 0);
   }
   return skel;
 }
 
-Mat RemoveClusters(const Mat& input_image, int threshold) {
+cv::Mat RemoveClusters(const cv::Mat& input_image, int threshold) {
   // Remove small pixel clusters
-  Mat output_image = input_image.clone();
-  Mat category(output_image.size(), CV_16UC1);
-  Mat stats, my_centroids;
+  cv::Mat output_image = input_image.clone();
+  cv::Mat category(output_image.size(), CV_16UC1);
+  cv::Mat stats, my_centroids;
   int connectivity = 8;
   int itype = CV_16U;
-  int num_comp = connectedComponentsWithStats(
+  int num_comp = cv::connectedComponentsWithStats(
       output_image, category, stats, my_centroids, connectivity, itype);
   BEAM_INFO("Number of Components in image: {}", num_comp);
 
@@ -120,19 +118,19 @@ Mat RemoveClusters(const Mat& input_image, int threshold) {
   return output_image;
 }
 
-std::vector<Mat> SegmentComponents(const Mat& image) {
+std::vector<cv::Mat> SegmentComponents(const cv::Mat& image) {
   // Create a copy of the binary image
-  Mat im_category(image.size(), CV_16UC1);
-  Mat my_stats, my_centroids;
+  cv::Mat im_category(image.size(), CV_16UC1);
+  cv::Mat my_stats, my_centroids;
   int connectivity = 8;
   int itype = CV_16U;
-  int num_comp = connectedComponentsWithStats(
+  int num_comp = cv::connectedComponentsWithStats(
       image, im_category, my_stats, my_centroids, connectivity, itype);
   im_category.convertTo(im_category, CV_8UC1);
   // initialize smaller window matrices
-  std::vector<Mat> cracks;
+  std::vector<cv::Mat> cracks;
   for (int i = 0; i < num_comp; i++) {
-    Mat crack(image.size(), CV_8UC1);
+    cv::Mat crack(image.size(), CV_8UC1);
     cracks.push_back(crack);
   }
   for (int x = 0; x < image.rows; ++x) // iterate over skeleton image
