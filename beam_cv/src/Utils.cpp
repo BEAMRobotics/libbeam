@@ -211,4 +211,22 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
   return distance;
 }
 
+beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image) {
+  beam::Vec2 found_pixel;
+  cv::Mat idx;
+  cv::findNonZero(depth_image, idx);
+  std::vector<double> distances;
+  std::vector<beam::Vec2> pixels;
+  idx.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
+    if (pixel != 0) {
+      beam::Vec2 p2(position[0], position[1]);
+      double d = beam::distance(search_pixel, p2);
+      distances.push_back(d);
+      pixels.push_back(p2);
+    }
+  });
+  int min_index =
+      std::min_element(distances.begin(), distances.end()) - distances.begin();
+  return pixels[min_index];
+}
 } // namespace beam_cv

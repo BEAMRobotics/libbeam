@@ -82,4 +82,11 @@ beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
  * @return double
  */
 double PixelDistance(cv::Point2i p1, cv::Point2i p2);
+
+/**
+ * @brief returns closest non zero pixel
+ * @return Vec2
+ */
+beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image);
+
 } // namespace beam_cv

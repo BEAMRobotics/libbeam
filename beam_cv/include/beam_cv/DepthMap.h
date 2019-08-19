@@ -83,7 +83,7 @@ public:
 
   /*
    * @brief Performs Completiion using k means
-   * @param K number of segments, img: color image
+   * @param K: number of segments, img: color image
    */
   void KMeansCompletion(int K, cv::Mat img);
 
@@ -100,12 +100,6 @@ public:
    * @return bool
    */
   bool CheckState();
-
-  /**
-   * @brief Returns nearest pixel to input point with non-zero value
-   * @return Vec2
-   */
-  beam::Vec2 FindClosest(beam::Vec2 search_pixel);
 
   /**
    * @brief Returns XYZ coordinates of a pixel in the depth map

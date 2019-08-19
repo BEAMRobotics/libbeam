@@ -5,11 +5,6 @@
 #include "beam_utils/math.hpp"
 // PCL
 #include <pcl/io/pcd_io.h>
-// std
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <vector>
 
 namespace beam_cv {
 
@@ -226,7 +221,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   }
   dense_cloud->width = 1;
   dense_cloud->height = dense_cloud->points.size();
-  pcl::io::savePCDFileBinary("/home/jake/test_pcd.pcd", *dense_cloud);
   return dense_cloud;
 }
 
@@ -241,42 +235,10 @@ bool DepthMap::CheckState() {
   return state;
 }
 
-beam::Vec2 DepthMap::FindClosest(beam::Vec2 search_pixel) {
-  beam::Vec2 found_pixel;
-  float depth_l = 0.0, depth_r = 0.0, depth_u = 0.0, depth_d = 0.0;
-  int x = search_pixel[0], y = search_pixel[1];
-  int yr = y, yl = y, xu = x, xd = x;
-  while (depth_l < 0.1 && depth_r < 0.1 && depth_u < 0.1 && depth_d < 0.1) {
-    depth_u = depth_image_->at<float>(xu, y);
-    xu--;
-    depth_d = depth_image_->at<float>(xd, y);
-    xd++;
-    depth_l = depth_image_->at<float>(x, yl);
-    yl--;
-    depth_r = depth_image_->at<float>(x, yr);
-    yr++;
-    if (xu <= 0 || xd <= 0 || yl <= 0 || yr <= 0) { break; }
-  }
-  if (depth_l > 0.1) {
-    found_pixel[0] = x;
-    found_pixel[1] = yl;
-  } else if (depth_r > 0.1) {
-    found_pixel[0] = x;
-    found_pixel[1] = yr;
-  } else if (depth_u > 0.1) {
-    found_pixel[0] = xu;
-    found_pixel[1] = y;
-  } else if (depth_d > 0.1) {
-    found_pixel[0] = xd;
-    found_pixel[1] = y;
-  }
-  return found_pixel;
-}
-
 beam::Vec3 DepthMap::GetXYZ(beam::Vec2 pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    beam::Vec2 c = FindClosest(pixel);
+    beam::Vec2 c = beam_cv::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   beam::Vec3 direction = model_->BackProject(pixel);
