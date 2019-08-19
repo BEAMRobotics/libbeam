@@ -130,17 +130,17 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   });
   // dilate and close small holes
   cv::dilate(image, image, kernel);
-  cv::morphologyEx(image, image, cv::MORPH_CLOSE, FULL_KERNEL_[9]);
+  cv::morphologyEx(image, image, cv::MORPH_CLOSE, beam::GetFullKernel(9));
   // dilate, then fill image with dilated
   cv::Mat dilated;
-  cv::dilate(image, dilated, FULL_KERNEL_[15]);
+  cv::dilate(image, dilated, beam::GetFullKernel(15));
   image.forEach<float>([&](float& distance, const int* position) -> void {
     if (distance > 0.1) {
       distance = dilated.at<float>(position[0], position[1]);
     }
   });
   // close large holes
-  cv::morphologyEx(image, image, cv::MORPH_CLOSE, FULL_KERNEL_[15]);
+  cv::morphologyEx(image, image, cv::MORPH_CLOSE, beam::GetFullKernel(15));
   // median blur to reduce noise
   cv::medianBlur(image, image, 5);
   cv::Mat dst = image.clone();
@@ -154,91 +154,7 @@ void DepthMap::DepthCompletion(cv::Mat kernel) {
   BEAM_INFO("Depth Completion Done");
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
-  if (!this->CheckState()) {
-    BEAM_CRITICAL("Variables not properly set.");
-    throw std::runtime_error{"Variables not properly set."};
-  }
-  BEAM_INFO("Performing Point Cloud Construction...");
-  pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud(
-      new pcl::PointCloud<pcl::PointXYZ>);
-  for (int row = 0; row < depth_image_->rows; row += 2) {
-    for (int col = 0; col < depth_image_->cols; col += 2) {
-      float distance = depth_image_->at<float>(row, col);
-      if (distance > 0) {
-        beam::Vec2 pixel(col, row);
-        beam::Vec3 direction = model_->BackProject(pixel);
-        beam::Vec3 coords = distance * direction;
-        pcl::PointXYZ point(coords[0], coords[1], coords[2]);
-        dense_cloud->points.push_back(point);
-      }
-    }
-  }
-  dense_cloud->width = 1;
-  dense_cloud->height = dense_cloud->points.size();
-  pcl::io::savePCDFileBinary("/home/jake/test_pcd.pcd", *dense_cloud);
-  return dense_cloud;
-}
-
-void DepthMap::DepthMeshing() {
-  BEAM_INFO("Extracting Depth Mesh...");
-  // find dimensions of grid
-  std::vector<std::vector<beam::Vec2>> grid;
-  int d = (beam::gcd(model_->GetWidth(), model_->GetHeight())) / 4;
-  int cell_width = model_->GetWidth() / d,
-      cell_height = model_->GetHeight() / d;
-  for (int i = 0; i <= model_->GetHeight(); i += cell_height) {
-    std::vector<beam::Vec2> row;
-    for (int j = 0; j <= model_->GetWidth(); j += cell_width) {
-      beam::Vec2 grid_point(i, j);
-      row.push_back(grid_point);
-    }
-    grid.push_back(row);
-  }
-
-  cv::Mat mesh = cv::Mat(model_->GetHeight(), model_->GetWidth(), CV_32FC1);
-  mesh.forEach<float>(
-      [&](float& distance, const int* position) -> void { distance = 0; });
-  // populate grid
-  for (int i = 0; i < grid.size() - 1; i++) {
-    for (int j = 0; j < grid[i].size() - 1; j++) {
-      beam::Vec2 grid_point = grid[i][j];
-
-      beam::Vec2 top_left = grid_point, top_right = grid_point,
-                 bottom_left = grid_point, bottom_right = grid_point;
-      if (i - 1 >= 0 && j - 1 >= 0) { top_left = grid[i - 1][j - 1]; }
-      if (i - 1 >= 0 && j + 1 <= depth_image_->cols) {
-        top_right = grid[i - 1][j + 1];
-      }
-      if (i + 1 <= depth_image_->rows && j + 1 <= depth_image_->cols) {
-        bottom_right = grid[i + 1][j + 1];
-      }
-      if (i + 1 <= depth_image_->rows && j - 1 <= depth_image_->cols) {
-        bottom_left = grid[i + 1][j - 1];
-      }
-
-      int start_x = top_left[0], start_y = top_left[1];
-      int end_x = bottom_right[0], end_y = bottom_right[1];
-      float min_depth = 255.0;
-      for (int k = start_x; k <= end_x; k++) {
-        for (int l = start_y; l <= end_y; l++) {
-          float depth = depth_image_->at<float>(k, l);
-          if (depth > 0.0 && depth < min_depth) { min_depth = depth; }
-        }
-      }
-      if (min_depth == 255.0) {
-        mesh.at<float>(grid_point[0], grid_point[1]) = 0.0;
-      } else {
-        mesh.at<float>(grid_point[0], grid_point[1]) = min_depth;
-      }
-    }
-  }
-  // cv::morphologyEx(mesh, mesh, cv::MORPH_CLOSE, beam::GetEllipseKernel(13));
-  *depth_image_ = mesh;
-  BEAM_INFO("Done Extracting Depth Mesh.");
-}
-
-cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
+void DepthMap::KMeansCompletion(int K, cv::Mat img) {
   BEAM_INFO("K means completion...");
   cv::Mat di_copy = depth_image_->clone();
   cv::Mat completed = cv::Mat::zeros(img.rows, img.cols, CV_32FC1);
@@ -314,8 +230,34 @@ cv::Mat DepthMap::KMeansCompletion(int K, cv::Mat img) {
   cv::dilate(completed, completed, beam::GetEllipseKernel(11));
   cv::morphologyEx(completed, completed, cv::MORPH_CLOSE,
                    beam::GetFullKernel(11));
+  *depth_image_ = completed;
   BEAM_INFO("Done.");
-  return completed;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
+  if (!this->CheckState()) {
+    BEAM_CRITICAL("Variables not properly set.");
+    throw std::runtime_error{"Variables not properly set."};
+  }
+  BEAM_INFO("Performing Point Cloud Construction...");
+  pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  for (int row = 0; row < depth_image_->rows; row += 2) {
+    for (int col = 0; col < depth_image_->cols; col += 2) {
+      float distance = depth_image_->at<float>(row, col);
+      if (distance > 0) {
+        beam::Vec2 pixel(col, row);
+        beam::Vec3 direction = model_->BackProject(pixel);
+        beam::Vec3 coords = distance * direction;
+        pcl::PointXYZ point(coords[0], coords[1], coords[2]);
+        dense_cloud->points.push_back(point);
+      }
+    }
+  }
+  dense_cloud->width = 1;
+  dense_cloud->height = dense_cloud->points.size();
+  pcl::io::savePCDFileBinary("/home/jake/test_pcd.pcd", *dense_cloud);
+  return dense_cloud;
 }
 
 /***********************Helper Functions**********************/
@@ -358,59 +300,6 @@ beam::Vec2 DepthMap::FindClosest(beam::Vec2 search_pixel) {
     found_pixel[0] = xd;
     found_pixel[1] = y;
   }
-  return found_pixel;
-}
-
-beam::Vec2 DepthMap::FindClosestLeft(beam::Vec2 search_pixel, cv::Mat mesh) {
-  float depth = 0.0;
-  beam::Vec2 found_pixel;
-  int x = search_pixel[0], y = search_pixel[1];
-  while (depth <= 0.0) {
-    depth = mesh.at<float>(x, y);
-    y--;
-    if (y <= 0) { break; }
-  }
-  found_pixel[0] = x;
-  found_pixel[1] = y;
-  return found_pixel;
-}
-beam::Vec2 DepthMap::FindClosestRight(beam::Vec2 search_pixel, cv::Mat mesh) {
-  float depth = 0.0;
-  beam::Vec2 found_pixel;
-  int x = search_pixel[0], y = search_pixel[1];
-  while (depth <= 0.0) {
-    depth = mesh.at<float>(x, y);
-    y++;
-    if (y >= mesh.cols) { break; }
-  }
-  found_pixel[0] = x;
-  found_pixel[1] = y;
-  return found_pixel;
-}
-beam::Vec2 DepthMap::FindClosestUp(beam::Vec2 search_pixel, cv::Mat mesh) {
-  float depth = 0.0;
-  beam::Vec2 found_pixel;
-  int x = search_pixel[0], y = search_pixel[1];
-  while (depth <= 0.0) {
-    depth = mesh.at<float>(x, y);
-    x--;
-    if (x <= 0) { break; }
-  }
-  found_pixel[0] = x;
-  found_pixel[1] = y;
-  return found_pixel;
-}
-beam::Vec2 DepthMap::FindClosestDown(beam::Vec2 search_pixel, cv::Mat mesh) {
-  float depth = 0.0;
-  beam::Vec2 found_pixel;
-  int x = search_pixel[0], y = search_pixel[1];
-  while (depth <= 0.0) {
-    depth = mesh.at<float>(x, y);
-    x++;
-    if (x >= mesh.rows) { break; }
-  }
-  found_pixel[0] = x;
-  found_pixel[1] = y;
   return found_pixel;
 }
 

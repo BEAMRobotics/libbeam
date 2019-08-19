@@ -32,13 +32,6 @@ cv::Mat VisualizeDepthImage(const cv::Mat&);
 cv::Mat KMeans(const cv::Mat&, int);
 
 /**
- * @brief Method for performing k means on image
- * @return k mean image
- * @param input image
- */
-cv::Mat HierarchicalCluster(const cv::Mat& input);
-
-/**
  * @brief Method for extracting skeleton of objects in scene
  * @return binary image of 1 pixel wide skeleton
  * @param input image of detected objects

@@ -72,15 +72,12 @@ Mat KMeans(const Mat& input, int K) {
   return grey;
 }
 
-Mat HierarchicalCluster(const Mat& input) {}
-
 Mat ExtractSkeleton(const Mat& input_image) {
   Mat output_image = input_image.clone();
   Mat skel(output_image.size(), CV_8UC1, Scalar(0));
   Mat temp(output_image.size(), CV_8UC1);
   // Declare structuring element for open function
   Mat element = getStructuringElement(MORPH_CROSS, Size(3, 3));
-
   bool done = false;
   while (!done) {
     morphologyEx(output_image, temp, MORPH_OPEN, element);

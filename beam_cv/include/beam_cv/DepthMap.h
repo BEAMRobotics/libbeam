@@ -96,14 +96,9 @@ public:
   pcl::PointCloud<pcl::PointXYZ>::Ptr ExtractPointCloud();
 
   /*
-   * @brief Performs meshing but on depth image
-   */
-  void DepthMeshing();
-
-  /*
    * @brief Performs Completiion using k means
    */
-  cv::Mat KMeansCompletion(int K, cv::Mat img);
+  void KMeansCompletion(int K, cv::Mat img);
 
   /***********************Helper Functions**********************/
 
@@ -114,21 +109,10 @@ public:
   bool CheckState();
 
   /**
-   * @brief Returns nearest pixel to input point with non-zero value in
-   * direction
+   * @brief Returns nearest pixel to input point with non-zero value
    * @return Vec2
    */
   beam::Vec2 FindClosest(beam::Vec2 search_pixel);
-
-  /**
-   * @brief Returns nearest pixel to input point with non-zero value in
-   * direction
-   * @return Vec2
-   */
-  beam::Vec2 FindClosestLeft(beam::Vec2 search_pixel, cv::Mat mesh);
-  beam::Vec2 FindClosestRight(beam::Vec2 search_pixel, cv::Mat mesh);
-  beam::Vec2 FindClosestUp(beam::Vec2 search_pixel, cv::Mat mesh);
-  beam::Vec2 FindClosestDown(beam::Vec2 search_pixel, cv::Mat mesh);
 
   /**
    * @brief Returns XYZ coordinates of a pixel in the depth map
@@ -155,12 +139,6 @@ protected:
   // verification variables
   bool point_cloud_initialized_ = false, model_initialized_ = false,
        depth_image_extracted_ = false;
-  // kernels used in various operations
-  std::map<int, cv::Mat> FULL_KERNEL_ = {
-      {3, beam::GetFullKernel(3)},   {5, beam::GetFullKernel(5)},
-      {7, beam::GetFullKernel(7)},   {9, beam::GetFullKernel(9)},
-      {11, beam::GetFullKernel(11)}, {15, beam::GetFullKernel(15)},
-      {21, beam::GetFullKernel(21)}, {31, beam::GetFullKernel(31)},
-  };
 };
+}; // namespace beam_cv
 } // namespace beam_cv
