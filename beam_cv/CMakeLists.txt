@@ -16,6 +16,19 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ############# Debug files #############
+add_executable(${PROJECT_NAME}_cv_tests
+  tests/cv_test.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_cv_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_cv_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
 add_executable(${PROJECT_NAME}_debug
   src/debug.cpp
 )
