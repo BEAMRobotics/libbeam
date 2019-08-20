@@ -34,3 +34,5 @@ script:
   - ./beam_defects_corrosion_tests
   - cd $HOME/catkin_ws/build/libbeam/beam_colorize
   - ./beam_colorize_tests
+  - cd $HOME/catkin_ws/build/libbeam/beam_cv
+  - ./beam_cv_utils_tests

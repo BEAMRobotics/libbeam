@@ -176,35 +176,6 @@ std::map<int, std::vector<cv::Point2i>>
   return sets;
 }
 
-std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
-  // copy coordinates to  matrix in Eigen format
-  size_t num_atoms = c.size();
-  Eigen::Matrix<beam::Vec3::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(
-      3, num_atoms);
-  for (size_t i = 0; i < num_atoms; ++i) coord.col(i) = c[i];
-  // calculate centroid
-  beam::Vec3 centroid(coord.row(0).mean(), coord.row(1).mean(),
-                      coord.row(2).mean());
-  // subtract centroid
-  coord.row(0).array() -= centroid(0);
-  coord.row(1).array() -= centroid(1);
-  coord.row(2).array() -= centroid(2);
-  // we only need the left-singular matrix here
-  //  http://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
-  auto svd = coord.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
-  beam::Vec3 plane_normal = svd.matrixU().rightCols<1>();
-  return std::make_pair(centroid, plane_normal);
-}
-
-beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
-                          beam::Vec3 plane_normal, beam::Vec3 plane_point) {
-  beam::Vec3 diff = ray_point - plane_point;
-  double prod1 = diff.dot(plane_normal);
-  double prod2 = ray_vector.dot(plane_normal);
-  double prod3 = prod1 / prod2;
-  return ray_point - ray_vector * prod3;
-}
-
 double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
   double distance =
       sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
@@ -212,21 +183,20 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
 }
 
 beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image) {
-  beam::Vec2 found_pixel;
-  cv::Mat idx;
-  cv::findNonZero(depth_image, idx);
+  cv::Point2i sp(search_pixel[0], search_pixel[1]);
   std::vector<double> distances;
-  std::vector<beam::Vec2> pixels;
-  idx.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
-    if (pixel != 0) {
-      beam::Vec2 p2(position[0], position[1]);
-      double d = beam::distance(search_pixel, p2);
+  std::vector<cv::Point2i> pixels;
+  depth_image.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
+    if (pixel > 0) {
+      cv::Point2i p(position[0], position[1]);
+      double d = PixelDistance(sp, p);
       distances.push_back(d);
-      pixels.push_back(p2);
+      pixels.push_back(p);
     }
   });
   int min_index =
       std::min_element(distances.begin(), distances.end()) - distances.begin();
-  return pixels[min_index];
+  beam::Vec2 output(pixels[min_index].x, pixels[min_index].y);
+  return output;
 }
 } // namespace beam_cv
