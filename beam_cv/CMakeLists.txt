@@ -29,6 +29,19 @@ target_link_libraries(${PROJECT_NAME}_utils_tests
   Catch2::Catch2
 )
 
+add_executable(${PROJECT_NAME}_depth_tests
+  tests/depthmap_test.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_depth_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_depth_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
 add_executable(${PROJECT_NAME}_debug
   src/debug.cpp
 )

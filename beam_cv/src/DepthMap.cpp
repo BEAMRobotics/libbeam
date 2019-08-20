@@ -14,7 +14,7 @@ DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
   this->SetModel(model);
 }
 
-void DepthMap::ExtractDepthMap(double threshold, int mask_size) {
+int DepthMap::ExtractDepthMap(double threshold, int mask_size) {
   if (!point_cloud_initialized_ || !model_initialized_) {
     BEAM_CRITICAL("Variables not properly initialized.");
     throw std::runtime_error{"Variables not properly initialized."};
@@ -30,24 +30,28 @@ void DepthMap::ExtractDepthMap(double threshold, int mask_size) {
                       HitBehaviour);
 
   depth_image_extracted_ = true;
+  int num_extracted = 0;
   // compute min and max depth in the image
   min_depth_ = 1000, max_depth_ = 0;
   depth_image_->forEach<float>(
       [&](float& distance, const int* position) -> void {
         if (distance != 0.0) {
+          num_extracted++;
           if (distance > max_depth_) { max_depth_ = distance; }
           if (distance < min_depth_) { min_depth_ = distance; }
         }
       });
   cv::dilate(*depth_image_, *depth_image_, beam::GetFullKernel(5));
+  return num_extracted;
 }
 
-void DepthMap::DepthInterpolation(int window_width, int window_height,
-                                  float threshold, int iterations) {
+int DepthMap::DepthInterpolation(int window_width, int window_height,
+                                 float threshold, int iterations) {
   if (!this->CheckState()) {
     BEAM_CRITICAL("Variables not properly set.");
     throw std::runtime_error{"Variables not properly set."};
   }
+  int num_interpolated = 0;
   BEAM_INFO("Performing Depth Interpolation...");
   for (int iter = 0; iter < iterations; iter++) {
     cv::Mat dst = depth_image_->clone();
@@ -105,6 +109,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
               if (dst.at<float>(x, y) == 0.0 &&
                   abs(found_depth - distance) < threshold) {
                 dst.at<float>(x, y) = value;
+                ++num_interpolated;
               }
             }
           }
@@ -114,6 +119,7 @@ void DepthMap::DepthInterpolation(int window_width, int window_height,
     *depth_image_ = dst;
   }
   BEAM_INFO("Depth Interpolation Completed");
+  return num_interpolated;
 }
 
 void DepthMap::KMeansCompletion(int K, cv::Mat img) {
@@ -276,7 +282,7 @@ cv::Mat DepthMap::GetDepthImage() {
   return *depth_image_;
 }
 
-void DepthMap::SetDepthImage(cv::Mat input) {
+void DepthMap::SetDepthImage(cv::Mat1d input) {
   depth_image_ = std::make_shared<cv::Mat>(input);
   depth_image_extracted_ = true;
   min_depth_ = 1000, max_depth_ = 0;

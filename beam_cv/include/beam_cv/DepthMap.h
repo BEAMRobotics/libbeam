@@ -56,7 +56,7 @@ public:
   /**
    * @brief Gets depth image
    */
-  void SetDepthImage(cv::Mat input);
+  void SetDepthImage(cv::Mat1d input);
   /**
    * @brief Gets camera model
    */
@@ -70,16 +70,16 @@ public:
   /***********************Computation methods**********************/
   /**
    * @brief Computes the depth image based on the given point cloud and image
-   * @return cv::Mat
+   * @return number of points extracted
    */
-  void ExtractDepthMap(double threshold, int mask_size);
+  int ExtractDepthMap(double threshold, int mask_size);
 
   /**
    * @brief Performs interpolation to densify depth map
-   * @return cv::Mat
+   * @return number of points interpolated
    */
-  void DepthInterpolation(int window_width, int window_height, float threshold,
-                          int iterations);
+  int DepthInterpolation(int window_width, int window_height, float threshold,
+                         int iterations);
 
   /*
    * @brief Performs Completiion using k means
