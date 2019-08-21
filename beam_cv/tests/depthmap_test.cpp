@@ -1,5 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "beam_cv/DepthMap.h"
+#include "beam_cv/Utils.h"
 #include <catch2/catch.hpp>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
@@ -41,7 +42,7 @@ TEST_CASE("Test Depth map extractor.") {
   // test method exception throwing
   beam_cv::DepthMap dm(F1, cloud);
   int low_density = dm.ExtractDepthMap(0.02, 3);
-  int high_density = dm.ExtractDepthMap(0.1, 10);
+  int high_density = dm.ExtractDepthMap(0.1, 20);
   REQUIRE(low_density < high_density);
 }
 
