@@ -20,6 +20,7 @@ GicpMatcherParams::GicpMatcherParams(const std::string& config_path) {
   this->max_iter = J["max_iter"];
   this->r_eps = J["r_eps"];
   this->fit_eps = J["fit_eps"];
+  this->res = J["res"];
 }
 
 GicpMatcher::GicpMatcher(const GicpMatcherParams params) : params_(params) {
