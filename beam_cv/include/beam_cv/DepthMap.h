@@ -41,24 +41,28 @@ public:
 
   /***********************Getters/Setters**********************/
   /**
-   * @brief Gets cloud
+   * @brief Gets point cloud member attribute
+   * @return Returns point to XYZ point cloud
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr GetCloud();
   /**
-   * @brief Sets cloud
-   * @param cloud to set
+   * @brief Sets cloud point cloud attribute
+   * @param input_cloud point cloud to set
    */
   void SetCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud);
   /**
-   * @brief Gets depth image
+   * @brief Gets depth image attribe
+   * @return Returns cv::mat representing depth image
    */
   cv::Mat GetDepthImage();
   /**
-   * @brief Gets depth image
+   * @brief Sets depth image attribute
+   * @param input depth image to set
    */
   void SetDepthImage(cv::Mat1d input);
   /**
    * @brief Gets camera model
+   * @return Returns a pointer to a camera model
    */
   std::shared_ptr<beam_calibration::CameraModel> GetModel();
   /**
@@ -70,12 +74,22 @@ public:
   /***********************Computation methods**********************/
   /**
    * @brief Computes the depth image based on the given point cloud and image
+   * @param threshold threshold value to be used to determine hit detection of
+   * ray cast
+   * @param mask_size used as input for beam_cv::CreateHitMask
    * @return number of points extracted
    */
   int ExtractDepthMap(double threshold, int mask_size);
 
   /**
    * @brief Performs interpolation to densify depth map
+   * @param window_width width (columns) distance to check for point to use for
+   *        interpolation
+   * @param window height height (rows) distance to check for point to use for
+   *        interpolation
+   * @param threshold maximum distance between to points to use for
+   *        interpolation
+   * @param iterations number of interpolation iterations to perform
    * @return number of points interpolated
    */
   int DepthInterpolation(int window_width, int window_height, float threshold,
@@ -83,7 +97,8 @@ public:
 
   /*
    * @brief Performs Completiion using k means
-   * @param K: number of segments, img: color image
+   * @param K number of segments
+   * @param img color image
    */
   void KMeansCompletion(int K, cv::Mat img);
 
@@ -96,19 +111,23 @@ public:
   /***********************Helper Functions**********************/
 
   /**
-   * @brief Checks if variables are properly set
+   * @brief Checks if variables (point_cloud_initialized_,
+   * depth_image_extracted_ model_initialized_) are properly set
    * @return bool
    */
   bool CheckState();
 
   /**
    * @brief Returns XYZ coordinates of a pixel in the depth map
-   * @return Vec3
+   * @param pixel u,v pixel of image
+   * @return x,y,z coordinates
    */
   beam::Vec3 GetXYZ(beam::Vec2 pixel);
 
   /**
    * @brief returns distance in world between two pixels in depth map
+   * @param p1 pixel input one
+   * @param p2 pixel input two
    * @return Vec2
    */
   float GetDistance(beam::Vec2 p1, beam::Vec2 p2);
