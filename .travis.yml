@@ -36,3 +36,5 @@ script:
   - ./beam_colorize_tests
   - cd $HOME/catkin_ws/build/libbeam/beam_cv
   - ./beam_cv_utils_tests
+  - ./beam_cv_depth_tests
+
