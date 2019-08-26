@@ -212,23 +212,23 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
     throw std::runtime_error{"Variables not properly set."};
   }
   BEAM_INFO("Performing Point Cloud Construction...");
-  pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud(
-      new pcl::PointCloud<pcl::PointXYZ>);
-  for (int row = 0; row < depth_image_->rows; row += 2) {
-    for (int col = 0; col < depth_image_->cols; col += 2) {
-      float distance = depth_image_->at<float>(row, col);
-      if (distance > 0) {
-        beam::Vec2 pixel(col, row);
-        beam::Vec3 direction = model_->BackProject(pixel);
-        beam::Vec3 coords = distance * direction;
-        pcl::PointXYZ point(coords[0], coords[1], coords[2]);
-        dense_cloud->points.push_back(point);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud =
+      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+      for (int row = 0; row < depth_image_->rows; row += 2) {
+        for (int col = 0; col < depth_image_->cols; col += 2) {
+          float distance = depth_image_->at<float>(row, col);
+          if (distance > 0) {
+            beam::Vec2 pixel(col, row);
+            beam::Vec3 direction = model_->BackProject(pixel);
+            beam::Vec3 coords = distance * direction;
+            pcl::PointXYZ point(coords[0], coords[1], coords[2]);
+            dense_cloud->points.push_back(point);
+          }
+        }
       }
-    }
-  }
-  dense_cloud->width = 1;
-  dense_cloud->height = dense_cloud->points.size();
-  return dense_cloud;
+      dense_cloud->width = 1;
+      dense_cloud->height = dense_cloud->points.size();
+      return dense_cloud;
 }
 
 /***********************Helper Functions**********************/
