@@ -40,6 +40,28 @@ double median(std::vector<double> v) {
   }
 }
 
+int gcd(int a, int b) {
+  if (b == 0) return a;
+  return gcd(b, a % b);
+}
+
+cv::Mat GetCrossKernel(int size) {
+  const cv::Mat kernel =
+      cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));
+  return kernel;
+}
+
+cv::Mat GetFullKernel(int size) {
+  cv::Mat kernel = cv::Mat::ones(size, size, CV_8U);
+  return kernel;
+}
+
+cv::Mat GetEllipseKernel(int size) {
+  const cv::Mat kernel =
+      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(size, size));
+  return kernel;
+}
+
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   int idx;
 

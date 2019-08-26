@@ -45,7 +45,6 @@ private:
   double CalculateSize();
 
   double crack_size_ = 0; // Variable to store crack size
-
 };
 
 /** @} group defects */

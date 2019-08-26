@@ -18,6 +18,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <beam_utils/time.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
 #include <pcl/point_types.h>
 #include <unsupported/Eigen/MatrixFunctions>
 
@@ -39,6 +41,8 @@ typedef Eigen::Matrix3d Mat3;
 typedef Eigen::Matrix4d Mat4;
 typedef Eigen::Matrix<double, 5, 5> Mat5;
 typedef Eigen::Matrix<double, 6, 6> Mat6;
+typedef Eigen::Matrix<double, 7, 7> Mat7;
+typedef Eigen::Matrix<double, 9, 9> Mat9;
 typedef Eigen::MatrixXd MatX;
 
 typedef Eigen::Affine3d Affine3;
@@ -112,6 +116,17 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
   }
   return sqrt(dist);
 }
+
+/** Computes greatest common divisor**/
+int gcd(int a, int b);
+/** Returns cross kernel */
+cv::Mat GetCrossKernel(int size);
+
+/** Returns cross kernel */
+cv::Mat GetFullKernel(int size);
+
+/** Returns cross kernel */
+cv::Mat GetEllipseKernel(int size);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
