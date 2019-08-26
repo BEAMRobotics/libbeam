@@ -96,7 +96,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
  * = 50000 points
  * @return Returns a vector of crack objects
  */
-std::vector<beam_defects::Crack> GetCracks(
+std::vector<beam_defects::Defect::Ptr> GetCracks(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance = 0.075, int min_size = 100,
     int max_size = 50000);
@@ -114,7 +114,7 @@ std::vector<beam_defects::Crack> GetCracks(
  * = 50000 points
  * @return Returns a vector of spall objects
  */
-std::vector<beam_defects::Spall> GetSpalls(
+std::vector<beam_defects::Defect::Ptr> GetSpalls(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance = 0.075, int min_size = 100,
     int max_size = 50000);
@@ -132,7 +132,7 @@ std::vector<beam_defects::Spall> GetSpalls(
  * = 50000 points
  * @return Returns a vector of delam objects
  */
-std::vector<beam_defects::Delam> GetDelams(
+std::vector<beam_defects::Defect::Ptr> GetDelams(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance = 0.075, int min_size = 100,
     int max_size = 50000);
@@ -150,7 +150,7 @@ std::vector<beam_defects::Delam> GetDelams(
  * = 50000 points
  * @return Returns a vector of corrosion objects
  */
-std::vector<beam_defects::Corrosion> GetCorrosion(
+std::vector<beam_defects::Defect::Ptr> GetCorrosion(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance = 0.075, int min_size = 100,
     int max_size = 50000);

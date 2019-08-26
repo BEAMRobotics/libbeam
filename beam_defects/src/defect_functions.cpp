@@ -6,6 +6,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
 #include <pcl/surface/convex_hull.h>
+#include <pcl/search/kdtree.h>
 
 #include <boost/smart_ptr.hpp>
 
@@ -206,6 +207,27 @@ float MaxLength(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
   double length = std::sqrt(pow(dx, 2) + pow(dy, 2));
 
   return length;
+}
+
+float HausdorffDist(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_a,
+                    const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_b) {
+  float hausdorff_dist = 0;
+  pcl::search::KdTree<pcl::PointXYZ> tree;
+  tree.setInputCloud(cloud_b);
+  float max_dist = -std::numeric_limits<float>::max();
+  for (const auto &point : cloud_a->points) {
+    std::vector<int> indices (1);
+    std::vector<float> sqr_distances (1);
+
+    tree.nearestKSearch(point, 1, indices, sqr_distances);
+    if (sqr_distances[0] > max_dist) {
+      max_dist = sqr_distances[0];
+    }
+  }
+  
+  hausdorff_dist = std::sqrt(max_dist);
+
+  return hausdorff_dist;
 }
 
 } // namespace beam_defects

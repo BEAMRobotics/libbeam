@@ -160,15 +160,17 @@ TEST_CASE("Corrosion (xz-plane and yz-plane) extraction, size calculation, and "
   auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.5, tolerance = 0.2;
   int min_points = 5, max_points = 1000;
-  std::vector<beam_defects::Corrosion> corrosion_vector =
+  std::vector<beam_defects::Defect::Ptr> corrosion_vector =
       beam_defects::GetCorrosion(cloud, threshold, tolerance, min_points,
                                  max_points);
-  REQUIRE(corrosion_vector[0].GetSize() == Approx(0.1));
-  REQUIRE(corrosion_vector[0].GetOSIMSeverity() ==
+  REQUIRE(corrosion_vector[0]->GetSize() == Approx(0.1));
+  REQUIRE(corrosion_vector[0]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);
-  REQUIRE(corrosion_vector[0].GetMaxDim2D() == Approx(1.00499));
-  REQUIRE(corrosion_vector[1].GetSize() == Approx(0.0425));
-  REQUIRE(corrosion_vector[1].GetOSIMSeverity() ==
+  REQUIRE(corrosion_vector[0]->GetMaxDim2D() == Approx(1.00499));
+  REQUIRE(corrosion_vector[0]->GetMatchingDefect(corrosion_vector) == 0);
+  REQUIRE(corrosion_vector[1]->GetSize() == Approx(0.0425));
+  REQUIRE(corrosion_vector[1]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::MEDIUM);
-  REQUIRE(corrosion_vector[1].GetMaxDim2D() == Approx(0.452769));
+  REQUIRE(corrosion_vector[1]->GetMaxDim2D() == Approx(0.452769));
+  REQUIRE(corrosion_vector[1]->GetMatchingDefect(corrosion_vector) == 1);
 }

@@ -402,4 +402,33 @@ beam::Mat3 skewTransform(const beam::Vec3 V) {
   return M;
 }
 
+std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
+  // copy coordinates to  matrix in Eigen format
+  size_t num_atoms = c.size();
+  Eigen::Matrix<beam::Vec3::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(
+      3, num_atoms);
+  for (size_t i = 0; i < num_atoms; ++i) coord.col(i) = c[i];
+  // calculate centroid
+  beam::Vec3 centroid(coord.row(0).mean(), coord.row(1).mean(),
+                      coord.row(2).mean());
+  // subtract centroid
+  coord.row(0).array() -= centroid(0);
+  coord.row(1).array() -= centroid(1);
+  coord.row(2).array() -= centroid(2);
+  // we only need the left-singular matrix here
+  //  http://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
+  auto svd = coord.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
+  beam::Vec3 plane_normal = svd.matrixU().rightCols<1>();
+  return std::make_pair(centroid, plane_normal);
+}
+
+beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
+                          beam::Vec3 plane_normal, beam::Vec3 plane_point) {
+  beam::Vec3 diff = ray_point - plane_point;
+  double prod1 = diff.dot(plane_normal);
+  double prod2 = ray_vector.dot(plane_normal);
+  double prod3 = prod1 / prod2;
+  return ray_point - ray_vector * prod3;
+}
+
 } // namespace beam

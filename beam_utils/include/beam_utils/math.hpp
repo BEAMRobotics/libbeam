@@ -225,6 +225,20 @@ beam::Vec3 invSkewTransform(const beam::Mat3 M);
  **/
 beam::Mat3 skewTransform(const beam::Vec3 V);
 
+/**
+ * @brief Fits plane to set of points
+ * @return <centroid,normal>
+ * @param vector of points
+ */
+std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
+
+/**
+ * @brief Computes intersection point of line and plane
+ * @return {x,y,z}
+ */
+beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
+                          beam::Vec3 plane_normal, beam::Vec3 plane_point);
+
 /** @} group utils */
 } // namespace beam
 

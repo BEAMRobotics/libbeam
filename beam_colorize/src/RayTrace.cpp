@@ -31,6 +31,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   // remove points which will not be in the projection
   auto reduced_cloud =
       RayTrace::ReduceCloud(input_point_cloud_, image_, intrinsics_);
+
   auto input_cloud = std::get<0>(reduced_cloud);
   // indices stores a mapping back to the original cloud
   auto indices = std::get<1>(reduced_cloud);
@@ -78,6 +79,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
       new pcl::PointCloud<pcl::PointXYZRGB>);
   std::vector<int> indices;
   beam::Vec3 point;
+
   for (uint32_t i = 0; i < input->points.size(); i++) {
     point << input->points[i].x, input->points[i].y, input->points[i].z;
     beam::Vec2 coords = intrinsics->ProjectPoint(point);
