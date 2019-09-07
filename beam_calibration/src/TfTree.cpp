@@ -132,6 +132,13 @@ void TfTree::SetCalibrationDate(std::string& calibration_date) {
   is_calibration_date_set_ = true;
 }
 
+void TfTree::Clear(){
+  Tree_.clear();
+  frames_.clear();
+  calibration_date_ = "";
+  is_calibration_date_set_ = false;
+}
+
 geometry_msgs::TransformStamped TfTree::LookupTransform(std::string& to_frame,
                                                         std::string& from_frame,
                                                         ros::Time& time_stamp) {
