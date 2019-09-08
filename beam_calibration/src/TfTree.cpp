@@ -199,11 +199,12 @@ void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
     bool transform_exists =
         Tree_.canTransform(to_frame, from_frame, time_stamp, &transform_error);
     if (transform_exists) {
-      BEAM_CRITICAL("Trying to add a static transform that already exists "
-                    "(to_frame: {}, from frame {})",
-                    to_frame.c_str(), from_frame.c_str());
-      throw std::runtime_error{
-          "Cannot add transform. Transform already exists."};
+      // BEAM_INFO("Trying to add a static transform that already exists"
+      //               "(to_frame: {}, from frame {}). Skipping",
+      //               to_frame.c_str(), from_frame.c_str());
+      // throw std::runtime_error{
+      //     "Cannot add transform. Transform already exists."};
+      return;
     }
 
     // Check for case where a child frame already has a parent
