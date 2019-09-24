@@ -2,6 +2,8 @@
  * @ingroup mapping
  */
 
+#pragma once
+
 #include "beam_calibration/TfTree.h"
 #include "beam_mapping/Poses.h"
 #include "beam_utils/math.hpp"
@@ -15,13 +17,11 @@
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 
-#pragma once
-
 namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
-using filter_params_type = std::pair<std::string, std::vector<double>>;
+using FilterParamsType = std::pair<std::string, std::vector<double>>;
 using PointT = pcl::PointXYZI;
 using PointCloud = pcl::PointCloud<PointT>;
 
@@ -29,12 +29,20 @@ using PointCloud = pcl::PointCloud<PointT>;
  * @brief class for map builder
  */
 class MapBuilder {
-public:
-  /**
-   * @brief constructor which sets some defaults
-   * @param config_file full path to configuration file
-   */
-  MapBuilder(const std::string& config_file);
+  struct LidarConfig {
+    std::string topic;
+    std::string frame;
+    bool use_cropbox;
+    Eigen::Vector3f cropbox_min;
+    Eigen::Vector3f cropbox_max;
+  };
+
+  public :
+      /**
+       * @brief constructor which sets some defaults
+       * @param config_file full path to configuration file
+       */
+      MapBuilder(const std::string& config_file);
 
   /**
    * @brief Default destructor
@@ -46,28 +54,34 @@ public:
    * @param filter
    * @return filter_parameters
    */
-  filter_params_type GetFilterParams(const auto& filter);
+  FilterParamsType GetFilterParams(const auto& filter);
 
   /**
-   * @brief for overriding the bag file specified in the config file
+   * @brief for overriding the bag file specified in the config file. This is
+   used when you want to use a different bag file from what is specified in the
+   config file. E.g., with testing, you want to use a local reference to the bag
+   so we cannot specify the full path in the config file.
    * @param bag_file full path to new bag file
    */
   void OverrideBagFile(const std::string& bag_file);
 
   /**
-   * @brief for overriding the poses file specified in the config file
+   * @brief for overriding the poses file specified in the config file. See
+   OverrideBagFile for explanation as to why this might be needed.
    * @param poses_file full path to new poses file
    */
   void OverridePoseFile(const std::string& poses_file);
 
   /**
-   * @brief for overriding the extrinsics file specified in the config file
+   * @brief for overriding the extrinsics file specified in the config file. See
+   OverrideBagFile for explanation as to why this might be needed.
    * @param extrinsics_file full path to new extrinsics file
    */
   void OverrideExtrinsicsFile(const std::string& extrinsics_file);
 
   /**
-   * @brief for overriding the output directory
+   * @brief for overriding the output directory. See
+   OverrideBagFile for explanation as to why this might be needed.
    * @param output_dir output directory
    */
   void OverrideOutputDir(const std::string& output_dir);
@@ -124,7 +138,7 @@ private:
    * @return filtered_cloud
    */
   PointCloud::Ptr FilterPointCloud(PointCloud::Ptr cloud,
-                                 std::vector<filter_params_type> filter_params);
+                                   std::vector<FilterParamsType> filter_params);
 
   /**
    * @brief method to load configuration from json
@@ -156,7 +170,6 @@ private:
    */
   void LoadScans(uint8_t lidar_number);
 
-
   /**
    * @brief creates an aggregate map for one lidar scan topic
    * @param lidar_number
@@ -174,10 +187,8 @@ private:
   int intermediary_map_size_;
   double min_translation_, min_rotation_deg_;
   bool combine_lidar_scans_;
-  std::vector<std::string> lidar_topics_, lidar_frames_;
-  std::vector<std::vector<float>> lidar_cropbox_min_, lidar_cropbox_max_;
-  std::vector<bool> lidar_cropbox_bool_;
-  std::vector<filter_params_type> input_filters_, intermediary_filters_,
+  std::vector<LidarConfig> lidars_;
+  std::vector<FilterParamsType> input_filters_, intermediary_filters_,
       output_filters_;
 
   // New objects

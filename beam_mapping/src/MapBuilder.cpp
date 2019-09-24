@@ -15,7 +15,7 @@
 
 namespace beam_mapping {
 
-using filter_params_type = std::pair<std::string, std::vector<double>>;
+using FilterParamsType = std::pair<std::string, std::vector<double>>;
 using PointT = pcl::PointXYZI;
 using PointCloud = pcl::PointCloud<PointT>;
 
@@ -26,7 +26,7 @@ MapBuilder::MapBuilder(const std::string& config_file) {
   this->LoadConfigFromJSON(config_file);
 }
 
-filter_params_type MapBuilder::GetFilterParams(const auto& filter) {
+FilterParamsType MapBuilder::GetFilterParams(const auto& filter) {
   std::string filter_type = filter["filter_type"];
   std::vector<double> params;
   bool success = true;
@@ -78,7 +78,7 @@ filter_params_type MapBuilder::GetFilterParams(const auto& filter) {
                     "builder config");
       success = false;
     }
-    if (cell_size[0] < 0.01 || cell_size[2] < 0.01 || cell_size[2] < 0.01) {
+    if (cell_size[0] < 0.001 || cell_size[2] < 0.001 || cell_size[2] < 0.001) {
       BEAM_CRITICAL("Invalid cell_size parameter in map builder config");
       success = false;
     }
@@ -153,24 +153,30 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
   min_rotation_deg_ = J["min_rotation_deg"];
   combine_lidar_scans_ = J["combine_lidar_scans"];
   for (const auto& lidar : J["lidars"]) {
-    lidar_topics_.push_back(lidar["topic"]);
-    lidar_frames_.push_back(lidar["frame"]);
-    lidar_cropbox_bool_.push_back(lidar["use_cropbox"]);
-    lidar_cropbox_min_.push_back(lidar["cropbox_min"]);
-    lidar_cropbox_max_.push_back(lidar["cropbox_max"]);
+    MapBuilder::LidarConfig lidar_config;
+    lidar_config.topic = lidar["topic"];
+    lidar_config.frame = lidar["frame"];
+    lidar_config.use_cropbox = lidar["use_cropbox"];
+    std::vector<float> min_ = lidar["cropbox_min"];
+    std::vector<float> max_ = lidar["cropbox_max"];
+    Eigen::Vector3f min(min_[0], min_[1], min_[2]);
+    Eigen::Vector3f max(max_[0], max_[1], max_[2]);
+    lidar_config.cropbox_min = min;
+    lidar_config.cropbox_max = max;
+    lidars_.push_back(lidar_config);
   }
   for (const auto& filter : J["input_filters"]) {
-    filter_params_type input_filter;
+    FilterParamsType input_filter;
     input_filter = this->GetFilterParams(filter);
     input_filters_.push_back(input_filter);
   }
   for (const auto& filter : J["intermediary_filters"]) {
-    filter_params_type intermediary_filter;
+    FilterParamsType intermediary_filter;
     intermediary_filter = this->GetFilterParams(filter);
     intermediary_filters_.push_back(intermediary_filter);
   }
   for (const auto& filter : J["output_filters"]) {
-    filter_params_type output_filter;
+    FilterParamsType output_filter;
     output_filter = this->GetFilterParams(filter);
     output_filters_.push_back(output_filter);
   }
@@ -239,21 +245,17 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 
 PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
                                            uint8_t lidar_number) {
-  if (!lidar_cropbox_bool_[lidar_number]) { return cloud; }
+  if (!lidars_[lidar_number].use_cropbox) { return cloud; }
   PointCloud::Ptr cropped_cloud = boost::make_shared<PointCloud>();
-  std::vector<float> min = lidar_cropbox_min_[lidar_number];
-  std::vector<float> max = lidar_cropbox_max_[lidar_number];
-  Eigen::Vector3f min_vec(min[0], min[1], min[2]);
-  Eigen::Vector3f max_vec(max[0], max[1], max[2]);
   beam_filtering::CropBox cropper;
-  cropper.SetMinVector(min_vec);
-  cropper.SetMaxVector(max_vec);
+  cropper.SetMinVector(lidars_[lidar_number].cropbox_min);
+  cropper.SetMaxVector(lidars_[lidar_number].cropbox_max);
   cropper.Filter(*cloud, *cropped_cloud);
   return cropped_cloud;
 }
 
 PointCloud::Ptr MapBuilder::FilterPointCloud(
-    PointCloud::Ptr cloud, std::vector<filter_params_type> filter_params) {
+    PointCloud::Ptr cloud, std::vector<FilterParamsType> filter_params) {
   PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>(*cloud);
   for (uint8_t i = 0; i < filter_params.size(); i++) {
     PointCloud::Ptr input_cloud =
@@ -363,10 +365,8 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
 
 void MapBuilder::LoadScans(uint8_t lidar_number) {
   // load all params specific to this lidar
-  std::string scan_frame = lidar_frames_[lidar_number];
-  std::string scan_topic = lidar_topics_[lidar_number];
-  std::vector<float> cropbox_min = lidar_cropbox_min_[lidar_number];
-  std::vector<float> cropbox_max = lidar_cropbox_max_[lidar_number];
+  std::string scan_frame = lidars_[lidar_number].frame;
+  std::string scan_topic = lidars_[lidar_number].topic;
 
   // load rosbag and create view
   rosbag::Bag bag;
@@ -385,17 +385,13 @@ void MapBuilder::LoadScans(uint8_t lidar_number) {
     output_message += std::to_string(lidar_number + 1);
     beam::OutputPercentComplete(message_counter, total_messages,
                                 output_message);
-    if (iter->getTopic() == scan_topic) {
-      PointCloud::Ptr new_scan = boost::make_shared<PointCloud>();
-      ProcessPointCloudMsg(iter, lidar_number);
-    }
-  }
+    ProcessPointCloudMsg(iter, lidar_number);  }
 }
 
 void MapBuilder::GenerateMap(uint8_t lidar_number) {
   std::string fixed_frame = poses_fixed_frame_;
   std::string moving_frame = poses_moving_frame_;
-  std::string lidar_frame = lidar_frames_[lidar_number];
+  std::string lidar_frame = lidars_[lidar_number].frame;
   PointCloud::Ptr scan_aggregate = boost::make_shared<PointCloud>();
   PointCloud::Ptr scan_intermediary = boost::make_shared<PointCloud>();
   Eigen::Affine3d T_MOVING_LIDAR =
@@ -444,7 +440,7 @@ void MapBuilder::SaveMaps() {
 
   for (uint8_t i = 0; i < maps_.size(); i++) {
     std::string save_path = save_dir_ + dateandtime + "/" + dateandtime + "_" +
-                            lidar_frames_[i] + ".pcd";
+                            lidars_[i].frame + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     pcl::io::savePCDFileBinary(save_path, *maps_[i]);
   }
@@ -476,7 +472,7 @@ std::string MapBuilder::GetPosesFixedFrame(){
 
 void MapBuilder::BuildMap() {
   this->LoadTrajectory(pose_file_path_);
-  for (uint8_t i = 0; i < lidar_topics_.size(); i++) {
+  for (uint8_t i = 0; i < lidars_.size(); i++) {
     scan_pose_last_.matrix().setIdentity();
     interpolated_poses_.Clear();
     this->scans_.clear();
