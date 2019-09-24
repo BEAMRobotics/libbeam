@@ -115,6 +115,18 @@ class MapBuilder {
    */
   std::string GetPosesFixedFrame();
 
+  /**
+   * @brief gets the path to the bag file
+   * return bag_file_path_
+   */
+   std::string GetBagFile(){return bag_file_path_;}
+
+   /**
+    * @brief gets the path to the save directory
+    * return save_dir_
+    */
+    std::string GetSaveDir(){return save_dir_;}
+
 private:
   /**
    * @brief method to load poses from json and extrinsics

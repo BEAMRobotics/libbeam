@@ -56,3 +56,10 @@ the lidars in the calibration tree
     * CROPBOX: This is our own custom implementation of the crop box filter
     which allows you to remove point inside or outside a user defined box, see
     https://github.com/BEAMRobotics/libbeam/blob/master/beam_filtering/include/beam_filtering/CropBox.h
+
+**Using main executable:**
+* There is a main executable that you can use to build your maps.
+* Arguments:
+      * 1. Full path to bag file (e.g., /path/to/bag.bag)
+      * 2. topic name if using a poses from an odometry topic in the bag
+      (e.g., /odometry_filtered). This topic MUST be of type nav_msgs/Odometry
