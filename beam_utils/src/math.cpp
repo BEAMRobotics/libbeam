@@ -40,6 +40,28 @@ double median(std::vector<double> v) {
   }
 }
 
+int gcd(int a, int b) {
+  if (b == 0) return a;
+  return gcd(b, a % b);
+}
+
+cv::Mat GetCrossKernel(int size) {
+  const cv::Mat kernel =
+      cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));
+  return kernel;
+}
+
+cv::Mat GetFullKernel(int size) {
+  cv::Mat kernel = cv::Mat::ones(size, size, CV_8U);
+  return kernel;
+}
+
+cv::Mat GetEllipseKernel(int size) {
+  const cv::Mat kernel =
+      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(size, size));
+  return kernel;
+}
+
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   int idx;
 
@@ -281,7 +303,8 @@ MatX RoundMatrix(const MatX& M, int precision) {
   MatX Mround(M.rows(), M.cols());
   for (int i = 0; i < M.rows(); i++) {
     for (int j = 0; j < M.cols(); j++) {
-      Mround(i, j) = std::round(M(i, j) * std::pow(10, precision)) / std::pow(10, precision);
+      Mround(i, j) = std::round(M(i, j) * std::pow(10, precision)) /
+                     std::pow(10, precision);
     }
   }
   return Mround;
@@ -377,6 +400,35 @@ beam::Mat3 skewTransform(const beam::Vec3 V) {
   M(2, 1) = V(0, 0);
   M(2, 2) = 0;
   return M;
+}
+
+std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
+  // copy coordinates to  matrix in Eigen format
+  size_t num_atoms = c.size();
+  Eigen::Matrix<beam::Vec3::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(
+      3, num_atoms);
+  for (size_t i = 0; i < num_atoms; ++i) coord.col(i) = c[i];
+  // calculate centroid
+  beam::Vec3 centroid(coord.row(0).mean(), coord.row(1).mean(),
+                      coord.row(2).mean());
+  // subtract centroid
+  coord.row(0).array() -= centroid(0);
+  coord.row(1).array() -= centroid(1);
+  coord.row(2).array() -= centroid(2);
+  // we only need the left-singular matrix here
+  //  http://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
+  auto svd = coord.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
+  beam::Vec3 plane_normal = svd.matrixU().rightCols<1>();
+  return std::make_pair(centroid, plane_normal);
+}
+
+beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
+                          beam::Vec3 plane_normal, beam::Vec3 plane_point) {
+  beam::Vec3 diff = ray_point - plane_point;
+  double prod1 = diff.dot(plane_normal);
+  double prod2 = ray_vector.dot(plane_normal);
+  double prod3 = prod1 / prod2;
+  return ray_point - ray_vector * prod3;
 }
 
 } // namespace beam
