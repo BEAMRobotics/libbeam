@@ -47,19 +47,4 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Boost::boost
   catkin::catkin
 )
-  #######################################
-
-############# Debug files #############
-add_executable(${PROJECT_NAME}_debug
-  src/_debug.cpp
-)
-target_include_directories(${PROJECT_NAME}_debug
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_debug
-  ${PROJECT_NAME}
-  catkin::catkin
-)
-
 #######################################
