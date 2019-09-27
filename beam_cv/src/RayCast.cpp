@@ -20,6 +20,7 @@ void RayCastXYZ(std::shared_ptr<cv::Mat> image,
   kdtree.setInputCloud(cloud);
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
+    (void)pixel;
     int v = position[0], u = position[1];
     if (hit_mask.at<cv::Vec3b>(v, u).val[0] == 255) {
       beam::Vec3 ray(0, 0, 0);
@@ -69,6 +70,7 @@ void RayCastXYZRGB(std::shared_ptr<cv::Mat> image,
   kdtree.setInputCloud(cloud);
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
+    (void)pixel;
     int v = position[0], u = position[1];
     if (hit_mask.at<cv::Vec3b>(v, u).val[0] == 255) {
       beam::Vec3 ray(0, 0, 0);
