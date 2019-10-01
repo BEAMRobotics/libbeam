@@ -2,7 +2,7 @@
 
 #include "beam_colorize/RayTrace.h"
 #include "beam_cv/RayCast.h"
-A
+
 namespace beam_colorize {
 
 void HitBehaviour(std::shared_ptr<cv::Mat> image,
