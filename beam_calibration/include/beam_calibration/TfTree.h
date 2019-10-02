@@ -117,14 +117,19 @@ public:
 
   ros::Time start_time{0};
 
-  /**
-   * @brief Method for getting all the frames in TfTree
-   * @return Return unordered_map. First strings are from (parent) frames and
-   * vectors of strings are to (child) frames
-   */
   std::unordered_map<std::string, std::vector<std::string>> GetAllFrames() {
+    /**
+    * @brief Method for getting all the frames in TfTree
+    * @return Return unordered_map. First strings are from (parent) frames and
+    * vectors of strings are to (child) frames
+    */
     return frames_;
   }
+
+  void Clear();
+  /**
+   * @brief Method for clearing all data in object 
+   */
 
 private:
   /**
