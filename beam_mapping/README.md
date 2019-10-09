@@ -60,6 +60,6 @@ the lidars in the calibration tree
 **Using main executable:**
 * There is a main executable that you can use to build your maps.
 * Arguments:
-      * 1. Full path to bag file (e.g., /path/to/bag.bag)
+      * 1. Full path to the config file (e.g., /path/to/config.json)
       * 2. topic name if using a poses from an odometry topic in the bag
       (e.g., /odometry_filtered). This topic MUST be of type nav_msgs/Odometry
