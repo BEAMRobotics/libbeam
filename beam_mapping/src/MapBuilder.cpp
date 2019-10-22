@@ -207,7 +207,7 @@ void MapBuilder::LoadScans(uint8_t lidar_number) {
   std::vector<double> cropbox_min = lidar_cropbox_min_[lidar_number];
   std::vector<double> cropbox_max = lidar_cropbox_max_[lidar_number];
   bool crop_scan = lidar_cropbox_bool_[lidar_number];
-
+  
   // load rosbag and create view
   rosbag::Bag bag;
   try {

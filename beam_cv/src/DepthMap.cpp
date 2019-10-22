@@ -35,6 +35,7 @@ int DepthMap::ExtractDepthMap(double threshold, int mask_size) {
   min_depth_ = 1000, max_depth_ = 0;
   depth_image_->forEach<float>(
       [&](float& distance, const int* position) -> void {
+        (void)position;
         if (distance != 0.0) {
           num_extracted++;
           if (distance > max_depth_) { max_depth_ = distance; }
@@ -147,20 +148,20 @@ void DepthMap::KMeansCompletion(int K, cv::Mat img) {
     if (depth_points.size() >= 1) {
       // calculate mean of depth points
       float sum = 0;
-      for (int n = 0; n < depth_points.size(); n++) {
+      for (uint32_t n = 0; n < depth_points.size(); n++) {
         sum += depth_points[n].first;
       }
       float mean = sum / depth_points.size();
       // calculate standard deviation of depth_points
       float var = 0;
-      for (int n = 0; n < depth_points.size(); n++) {
+      for (uint32_t n = 0; n < depth_points.size(); n++) {
         var = var +
               ((depth_points[n].first - mean) * (depth_points[n].first - mean));
       }
       var /= depth_points.size();
       float sd = sqrt(var);
       // remove outliers
-      for (int n = 0; n < depth_points.size(); n++) {
+      for (uint32_t n = 0; n < depth_points.size(); n++) {
         float d = depth_points[n].first;
         cv::Point2i p = depth_points[n].second;
         if (d > 0.0 && (d > mean + 1 * (sd) || d < mean - 1 * (sd))) {
@@ -171,12 +172,12 @@ void DepthMap::KMeansCompletion(int K, cv::Mat img) {
       }
       // recalculate mean without outliers
       sum = 0;
-      for (int n = 0; n < depth_points.size(); n++) {
+      for (uint32_t n = 0; n < depth_points.size(); n++) {
         sum += depth_points[n].first;
       }
       mean = sum / depth_points.size();
 
-      for (int i = 0; i < points.size(); i += 3) {
+      for (uint32_t i = 0; i < points.size(); i += 3) {
         // find closest depth points to pixel
         std::vector<std::pair<double, double>> closest_depths;
         for (auto const& d : depth_points) {
@@ -288,6 +289,7 @@ void DepthMap::SetDepthImage(cv::Mat1d input) {
   min_depth_ = 1000, max_depth_ = 0;
   depth_image_->forEach<float>(
       [&](float& distance, const int* position) -> void {
+        (void)position;
         if (distance != 0.0) {
           if (distance > max_depth_) { max_depth_ = distance; }
           if (distance < min_depth_) { min_depth_ = distance; }
