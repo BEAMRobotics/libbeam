@@ -28,6 +28,12 @@ public:
   ~Poses() = default;
 
   /**
+   * @brief clears all content
+   */
+  void Clear();
+
+
+  /**
    * @brief for setting bag_name to pose file
    * @param _bag_name
    */
@@ -95,7 +101,7 @@ public:
 
   /**
    * @brief for setting poses
-   * @param _poses
+   * @param _poses transforms from fixed frame to moving frame
    */
   void SetPoses(
       const std::vector<Eigen::Affine3d,
@@ -103,29 +109,50 @@ public:
 
   /**
    * @brief for getting the poses
-   * @return poses
+   * @return poses transforms from fixed frame to moving frame
    */
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
       GetPoses();
 
   /**
    * @brief for adding a single pose
-   * @param pose
+   * @param pose transform from fixed frame to moving frame
    */
   void AddSinglePose(const Eigen::Affine3d& pose);
 
   /**
-   * @brief writes the pose file to the specified directory. The file will be
-   * named: "poses_file_date"_poses.json
+   * @brief writes the pose file to the specified directory as JSON type. The
+   * file will be named: "poses_file_date"_poses.json
    * @param output_dir full path to directory at which to save pose file
    */
-  void WriteToPoseFile(const std::string output_dir);
+  void WriteToJSON(const std::string output_dir);
 
   /**
-   * @brief loads the pose file
+   * @brief loads the pose file in JSON format
    * @param input_pose_file_path full path to pose file
    */
-  void LoadPoseFile(const std::string input_pose_file_path);
+  void LoadFromJSON(const std::string input_pose_file_path);
+
+  /**
+   * @brief writes the pose file to the specified directory as JSON type. The
+   * file will be named: "poses_file_date"_poses.json
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteToPLY(const std::string output_dir);
+
+  /**
+   * @brief loads the pose file in PLY format
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromPLY(const std::string input_pose_file_path);
+
+  /**
+   * @brief loads the pose object using the odometry from a bag file
+   * @param bag_file_path full path to bag file
+   * @param odom_topic
+   */
+  void LoadFromBAG(const std::string bag_file_path,
+                   const std::string odom_topic);
 
   std::vector<ros::Time> time_stamps;
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> poses;

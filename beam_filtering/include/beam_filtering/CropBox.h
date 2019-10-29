@@ -3,14 +3,10 @@
  */
 
 // PCL specific headers
-#include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
 #pragma once
-
-// beam
-#include "beam_utils/math.hpp"
 
 namespace beam_filtering {
 /** @addtogroup filtering
@@ -96,7 +92,7 @@ public:
     * @param cropped_cloud cloud to save to
     */
     void Filter(pcl::PointCloud<pcl::PointXYZI> &input_cloud,
-                pcl::PointCloud<pcl::PointXYZI> &cropped_cloud);               
+                pcl::PointCloud<pcl::PointXYZI> &cropped_cloud);
 
 private:
   Eigen::Vector3f  min_vec_, max_vec_;

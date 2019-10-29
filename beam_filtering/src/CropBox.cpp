@@ -1,4 +1,6 @@
 #include "beam_filtering/CropBox.h"
+#include "beam_utils/math.hpp"
+#include <pcl/common/transforms.h>
 
 namespace beam_filtering {
 
