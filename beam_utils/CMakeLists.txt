@@ -13,5 +13,3 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/angles.cpp
     src/uf.cpp
 )
-
-add_subdirectory(tests)
