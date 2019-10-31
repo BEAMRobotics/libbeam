@@ -6,11 +6,10 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     catkin::catkin
     yaml-cpp
     PCL::PCL
+    OpenCV::OpenCV
   SOURCES
     src/math.cpp
     src/time.cpp
     src/angles.cpp
     src/uf.cpp
 )
-
-add_subdirectory(tests)
