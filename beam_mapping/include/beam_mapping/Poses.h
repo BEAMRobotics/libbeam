@@ -134,8 +134,8 @@ public:
   void LoadFromJSON(const std::string input_pose_file_path);
 
   /**
-   * @brief writes the pose file to the specified directory as JSON type. The
-   * file will be named: "poses_file_date"_poses.json
+   * @brief writes the pose file to the specified directory as PLY type. The
+   * file will be named: "poses_file_date"_poses.ply
    * @param output_dir full path to directory at which to save pose file
    */
   void WriteToPLY(const std::string output_dir);
