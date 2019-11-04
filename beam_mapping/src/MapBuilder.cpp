@@ -435,7 +435,7 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
 
 void MapBuilder::SaveMaps() {
   std::string dateandtime =
-      beam::convertTimeToDate(std::chrono::system_clock::now());
+      beam::ConvertTimeToDate(std::chrono::system_clock::now());
   boost::filesystem::create_directory(save_dir_ + dateandtime + "/");
 
   for (uint8_t i = 0; i < maps_.size(); i++) {
