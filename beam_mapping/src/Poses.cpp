@@ -90,11 +90,6 @@ void Poses::WriteToJSON(const std::string output_dir) {
                              "poses. Cannot create pose file."};
   }
 
-  if (!boost::filesystem::is_directory(output_dir)) {
-    BEAM_INFO("Output directory does not exist, creating now.");
-    boost::filesystem::create_directories(output_dir);
-  }
-
   // write to json
   std::string J_string, J_poses_string, J_pose_k_string;
   nlohmann::json J, J_pose_k;
@@ -125,7 +120,22 @@ void Poses::WriteToJSON(const std::string output_dir) {
   J_string = J_string + "," + J_poses_string;         // add poses
   J = nlohmann::json::parse(J_string);
 
-  std::string output_file = output_dir + pose_file_date + "_poses.json";
+  std::string output_file;
+  std::string last_five_chars = output_dir.substr(output_dir.size()-5, output_dir.size());
+  std::cout << "output_dir: " << output_dir << "\n";
+  std::cout << "last_five_chars: " << last_five_chars << "\n";
+  if(last_five_chars == ".json" || last_five_chars == ".JSON"){
+    output_file = output_dir;
+    std::cout << "TEST1\n";
+
+  } else {
+    if (!boost::filesystem::is_directory(output_dir)) {
+      BEAM_INFO("Output directory does not exist, creating now.");
+      boost::filesystem::create_directories(output_dir);
+    }
+    output_file = output_dir + pose_file_date + "_poses.json";
+    std::cout << "TEST2\n";
+  }
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream filejson(output_file);
   filejson << std::setw(4) << J << std::endl;
@@ -187,7 +197,13 @@ void Poses::WriteToPLY(const std::string output_dir) {
   }
 
   // write to PLY
-  std::string output_file = output_dir + pose_file_date + "_poses.ply";
+  std::string output_file;
+  std::string last_four_chars = output_dir.substr(output_dir.size()-4, output_dir.size());
+  if(last_four_chars == ".ply" || last_four_chars == ".PLY"){
+    output_file = output_dir;
+  } else {
+    output_file = output_dir + pose_file_date + "_poses.ply";
+  }
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream fileply(output_file);
   double t_start = time_stamps[0].toSec();
