@@ -197,6 +197,9 @@ void Poses::WriteToPLY(const std::string output_dir) {
   fileply << "comment UTC time at start ";
   fileply << std::fixed << std::setprecision(6) << t_start << std::endl;
   fileply << "comment Local time at start " << pose_file_date << std::endl;
+  fileply << "bag file: " << bag_name << std::endl;
+  fileply << "fixed frame: " << fixed_frame << std::endl;
+  fileply << "moving frame: " << moving_frame << std::endl;
   fileply << "element vertex " << time_stamps.size() << std::endl;
   fileply << "property float x" << std::endl;
   fileply << "property float y" << std::endl;
@@ -235,6 +238,18 @@ void Poses::LoadFromPLY(const std::string input_pose_file_path) {
     if (str.substr(0, 13) == "comment Local") {
       str.erase(0, 28);
       pose_file_date = str;
+    }
+    if (str.substr(0, 9) == "bag file:") {
+      str.erase(0, 10);
+      bag_name = str;
+    }
+    if (str.substr(0, 12) == "fixed frame:") {
+      str.erase(0, 13);
+      fixed_frame = str;
+    }
+    if (str.substr(0, 13) == "moving frame:") {
+      str.erase(0, 14);
+      moving_frame = str;
     }
     if (str == "end_header") { break; }
   }
