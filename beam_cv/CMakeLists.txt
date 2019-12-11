@@ -13,6 +13,9 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Utils.cpp
     src/DepthMap.cpp
     src/RayCast.cpp
+    src/LinearRegression.cpp
+    src/DepthSuperpixels.cpp
+    src/DepthCompletion.cpp
 )
 
 ############# Debug files #############
@@ -52,4 +55,5 @@ target_include_directories(${PROJECT_NAME}_debug
 target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
   Eigen3::Eigen
+  ${CERES_LIBRARIES}
 )

@@ -19,9 +19,7 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
   // test method exception throwing
   beam_cv::DepthMap dm;
-  REQUIRE_THROWS(dm.DepthInterpolation(70, 5, 0.05, 1));
   REQUIRE_THROWS(dm.ExtractDepthMap(0.03, 5));
-  REQUIRE_THROWS(dm.KMeansCompletion(0.03, img));
   REQUIRE_THROWS(dm.ExtractPointCloud());
   REQUIRE_NOTHROW(dm.SetCloud(cloud));
   REQUIRE_NOTHROW(dm.SetModel(F1));
@@ -44,21 +42,4 @@ TEST_CASE("Test Depth map extractor.") {
   int low_density = dm.ExtractDepthMap(0.02, 3);
   int high_density = dm.ExtractDepthMap(0.1, 20);
   REQUIRE(low_density < high_density);
-}
-
-TEST_CASE("Test Depth interpolation.") {
-  // fiel locations
-  std::string cur_location = __FILE__;
-  cur_location.erase(cur_location.end() - 23, cur_location.end());
-  cur_location += "tests/test_data/";
-  std::string intrinsics_loc = cur_location + "F1.json";
-  // load other objects
-  std::shared_ptr<beam_calibration::CameraModel> F1 =
-      beam_calibration::CameraModel::LoadJSON(intrinsics_loc);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
-  // test method exception throwing
-  beam_cv::DepthMap dm(F1, cloud);
-  dm.ExtractDepthMap(0.03, 3);
-  REQUIRE(dm.DepthInterpolation(70, 5, 0.05, 1) > 100000);
 }

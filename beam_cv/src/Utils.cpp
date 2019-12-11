@@ -14,9 +14,12 @@ cv::Mat VisualizeDepthImage(const cv::Mat& input) {
     (void)position;
     if (distance > max_depth) { max_depth = distance; }
   });
-  cv::Mat gs_depth = cv::Mat(image.rows, image.cols, CV_8UC1);
+
+  int scale = 255 / max_depth;
+  cv::Mat gs_depth;
+  image.convertTo(gs_depth, CV_8UC1);
+
   image.forEach<float>([&](float& distance, const int* position) -> void {
-    int scale = 255 / max_depth;
     uint8_t pixel_value = (scale * distance);
     gs_depth.at<uchar>(position[0], position[1]) = pixel_value;
   });

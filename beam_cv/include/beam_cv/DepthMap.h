@@ -59,7 +59,7 @@ public:
    * @brief Sets depth image attribute
    * @param input depth image to set
    */
-  void SetDepthImage(cv::Mat1d input);
+  void SetDepthImage(cv::Mat input);
   /**
    * @brief Gets camera model
    * @return Returns a pointer to a camera model
@@ -80,27 +80,6 @@ public:
    * @return number of points extracted
    */
   int ExtractDepthMap(double threshold, int mask_size);
-
-  /**
-   * @brief Performs interpolation to densify depth map
-   * @param window_width width (columns) distance to check for point to use for
-   *        interpolation
-   * @param window height height (rows) distance to check for point to use for
-   *        interpolation
-   * @param threshold maximum distance between to points to use for
-   *        interpolation
-   * @param iterations number of interpolation iterations to perform
-   * @return number of points interpolated
-   */
-  int DepthInterpolation(int window_width, int window_height, float threshold,
-                         int iterations);
-
-  /*
-   * @brief Performs Completiion using k means
-   * @param K number of segments
-   * @param img color image
-   */
-  void KMeansCompletion(int K, cv::Mat img);
 
   /*
    * @brief Creates point cloud form interpolated depth image
