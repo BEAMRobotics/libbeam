@@ -38,7 +38,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   // create kdtree for faster searching
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
 
-  uint32_t points_colored = 0;
   if (input_cloud->size() > 0) {
     kdtree.setInputCloud(input_cloud);
     // create image mask where white pixels = projection hit

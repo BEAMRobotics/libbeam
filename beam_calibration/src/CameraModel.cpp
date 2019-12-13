@@ -268,8 +268,8 @@ beam::Vec2 Radtan::DistortPixel(beam::VecX coeffs, beam::Vec2 point) const {
   beam::Vec2 coords;
   double x = point[0], y = point[1];
 
-  double xx, yy, r2, k1 = coeffs[0], k2 = coeffs[1], k3 = coeffs[2],
-                     p1 = coeffs[3], p2 = coeffs[4];
+  double xx, yy, k1 = coeffs[0], k2 = coeffs[1], k3 = coeffs[2],
+                 p1 = coeffs[3], p2 = coeffs[4];
   double mx2_u = x * x;
   double my2_u = y * y;
   double mxy_u = x * y;

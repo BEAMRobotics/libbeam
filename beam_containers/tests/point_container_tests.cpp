@@ -79,7 +79,7 @@ TEST_CASE("Test creating point cloud of point type PointBridge and perform "
 
   bool did_transform_correctly = true;
   pcl::transformPointCloud(*point_cloud1, *point_cloud2, transformation);
-  for (int i = 0; i < point_cloud1->points.size(); i++) {
+  for (uint32_t i = 0; i < point_cloud1->points.size(); i++) {
     if (pcl::euclideanDistance(point_cloud1->points[i],
                                point_cloud2->points[i]) != 1) {
       did_transform_correctly = false;

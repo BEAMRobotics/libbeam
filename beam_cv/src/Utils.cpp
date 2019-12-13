@@ -11,6 +11,7 @@ cv::Mat VisualizeDepthImage(const cv::Mat& input) {
   cv::Mat image = input.clone();
   float max_depth = 0;
   image.forEach<float>([&](float& distance, const int* position) -> void {
+    (void)position;
     if (distance > max_depth) { max_depth = distance; }
   });
   cv::Mat gs_depth = cv::Mat(image.rows, image.cols, CV_8UC1);
@@ -56,7 +57,7 @@ cv::Mat KMeans(const cv::Mat& input, int K) {
   data = data.reshape(3, data.rows);
   // replace pixel values with their center value:
   cv::Vec3f* p = data.ptr<cv::Vec3f>();
-  for (size_t i = 0; i < data.rows; i++) {
+  for (int i = 0; i < (int)data.rows; i++) {
     int center_id = labels.at<int>(i);
     p[i] = centers.at<cv::Vec3f>(center_id);
   }
