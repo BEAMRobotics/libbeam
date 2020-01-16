@@ -1,5 +1,6 @@
 // beam
 #include "beam_cv/DepthCompletion.h"
+#include "beam_cv/DepthSuperpixels.h"
 #include "beam_cv/Utils.h"
 
 namespace beam_cv {
@@ -79,10 +80,10 @@ cv::Mat1f KMeansCompletion(int K, cv::Mat rgb_image, cv::Mat1f depth_image) {
   // iterate over each component
   for (auto const& c : sets) {
     std::vector<cv::Point2i> points = c.second;
-    std::vector<std::pair<double, cv::Point2i>> depth_points;
+    std::vector<std::pair<float, cv::Point2i>> depth_points;
     // create vector of depth points that are within the component
     for (cv::Point2i p : points) {
-      double dist = di_copy.at<float>(p.x, p.y);
+      float dist = di_copy.at<float>(p.x, p.y);
       if (dist > 0.0) { depth_points.push_back(std::make_pair(dist, p)); }
     }
     if (depth_points.size() >= 1) {
@@ -106,7 +107,7 @@ cv::Mat1f KMeansCompletion(int K, cv::Mat rgb_image, cv::Mat1f depth_image) {
         cv::Point2i p = depth_points[n].second;
         if (d > 0.0 && (d > mean + 1 * (sd) || d < mean - 1 * (sd))) {
           depth_points.erase(depth_points.begin() + n);
-          di_copy.at<double>(p.x, p.y) = 0.0;
+          di_copy.at<float>(p.x, p.y) = 0.0;
           n--;
         }
       }
@@ -119,10 +120,10 @@ cv::Mat1f KMeansCompletion(int K, cv::Mat rgb_image, cv::Mat1f depth_image) {
 
       for (uint32_t i = 0; i < points.size(); i += 3) {
         // find closest depth points to pixel
-        std::vector<std::pair<double, double>> closest_depths;
+        std::vector<std::pair<float, float>> closest_depths;
         for (auto const& d : depth_points) {
-          double distance = beam_cv::PixelDistance(points[i], d.second);
-          double depth = d.first;
+          float distance = beam_cv::PixelDistance(points[i], d.second);
+          float depth = d.first;
           closest_depths.push_back(std::make_pair(distance, depth));
         }
         if (closest_depths.size() >= 5) {
@@ -145,4 +146,6 @@ cv::Mat1f KMeansCompletion(int K, cv::Mat rgb_image, cv::Mat1f depth_image) {
                    beam::GetFullKernel(11));
   return completed;
 }
+
+cv::Mat1f SuperpixelCompletion(cv::Mat rgb_image, cv::Mat1f depth_image) {}
 } // namespace beam_cv

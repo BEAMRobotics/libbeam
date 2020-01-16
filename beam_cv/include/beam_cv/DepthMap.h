@@ -79,7 +79,7 @@ public:
    * @param mask_size used as input for beam_cv::CreateHitMask
    * @return number of points extracted
    */
-  int ExtractDepthMap(double threshold, int mask_size);
+  int ExtractDepthMap(float threshold, int mask_size);
 
   /*
    * @brief Creates point cloud form interpolated depth image
@@ -120,7 +120,7 @@ protected:
   // camera model used
   std::shared_ptr<beam_calibration::CameraModel> model_;
   // stores the min and max depth in the depth map
-  double min_depth_, max_depth_;
+  float min_depth_, max_depth_;
   // verification variables
   bool point_cloud_initialized_ = false, model_initialized_ = false,
        depth_image_extracted_ = false;

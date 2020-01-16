@@ -7,10 +7,11 @@ using namespace std;
 
 namespace beam_cv {
 
-DepthSuperpixels::DepthSuperpixels(cv::Mat rgb_image, cv::Mat1f depth_image) {
+DepthSuperpixels::DepthSuperpixels(cv::Mat rgb_image, cv::Mat1f depth_image,
+                                   bool write) {
   depth_image_ = std::make_shared<cv::Mat1f>(depth_image);
   rgb_image_ = std::make_shared<cv::Mat>(rgb_image);
-  this->PerformSegmentation(30, 40, 5, true);
+  this->PerformSegmentation(10, 40, 10, write);
 }
 
 void DepthSuperpixels::PerformSegmentation(int region_size, float smoothness,
@@ -82,8 +83,8 @@ void DepthSuperpixels::FillSuperpixelDepth() {
         depths.push_back(d);
       }
     }
-    Eigen::MatrixXd X(num_obs, 2);
-    Eigen::RowVectorXd y(num_obs);
+    Eigen::MatrixXf X(num_obs, 2);
+    Eigen::RowVectorXf y(num_obs);
     for (int i = 0; i < num_obs; i++) {
       X(i, 0) = pixels[i].x;
       X(i, 1) = pixels[i].y;

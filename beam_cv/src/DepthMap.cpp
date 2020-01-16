@@ -14,7 +14,7 @@ DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
   this->SetModel(model);
 }
 
-int DepthMap::ExtractDepthMap(double threshold, int mask_size) {
+int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
   if (!point_cloud_initialized_ || !model_initialized_) {
     BEAM_CRITICAL("Variables not properly initialized.");
     throw std::runtime_error{"Variables not properly initialized."};
