@@ -1,4 +1,5 @@
 #include "beam_cv/DepthSuperpixels.h"
+#include <chrono>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/ximgproc.hpp>
@@ -11,7 +12,7 @@ DepthSuperpixels::DepthSuperpixels(cv::Mat rgb_image, cv::Mat1f depth_image,
                                    bool write) {
   depth_image_ = std::make_shared<cv::Mat1f>(depth_image);
   rgb_image_ = std::make_shared<cv::Mat>(rgb_image);
-  this->PerformSegmentation(10, 40, 10, write);
+  this->PerformSegmentation(10, 30, 5, write);
 }
 
 void DepthSuperpixels::PerformSegmentation(int region_size, float smoothness,
@@ -19,9 +20,20 @@ void DepthSuperpixels::PerformSegmentation(int region_size, float smoothness,
   cv::Ptr<cv::ximgproc::SuperpixelSLIC> slic =
       cv::ximgproc::createSuperpixelSLIC(*rgb_image_, cv::ximgproc::SLICO,
                                          region_size, smoothness);
+  // cv::Ptr<cv::ximgproc::SuperpixelSEEDS> slic =
+  //   cv::ximgproc::createSuperpixelSEEDS(rgb_image_->cols, rgb_image_->rows,
+  //   3,
+  //                                      150, 30);
+  auto start_time = std::chrono::high_resolution_clock::now();
   slic->iterate(iterations);
+  // slic->iterate(*rgb_image_);
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto time = end_time - start_time;
+  std::cout << time / std::chrono::milliseconds(1)
+            << "ms to run. (superpixel segmentation)\n";
   slic->getLabels(labels_);
   num_superpixels = slic->getNumberOfSuperpixels();
+
   for (int i = 0; i < labels_.rows; i++) {
     for (int j = 0; j < labels_.cols; j++) {
       int key = labels_.at<int>(i, j);
@@ -35,7 +47,7 @@ void DepthSuperpixels::PerformSegmentation(int region_size, float smoothness,
       }
     }
   }
-  this->ExtractSuperpixelCentroids();
+  // this->ExtractSuperpixelCentroids();
   this->FillSuperpixelDepth();
   // this->ExtractNeighbours();
 
@@ -44,7 +56,7 @@ void DepthSuperpixels::PerformSegmentation(int region_size, float smoothness,
     cv::Mat mask;
     slic->getLabelContourMask(mask, true);
     result.setTo(cv::Scalar(0, 0, 255), mask);
-    imwrite("/home/jake/result.png", result);
+    imwrite("/home/jake/results/result.png", result);
   }
 }
 
@@ -78,6 +90,8 @@ void DepthSuperpixels::FillSuperpixelDepth() {
     for (cv::Point2i p : sp->pixels) {
       float d = depth_image_->at<float>(p.x, p.y);
       if (d > 0) {
+        std::tuple<cv::Point2i, float> depth_point = std::make_tuple(p, d);
+        sp->depth_values_2.push_back(depth_point);
         num_obs++;
         pixels.push_back(p);
         depths.push_back(d);

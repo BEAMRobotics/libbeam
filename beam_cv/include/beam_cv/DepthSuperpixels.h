@@ -15,6 +15,7 @@ struct SuperPixel {
   std::vector<cv::Point2i> pixels;
   std::set<int> neighbours;
   std::tuple<Eigen::MatrixXf, Eigen::RowVectorXf> depth_values;
+  std::vector<std::tuple<cv::Point2i, float>> depth_values_2;
   cv::Point2i centroid;
 };
 
