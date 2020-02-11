@@ -82,7 +82,7 @@ public:
   int ExtractDepthMap(float threshold, int mask_size);
 
   /*
-   * @brief Creates point cloud form interpolated depth image
+   * @brief Creates point cloud from interpolated depth image
    * @return point cloud
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr ExtractPointCloud();

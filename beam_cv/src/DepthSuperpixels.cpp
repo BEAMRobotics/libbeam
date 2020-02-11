@@ -20,13 +20,8 @@ void DepthSuperpixels::PerformSegmentation(int region_size, float smoothness,
   cv::Ptr<cv::ximgproc::SuperpixelSLIC> slic =
       cv::ximgproc::createSuperpixelSLIC(*rgb_image_, cv::ximgproc::SLICO,
                                          region_size, smoothness);
-  // cv::Ptr<cv::ximgproc::SuperpixelSEEDS> slic =
-  //   cv::ximgproc::createSuperpixelSEEDS(rgb_image_->cols, rgb_image_->rows,
-  //   3,
-  //                                      150, 30);
   auto start_time = std::chrono::high_resolution_clock::now();
   slic->iterate(iterations);
-  // slic->iterate(*rgb_image_);
   auto end_time = std::chrono::high_resolution_clock::now();
   auto time = end_time - start_time;
   std::cout << time / std::chrono::milliseconds(1)
