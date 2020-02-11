@@ -37,6 +37,12 @@ LadybugCamera::LadybugCamera(unsigned int id, std::string& file) : cam_id_(id) {
 
 beam::Vec2 LadybugCamera::ProjectPoint(beam::Vec3 point) {
   beam::Vec2 out_point;
+
+  // check if point is behind image plane
+  if(point[2] < 0){
+    return Eigen::Vector2d(-1, -1);
+  }
+
   if (intrinsics_valid_) {
     beam::Vec2 coords;
     beam::Vec3 x_proj, X_flip;
