@@ -57,3 +57,14 @@ target_link_libraries(${PROJECT_NAME}_debug
   Eigen3::Eigen
   ${CERES_LIBRARIES}
 )
+
+add_executable(${PROJECT_NAME}_crack_debug
+  src/crack_debug.cpp
+)
+target_include_directories(${PROJECT_NAME}_crack_debug
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_crack_debug
+  ${PROJECT_NAME}
+)

@@ -147,58 +147,53 @@ cv::Mat1f KMeansCompletion(int K, cv::Mat rgb_image, cv::Mat1f depth_image) {
   return completed;
 }
 
-cv::Mat1f SuperpixelCompletion(cv::Mat rgb_image, cv::Mat1f depth_image) {
-  beam_cv::DepthSuperpixels DSP =
-      beam_cv::DepthSuperpixels(rgb_image, depth_image, true);
-  std::unordered_map<int, std::shared_ptr<beam_cv::SuperPixel>> superpixels =
-      DSP.GetSuperpixels();
+cv::Mat1f IPBasic(cv::Mat1f depth_img) {
+  cv::Mat dst = depth_img.clone();
+  // invert
+  dst.forEach<float>([&](float& distance, const int* position) -> void {
+    (void)position;
+    if (distance > 0.1) { distance = 90.0 - distance; }
+  });
 
-  for (auto& it : superpixels) {
-    std::shared_ptr<beam_cv::SuperPixel> sp = it.second;
-    for (cv::Point2i p : sp->pixels) {
-      cv::Point2i p1, p2, p3, p4;
-      float dp1 = 1000, dp2 = 1000, dp3 = 1000, dp4 = 1000;
-      if (depth_image.at<float>(p.x, p.y) == 0) {
-        for (std::tuple<cv::Point2i, float> depth_point : sp->depth_values_2) {
-          cv::Point2i search_point = std::get<0>(depth_point);
-          float dist = ((p.x - search_point.x) * (p.x - search_point.x)) +
-                       ((p.y - search_point.y) * (p.y - search_point.y));
-          dist = sqrt(dist);
-          if (search_point.x < p.x && search_point.y < p.y && dist < dp1) {
-            dp1 = dist;
-            p1 = search_point;
-          } else if (search_point.x < p.x && search_point.y >= p.y &&
-                     dist < dp2) {
-            dp2 = dist;
-            p2 = search_point;
-          } else if (search_point.x >= p.x && search_point.y >= p.y &&
-                     dist < dp3) {
-            dp3 = dist;
-            p3 = search_point;
-          } else if (search_point.x >= p.x && search_point.y < p.y &&
-                     dist < dp4) {
-            dp4 = dist;
-            p4 = search_point;
-          }
-        }
-      }
-      if (dp1 != 1000 && dp2 != 1000 && dp3 != 1000 && dp4 != 1000) {
-        float p1_f = depth_image.at<float>(p1.x, p1.y);
-        float p2_f = depth_image.at<float>(p2.x, p2.y);
-        float p3_f = depth_image.at<float>(p3.x, p3.y);
-        float p4_f = depth_image.at<float>(p4.x, p4.y);
-        depth_image.at<float>(p.x, p.y) = (p1_f + p2_f + p3_f + p4_f) / 4;
-      } else if (dp1 < dp2 && dp1 < dp3 && dp1 < dp4) {
-        depth_image.at<float>(p.x, p.y) = depth_image.at<float>(p1.x, p1.y);
-      } else if (dp2 < dp1 && dp2 < dp3 && dp1 < dp4) {
-        depth_image.at<float>(p.x, p.y) = depth_image.at<float>(p2.x, p2.y);
-      } else if (dp3 < dp2 && dp3 < dp1 && dp1 < dp4) {
-        depth_image.at<float>(p.x, p.y) = depth_image.at<float>(p3.x, p3.y);
-      } else if (dp4 < dp2 && dp4 < dp1 && dp4 < dp3) {
-        depth_image.at<float>(p.x, p.y) = depth_image.at<float>(p4.x, p4.y);
-      }
+  // dilate
+  cv::Mat diamondKernel5 = beam::GetEllipseKernel(5);
+  diamondKernel5.at<uchar>(1, 0) = 0;
+  diamondKernel5.at<uchar>(1, 4) = 0;
+  diamondKernel5.at<uchar>(3, 0) = 0;
+  diamondKernel5.at<uchar>(3, 4) = 0;
+  cv::dilate(dst, dst, diamondKernel5);
+
+  // hole closing
+  cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, beam::GetFullKernel(5));
+  // fill empty spaces with dilated values
+  std::vector<cv::Point2i> empty_pixels;
+  for (int row = 0; row < dst.rows; row++) {
+    for (int col = 0; col < dst.cols; col++) {
+      float distance = dst.at<float>(row, col);
+      if (distance < 0.1) { empty_pixels.push_back(cv::Point2i(row, col)); }
     }
   }
-  return depth_image;
+  cv::Mat dilated;
+  cv::dilate(dst, dilated, beam::GetFullKernel(7));
+  for (int i = 0; i < empty_pixels.size(); i++) {
+    dst.at<float>(empty_pixels[i].x, empty_pixels[i].y) =
+        dilated.at<float>(empty_pixels[i].x, empty_pixels[i].y);
+  }
+
+  // median blur
+  cv::medianBlur(dst, dst, 5);
+
+  // bilateral filter
+  cv::Mat copy = dst.clone();
+  cv::bilateralFilter(copy, dst, 5, 1.5, 2.0);
+
+  // invert
+  dst.forEach<float>([&](float& distance, const int* position) -> void {
+    (void)position;
+    if (distance > 0.1) { distance = 90.0 - distance; }
+  });
+
+  return dst;
 }
+
 } // namespace beam_cv

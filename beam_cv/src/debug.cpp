@@ -28,15 +28,12 @@ string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv/"
 string training_dir =
     "/home/jake/projects/kitti/train/2011_09_26_drive_0001_sync/proj_depth/"
     "velodyne_raw/image_02/";
-
 string prediction_dir =
     "/home/jake/projects/kitti/prediction/2011_09_26_drive_0001_sync/image_02/";
 
 Mat CompleteDepthImage(Mat depth_img);
-Mat IPBasic(Mat depth_img);
 
 int main() {
-  /*
   char train_dir[training_dir.size() + 1];
   strcpy(train_dir, training_dir.c_str());
 
@@ -48,35 +45,27 @@ int main() {
       string depth_image_name(entry->d_name);
       string depth_image_path = training_dir + depth_image_name;
       if (depth_image_name.size() > 4) {
-        std::cout << depth_image_name << std::endl;
         Mat depth_img;
         Mat depth = imread(depth_image_path, IMREAD_GRAYSCALE);
         depth.convertTo(depth_img, CV_32F);
-        depth_img = CompleteDepthImage(depth_img);
-        medianBlur(depth_img, depth_img, 3);
-        // Mat depth_img_copy = depth_img.clone();
-        // bilateralFilter(depth_img_copy, depth_img, 10, 2.5, 5);
+        depth_img = beam_cv::IPBasic(depth_img);
         std::string output_location = prediction_dir + depth_image_name;
         imwrite(output_location, depth_img);
       }
     }
   }
-  closedir(dir);*/
+  closedir(dir);
 
+  /*
   string depth_location = cur_dir + "test_depth/depth/depth.png";
-  // read in images and perform equalizaiton + smoothing
   Mat depth_img, depth_img_gt, viz;
-
-  // read input depth and visualize it
   Mat depth = imread(depth_location, IMREAD_GRAYSCALE);
   depth.convertTo(depth_img, CV_32F);
-  viz = beam_cv::VisualizeDepthImage(depth_img);
-  imwrite("/home/jake/results/depth.png", viz);
 
-  depth_img = CompleteDepthImage(depth_img);
+  depth_img = IPBasic(depth_img);
 
   viz = beam_cv::VisualizeDepthImage(depth_img);
-  imwrite("/home/jake/results/depth_complete.png", viz);
+  imwrite("/home/jake/results/depth_complete.png", viz);*/
 }
 
 Mat CompleteDepthImage(Mat depth_img) {
@@ -127,5 +116,3 @@ Mat CompleteDepthImage(Mat depth_img) {
   });
   return depth_img;
 }
-
-Mat IPBasic(Mat depth_img) {}
