@@ -20,6 +20,7 @@ int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
     throw std::runtime_error{"Variables not properly initialized."};
   }
   BEAM_INFO("Extracting Depth Image...");
+
   // create image mask where white pixels = projection hit
   cv::Mat hit_mask = beam_cv::CreateHitMask(mask_size, model_, cloud_);
   /// create image with 3 channels for coordinates
@@ -42,7 +43,7 @@ int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
           if (distance < min_depth_) { min_depth_ = distance; }
         }
       });
-  // cv::dilate(*depth_image_, *depth_image_, beam::GetFullKernel(5));
+  // cv::dilate(*depth_image_, *depth_image_, beam::GetFullKernel(3));
   return num_extracted;
 }
 
@@ -96,6 +97,22 @@ beam::Vec3 DepthMap::GetXYZ(beam::Vec2 pixel) {
 float DepthMap::GetDistance(beam::Vec2 p1, beam::Vec2 p2) {
   beam::Vec3 coord1 = GetXYZ(p1), coord2 = GetXYZ(p2);
   return beam::distance(coord1, coord2);
+}
+
+float DepthMap::GetPixelScale(beam::Vec2 pixel) {
+  float distance = depth_image_->at<float>(pixel[0], pixel[1]);
+  if (distance == 0.0) {
+    beam::Vec2 c = beam_cv::FindClosest(pixel, *depth_image_);
+    distance = depth_image_->at<float>(c[0], c[1]);
+  }
+  beam::Vec2 left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
+  beam::Vec3 dir_left = model_->BackProject(left),
+             dir_right = model_->BackProject(right);
+  beam::Vec3 coords_left = distance * dir_left,
+             coords_right = distance * dir_right;
+  float area = beam::distance(coords_left, coords_right) *
+               beam::distance(coords_left, coords_right);
+  return area;
 }
 
 /***********************Getters/Setters**********************/

@@ -111,6 +111,13 @@ public:
    */
   float GetDistance(beam::Vec2 p1, beam::Vec2 p2);
 
+  /**
+   * @brief returns area of a pixel in world scale
+   * @param pixel
+   * @return float
+   */
+  float GetPixelScale(beam::Vec2 pixel);
+
   /***********************Member variables**********************/
 protected:
   // input point cloud

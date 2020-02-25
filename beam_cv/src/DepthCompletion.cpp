@@ -196,4 +196,50 @@ cv::Mat1f IPBasic(cv::Mat1f depth_img) {
   return dst;
 }
 
+cv::Mat1f IDWInterpolation(cv::Mat1f depth_img, int window_size) {
+  cv::Mat dst = depth_img.clone();
+  cv::Mat copy = depth_img.clone();
+  copy.forEach<float>([&](float& distance, const int* position) -> void {
+    if (distance == 0) {
+      int row = position[0], col = position[1];
+      // calculate window start and end points
+      int start_row = row - (window_size / 2);
+      int start_col = col - (window_size / 2);
+      int end_row = row + (window_size / 2);
+      int end_col = col + (window_size / 2);
+      if (start_row < 0) start_row = 0;
+      if (start_col < 0) start_col = 0;
+      if (end_row > dst.rows) end_row = dst.rows;
+      if (end_col > dst.cols) end_col = dst.cols;
+      // fill vector with neighbourhood depth values and the distance to them
+      std::vector<std::tuple<float, float>> closest_points;
+      for (int i = start_row; i < end_row; i++) {
+        for (int j = start_col; j < end_col; j++) {
+          float depth = copy.at<float>(i, j);
+          if (depth != 0) {
+            float dist = ((i - row) * (i - row)) + ((j - col) * (j - col));
+            dist = sqrt(dist);
+            closest_points.push_back(std::make_tuple(dist, depth));
+          }
+        }
+      }
+
+      if (closest_points.size() >= 3) {
+        float idw_numerator = 0.0;
+        float idw_denominator = 0.0;
+        for (int i = 0; i < closest_points.size(); i++) {
+          std::tuple<float, float> pair = closest_points[i];
+          float depth = std::get<1>(pair);
+          float dist = std::get<0>(pair);
+          idw_numerator += depth / dist;
+          idw_denominator += 1 / dist;
+        }
+        float interpolated_depth = idw_numerator / idw_denominator;
+        dst.at<float>(row, col) = interpolated_depth;
+      }
+    }
+  });
+  return dst;
+}
+
 } // namespace beam_cv
