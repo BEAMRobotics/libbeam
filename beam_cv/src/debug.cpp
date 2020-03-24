@@ -25,13 +25,15 @@ using namespace std;
 // global variables
 string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv/"
                  "tests/";
-string training_dir =
-    "/home/jake/projects/kitti/train/2011_09_26_drive_0001_sync/proj_depth/"
-    "velodyne_raw/image_02/";
-string prediction_dir =
-    "/home/jake/projects/kitti/prediction/2011_09_26_drive_0001_sync/image_02/";
 
-int main() {
+int main(int argc, char* argv[]) {
+  string current_drive = string(argv[1]);
+
+  string training_dir = "/home/jake/projects/kitti/train/" + current_drive +
+                        "/proj_depth/velodyne_raw/image_02/";
+  string prediction_dir =
+      "/home/jake/projects/kitti/prediction/" + current_drive + "/image_02/";
+
   char train_dir[training_dir.size() + 1];
   strcpy(train_dir, training_dir.c_str());
 
@@ -46,7 +48,7 @@ int main() {
         Mat depth_img;
         Mat depth = imread(depth_image_path, IMREAD_GRAYSCALE);
         depth.convertTo(depth_img, CV_32F);
-        depth_img = beam_cv::IPBasic(depth_img);
+        depth_img = beam_cv::MultiscaleInterpolation(depth_img);
         std::string output_location = prediction_dir + depth_image_name;
         imwrite(output_location, depth_img);
       }

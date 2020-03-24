@@ -242,4 +242,57 @@ cv::Mat1f IDWInterpolation(cv::Mat1f depth_img, int window_size) {
   return dst;
 }
 
+cv::Mat1f MultiscaleInterpolation(cv::Mat1f depth_img) {
+  // segment into 4 channels
+  std::vector<cv::Mat> channels = beam_cv::SegmentMultiscale(depth_img);
+  // perform completion on each
+  for (int i = 0; i < 4; i++) {
+    cv::Mat dst = channels[i];
+    channels[i] = beam_cv::DepthInterpolation(21, 21, 5, channels[i]);
+    channels[i] = beam_cv::DepthInterpolation(15, 15, 5, channels[i]);
+    cv::Mat diamondKernel5 = beam::GetEllipseKernel(5);
+    diamondKernel5.at<uchar>(1, 0) = 0;
+    diamondKernel5.at<uchar>(1, 4) = 0;
+    diamondKernel5.at<uchar>(3, 0) = 0;
+    diamondKernel5.at<uchar>(3, 4) = 0;
+    cv::dilate(channels[i], channels[i], diamondKernel5);
+    cv::morphologyEx(channels[i], channels[i], cv::MORPH_CLOSE,
+                     beam::GetFullKernel(5));
+    cv::morphologyEx(channels[i], channels[i], cv::MORPH_CLOSE,
+                     beam::GetEllipseKernel(11));
+  }
+  // recombine
+  cv::Mat combined_depth =
+      cv::Mat::zeros(cv::Size(depth_img.cols, depth_img.rows), CV_32F);
+  for (int i = 0; i < 4; i++) {
+    channels[i].forEach<float>(
+        [&](float& distance, const int* position) -> void {
+          if (distance != 0) {
+            combined_depth.at<float>(position[0], position[1]) = distance;
+          }
+        });
+  }
+  float max_depth = 0;
+  combined_depth.forEach<float>(
+      [&](float& distance, const int* position) -> void {
+        (void)position;
+        if (distance != 0.0) {
+          if (distance > max_depth) { max_depth = distance; }
+        }
+      });
+  // invert
+  cv::Mat dst = combined_depth.clone();
+  dst.forEach<float>([&](float& distance, const int* position) -> void {
+    (void)position;
+    if (distance > 0.1) { distance = max_depth - distance; }
+  });
+  cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, beam::GetEllipseKernel(21));
+  cv::medianBlur(dst, dst, 5);
+  // invert back
+  dst.forEach<float>([&](float& distance, const int* position) -> void {
+    (void)position;
+    if (distance > 0.1) { distance = max_depth - distance; }
+  });
+  return dst;
+}
 } // namespace beam_cv

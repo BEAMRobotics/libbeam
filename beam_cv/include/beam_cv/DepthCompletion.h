@@ -30,4 +30,9 @@ cv::Mat1f IPBasic(cv::Mat1f depth_img);
  */
 cv::Mat1f IDWInterpolation(cv::Mat1f depth_img, int window_size);
 
+/**
+ * @brief Performs multiscale interpolation and ip_basic
+ */
+cv::Mat1f MultiscaleInterpolation(cv::Mat1f depth_img);
+
 } // namespace beam_cv

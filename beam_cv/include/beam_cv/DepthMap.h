@@ -81,6 +81,8 @@ public:
    */
   int ExtractDepthMap(float threshold, int mask_size);
 
+  int ExtractDepthMapProjection();
+
   /*
    * @brief Creates point cloud from interpolated depth image
    * @return point cloud

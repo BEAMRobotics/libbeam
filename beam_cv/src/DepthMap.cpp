@@ -47,6 +47,28 @@ int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
   return num_extracted;
 }
 
+int DepthMap::ExtractDepthMapProjection() {
+  /// create image with 3 channels for coordinates
+  depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
+                                           model_->GetWidth(), CV_32FC1);
+  for (uint32_t i = 0; i < cloud_->points.size(); i++) {
+    beam::Vec3 origin;
+    origin << 0, 0, 0;
+    beam::Vec3 point;
+    point << cloud_->points[i].x, cloud_->points[i].y, cloud_->points[i].z;
+    beam::Vec2 coords;
+    coords = model_->ProjectPoint(point);
+    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
+    if (u > 0 && v > 0 && v < model_->GetHeight() && u < model_->GetWidth() &&
+        cloud_->points[i].z > 0) {
+      float dist = beam::distance(point, origin);
+      if (dist < 5) { depth_image_->at<float>(v, u) = dist; }
+    }
+  }
+  depth_image_extracted_ = true;
+  int num_extracted = 0;
+}
+
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   if (!this->CheckState()) {
     BEAM_CRITICAL("Variables not properly set.");

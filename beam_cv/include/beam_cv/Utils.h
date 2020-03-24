@@ -81,4 +81,18 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2);
  */
 beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image);
 
+/**
+ * @brief returns vector of mats
+ * @param depth_image depth image to segment
+ * @return Vector of mats
+ */
+std::vector<cv::Mat> SegmentMultiscale(cv::Mat depth_image);
+
+/**
+ * @brief saves a depth image as grayscale to path
+ * @param depth_image depth image to segment
+ * @param path to save image at
+ */
+void SaveDepthImageBW(cv::Mat depth_image, std::string path);
+
 } // namespace beam_cv
