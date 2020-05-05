@@ -34,14 +34,15 @@ public:
   CameraModel() = default;
 
   /**
-   * @brief Factory constructor
-   */
-  CameraModel(std::string& file_location);
-
-  /**
    * @brief Default destructor
    */
   virtual ~CameraModel() = default;
+
+  /**
+   * @brief Camera factory to init models from config files
+   */
+  std::shared_ptr<CameraModel> CameraFactory(CameraType type,
+                                             std::string& file_location);
 
   /**
    * @brief Method for projecting a point into an image plane

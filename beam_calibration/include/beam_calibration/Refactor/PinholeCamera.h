@@ -21,11 +21,6 @@ public:
   PinholeCamera();
 
   /**
-   * @brief constructor with values
-   */
-  PinholeCamera(std::string& file_location);
-
-  /**
    * @brief Default destructor
    */
   ~PinholeCamera() = default;
