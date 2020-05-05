@@ -14,7 +14,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/DepthMap.cpp
     src/RayCast.cpp
     src/LinearRegression.cpp
-    src/DepthSuperpixels.cpp
     src/DepthCompletion.cpp
 )
 
@@ -46,7 +45,7 @@ target_link_libraries(${PROJECT_NAME}_depth_tests
 )
 
 add_executable(${PROJECT_NAME}_debug
-  src/debug.cpp
+  src/kitti_debug.cpp
 )
 target_include_directories(${PROJECT_NAME}_debug
   PUBLIC

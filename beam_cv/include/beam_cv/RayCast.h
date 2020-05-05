@@ -47,11 +47,11 @@ void RayCastXYZRGB(std::shared_ptr<cv::Mat> image,
                              pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_i,
                              const int* position, int index));
 
-/*
+/**
  * @brief Creates hit mask to speed up ray casting
  * @param mask_size size of mask used for dilating hit mask
  * @param model camera model used for projecting points
- * @param cloud cloud to use for hit detection 
+ * @param cloud cloud to use for hit detection
  * @return cv::Mat
  */
 cv::Mat CreateHitMask(int mask_size,

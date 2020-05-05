@@ -81,6 +81,11 @@ public:
    */
   int ExtractDepthMap(float threshold, int mask_size);
 
+  /**
+   * @brief Computes the depth image based on the given point cloud and image
+   * using projection over ray casting
+   * @return number of points extracted
+   */
   int ExtractDepthMapProjection();
 
   /*

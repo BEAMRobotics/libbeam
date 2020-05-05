@@ -32,6 +32,8 @@ public:
    * @brief Constructor to initlialize data
    * @param X_train X matrix of predictors
    * @param y_train y vector of responses
+   * @param length_train number of epochs to train
+   * @param number_predictor_train number of training variables
    */
   Dataset(Eigen::MatrixXf X_train, Eigen::RowVectorXf y_train, int length_train,
           int number_predictor_train);
@@ -64,11 +66,16 @@ public:
 
   /**
    * @brief Default destructor
+   * @param number_predictor number of predictor variables
+   * @param random_init flag if random initialization is desired
    */
   void init(int number_predictor, int random_init);
 
   /**
    * @brief Default destructor
+   * @param data to be trained on
+   * @param y_pred predicted y values
+   * @param learning_rate
    */
   void update(Dataset data, Eigen::RowVectorXf y_pred, double learning_rate);
 
@@ -84,9 +91,8 @@ public:
   LinearRegression() = default;
 
   /**
-   * @brief Constructor to initlialize data
-   * @param rgb_image the color image
-   * @param depth_image the double balued image representing depth
+   * @brief Constructor to initlialize regression
+   * @param data_train training dataset
    */
   LinearRegression(const Dataset& data_train);
 
@@ -124,6 +130,9 @@ protected:
   Weights weights;
 };
 
+/**
+ * Useful helper math functions
+ */
 double mean(Eigen::RowVectorXf y, int length);
 double sum_of_square(Eigen::RowVectorXf y, int length);
 double sum_residual(Dataset data, Eigen::RowVectorXf y_pred,
@@ -134,7 +143,6 @@ int calculate_r2(Eigen::RowVectorXf y_pred, Eigen::RowVectorXf y_true,
                  int length);
 double mean_squared_error(Eigen::RowVectorXf y_pred, Eigen::RowVectorXf y_true,
                           int length);
-
 double intercept_sum(Eigen::RowVectorXf y_pred, Eigen::RowVectorXf y_true,
                      int length);
 double slope_sum(Eigen::RowVectorXf x, Eigen::RowVectorXf y_pred,

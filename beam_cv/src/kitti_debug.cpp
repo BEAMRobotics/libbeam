@@ -1,7 +1,6 @@
 // beam
 #include "beam_cv/DepthCompletion.h"
 #include "beam_cv/DepthMap.h"
-#include "beam_cv/DepthSuperpixels.h"
 #include "beam_cv/LinearRegression.h"
 #include "beam_cv/Utils.h"
 #include "beam_utils/math.hpp"

@@ -119,8 +119,6 @@ double sum_residual(Dataset data, Eigen::RowVectorXf y_pred,
 }
 
 double sum_of_square(Eigen::RowVectorXf y, int length) {
-  // Not the most efficient way of calculating variance, see :
-  // https://www.sciencebuddies.org/science-fair-projects/science-fair/variance-and-standard-deviation
   double total = 0;
   double residual;
   double y_mean = mean(y, length);

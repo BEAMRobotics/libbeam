@@ -1,9 +1,9 @@
 // beam
 #include "beam_cv/DepthCompletion.h"
-#include "beam_cv/DepthSuperpixels.h"
 #include "beam_cv/Utils.h"
 
 namespace beam_cv {
+
 cv::Mat1f DepthInterpolation(int window_width, int window_height,
                              float threshold, cv::Mat1f depth_image) {
   cv::Mat dst = depth_image.clone();
@@ -295,4 +295,5 @@ cv::Mat1f MultiscaleInterpolation(cv::Mat1f depth_img) {
   });
   return dst;
 }
+
 } // namespace beam_cv
