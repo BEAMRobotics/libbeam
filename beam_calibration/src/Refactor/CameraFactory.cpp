@@ -9,6 +9,7 @@ static std::shared_ptr<CameraModel>
   if (type == CameraType::LADYBUG) {
     model = std::make_shared<LadybugCamera>(file_location, cam_id);
   } else {
+    // check file type then load
     model = LoadJSON(file_location);
   }
   return model;
@@ -30,7 +31,9 @@ static std::shared_ptr<CameraModel>
   date = J["date"];
   method = J["method"];
   for (const auto& calib : J["calibration"]) {
-    distortion_model = calib["distortion_model"];
+    if (calib.find("distortion_model") != calib.end()) {
+      distortion_model = calib["distortion_model"];
+    }
     image_width = calib["image_width"].get<int>();
     image_height = calib["image_height"].get<int>();
     frame_id = calib["frame_id"];
@@ -43,14 +46,16 @@ static std::shared_ptr<CameraModel>
     for (uint8_t k = 0; k < tmp_intrinsics.size(); k++) {
       intrinsics(k) = tmp_intrinsics[k];
     }
-    // push distortion coeffs
-    std::vector<double> tmp_coeffs;
-    for (const auto& value : calib["distortion_coefficients"]) {
-      tmp_coeffs.push_back(value.get<double>());
-    }
-    coeffs.resize(tmp_coeffs.size());
-    for (uint8_t k = 0; k < tmp_coeffs.size(); k++) {
-      coeffs(k) = tmp_coeffs[k];
+    // push distortion coeffs (if it exists)
+    if (calib.find("distortion_coefficients") != calib.end()) {
+      std::vector<double> tmp_coeffs;
+      for (const auto& value : calib["distortion_coefficients"]) {
+        tmp_coeffs.push_back(value.get<double>());
+      }
+      coeffs.resize(tmp_coeffs.size());
+      for (uint8_t k = 0; k < tmp_coeffs.size(); k++) {
+        coeffs(k) = tmp_coeffs[k];
+      }
     }
   }
 
@@ -63,7 +68,6 @@ static std::shared_ptr<CameraModel>
   } else {
     distortion = nullptr;
   }
-
   // create camera model
   std::shared_ptr<CameraModel> camera;
   if (camera_type == "pinhole") {
@@ -71,7 +75,7 @@ static std::shared_ptr<CameraModel>
   } else {
     camera = nullptr;
   }
-
+  // set values
   camera->SetIntrinsics(intrinsics);
   if (distortion) { camera->SetDistortion(distortion); }
   camera->SetImageDims(image_height, image_width);
