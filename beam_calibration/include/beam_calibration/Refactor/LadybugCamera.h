@@ -10,8 +10,6 @@
 #include <ladybug/ladybugrenderer.h>
 
 namespace beam_calibration {
-/** @addtogroup calibration
- *  @{ */
 
 /**
  * @brief Derived class for camera model
@@ -27,9 +25,9 @@ public:
   LadybugCamera() = default;
 
   /**
-   * @brief constructor with values
+   * @brief Constructor with config file and id
    */
-  LadybugCamera(unsigned int id, std::string& file_location);
+  LadybugCamera(std::string& file_location, uint cam_id);
 
   /**
    * @brief Default destructor
@@ -56,6 +54,14 @@ public:
    * @return image
    */
   cv::Mat UndistortImage(cv::Mat image_input) override;
+
+  /**
+   * @brief Method for projecting a point into an image plane without distortion
+   * @return Returns image coordinates after point has been projected into image
+   * plane.
+   * @param point to be projected. Not in homographic form
+   */
+  beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) override;
 
 private:
   void LadybugCheckError();

@@ -3,12 +3,10 @@
  */
 
 #pragma once
-#include "beam_calibration/CameraModel.h"
-#include "beam_calibration/DistortionModel.h"
+#include "beam_calibration/include/Refactor/CameraModel.h"
+#include "beam_calibration/include/Refactor/DistortionModel.h"
 
 namespace beam_calibration {
-/** @addtogroup calibration
- *  @{ */
 
 /**
  * @brief Derived class for pinhole camera model
@@ -52,13 +50,7 @@ public:
    * plane.
    * @param point to be projected. Not in homographic form
    */
-  beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point);
-
-  /**
-   * @brief Sets distortion model for pinhole camera
-   * @param model to be set for distortion
-   */
-  void SetDistortion(std::shared_ptr<DistortionModel> model);
+  beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) override;
 
 protected:
   std::shared_ptr<DistortionModel> distortion_ = nullptr;

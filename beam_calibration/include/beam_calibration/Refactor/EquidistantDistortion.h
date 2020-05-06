@@ -3,7 +3,7 @@
  */
 
 #pragma once
-#include "beam_calibration/DistortionModel.h"
+#include "beam_calibration/include/Refactor/DistortionModel.h"
 
 namespace beam_calibration {
 
@@ -54,7 +54,7 @@ public:
    * @param Mat3: camera matrix
    * @param cv::Mat image to undistort
    */
-  cv::Mat UndistortImage(beam::Mat3, const cv::Mat&) override;
+  cv::Mat UndistortImage(beam::Mat3 intrinsics, const cv::Mat& image) override;
 
   /**
    * @brief Method to set coefficients

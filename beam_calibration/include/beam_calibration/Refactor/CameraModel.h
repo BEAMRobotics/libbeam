@@ -6,17 +6,11 @@
 // beam
 #include "beam_utils/math.hpp"
 
-// format libraries
-#include <nlohmann/json.hpp>
-#include <yaml-cpp/yaml.h>
-
 // OpenCV
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 
 namespace beam_calibration {
-/** @addtogroup calibration
- *  @{ */
 
 /**
  * @brief Enum class for different types of intrinsic calibrations
@@ -39,12 +33,6 @@ public:
   virtual ~CameraModel() = default;
 
   /**
-   * @brief Camera factory to init models from config files
-   */
-  std::shared_ptr<CameraModel> CameraFactory(CameraType type,
-                                             std::string& file_location);
-
-  /**
    * @brief Method for projecting a point into an image plane
    * @return Returns image coordinates after point has been projected into image
    * plane.
@@ -55,7 +43,7 @@ public:
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
-   * @param distorted point [u,v]
+   * @param point [u,v]
    */
   virtual beam::Vec3 BackProject(beam::Vec2 point) = 0;
 
@@ -64,6 +52,14 @@ public:
    * @return image
    */
   virtual cv::Mat UndistortImage(cv::Mat image_input) = 0;
+
+  /**
+   * @brief Method for projecting a point into an image plane without distortion
+   * @return Returns image coordinates after point has been projected into image
+   * plane.
+   * @param point to be projected. Not in homographic form
+   */
+  virtual beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) = 0;
 
   /**
    * @brief Method for adding the frame id
@@ -85,11 +81,15 @@ public:
 
   /**
    * @brief Method for adding intrinsic values
-   * Pinhole: [fx,fy,cx,cy]
-   * Ladybug: [fx,fy,cy,cx]
    * @param intrinsics of the camera
    */
   virtual void SetIntrinsics(beam::VecX instrinsics);
+
+  /**
+   * @brief Sets distortion model for pinhole camera
+   * @param model to be set for distortion
+   */
+  virtual void SetDistortion(std::shared_ptr<DistortionModel> model);
 
   /**
    * @brief Method for returning the frame id of an intrinsics
@@ -139,15 +139,17 @@ public:
    * @return Returns boolean
    * @param pixel
    */
-  bool PixelInImage(beam::Vec2 pixel_in);
+  virtual bool PixelInImage(beam::Vec2 pixel_in);
 
 protected:
   CameraType type_;
   std::string frame_id_, calibration_date_;
   uint32_t image_height_, image_width_;
   beam::VecX intrinsics_;
+  std::shared_ptr<DistortionModel> distortion_ = nullptr;
   // Boolean values to keep track of validity
-  bool intrinsics_valid_ = false, calibration_date_set_ = false;
+  bool intrinsics_valid_ = false, calibration_date_set_ = false,
+       distortion_set_ = false;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
                                                 {CameraType::PINHOLE, 4}};

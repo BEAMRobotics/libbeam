@@ -13,6 +13,9 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     OpenCV::OpenCV
   SOURCES
     src/TfTree.cpp
+    src/RadtanDistortion.cpp
+    src/EquidistantDistortion.cpp
+    src/CameraFactory.cpp
     src/CameraModel.cpp
     src/LadybugCamera.cpp
     src/PinholeCamera.cpp
