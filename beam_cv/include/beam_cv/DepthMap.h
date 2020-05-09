@@ -3,23 +3,13 @@
  */
 
 #pragma once
-// beam
-#include "beam_calibration/CameraModel.h"
-// OpenCV
-#include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
-// PCL
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-namespace beam_cv {
+#include "beam_calibration/CameraModel.h"
 
-/*
- * @brief behaviour for raytrace
- */
-void HitBehaviour(std::shared_ptr<cv::Mat> image,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                  const int* position, int index);
+namespace beam_cv {
 
 class DepthMap {
 public:
@@ -39,7 +29,6 @@ public:
    */
   ~DepthMap() = default;
 
-  /***********************Getters/Setters**********************/
   /**
    * @brief Gets point cloud member attribute
    * @return Returns point to XYZ point cloud
@@ -50,6 +39,7 @@ public:
    * @param input_cloud point cloud to set
    */
   void SetCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud);
+
   /**
    * @brief Gets depth image attribe
    * @return Returns cv::mat representing depth image
@@ -64,14 +54,14 @@ public:
    * @brief Gets camera model
    * @return Returns a pointer to a camera model
    */
-  std::shared_ptr<beam_calibration::CameraModel> GetModel();
+  std::shared_ptr<beam_calibration::CameraModel> GetCameraModel();
   /**
    * @brief Sets camera model
    * @param Camera model to set
    */
-  void SetModel(std::shared_ptr<beam_calibration::CameraModel> input_model);
+  void SetCameraModel(
+      std::shared_ptr<beam_calibration::CameraModel> input_model);
 
-  /***********************Computation methods**********************/
   /**
    * @brief Computes the depth image based on the given point cloud and image
    * @param threshold threshold value to be used to determine hit detection of
@@ -93,8 +83,6 @@ public:
    * @return point cloud
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr ExtractPointCloud();
-
-  /***********************Helper Functions**********************/
 
   /**
    * @brief Checks if variables (point_cloud_initialized_,
@@ -125,17 +113,11 @@ public:
    */
   float GetPixelScale(beam::Vec2 pixel);
 
-  /***********************Member variables**********************/
 protected:
-  // input point cloud
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_;
-  // pointer to hold depth image
   std::shared_ptr<cv::Mat> depth_image_;
-  // camera model used
   std::shared_ptr<beam_calibration::CameraModel> model_;
-  // stores the min and max depth in the depth map
   float min_depth_, max_depth_;
-  // verification variables
   bool point_cloud_initialized_ = false, model_initialized_ = false,
        depth_image_extracted_ = false;
 };

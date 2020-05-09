@@ -44,26 +44,15 @@ target_link_libraries(${PROJECT_NAME}_depth_tests
   Catch2::Catch2
 )
 
-add_executable(${PROJECT_NAME}_debug
-  src/kitti_debug.cpp
+add_executable(${PROJECT_NAME}_kitti
+  tests/kitti.cpp
 )
-target_include_directories(${PROJECT_NAME}_debug
+target_include_directories(${PROJECT_NAME}_kitti
   PUBLIC
     include
 )
-target_link_libraries(${PROJECT_NAME}_debug
+target_link_libraries(${PROJECT_NAME}_kitti
   ${PROJECT_NAME}
   Eigen3::Eigen
   ${CERES_LIBRARIES}
-)
-
-add_executable(${PROJECT_NAME}_crack_debug
-  src/crack_debug.cpp
-)
-target_include_directories(${PROJECT_NAME}_crack_debug
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_crack_debug
-  ${PROJECT_NAME}
 )

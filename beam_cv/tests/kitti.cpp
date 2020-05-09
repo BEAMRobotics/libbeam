@@ -21,21 +21,12 @@
 using namespace cv;
 using namespace std;
 
-// global variables
-string cur_dir = "/home/jake/projects/beam_robotics/libbeam/beam_cv/"
-                 "tests/";
-
 int main(int argc, char* argv[]) {
   string current_drive = string(argv[1]);
-
-  string training_dir = "/home/jake/projects/kitti/train/" + current_drive +
-                        "/proj_depth/velodyne_raw/image_02/";
-  string prediction_dir =
-      "/home/jake/projects/kitti/prediction/" + current_drive + "/image_02/";
-
+  string training_dir = current_drive + "/proj_depth/velodyne_raw/image_02/";
+  string prediction_dir = current_drive + "/image_02/";
   char train_dir[training_dir.size() + 1];
   strcpy(train_dir, training_dir.c_str());
-
   struct dirent* entry;
   DIR* dir = opendir(train_dir);
 
@@ -47,22 +38,11 @@ int main(int argc, char* argv[]) {
         Mat depth_img;
         Mat depth = imread(depth_image_path, IMREAD_GRAYSCALE);
         depth.convertTo(depth_img, CV_32F);
-        depth_img = beam_cv::MultiscaleInterpolation(depth_img);
+        beam_cv::MultiscaleInterpolation(depth_img);
         std::string output_location = prediction_dir + depth_image_name;
         imwrite(output_location, depth_img);
       }
     }
   }
   closedir(dir);
-
-  /*
-  string depth_location = cur_dir + "test_depth/depth/depth.png";
-  Mat depth_img, depth_img_gt, viz;
-  Mat depth = imread(depth_location, IMREAD_GRAYSCALE);
-  depth.convertTo(depth_img, CV_32F);
-
-  depth_img = IPBasic(depth_img);
-
-  viz = beam_cv::VisualizeDepthImage(depth_img);
-  imwrite("/home/jake/results/depth_complete.png", viz);*/
 }

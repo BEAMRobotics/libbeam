@@ -12,7 +12,7 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
-int main() {
+int main(int argc, char* argv[]) {
   // load intrinsics
   std::string intrinsics_name = "F1.json";
   std::string intrinsics_location = __FILE__;
@@ -25,7 +25,8 @@ int main() {
       beam_calibration::CameraModel::LoadJSON(intrinsics_location);
 
   // load Image
-  std::string image_name = "image18reduced.jpg";
+  std::string image_name = std::string(argv[2]);
+  // std::string image_name = "image18reduced.jpg";
   std::string image_location = __FILE__;
   image_location.erase(image_location.end() - 15, image_location.end());
   image_location += "tests/test_data/";
@@ -57,13 +58,21 @@ int main() {
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-  beam_colorize::RayTrace colorizer;
+  std::unique_ptr<beam_colorize::Colorizer> colorizer;
+  std::string col_type = std::string(argv[1]);
+  if (col_type == "raytrace") {
+    colorizer = beam_colorize::Colorizer::Create(
+        beam_colorize::ColorizerType::RAY_TRACE);
+  } else if (col_type == "projection") {
+    colorizer = beam_colorize::Colorizer::Create(
+        beam_colorize::ColorizerType::PROJECTION);
+  }
   bool image_distorted = true;
-  colorizer.SetPointCloud(cloud);
-  colorizer.SetImage(image);
-  colorizer.SetIntrinsics(F1);
-  colorizer.SetDistortion(image_distorted);
-  cloud_colored = colorizer.ColorizePointCloud();
+  colorizer->SetPointCloud(cloud);
+  colorizer->SetImage(image);
+  colorizer->SetIntrinsics(F1);
+  colorizer->SetDistortion(image_distorted);
+  cloud_colored = colorizer->ColorizePointCloud();
 
   pcl::visualization::PCLVisualizer::Ptr viewer(
       new pcl::visualization::PCLVisualizer("3D Viewer"));
@@ -77,5 +86,5 @@ int main() {
   viewer->initCameraParameters();
   while (!viewer->wasStopped()) { viewer->spinOnce(10); }
 
-  // pcl::io::savePCDFileASCII ("/home/nick/test_pcd.pcd", *cloud_colored);
+  pcl::io::savePCDFileASCII("/home/jake/test_pcd.pcd", *cloud_colored);
 }

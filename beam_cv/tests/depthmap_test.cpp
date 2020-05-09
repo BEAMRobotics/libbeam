@@ -22,8 +22,8 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
   REQUIRE_THROWS(dm.ExtractDepthMap(0.03, 5));
   REQUIRE_THROWS(dm.ExtractPointCloud());
   REQUIRE_NOTHROW(dm.SetCloud(cloud));
-  REQUIRE_NOTHROW(dm.SetModel(F1));
-  REQUIRE_THROWS(dm.SetDepthImage(img));
+  REQUIRE_NOTHROW(dm.SetCameraModel(F1));
+  REQUIRE_NOTHROW(dm.SetDepthImage(img));
 }
 
 TEST_CASE("Test Depth map extractor.") {

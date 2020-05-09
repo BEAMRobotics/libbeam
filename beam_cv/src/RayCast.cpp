@@ -1,8 +1,9 @@
 #include "beam_cv/RayCast.h"
-#include "beam_utils/math.hpp"
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
+
+#include "beam_utils/math.hpp"
 
 using namespace cv;
 namespace beam_cv {

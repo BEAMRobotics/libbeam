@@ -3,16 +3,7 @@
  */
 
 #pragma once
-// beam
 #include "beam_utils/math.hpp"
-
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
 
 namespace beam_cv {
 
@@ -65,14 +56,14 @@ public:
   ~Weights() = default;
 
   /**
-   * @brief Default destructor
+   * @brief Initializes dataset with desired number of predictor vairables
    * @param number_predictor number of predictor variables
    * @param random_init flag if random initialization is desired
    */
   void init(int number_predictor, int random_init);
 
   /**
-   * @brief Default destructor
+   * @brief Updates weights given prediccted y values and learning rate
    * @param data to be trained on
    * @param y_pred predicted y values
    * @param learning_rate
@@ -80,7 +71,7 @@ public:
   void update(Dataset data, Eigen::RowVectorXf y_pred, double learning_rate);
 
 protected:
-  int MAX_WEIGHTS;
+  int MAX_WEIGHTS_;
 };
 
 class LinearRegression {
@@ -126,8 +117,8 @@ public:
   void Fit(Eigen::RowVectorXf& y_pred);
 
 protected:
-  Dataset data;
-  Weights weights;
+  Dataset data_;
+  Weights weights_;
 };
 
 /**

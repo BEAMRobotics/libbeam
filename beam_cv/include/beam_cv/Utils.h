@@ -3,10 +3,9 @@
  */
 
 #pragma once
-// OpenCV
-#include "beam_utils/math.hpp"
-#include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
+
+#include "beam_utils/math.hpp"
 
 namespace beam_cv {
 
@@ -79,20 +78,21 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2);
  * @param depth_image depth image to search
  * @return Vec2
  */
-beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image);
+beam::Vec2 FindClosest(beam::Vec2 search_pixel, const cv::Mat& depth_image);
 
 /**
- * @brief returns vector of mats
+ * @brief returns vector of mats where each mat represents a certain depth range
+ * of the input depth image
  * @param depth_image depth image to segment
  * @return Vector of mats
  */
-std::vector<cv::Mat> SegmentMultiscale(cv::Mat depth_image);
+std::vector<cv::Mat> SegmentMultiscale(const cv::Mat& depth_image);
 
 /**
  * @brief saves a depth image as grayscale to path
  * @param depth_image depth image to segment
  * @param path to save image at
  */
-void SaveDepthImageBW(cv::Mat depth_image, std::string path);
+void SaveDepthImageBW(const cv::Mat& depth_image, std::string path);
 
 } // namespace beam_cv

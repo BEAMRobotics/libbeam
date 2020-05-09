@@ -54,8 +54,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
       coords = intrinsics_->ProjectPoint(point);
 
       uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-      if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
-        tmp.at<cv::Vec3b>(v, u).val[0] = 255;
+      if (u > 0 && v > 0 && v < image_->cols && u < image_->rows) {
+        tmp.at<cv::Vec3b>(u, v).val[0] = 255;
       }
     }
     cv::dilate(tmp, hit_mask, cv::Mat(dilation_, dilation_, CV_8UC1),
