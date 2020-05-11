@@ -2,34 +2,27 @@
 
 namespace beam_calibration {
 
-void CameraModel::SetFrameID(std::string id) {
+void CameraModel::SetFrameID(const std::string& id) {
   frame_id_ = id;
 }
 
-void CameraModel::SetCalibrationDate(std::string date) {
+void CameraModel::SetCalibrationDate(const std::string& date) {
   calibration_date_ = date;
-  calibration_date_set_ = true;
 }
 
-void CameraModel::SetImageDims(uint32_t height, uint32_t width) {
+void CameraModel::SetImageDims(const uint32_t height, const uint32_t width) {
   image_width_ = width;
   image_height_ = height;
 }
 
-void CameraModel::SetIntrinsics(beam::VecX intrinsics) {
+void CameraModel::SetIntrinsics(const Eigen::VectorXd& instrinsics) {
   if (intrinsics.size() != intrinsics_size_[this->GetType()]) {
     BEAM_CRITICAL("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
         "Invalid number of elements in intrinsics vector."};
   } else {
     intrinsics_ = intrinsics;
-    intrinsics_valid_ = true;
   }
-}
-
-void PinholeCamera::SetDistortion(std::shared_ptr<DistortionModel> model) {
-  distortion_ = model;
-  distortion_set_ = true;
 }
 
 const std::string CameraModel::GetFrameID() const {
@@ -37,26 +30,27 @@ const std::string CameraModel::GetFrameID() const {
 }
 
 const std::string CameraModel::GetCalibrationDate() const {
-  if (!calibration_date_set_) {
-    BEAM_CRITICAL("cannot retrieve calibration date, value not set.");
-    throw std::runtime_error{"cannot retrieve calibration date, value not set"};
+  if (calibration_date_ == "") {
+    BEAM_WARN("Calibration date empty.");
   }
   return calibration_date_;
 }
 
-uint32_t CameraModel::GetHeight() const {
+const uint32_t CameraModel::GetHeight() const {
+  if (image_height_ == 0) {
+    BEAM_WARN("Image height not set.");
+  }
   return image_height_;
 }
 
-uint32_t CameraModel::GetWidth() const {
+const uint32_t CameraModel::GetWidth() const {
+  if (image_width_ == 0) {
+    BEAM_WARN("Image width not set.");
+  }
   return image_width_;
 }
 
-const beam::VecX CameraModel::GetIntrinsics() const {
-  if (!intrinsics_valid_) {
-    BEAM_CRITICAL("cannot retrieve intrinsics, value not set.");
-    throw std::runtime_error{"cannot retrieve intrinsics, value not set"};
-  }
+const Eigen::VectorXd CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 
@@ -64,16 +58,9 @@ CameraType CameraModel::GetType() const {
   return type_;
 }
 
-beam::Mat3 CameraModel::GetCameraMatrix() const {
-  beam::Mat3 K;
-  K << intrinsics_[0], 0, intrinsics_[2], 0, intrinsics_[1], intrinsics_[3], 0,
-      0, 1;
-  return K;
-}
-
-bool CameraModel::PixelInImage(beam::Vec2 pixel_in) {
-  if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > this->GetWidth() ||
-      pixel_in[1] > this->GetHeight())
+bool CameraModel::PixelInImage(const Eigen::Vector3d& pixel) {
+  if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > image_width_ ||
+      pixel_in[1] > image_height_)
     return false;
   return true;
 }

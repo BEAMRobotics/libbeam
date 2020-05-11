@@ -3,6 +3,7 @@
  */
 
 #pragma once
+
 #include "beam_calibration/include/Refactor/CameraModel.h"
 #include "beam_calibration/include/Refactor/DistortionModel.h"
 
@@ -52,6 +53,10 @@ public:
    */
   beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) override;
 
+  void SetDistortion(std::shared_ptr<DistortionModel> model)
+
+  beam::Mat3 GetCameraMatrix();
+  
 protected:
   std::shared_ptr<DistortionModel> distortion_ = nullptr;
 };
