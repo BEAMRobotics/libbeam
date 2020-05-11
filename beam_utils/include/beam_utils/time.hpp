@@ -37,7 +37,7 @@ inline void LogTimePoint(const TimePoint time_point,
 }
 
 inline std::string
-    convertTimeToDate(std::chrono::system_clock::time_point time_) {
+    ConvertTimeToDate(std::chrono::system_clock::time_point time_) {
   using namespace std;
   using namespace std::chrono;
   system_clock::duration tp = time_.time_since_epoch();
@@ -68,9 +68,21 @@ inline void OutputTimePoint(const TimePoint time_point,
  * @param hdr header from a ROS message
  * @return TimePoint
  */
-inline TimePoint rosTimeToChrono(const std_msgs::Header& hdr) {
+inline TimePoint RosTimeToChrono(const std_msgs::Header& hdr) {
   std::chrono::seconds secs(hdr.stamp.sec);
   std::chrono::nanoseconds nsecs(hdr.stamp.nsec);
+  auto dur = secs + nsecs;
+  return TimePoint(dur);
+}
+
+/**
+ * @brief convert ROS time to a chrono time point
+ * @param hdr header from a ROS message
+ * @return TimePoint
+ */
+inline TimePoint RosTimeToChrono(const ros::Time& time_in) {
+  std::chrono::seconds secs(time_in.sec);
+  std::chrono::nanoseconds nsecs(time_in.nsec);
   auto dur = secs + nsecs;
   return TimePoint(dur);
 }
@@ -80,12 +92,10 @@ inline TimePoint rosTimeToChrono(const std_msgs::Header& hdr) {
  * @param time_point
  * @return ROS time
  */
-inline ros::Time chronoToRosTime(const TimePoint& time_point) {
+inline ros::Time ChronoToRosTime(const TimePoint& time_point) {
   uint32_t seconds, nanoseconds;
   seconds = std::round(time_point.time_since_epoch().count() / 1000000000);
-  double tmp = time_point.time_since_epoch().count() -
-               std::round(time_point.time_since_epoch().count());
-  nanoseconds = std::round(tmp * 1000000000);
+  nanoseconds = time_point.time_since_epoch().count() - seconds * 1000000000;
   ros::Time ros_time(seconds, nanoseconds);
   return ros_time;
 }

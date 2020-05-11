@@ -99,9 +99,10 @@ void TestDepthMap() {
   int num = 0;
   BEAM_INFO("Superpixel structure filled.");
   BEAM_INFO("Computing superpixel centroids...");
+  /*
   for (auto& sp : superpixels) {
     // std::cout << sp.pixels.size() << std::endl;
-    /*
+
     if (sp.pixels.size() > 0) {
       num++;
       int cx = 0;
@@ -114,8 +115,8 @@ void TestDepthMap() {
       cy /= sp.pixels.size();
       Point2i cent(cx, cy);
       sp.centroid = cent;
-    }*/
-  }
+    }
+  }*/
   BEAM_INFO("Centroids computed: {}", num);
   BEAM_INFO("Program finished.");
 }

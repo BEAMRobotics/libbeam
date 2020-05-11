@@ -87,13 +87,7 @@ void Poses::WriteToJSON(const std::string output_dir) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
     throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose "
-                             "file."};
-  }
-
-  if (!boost::filesystem::is_directory(output_dir)) {
-    BEAM_INFO("Output directory does not exist, creating now.");
-    boost::filesystem::create_directories(output_dir);
+                             "poses. Cannot create pose file."};
   }
 
   // write to json
@@ -106,7 +100,7 @@ void Poses::WriteToJSON(const std::string output_dir) {
 
   J_string = J.dump();
   J_poses_string = "{\"poses\": []}";
-  for (uint64_t k = 0; k < poses.size(); k++) {
+  for (size_t k = 0; k < poses.size(); k++) {
     beam::Mat4 Tk = poses[k].matrix();
     J_pose_k = {{"time_stamp_sec", time_stamps[k].sec},
                 {"time_stamp_nsec", time_stamps[k].nsec},
@@ -126,7 +120,22 @@ void Poses::WriteToJSON(const std::string output_dir) {
   J_string = J_string + "," + J_poses_string;         // add poses
   J = nlohmann::json::parse(J_string);
 
-  std::string output_file = output_dir + pose_file_date + "_poses.json";
+  std::string output_file;
+  std::string last_five_chars = output_dir.substr(output_dir.size()-5, output_dir.size());
+  std::cout << "output_dir: " << output_dir << "\n";
+  std::cout << "last_five_chars: " << last_five_chars << "\n";
+  if(last_five_chars == ".json" || last_five_chars == ".JSON"){
+    output_file = output_dir;
+    std::cout << "TEST1\n";
+
+  } else {
+    if (!boost::filesystem::is_directory(output_dir)) {
+      BEAM_INFO("Output directory does not exist, creating now.");
+      boost::filesystem::create_directories(output_dir);
+    }
+    output_file = output_dir + pose_file_date + "_poses.json";
+    std::cout << "TEST2\n";
+  }
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream filejson(output_file);
   filejson << std::setw(4) << J << std::endl;
@@ -175,8 +184,61 @@ void Poses::LoadFromJSON(const std::string input_pose_file_path) {
 }
 
 void Poses::WriteToPLY(const std::string output_dir) {
-  //TODO: implement WriteToPLY
-  BEAM_CRITICAL("WriteToPLY function not yet implemented");
+  if (poses.size() != time_stamps.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+
+  if (!boost::filesystem::is_directory(output_dir)) {
+    BEAM_INFO("Output directory does not exist, creating now.");
+    boost::filesystem::create_directories(output_dir);
+  }
+
+  // write to PLY
+  std::string output_file;
+  std::string last_four_chars = output_dir.substr(output_dir.size()-4, output_dir.size());
+  if(last_four_chars == ".ply" || last_four_chars == ".PLY"){
+    output_file = output_dir;
+  } else {
+    output_file = output_dir + pose_file_date + "_poses.ply";
+  }
+  BEAM_INFO("Saving poses to file: {}", output_file.c_str());
+  std::ofstream fileply(output_file);
+  double t_start = time_stamps[0].toSec();
+
+  fileply << "ply" << std::endl;
+  fileply << "format ascii 1.0" << std::endl;
+  fileply << "comment UTC time at start ";
+  fileply << std::fixed << std::setprecision(6) << t_start << std::endl;
+  fileply << "comment Local time at start " << pose_file_date << std::endl;
+  fileply << "bag file: " << bag_name << std::endl;
+  fileply << "fixed frame: " << fixed_frame << std::endl;
+  fileply << "moving frame: " << moving_frame << std::endl;
+  fileply << "element vertex " << time_stamps.size() << std::endl;
+  fileply << "property float x" << std::endl;
+  fileply << "property float y" << std::endl;
+  fileply << "property float z" << std::endl;
+  fileply << "property float roll" << std::endl;
+  fileply << "property float pitch" << std::endl;
+  fileply << "property float yaw" << std::endl;
+  fileply << "property float scalar_confidence_metric" << std::endl;
+  fileply << "end_header" << std::endl;
+
+  for (size_t k = 0; k < poses.size(); k++) {
+    Eigen::RowVector3d Tk = poses[k].translation();
+    Eigen::RowVector3d Mk = poses[k].rotation().eulerAngles(0,1,2);
+    double t = time_stamps[k].toSec()-t_start;
+    fileply << std::fixed << std::setprecision(6) << Tk[0] << " ";
+    fileply << std::fixed << std::setprecision(6) << Tk[1] << " ";
+    fileply << std::fixed << std::setprecision(6) << Tk[2] << " ";
+    fileply << std::fixed << std::setprecision(6) << Mk[0] << " ";
+    fileply << std::fixed << std::setprecision(6) << Mk[1] << " ";
+    fileply << std::fixed << std::setprecision(6) << Mk[2] << " ";
+    fileply << std::fixed << std::setprecision(6) << t << " ";
+    fileply << std::fixed << std::setprecision(6) << 1.000000 << std::endl;
+  }
 }
 
 void Poses::LoadFromPLY(const std::string input_pose_file_path) {
@@ -188,6 +250,22 @@ void Poses::LoadFromPLY(const std::string input_pose_file_path) {
     if (str.substr(0, 11) == "comment UTC") {
       str.erase(0, 26);
       time_start = std::stod(str);
+    }
+    if (str.substr(0, 13) == "comment Local") {
+      str.erase(0, 28);
+      pose_file_date = str;
+    }
+    if (str.substr(0, 9) == "bag file:") {
+      str.erase(0, 10);
+      bag_name = str;
+    }
+    if (str.substr(0, 12) == "fixed frame:") {
+      str.erase(0, 13);
+      fixed_frame = str;
+    }
+    if (str.substr(0, 13) == "moving frame:") {
+      str.erase(0, 14);
+      moving_frame = str;
     }
     if (str == "end_header") { break; }
   }

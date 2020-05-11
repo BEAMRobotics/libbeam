@@ -205,8 +205,6 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
       pose_file_path_.substr(pose_file_path_.rfind("."), pose_file_path_.size());
   if (pose_type == ".json") {
     slam_poses_.LoadFromJSON(pose_file);
-    poses_moving_frame_ = slam_poses_.moving_frame;
-    poses_fixed_frame_ = slam_poses_.fixed_frame;
   } else if (pose_type == ".ply") {
     slam_poses_.LoadFromPLY(pose_file);
   } else {
@@ -214,6 +212,9 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
     throw std::invalid_argument{
         "Invalid pose file type. Valid extensions: .ply, .json"};
   }
+
+  poses_moving_frame_ = slam_poses_.moving_frame;
+  poses_fixed_frame_ = slam_poses_.fixed_frame;
 
   if (slam_poses_.GetBagName() != bag_file_name_) {
     BEAM_WARN("Bag file name from MapBuilder config file is not the same "
@@ -435,7 +436,7 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
 
 void MapBuilder::SaveMaps() {
   std::string dateandtime =
-      beam::convertTimeToDate(std::chrono::system_clock::now());
+      beam::ConvertTimeToDate(std::chrono::system_clock::now());
   boost::filesystem::create_directory(save_dir_ + dateandtime + "/");
 
   for (uint8_t i = 0; i < maps_.size(); i++) {

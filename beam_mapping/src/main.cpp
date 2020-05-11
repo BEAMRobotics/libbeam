@@ -4,9 +4,11 @@
 int main(int argc, char* argv[]) {
   if (argc < 2) {
     std::cerr << "----------------------------------------------------------\n"
-              << "USAGE: " << argv[0] << " /path/to/config/file.json\n"
+              << "**USAGE SUMMARY**\n"
+              << "If loading the poses from a pose file: \n"
+              << "USAGE: " << argv[0] <<" /path/to/config/file.json (or .ply)\n"
               << "If loading the poses from a bag file: \n"
-              << "USAGE: " << argv[0] << " /path/to/config/file.json "
+              << "USAGE: " << argv[0] << " /path/to/config/file.json (or .ply) "
               << "odometry_topic\n"
               << "----------------------------------------------------------\n";
     return 1;

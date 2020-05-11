@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <Eigen/StdVector>
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 #include <ros/time.h>
 
 namespace beam_mapping {
@@ -31,7 +31,6 @@ public:
    * @brief clears all content
    */
   void Clear();
-
 
   /**
    * @brief for setting bag_name to pose file
@@ -121,8 +120,10 @@ public:
   void AddSinglePose(const Eigen::Affine3d& pose);
 
   /**
-   * @brief writes the pose file to the specified directory as JSON type. The
-   * file will be named: "poses_file_date"_poses.json
+   * @brief writes the pose file to the specified directory as JSON type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.json. If a full filename is given (i.e.
+   * /path/filename.json) it will keep that name.
    * @param output_dir full path to directory at which to save pose file
    */
   void WriteToJSON(const std::string output_dir);
@@ -134,8 +135,10 @@ public:
   void LoadFromJSON(const std::string input_pose_file_path);
 
   /**
-   * @brief writes the pose file to the specified directory as JSON type. The
-   * file will be named: "poses_file_date"_poses.json
+   * @brief writes the pose file to the specified directory as PLY type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.ply. If a full filename is given (i.e.
+   * /path/filename.ply) it will keep that name.
    * @param output_dir full path to directory at which to save pose file
    */
   void WriteToPLY(const std::string output_dir);

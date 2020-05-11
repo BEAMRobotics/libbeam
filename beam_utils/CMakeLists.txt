@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     catkin::catkin
     yaml-cpp
     PCL::PCL
+    OpenCV::OpenCV
   SOURCES
     src/math.cpp
     src/time.cpp
@@ -13,4 +14,17 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/uf.cpp
 )
 
-add_subdirectory(tests)
+add_executable(${PROJECT_NAME}_unit_tests
+  tests/angles_test.cpp
+  tests/time_test.cpp
+  tests/math_test.cpp
+  tests/utils_tests_main.cpp
+)
+target_include_directories(${PROJECT_NAME}_unit_tests
+  PUBLIC
+  ../include
+)
+target_link_libraries(${PROJECT_NAME}_unit_tests
+  Catch2::Catch2
+  ${PROJECT_NAME}
+)
