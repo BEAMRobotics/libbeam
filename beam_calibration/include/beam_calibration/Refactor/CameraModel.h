@@ -31,16 +31,6 @@ public:
   virtual CameraModel(const std::string& file_path) = 0;
 
   /**
-   * @brief copy constructor
-   */
-  virtual CameraModel(const CameraModel& model) = 0;
-
-  /**
-   * @brief move constructor
-   */
-  virtual CameraModel(CameraModel&& model) = 0;
-
-  /**
    * @brief Default destructor
    */
   virtual ~CameraModel() = default;
