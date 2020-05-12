@@ -37,7 +37,7 @@ void RayCast(std::shared_ptr<cv::Mat> image,
  * @param hit_mask hit mask to speed up ray tracing algorithm (a value of 1
  * means that pixel should be cast)
  * @param threshold threshold to determine ray contact (how far between ray tip
- * and poit is considered a hit in metres)
+ * and point is considered a hit in metres)
  * @param model camera model
  * @param function that determines the hit behaviour
  */
