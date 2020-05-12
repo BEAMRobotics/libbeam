@@ -6,6 +6,7 @@
 
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
+#include <nlohmann/json.hpp>
 
 namespace beam_calibration {
 
@@ -120,8 +121,13 @@ public:
   bool PixelInImage(const Eigen::Vector2d& pixel);
 
 protected:
+  /**
+   * @brief Method for loading calibration information from a json.
+   * @param file_path full path to json
+   */
+  void LoadJSON(const std::string& file_path);
 
-  CameraType type_;
+  CameraType type_; // THIS SHOULD BE SET IN EACH DERIVED CLASS CONSTRUCTOR
   std::string frame_id_{""};
   std::string calibration_date_{""};
   uint32_t image_height_{0};
