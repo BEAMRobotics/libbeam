@@ -77,7 +77,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   beam::Vec2 coords;
   uint16_t u, v;
   uint16_t vmax = image_->cols;
-  uint16_t umax = image_->rowss;
+  uint16_t umax = image_->rows;
   int counter = 0;
   uchar color_scale;
 

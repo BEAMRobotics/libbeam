@@ -2,17 +2,17 @@
 
 namespace beam_cv {
 
-LinearRegression::LinearRegression(const Dataset& data_train) {
-  data_.copy(data_train);
-  weights_.init(data_.number_predictor, 0);
+LinearRegression::LinearRegression(std::shared_ptr<Dataset> data_train) {
+  this->data_ = data_train;
+  this->weights_ = std::make_shared<Weights>(data_->number_predictor);
 }
 
 void LinearRegression::PrintWeights() {
   std::cout << "Weights: " << std::endl;
   std::cout << "y = ";
-  for (int i = 0; i < weights_.number_weights; i++) {
-    std::cout << weights_.values[i] << " * x" << i;
-    if (i < weights_.number_weights - 1) {
+  for (int i = 0; i < weights_->number_weights; i++) {
+    std::cout << weights_->values[i] << " * x" << i;
+    if (i < weights_->number_weights - 1) {
       std::cout << " + ";
     } else {
       std::cout << std::endl;
@@ -22,13 +22,13 @@ void LinearRegression::PrintWeights() {
 
 void LinearRegression::Train(int max_iteration, double learning_rate) {
   // Mallocating some space for prediction
-  Eigen::RowVectorXf y_pred(data_.length);
+  Eigen::RowVectorXf y_pred(data_->length);
 
   while (max_iteration > 0) {
     this->Fit(y_pred);
-    weights_.update(data_, y_pred, learning_rate);
+    weights_->Update(*data_, y_pred, learning_rate);
 
-    double mse = mean_squared_error(y_pred, data_.y, data_.length);
+    double mse = mean_squared_error(y_pred, data_->y, data_->length);
 
     if (max_iteration % 1000 == 0) {
       BEAM_DEBUG("Iteration left: {}; MSE = {}", max_iteration, mse);
@@ -39,19 +39,19 @@ void LinearRegression::Train(int max_iteration, double learning_rate) {
 
 double LinearRegression::Predict(Eigen::VectorXf x) {
   double prediction = 0;
-  for (int i = 0; i < weights_.number_weights; i++) {
-    prediction = prediction + weights_.values(i) * x(i);
+  for (int i = 0; i < weights_->number_weights; i++) {
+    prediction = prediction + weights_->values(i) * x(i);
   }
   return prediction;
 }
 
 void LinearRegression::Fit(Eigen::RowVectorXf& y_pred) {
-  for (int i = 0; i < data_.length; i++) {
-    y_pred(i) = Predict(data_.X.row(i));
+  for (int i = 0; i < data_->length; i++) {
+    y_pred(i) = Predict(data_->X.row(i));
   }
 }
 
-void Weights::init(int number_predictor, int random_init) {
+Weights::Weights(int number_predictor) {
   // Random Init Variables
   MAX_WEIGHTS_ = 100;
   srand(time(0)); // random number generator
@@ -59,15 +59,11 @@ void Weights::init(int number_predictor, int random_init) {
   number_weights = number_predictor;
   values.resize(number_weights);
   for (int i = 0; i < number_weights; i++) {
-    if (random_init == 1) {
-      values(i) = (rand() % MAX_WEIGHTS_);
-    } else {
-      values(i) = 0;
-    }
+    values(i) = (rand() % MAX_WEIGHTS_);
   }
 }
 
-void Weights::update(Dataset data_, Eigen::RowVectorXf y_pred,
+void Weights::Update(Dataset data_, Eigen::RowVectorXf y_pred,
                      double learning_rate) {
   double multiplier = learning_rate / data_.length;
   // Update each weights
@@ -84,14 +80,6 @@ Dataset::Dataset(Eigen::MatrixXf X_train, Eigen::RowVectorXf y_train,
 
   length = length_train;
   number_predictor = number_predictor_train;
-}
-
-void Dataset::copy(const Dataset& data) {
-  X = data.X;
-  y = data.y;
-
-  length = data.length;
-  number_predictor = data.number_predictor;
 }
 
 double mean(Eigen::RowVectorXf y, int length) {

@@ -93,6 +93,6 @@ std::vector<cv::Mat> SegmentMultiscale(const cv::Mat& depth_image);
  * @param depth_image depth image to segment
  * @param path to save image at
  */
-void SaveDepthImageBW(const cv::Mat& depth_image, std::string path);
+void SaveDepthImageBW(const cv::Mat& depth_image, const std::string& path);
 
 } // namespace beam_cv

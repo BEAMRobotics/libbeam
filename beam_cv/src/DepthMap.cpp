@@ -28,15 +28,14 @@ int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
     throw std::runtime_error{"Variables not properly initialized."};
   }
   BEAM_INFO("Extracting Depth Image...");
-
   // create image mask where white pixels = projection hit
   cv::Mat hit_mask = beam_cv::CreateHitMask(mask_size, model_, cloud_);
-  /// create image with 3 channels for coordinates
+  // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
                                            model_->GetWidth(), CV_32FC1);
   // perform ray casting of cloud to create depth_image_
-  beam_cv::RayCastXYZ(depth_image_, cloud_, hit_mask, threshold, model_,
-                      HitBehaviour);
+  beam_cv::RayCast(depth_image_, cloud_, hit_mask, threshold, model_,
+                   HitBehaviour);
 
   depth_image_extracted_ = true;
   int num_extracted = 0;
@@ -66,14 +65,26 @@ int DepthMap::ExtractDepthMapProjection() {
     beam::Vec2 coords;
     coords = model_->ProjectPoint(point);
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    if (u > 0 && v > 0 && v < model_->GetHeight() && u < model_->GetWidth() &&
+    if (u > 0 && v > 0 && u < model_->GetHeight() && v < model_->GetWidth() &&
         cloud_->points[i].z > 0) {
       float dist = beam::distance(point, origin);
-      if (dist < 5) { depth_image_->at<float>(v, u) = dist; }
+      if (dist < 6) { depth_image_->at<float>(u, v) = dist; }
     }
   }
   depth_image_extracted_ = true;
   int num_extracted = 0;
+  // compute min and max depth in the image
+  min_depth_ = 1000, max_depth_ = 0;
+  depth_image_->forEach<float>(
+      [&](float& distance, const int* position) -> void {
+        (void)position;
+        if (distance != 0.0) {
+          num_extracted++;
+          if (distance > max_depth_) { max_depth_ = distance; }
+          if (distance < min_depth_) { min_depth_ = distance; }
+        }
+      });
+  return num_extracted;
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {

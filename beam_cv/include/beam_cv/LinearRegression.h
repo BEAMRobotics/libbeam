@@ -33,11 +33,6 @@ public:
    * @brief Default destructor
    */
   ~Dataset() = default;
-
-  /**
-   * @brief copy constructor
-   */
-  void copy(const Dataset& data);
 };
 
 class Weights {
@@ -46,9 +41,10 @@ public:
   int number_weights;
 
   /**
-   * @brief Default constructor
+   * @brief Constructor to initialize with desired number of predictor variables
+   * @param number_predictor number of predictor variables
    */
-  Weights() = default;
+  Weights(int number_predictor);
 
   /**
    * @brief Default destructor
@@ -56,19 +52,12 @@ public:
   ~Weights() = default;
 
   /**
-   * @brief Initializes dataset with desired number of predictor vairables
-   * @param number_predictor number of predictor variables
-   * @param random_init flag if random initialization is desired
-   */
-  void init(int number_predictor, int random_init);
-
-  /**
-   * @brief Updates weights given prediccted y values and learning rate
+   * @brief Updates weights given predicted y values and learning rate
    * @param data to be trained on
    * @param y_pred predicted y values
    * @param learning_rate
    */
-  void update(Dataset data, Eigen::RowVectorXf y_pred, double learning_rate);
+  void Update(Dataset data, Eigen::RowVectorXf y_pred, double learning_rate);
 
 protected:
   int MAX_WEIGHTS_;
@@ -85,7 +74,7 @@ public:
    * @brief Constructor to initlialize regression
    * @param data_train training dataset
    */
-  LinearRegression(const Dataset& data_train);
+  LinearRegression(std::shared_ptr<Dataset> data_train);
 
   /**
    * @brief Default destructor
@@ -117,8 +106,8 @@ public:
   void Fit(Eigen::RowVectorXf& y_pred);
 
 protected:
-  Dataset data_;
-  Weights weights_;
+  std::shared_ptr<Dataset> data_;
+  std::shared_ptr<Weights> weights_;
 };
 
 /**

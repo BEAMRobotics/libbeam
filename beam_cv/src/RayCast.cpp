@@ -8,13 +8,13 @@
 using namespace cv;
 namespace beam_cv {
 
-void RayCastXYZ(std::shared_ptr<cv::Mat> image,
-                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, cv::Mat hit_mask,
-                float threshold,
-                std::shared_ptr<beam_calibration::CameraModel> model,
-                void (*f)(std::shared_ptr<cv::Mat> image_i,
-                          pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_i,
-                          const int* position, int index)) {
+void RayCast(std::shared_ptr<cv::Mat> image,
+             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, cv::Mat hit_mask,
+             float threshold,
+             std::shared_ptr<beam_calibration::CameraModel> model,
+             void (*f)(std::shared_ptr<cv::Mat> image_i,
+                       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_i,
+                       const int* position, int index)) {
   /// create image with 3 channels for coordinates
   pcl::PointXYZ origin(0, 0, 0);
   pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
@@ -22,8 +22,8 @@ void RayCastXYZ(std::shared_ptr<cv::Mat> image,
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
     (void)pixel;
-    int v = position[0], u = position[1];
-    if (hit_mask.at<cv::Vec3b>(v, u).val[0] == 255) {
+    int u = position[0], v = position[1];
+    if (hit_mask.at<cv::Vec3b>(u, v).val[0] == 255) {
       beam::Vec3 ray(0, 0, 0);
       // get direction vector
       beam::Vec2 input_point(u, v);
@@ -58,22 +58,21 @@ void RayCastXYZ(std::shared_ptr<cv::Mat> image,
   });
 }
 
-void RayCastXYZRGB(std::shared_ptr<cv::Mat> image,
-                   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-                   cv::Mat hit_mask, float threshold,
-                   std::shared_ptr<beam_calibration::CameraModel> model,
-                   void (*f)(std::shared_ptr<cv::Mat> image_i,
-                             pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_i,
-                             const int* position, int index)) {
-  /// create image with 3 channels for coordinates
+void RayCast(std::shared_ptr<cv::Mat> image,
+             pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat hit_mask,
+             float threshold,
+             std::shared_ptr<beam_calibration::CameraModel> model,
+             void (*f)(std::shared_ptr<cv::Mat> image_i,
+                       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_i,
+                       const int* position, int index)) {
   pcl::PointXYZ origin(0, 0, 0);
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
   kdtree.setInputCloud(cloud);
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
     (void)pixel;
-    int v = position[0], u = position[1];
-    if (hit_mask.at<cv::Vec3b>(v, u).val[0] == 255) {
+    int u = position[0], v = position[1];
+    if (hit_mask.at<cv::Vec3b>(u, v).val[0] == 255) {
       beam::Vec3 ray(0, 0, 0);
       // get direction vector
       beam::Vec2 input_point(u, v);
@@ -121,8 +120,30 @@ cv::Mat CreateHitMask(int mask_size,
     beam::Vec2 coords;
     coords = model->ProjectPoint(point);
     uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    if (u > 0 && v > 0 && v < model->GetHeight() && u < model->GetWidth()) {
-      tmp.at<cv::Vec3b>(v, u).val[0] = 255;
+    if (u > 0 && v > 0 && v < model->GetWidth() && u < model->GetHeight()) {
+      tmp.at<cv::Vec3b>(u, v).val[0] = 255;
+    }
+  }
+  cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
+             cv::Point(-1, -1), 1, 1, 1);
+  return hit_mask;
+}
+
+cv::Mat CreateHitMask(int mask_size,
+                      std::shared_ptr<beam_calibration::CameraModel> model,
+                      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud) {
+  // create image mask where white pixels = projection hit
+  cv::Size image_s(model->GetHeight(), model->GetWidth());
+  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
+  cv::Mat hit_mask;
+  for (uint32_t i = 0; i < cloud->points.size(); i++) {
+    beam::Vec3 point;
+    point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+    beam::Vec2 coords;
+    coords = model->ProjectPoint(point);
+    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
+    if (u > 0 && v > 0 && v < model->GetWidth() && u < model->GetHeight()) {
+      tmp.at<cv::Vec3b>(u, v).val[0] = 255;
     }
   }
   cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
