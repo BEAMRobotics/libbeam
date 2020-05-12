@@ -135,6 +135,12 @@ public:
   void LoadFromJSON(const std::string input_pose_file_path);
 
   /**
+   * @brief loads the pose file in txt format
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromTXT(const std::string input_pose_file_path);
+
+  /**
    * @brief writes the pose file to the specified directory as PLY type. If a
    * directory is given (i.e. ending in /) the file will be named:
    * "poses_file_date"_poses.ply. If a full filename is given (i.e.

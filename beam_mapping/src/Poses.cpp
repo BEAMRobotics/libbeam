@@ -8,9 +8,9 @@
 #include <iostream>
 #include <nav_msgs/Odometry.h>
 #include <nlohmann/json.hpp>
-#include <tf2_eigen/tf2_eigen.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 namespace beam_mapping {
 
@@ -121,10 +121,11 @@ void Poses::WriteToJSON(const std::string output_dir) {
   J = nlohmann::json::parse(J_string);
 
   std::string output_file;
-  std::string last_five_chars = output_dir.substr(output_dir.size()-5, output_dir.size());
+  std::string last_five_chars =
+      output_dir.substr(output_dir.size() - 5, output_dir.size());
   std::cout << "output_dir: " << output_dir << "\n";
   std::cout << "last_five_chars: " << last_five_chars << "\n";
-  if(last_five_chars == ".json" || last_five_chars == ".JSON"){
+  if (last_five_chars == ".json" || last_five_chars == ".JSON") {
     output_file = output_dir;
     std::cout << "TEST1\n";
 
@@ -183,6 +184,49 @@ void Poses::LoadFromJSON(const std::string input_pose_file_path) {
   BEAM_INFO("Read {} poses.", pose_counter);
 }
 
+void Poses::LoadFromTXT(const std::string input_pose_file_path) {
+  // declare variables
+  std::ifstream infile;
+  std::string line;
+  Eigen::Matrix4d Tk;
+  int pose_counter = 0;
+  ros::Time time_stamp_k;
+  // open file
+  infile.open(input_pose_file_path);
+  // extract poses
+  while (!infile.eof()) {
+    // get timestamp k
+    std::getline(infile, line, ',');
+    try {
+      int n_sec = std::stod(line.substr(line.length() - 9, line.length()));
+      int sec = std::stod(line.substr(0, line.length() - 10));
+      time_stamp_k.sec = sec;
+      time_stamp_k.nsec = n_sec;
+    } catch (const std::invalid_argument& e) {
+      BEAM_CRITICAL("Invalid argument, probably at end of file");
+      throw std::invalid_argument{"Invalid argument, probably at end of file"};
+    }
+
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (i == 3 && j == 3) {
+          std::getline(infile, line, '\n');
+          Tk(i, j) = std::stod(line);
+        } else {
+          std::getline(infile, line, ',');
+          Tk(i, j) = std::stod(line);
+        }
+      }
+    }
+    time_stamps.push_back(time_stamp_k);
+    Eigen::Affine3d TA_k;
+    TA_k.matrix() = Tk;
+    pose_counter++;
+    poses.push_back(TA_k);
+  }
+  BEAM_INFO("Read {} poses.", pose_counter);
+}
+
 void Poses::WriteToPLY(const std::string output_dir) {
   if (poses.size() != time_stamps.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
@@ -198,8 +242,9 @@ void Poses::WriteToPLY(const std::string output_dir) {
 
   // write to PLY
   std::string output_file;
-  std::string last_four_chars = output_dir.substr(output_dir.size()-4, output_dir.size());
-  if(last_four_chars == ".ply" || last_four_chars == ".PLY"){
+  std::string last_four_chars =
+      output_dir.substr(output_dir.size() - 4, output_dir.size());
+  if (last_four_chars == ".ply" || last_four_chars == ".PLY") {
     output_file = output_dir;
   } else {
     output_file = output_dir + pose_file_date + "_poses.ply";
@@ -228,8 +273,8 @@ void Poses::WriteToPLY(const std::string output_dir) {
 
   for (size_t k = 0; k < poses.size(); k++) {
     Eigen::RowVector3d Tk = poses[k].translation();
-    Eigen::RowVector3d Mk = poses[k].rotation().eulerAngles(0,1,2);
-    double t = time_stamps[k].toSec()-t_start;
+    Eigen::RowVector3d Mk = poses[k].rotation().eulerAngles(0, 1, 2);
+    double t = time_stamps[k].toSec() - t_start;
     fileply << std::fixed << std::setprecision(6) << Tk[0] << " ";
     fileply << std::fixed << std::setprecision(6) << Tk[1] << " ";
     fileply << std::fixed << std::setprecision(6) << Tk[2] << " ";
@@ -318,12 +363,8 @@ void Poses::LoadFromBAG(const std::string bag_file_path,
     beam::OutputPercentComplete(message_counter, total_messages,
                                 output_message);
     auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-    if (fixed_frame.size() < 2) {
-      fixed_frame = odom_msg->header.frame_id;
-    }
-    if (moving_frame.size() < 2) {
-      moving_frame = odom_msg->child_frame_id;
-    }
+    if (fixed_frame.size() < 2) { fixed_frame = odom_msg->header.frame_id; }
+    if (moving_frame.size() < 2) { moving_frame = odom_msg->child_frame_id; }
     time_stamps.push_back(odom_msg->header.stamp);
     Eigen::Affine3d T_MOVING_FIXED;
     Eigen::fromMsg(odom_msg->pose.pose, T_MOVING_FIXED);
