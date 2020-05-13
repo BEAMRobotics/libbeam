@@ -43,14 +43,14 @@ public:
    * point has been projected into the image plane [u,v]^T
    */
   virtual void ProjectPoint(const Eigen::Vector3d& point,
-                            std::optional<Eigen::Vector2d>& pixel) = 0;
+                            std::optional<Eigen::Vector2i>& pixel) = 0;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  virtual void BackProject(const Eigen::Vector2d& pixel,
+  virtual void BackProject(const Eigen::Vector2i& pixel,
                            std::optional<Eigen::Vector3d>& ray) = 0;
 
   /**
