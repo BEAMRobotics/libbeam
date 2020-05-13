@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <optional>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
