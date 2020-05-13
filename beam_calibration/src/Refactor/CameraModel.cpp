@@ -52,7 +52,7 @@ CameraType CameraModel::GetType() const {
   return type_;
 }
 
-bool CameraModel::PixelInImage(const Eigen::Vector3i& pixel) {
+bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
   if (pixel_in[0] < 0 || pixel_in[1] < 0 || pixel_in[0] > image_width_ ||
       pixel_in[1] > image_height_)
     return false;
