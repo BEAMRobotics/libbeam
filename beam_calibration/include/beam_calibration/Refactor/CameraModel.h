@@ -118,7 +118,7 @@ public:
    * @return Returns boolean
    * @param pixel
    */
-  bool PixelInImage(const Eigen::Vector2d& pixel);
+  bool PixelInImage(const Eigen::Vector2i& pixel);
 
 protected:
   /**
