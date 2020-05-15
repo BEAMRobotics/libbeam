@@ -21,9 +21,7 @@ PinholeCamera::PinholeCamera(DistortionType dist_type, beam::VecX intrinsics,
 
 beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
   // check if point is behind image plane
-  if(point[2] < 0){
-    return Eigen::Vector2d(-1, -1);
-  }
+  if (point[2] < 0) { return Eigen::Vector2d(-1, -1); }
 
   beam::Vec2 out_point;
   if (intrinsics_valid_ && distortion_set_) {
@@ -52,9 +50,7 @@ beam::Vec2 PinholeCamera::ProjectPoint(beam::Vec3 point) {
 
 beam::Vec2 PinholeCamera::ProjectUndistortedPoint(beam::Vec3 point) {
   // check if point is behind image plane
-  if(point[2] < 0){
-    return Eigen::Vector2d(-1, -1);
-  }
+  if (point[2] < 0) { return Eigen::Vector2d(-1, -1); }
 
   beam::Vec2 out_point;
   if (und_intrinsics_valid_) {

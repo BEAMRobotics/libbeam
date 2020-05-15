@@ -23,8 +23,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   cv::Vec3b colors;
   beam::Vec2 coords;
   uint16_t u, v;
-  uint16_t vmax = image_->rows;
-  uint16_t umax = image_->cols;
+  uint16_t vmax = image_->cols;
+  uint16_t umax = image_->rows;
   uchar blue, green, red;
   int counter = 0;
 
@@ -35,13 +35,11 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
-
     coords = intrinsics_->ProjectPoint(point);
-
     u = std::round(coords(0, 0));
     v = std::round(coords(1, 0));
     if (u > 0 && v > 0 && v < vmax && u < umax) {
-      colors = image_->at<cv::Vec3b>(v, u);
+      colors = image_->at<cv::Vec3b>(u, v);
       blue = colors.val[0];
       green = colors.val[1];
       red = colors.val[2];
@@ -78,8 +76,8 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   beam::Vec3 point;
   beam::Vec2 coords;
   uint16_t u, v;
-  uint16_t vmax = image_->rows;
-  uint16_t umax = image_->cols;
+  uint16_t vmax = image_->cols;
+  uint16_t umax = image_->rows;
   int counter = 0;
   uchar color_scale;
 
@@ -96,7 +94,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     u = std::round(coords(0, 0));
     v = std::round(coords(1, 0));
     if (u > 0 && v > 0 && v < vmax && u < umax) {
-      color_scale = image_->at<uchar>(v, u);
+      color_scale = image_->at<uchar>(u, v);
       // ignore black colors, this happens at edges when images are undistored
       //      std::cout << "Color scale = " << color_scale << std::endl;
       if (color_scale == 0) {
