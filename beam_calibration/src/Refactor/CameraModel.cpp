@@ -69,24 +69,12 @@ void CameraModel::LoadJSON(const std::string& file_path) {
 
   // check type
   std::string camera_type = J["camera_type"];
-  CameraType camera_type_read;
-  if (camera_type == PINHOLE_RADTAN) {
-    camera_type_read = CameraType::PINHOLE_RADTAN;
-  } else if (camera_type == PINHOLE_EQUI) {
-    camera_type_read = CameraType::PINHOLE_EQUI;
-  } else if (camera_type == DOUBLESPHERE) {
-    camera_type_read = CameraType::DOUBLESPHERE;
-  } else {
-    BEAM_CRITICAL("Invalid camera type read from json. Type read: {}. Options: "
-                  "PINHOLE_RADTAN, PINHOLE_EQUI, DOUBLESPHERE",
-                  camera_type.c_str());
+  std::map<std::string, CameraType>::iterator it =
+      intrinsics_types_.find(camera_type);
+  if(it == intrinsics_types_.end()){
+    BEAM_CRITICAL("Invalid camera type read from json. Type read: {}", camera_type.c_str());
+    OutputCameraTypes();
     throw std::invalid_argument{"Invalid camera type read from json."};
-  }
-
-  if (camera_type_read != this->GetType) {
-    BEAM_CRITICAL("Attempting to initialize wrong camera model type. Check "
-                  "input json file.",
-                  camera_type_read);
   }
 
   // get params
@@ -98,10 +86,14 @@ void CameraModel::LoadJSON(const std::string& file_path) {
   for (const auto& value : J["intrinsics"]) {
     intrinsics.push_back(value.get<double>());
   }
-  if (intrinsics.size() != intrinsics_size_[this->GetType]) {
-    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
-                  intrinsics.size(), intrinsics_size_[this->GetType]);
-    throw std::invalid_argument{"Invalid number of instrinsics read."};
+  intrinsics_ = Eigen::VectorXd(intrinsics.data());
+  ValidateInputs();
+}
+
+void CameraModel::OutputCameraTypes(){
+  std::cout << "Intrinsic type input options:\n";
+  for (std::map<std::string, CameraType>::iterator it = intrinsics_types_.start(); it != intrinsics_types_.end(); it++){
+    std::cout << "    -" << it->first << "\n";
   }
 }
 

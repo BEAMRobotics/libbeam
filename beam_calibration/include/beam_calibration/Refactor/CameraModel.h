@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <optional>
+#include <nlohmann/json.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
-#include <nlohmann/json.hpp>
+#include <optional>
 
 namespace beam_calibration {
 
@@ -53,6 +53,13 @@ public:
    */
   virtual void BackProject(const Eigen::Vector2i& pixel,
                            std::optional<Eigen::Vector3d>& ray) = 0;
+
+  /**
+   * @brief Method for validating the inputs. This will be called in the load
+   * configuration file step and should validate the intrinsics (i.e. size) and
+   * the type
+   */
+  virtual void ValidateInputs() = 0;
 
   /**
    * @brief Method for adding the frame id
@@ -128,6 +135,11 @@ protected:
    */
   void LoadJSON(const std::string& file_path);
 
+  /**
+   * @brief Method for outputting all camera model types from intrinsics_types_
+   */
+  void OutputCameraTypes();
+
   CameraType type_; // THIS SHOULD BE SET IN EACH DERIVED CLASS CONSTRUCTOR
   std::string frame_id_{""};
   std::string calibration_date_{""};
@@ -139,6 +151,12 @@ protected:
                                                 {CameraType::PINHOLE_RADTAN, 8},
                                                 {CameraType::PINHOLE_EQUI, 8},
                                                 {CameraType::DOUBLESPHERE, 6}};
+  // Map for storing string input
+  std::map<std::string, CameraType> intrinsics_types_ = {
+      {"LADYBUG", CameraType::LADYBUG},
+      {"PINHOLE_RADTAN", CameraType::PINHOLE_RADTAN},
+      {"PINHOLE_EQUI", CameraType::PINHOLE_EQUI},
+      {"DOUBLESPHERE", CameraType::DOUBLESPHERE}};
 };
 
 } // namespace beam_calibration
