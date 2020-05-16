@@ -3,19 +3,23 @@
  */
 
 #pragma once
-// beam
-#include "beam_utils/math.hpp"
 
-// OpenCV
+#include <nlohmann/json.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
+#include <optional>
 
 namespace beam_calibration {
 
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { PINHOLE = 0, LADYBUG };
+enum class CameraType {
+  PINHOLE_RADTAN = 0,
+  PINHOLE_EQUI,
+  DOUBLESPHERE,
+  LADYBUG
+};
 
 /**
  * @brief Abstract class for camera models
@@ -23,9 +27,10 @@ enum class CameraType { PINHOLE = 0, LADYBUG };
 class CameraModel {
 public:
   /**
-   * @brief Default constructor
+   * @brief Constructor
+   * @param input_file path to input file
    */
-  CameraModel() = default;
+  virtual CameraModel(const std::string& file_path) = 0;
 
   /**
    * @brief Default destructor
@@ -34,125 +39,124 @@ public:
 
   /**
    * @brief Method for projecting a point into an image plane
-   * @return Returns image coordinates after point has been projected into image
-   * plane.
-   * @param point to be projected
+   * @param point 3d point to be projected [x,y,z]^T
+   * @param pixel reference to an optional vector with image coordinates after
+   * point has been projected into the image plane [u,v]^T
    */
-  virtual beam::Vec2 ProjectPoint(beam::Vec3 point) = 0;
+  virtual void ProjectPoint(const Eigen::Vector3d& point,
+                            std::optional<Eigen::Vector2i>& pixel) = 0;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  virtual beam::Vec3 BackProject(beam::Vec2 point) = 0;
+  virtual void BackProject(const Eigen::Vector2i& pixel,
+                           std::optional<Eigen::Vector3d>& ray) = 0;
 
   /**
-   * @brief Method for undistorting an image based on camera's distortion
-   * @return image
+   * @brief Method for validating the inputs. This will be called in the load
+   * configuration file step and should validate the intrinsics (i.e. size) and
+   * the type
    */
-  virtual cv::Mat UndistortImage(cv::Mat image_input) = 0;
-
-  /**
-   * @brief Method for projecting a point into an image plane without distortion
-   * @return Returns image coordinates after point has been projected into image
-   * plane.
-   * @param point to be projected. Not in homographic form
-   */
-  virtual beam::Vec2 ProjectUndistortedPoint(beam::Vec3 point) = 0;
+  virtual void ValidateInputs() = 0;
 
   /**
    * @brief Method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
-  virtual void SetFrameID(std::string id);
+  void SetFrameID(const std::string& id);
 
   /**
    * @brief Method for setting the date that the calibration was done
    * @param Calibration date
    */
-  virtual void SetCalibrationDate(std::string id);
+  void SetCalibrationDate(const std::string& date);
 
   /**
    * @brief Method for adding the image dimensions
    * @param height and width of the image plane
    */
-  virtual void SetImageDims(uint32_t height, uint32_t width);
+  void SetImageDims(const uint32_t height, const uint32_t width);
 
   /**
    * @brief Method for adding intrinsic values
    * @param intrinsics of the camera
    */
-  virtual void SetIntrinsics(beam::VecX instrinsics);
+  void SetIntrinsics(const Eigen::VectorXd& instrinsics);
 
   /**
-   * @brief Sets distortion model for pinhole camera
-   * @param model to be set for distortion
-   */
-  virtual void SetDistortion(std::shared_ptr<DistortionModel> model);
-
-  /**
-   * @brief Method for returning the frame id of an intrinsics
-   * calibration object
+   * @brief Method for returning the frame id of a camera object
    * @return Returns frame id
    */
-  virtual const std::string GetFrameID() const;
+  const std::string GetFrameID() const;
 
   /**
    * @brief Method for retrieving the date that the calibration was done
    * @return Return calibration date
    */
-  virtual const std::string GetCalibrationDate() const;
+  const std::string GetCalibrationDate() const;
 
   /**
    * @brief Method for getting the image height
    * @return image height
    */
-  virtual uint32_t GetHeight() const;
+  const uint32_t GetHeight() const;
 
   /**
    * @brief Method for getting the image width
    * @return image width
    */
-  virtual uint32_t GetWidth() const;
+  const uint32_t GetWidth() const;
 
   /**
    * @brief Method for retrieving the intrinsic values of the model
    * @return intrinsics of the camera
    */
-  virtual const beam::VecX GetIntrinsics() const;
+  const Eigen::VectorXd GetIntrinsics() const;
 
   /**
    * @brief Method for retrieving the camera type
    * @return camera type
    */
-  virtual CameraType GetType() const;
-
-  /**
-   * @brief Method for retrieving camera matrix
-   * @return K
-   */
-  virtual beam::Mat3 GetCameraMatrix() const;
+  CameraType GetType() const;
 
   /**
    * @brief Method for checking if pixel is in image
    * @return Returns boolean
    * @param pixel
    */
-  virtual bool PixelInImage(beam::Vec2 pixel_in);
+  bool PixelInImage(const Eigen::Vector2i& pixel);
 
 protected:
-  CameraType type_;
-  std::string frame_id_, calibration_date_;
-  uint32_t image_height_, image_width_;
-  beam::VecX intrinsics_;
-  std::shared_ptr<DistortionModel> distortion_ = nullptr;
-  // Boolean values to keep track of validity
-  bool intrinsics_valid_ = false, calibration_date_set_ = false,
-       distortion_set_ = false;
+  /**
+   * @brief Method for loading calibration information from a json.
+   * @param file_path full path to json
+   */
+  void LoadJSON(const std::string& file_path);
+
+  /**
+   * @brief Method for outputting all camera model types from intrinsics_types_
+   */
+  void OutputCameraTypes();
+
+  CameraType type_; // THIS SHOULD BE SET IN EACH DERIVED CLASS CONSTRUCTOR
+  std::string frame_id_{""};
+  std::string calibration_date_{""};
+  uint32_t image_height_{0};
+  uint32_t image_width_{0};
+  Eigen::VectorXd intrinsics_;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
-                                                {CameraType::PINHOLE, 4}};
+                                                {CameraType::PINHOLE_RADTAN, 8},
+                                                {CameraType::PINHOLE_EQUI, 8},
+                                                {CameraType::DOUBLESPHERE, 6}};
+  // Map for storing string input
+  std::map<std::string, CameraType> intrinsics_types_ = {
+      {"LADYBUG", CameraType::LADYBUG},
+      {"PINHOLE_RADTAN", CameraType::PINHOLE_RADTAN},
+      {"PINHOLE_EQUI", CameraType::PINHOLE_EQUI},
+      {"DOUBLESPHERE", CameraType::DOUBLESPHERE}};
 };
 
 } // namespace beam_calibration

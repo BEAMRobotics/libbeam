@@ -70,6 +70,19 @@ beam::Vec2 PinholeCamera::ProjectUndistortedPoint(beam::Vec3 point) {
   return out_point;
 }
 
+
+void PinholeCamera::SetDistortion(std::shared_ptr<DistortionModel> model) {
+  distortion_ = model;
+  distortion_set_ = true;
+}
+
+beam::Mat3 CameraModel::GetCameraMatrix() const {
+  beam::Mat3 K;
+  K << intrinsics_[0], 0, intrinsics_[2], 0, intrinsics_[1], intrinsics_[3], 0,
+      0, 1;
+  return K;
+}
+
 /**
  * TODO
  */
