@@ -43,7 +43,15 @@ public:
                    std::optional<Eigen::Vector3d>& ray) override;
 
 protected:
+  /**
+   * @brief Method for validating the inputs. This will be called in the load
+   * configuration file step and should validate the intrinsics (i.e. size) and
+   * the type
+   */
+  void ValidateInputs() override;
+  
   void LoadJSON(const std::string& file_path);
+
   double fx_;
   double fy_;
   double cx_;

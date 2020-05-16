@@ -70,4 +70,17 @@ void DoubleSphere::BackProject(const Eigen::Vector2i& pixel,
   return;
 }
 
+void DoubleSphere::ValidateInputs(){
+  if(type_ != CameraType::DOUBLESPHERE){
+    BEAM_WARN("Invalid camera model type read. Read {}, changing to DOUBLESPHERE");
+    type_ = CameraType::DOUBLESPHERE;
+  }
+
+  if (intrinsics_.size() != intrinsics_size_[type_]) {
+    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
+                  intrinsics.size(), intrinsics_size_[type_]);
+    throw std::invalid_argument{"Invalid number of instrinsics read."};
+  }
+}
+
 } // namespace beam_calibration
