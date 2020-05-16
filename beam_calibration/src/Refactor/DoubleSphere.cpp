@@ -5,7 +5,6 @@
 namespace beam_calibration {
 
 DoubleSphere::DoubleSphere(const std::string& file_path) {
-  type_ = CameraType::DOUBLESPHERE;
   LoadJSON(file_path);
   fx_ = &intrinsics_[0];
   fy_ = &intrinsics_[1];
