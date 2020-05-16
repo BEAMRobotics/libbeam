@@ -47,6 +47,20 @@ public:
                             std::optional<Eigen::Vector2i>& pixel) = 0;
 
   /**
+   * @brief Overload projection function for computing jacobian of projection
+   * @param point 3d point to be projected [x,y,z]^T
+   * @param pixel reference to an optional vector with image coordinates after
+   * point has been projected into the image plane [u,v]^T
+   * @param J 2 x 3 projection jacobian.
+   * For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T
+   *                   J = | dP1/dx , dP1/dy, dP1/dz |
+   *                       | dP2/dx , dP2/dy, dP2/dz |
+   */
+  virtual void ProjectPoint(const Eigen::Vector3d& point,
+                            std::optional<Eigen::Vector2i>& pixel,
+                            std::optional<Eigen::MatrixXd>& J) = 0;
+
+  /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
