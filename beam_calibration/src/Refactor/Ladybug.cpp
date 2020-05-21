@@ -1,4 +1,4 @@
-#include "beam_calibration/LadybugCamera.h"
+#include "beam_calibration/Ladybug.h"
 
 namespace beam_calibration {
 

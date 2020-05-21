@@ -55,7 +55,7 @@ void DoubleSphere::BackProject(const Eigen::Vector2i& pixel,
   double r2 = mx * mx + my * my;
 
   // check pixels are valid for back projection
-  if(alpha_ > 0.5 && r2 > 1 / (2 * alpha_ - 1)){
+  if (alpha_ > 0.5 && r2 > 1 / (2 * alpha_ - 1)) {
     ray = std::nullopt;
     return;
   }
@@ -65,13 +65,14 @@ void DoubleSphere::BackProject(const Eigen::Vector2i& pixel,
   double A =
       (mz * eps_ + sqrt(mz * mz + (1 - eps_ * eps_) * r2)) / (mz * mz + r2);
   ray = std::optional<Eigen::Vector3d>(
-      Eigen::Vectotr3d(A * mx, A * my, A * mz - eps_));
+      Eigen::Vector3d(A * mx, A * my, A * mz - eps_));
   return;
 }
 
-void DoubleSphere::ValidateInputs(){
-  if(type_ != CameraType::DOUBLESPHERE){
-    BEAM_WARN("Invalid camera model type read. Read {}, changing to DOUBLESPHERE");
+void DoubleSphere::ValidateInputs() {
+  if (type_ != CameraType::DOUBLESPHERE) {
+    BEAM_WARN(
+        "Invalid camera model type read. Read {}, changing to DOUBLESPHERE");
     type_ = CameraType::DOUBLESPHERE;
   }
 

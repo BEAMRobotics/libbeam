@@ -67,14 +67,26 @@ void CameraModel::LoadJSON(const std::string& file_path) {
   std::ifstream file(file_location);
   file >> J;
 
+  std::string class_type;
+  for (std::map<std::string, CameraType>::iterator it =
+           intrinsics_types_.start();
+       it != intrinsics_types_.end(); it++) {
+    if (intrinsics_types_[it->first] == intrinsics_types_[this->type_]) {
+      class_type = it->first;
+    }
+  }
   // check type
   std::string camera_type = J["camera_type"];
   std::map<std::string, CameraType>::iterator it =
       intrinsics_types_.find(camera_type);
-  if(it == intrinsics_types_.end()){
-    BEAM_CRITICAL("Invalid camera type read from json. Type read: {}", camera_type.c_str());
+  if (it == intrinsics_types_.end()) {
+    BEAM_CRITICAL("Invalid camera type read from json. Type read: {}",
+                  camera_type.c_str());
     OutputCameraTypes();
-    throw std::invalid_argument{"Invalid camera type read from json."};
+  } else if (intrinsics_types_[camera_type] != intrinsics_types_[this->type_]) {
+    BEAM_CRITICAL(
+        "Invalid camera type read from json. Type read: {}, Expected: {}",
+        camera_type.c_str(), class_type.c_str());
   }
 
   // get params
@@ -90,9 +102,11 @@ void CameraModel::LoadJSON(const std::string& file_path) {
   ValidateInputs();
 }
 
-void CameraModel::OutputCameraTypes(){
+void CameraModel::OutputCameraTypes() {
   std::cout << "Intrinsic type input options:\n";
-  for (std::map<std::string, CameraType>::iterator it = intrinsics_types_.start(); it != intrinsics_types_.end(); it++){
+  for (std::map<std::string, CameraType>::iterator it =
+           intrinsics_types_.start();
+       it != intrinsics_types_.end(); it++) {
     std::cout << "    -" << it->first << "\n";
   }
 }

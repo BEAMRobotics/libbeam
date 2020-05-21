@@ -14,12 +14,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType {
-  PINHOLE_RADTAN = 0,
-  PINHOLE_EQUI,
-  DOUBLESPHERE,
-  LADYBUG
-};
+enum class CameraType { RADTAN = 0, KANNALABRANDT, DOUBLESPHERE, LADYBUG };
 
 /**
  * @brief Abstract class for camera models
@@ -162,14 +157,14 @@ protected:
   Eigen::VectorXd intrinsics_;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
-                                                {CameraType::PINHOLE_RADTAN, 8},
-                                                {CameraType::PINHOLE_EQUI, 8},
+                                                {CameraType::RADTAN, 8},
+                                                {CameraType::KANNALABRANDT, 8},
                                                 {CameraType::DOUBLESPHERE, 6}};
   // Map for storing string input
   std::map<std::string, CameraType> intrinsics_types_ = {
       {"LADYBUG", CameraType::LADYBUG},
-      {"PINHOLE_RADTAN", CameraType::PINHOLE_RADTAN},
-      {"PINHOLE_EQUI", CameraType::PINHOLE_EQUI},
+      {"RADTAN", CameraType::RADTAN},
+      {"KANNALABRANDT", CameraType::KANNALABRANDT},
       {"DOUBLESPHERE", CameraType::DOUBLESPHERE}};
 };
 
