@@ -1,26 +1,26 @@
-#include "beam_calibration/include/Refactor/Radtan.h"
+#include "beam_calibration/Radtan.h"
 
 namespace beam_calibration {
 
 Radtan::Radtan(const std::string& file_path) {
   type_ = CameraType::RADTAN;
   LoadJSON(file_path);
-  fx_ = &intrinsics_[0];
-  fy_ = &intrinsics_[1];
-  cx_ = &intrinsics_[2];
-  cy_ = &intrinsics_[3];
-  k1_ = &intrinsics_[4];
-  k2_ = &intrinsics_[5];
-  p1_ = &intrinsics_[6];
-  p2_ = &intrinsics_[7];
+  fx_ = intrinsics_[0];
+  fy_ = intrinsics_[1];
+  cx_ = intrinsics_[2];
+  cy_ = intrinsics_[3];
+  k1_ = intrinsics_[4];
+  k2_ = intrinsics_[5];
+  p1_ = intrinsics_[6];
+  p2_ = intrinsics_[7];
 }
 
-void Radtan::ProjectPoint(const Eigen::Vector3d& point,
-                          std::optional<Eigen::Vector2i>& pixel) {
+std::experimental::optional<Eigen::Vector2i>
+    Radtan::ProjectPoint(const Eigen::Vector3d& point) {
   // check if point is behind image plane
-  if (point[2] < 0) { return Eigen::Vector2d(-1, -1); }
+  if (point[2] < 0) { return {}; }
 
-  Eigen::Vector2i out_point;
+  Eigen::Vector2d out_point;
   // Project point
   const double x = point[0], y = point[1], z = point[2];
   const double rz = 1.0 / z;
@@ -31,21 +31,18 @@ void Radtan::ProjectPoint(const Eigen::Vector3d& point,
   out_point[0] = (fx_ * xx + cx_);
   out_point[1] = (fy_ * yy + cy_);
 
-  if (PixelInImage(out_point)) {
-    pixel = std::optional<Eigen::Vector2i>(out_point);
-  } else {
-    pixel = std::nullopt;
-  }
-  return;
+  Eigen::Vector2i coords;
+  coords << std::round(out_point[0]), std::round(out_point[1]);
+  if (PixelInImage(coords)) { return coords; }
+  return {};
 }
 
-void Radtan::ProjectPoint(const Eigen::Vector3d& point,
-                          std::optional<Eigen::Vector2i>& pixel,
-                          std::optional<Eigen::MatrixXd>& J) {
+std::experimental::optional<Eigen::Vector2i>
+    Radtan::ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) {
   // check if point is behind image plane
-  if (point[2] < 0) { return Eigen::Vector2d(-1, -1); }
+  if (point[2] < 0) { return {}; }
 
-  Eigen::Vector2i out_point, out_point_tmp;
+  Eigen::Vector2d out_point, out_point_tmp;
   // Project point
   const double x = point[0], y = point[1], z = point[2];
   const double rz = 1.0 / z;
@@ -56,62 +53,57 @@ void Radtan::ProjectPoint(const Eigen::Vector3d& point,
   out_point[0] = (fx_ * xx + cx_);
   out_point[1] = (fy_ * yy + cy_);
 
-  if (J) {
-    /* assuming ProjectPoint(P) = G(H(F(P)))
-     * where F(P) = [Px/Pz
-     *               Py/Pz]
-     *       H(P') = distortion function
-     *       G(P") = [ P"x fx + Cx
-     *                 P"y fy + Cy]
-     */
-    Eigen::MatrixXd dGdH = Eigen::MatrixXd(2, 2);
-    Eigen::MatrixXd dHdF = Eigen::MatrixXd(2, 2);
-    Eigen::MatrixXd dFdP = Eigen::MatrixXd(2, 3);
-    dGdH(0, 0) = fx;
-    dGdH(1, 0) = 0;
-    dGdH(0, 1) = 0;
-    dGdH(1, 1) = fy;
-    dHdF = this->ComputeDistortionJacobian(out_point_tmp);
-    dFdP(0, 0) = 1 / z;
-    dFdP(1, 0) = 0;
-    dFdP(0, 1) = 0;
-    dFdP(1, 1) = 1 / z;
-    dFdP(0, 2) = -x / (z * z);
-    dFdP(1, 2) = -y / (z * z);
-    (*J) = dGdH * dHdF * dFdP;
-  }
+  /* assuming ProjectPoint(P) = G(H(F(P)))
+   * where F(P) = [Px/Pz
+   *               Py/Pz]
+   *       H(P') = distortion function
+   *       G(P") = [ P"x fx + Cx
+   *                 P"y fy + Cy]
+   */
+  Eigen::MatrixXd dGdH = Eigen::MatrixXd(2, 2);
+  Eigen::MatrixXd dHdF = Eigen::MatrixXd(2, 2);
+  Eigen::MatrixXd dFdP = Eigen::MatrixXd(2, 3);
+  dGdH(0, 0) = fx_;
+  dGdH(1, 0) = 0;
+  dGdH(0, 1) = 0;
+  dGdH(1, 1) = fy_;
+  dHdF = this->ComputeDistortionJacobian(out_point_tmp);
+  dFdP(0, 0) = 1 / z;
+  dFdP(1, 0) = 0;
+  dFdP(0, 1) = 0;
+  dFdP(1, 1) = 1 / z;
+  dFdP(0, 2) = -x / (z * z);
+  dFdP(1, 2) = -y / (z * z);
+  J = dGdH * dHdF * dFdP;
 
-  if (PixelInImage(out_point)) {
-    pixel = std::optional<Eigen::Vector2i>(out_point);
-  } else {
-    pixel = std::nullopt;
-  }
-  return;
+  Eigen::Vector2i coords;
+  coords << std::round(out_point[0]), std::round(out_point[1]);
+  if (PixelInImage(coords)) { return coords; }
+  return {};
 }
 
-void Radtan::BackProject(const Eigen::Vector2i& pixel,
-                         std::optional<Eigen::Vector3d>& ray) {
+std::experimental::optional<Eigen::Vector3d>
+    Radtan::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector3d out_point;
-  Eigen::Vector2i kp = point;
-  kp[0] = (kp[0] - cx_) / fx_;
-  kp[1] = (kp[1] - cy_) / fy_;
-  Eigen::Vector2i undistorted = this->UndistortPixel(kp);
+  Eigen::Vector2d kp;
+  kp[0] = (pixel[0] - cx_) / fx_;
+  kp[1] = (pixel[1] - cy_) / fy_;
+  Eigen::Vector2d undistorted = this->UndistortPixel(kp);
   out_point << undistorted[0], (undistorted[1]), 1;
   out_point.normalize();
-  ray = std::optional<Eigen::Vector3d>(out_point);
-  return;
+  return out_point;
 }
 
 void Radtan::ValidateInputs() {
   if (intrinsics_.size() != intrinsics_size_[type_]) {
     BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
-                  intrinsics.size(), intrinsics_size_[type_]);
+                  intrinsics_.size(), intrinsics_size_[type_]);
     throw std::invalid_argument{"Invalid number of instrinsics read."};
   }
 }
 
 void Radtan::UndistortImage(const cv::Mat& image_input, cv::Mat& image_output) {
-  uint32_t height = image_input->rows(), width = image_input->cols();
+  uint32_t height = image_input.rows, width = image_input.cols;
   Eigen::Matrix3d camera_matrix;
   camera_matrix << fx_, 0, cx_, 0, fy_, cy_, 0, 0, 1;
   cv::Mat K(3, 3, CV_32F);
@@ -119,7 +111,7 @@ void Radtan::UndistortImage(const cv::Mat& image_input, cv::Mat& image_output) {
   cv::Mat R = cv::Mat::eye(3, 3, CV_32F);
   // convert eigen to cv mat
   beam::VecX new_coeffs(5);
-  new_coeffs << k1_, k2_, 0, p1, p2;
+  new_coeffs << k1_, k2_, 0, p1_, p2_;
   cv::Mat D(1, 5, CV_8UC1);
   cv::eigen2cv(new_coeffs, D);
   // Undistort image
@@ -129,8 +121,8 @@ void Radtan::UndistortImage(const cv::Mat& image_input, cv::Mat& image_output) {
   cv::remap(image_input, image_output, map1, map2, 1);
 }
 
-Eigen::Vector2i Radtan::DistortPixel(const Eigen::Vector2i& pixel) {
-  Eigen::Vector2i coords;
+Eigen::Vector2d Radtan::DistortPixel(const Eigen::Vector2d& pixel) {
+  Eigen::Vector2d coords;
   double x = pixel[0], y = pixel[1];
   double xx, yy;
   double mx2_u = x * x;
@@ -144,19 +136,19 @@ Eigen::Vector2i Radtan::DistortPixel(const Eigen::Vector2i& pixel) {
   return coords;
 }
 
-Eigen::Vector2i Radtan::UndistortPixel(const Eigen::Vector2i& pixel) {
+Eigen::Vector2d Radtan::UndistortPixel(const Eigen::Vector2d& pixel) {
   constexpr int n = 200; // Max. number of iterations
-  Eigen::Vector2i y = pixel;
-  Eigen::Vector2i ybar = y;
-  beam::Mat2 F;
-  Eigen::Vector2i y_tmp;
+  Eigen::Vector2d y = pixel;
+  Eigen::Vector2d ybar = y;
+  Eigen::Matrix2d F;
+  Eigen::Vector2d y_tmp;
   // Handle special case around image center.
   if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
   for (int i = 0; i < n; ++i) {
     y_tmp = this->DistortPixel(ybar);
     F = this->ComputeDistortionJacobian(ybar);
-    Eigen::Vector2i e(y - y_tmp);
-    Eigen::Vector2i du = (F.transpose() * F).inverse() * F.transpose() * e;
+    Eigen::Vector2d e(y - y_tmp);
+    Eigen::Vector2d du = (F.transpose() * F).inverse() * F.transpose() * e;
     ybar += du;
   }
   y = ybar;
@@ -164,7 +156,7 @@ Eigen::Vector2i Radtan::UndistortPixel(const Eigen::Vector2i& pixel) {
 }
 
 Eigen::Matrix2d
-    Radtan::ComputeDistortionJacobian(const Eigen::Vector2i& pixel) {
+    Radtan::ComputeDistortionJacobian(const Eigen::Vector2d& pixel) {
   Eigen::Matrix2d out_jacobian;
   double x = pixel[0];
   double y = pixel[1];

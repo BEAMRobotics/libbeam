@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "beam_calibration/include/Refactor/CameraModel.h"
+#include "beam_calibration/CameraModel.h"
 
 namespace beam_calibration {
 
@@ -22,44 +22,43 @@ public:
   /**
    * @brief Default destructor
    */
-  Radtan();
-
-  /**
-   * @brief Default destructor
-   */
-  ~Radtan() = default;
-
+  ~Radtan() override = default;
   /**
    * @brief Method for projecting a point into an image plane
+   * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
-   * point has been projected into the image plane [u,v]^T
    */
-  void ProjectPoint(const Eigen::Vector3d& point,
-                    std::optional<Eigen::Vector2i>& pixel) override;
+  std::experimental::optional<Eigen::Vector2i>
+      ProjectPoint(const Eigen::Vector3d& point) override;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
+   * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
-   * point has been projected into the image plane [u,v]^T
    * @param J 2 x 3 projection jacobian.
    * For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
-  void ProjectPoint(const Eigen::Vector3d& point,
-                    std::optional<Eigen::Vector2i>& pixel,
-                    std::optional<Eigen::MatrixXd>& J) override;
+  std::experimental::optional<Eigen::Vector2i>
+      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) override;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  void BackProject(const Eigen::Vector2i& pixel,
-                   std::optional<Eigen::Vector3d>& ray) override;
+  std::experimental::optional<Eigen::Vector3d>
+      BackProject(const Eigen::Vector2i& pixel) override;
 
+  /**
+   * @brief Method for undistorting an image based on camera's distortion
+   * @param image_input image to be undistorted
+   * @param image_output reference to Mat obejct to store output
+   */
+  void UndistortImage(const cv::Mat& image_input, cv::Mat& image_output);
+
+protected:
   /**
    * @brief Method for validating the inputs. This will be called in the load
    * configuration file step and should validate the intrinsics (i.e. size) and
@@ -68,35 +67,25 @@ public:
   void ValidateInputs() override;
 
   /**
-   * @brief Method for undistorting an image based on camera's distortion
-   * @param image_input image to be undistorted
-   * @param image_output reference to Mat obejct to store output
-   */
-  virtual void UndistortImage(const cv::Mat& image_input,
-                              cv::Mat& image_output) = 0;
-
-protected:
-  /**
    * @brief Method to distort point
    * @return Vec2 distorted point
    * @param pixel to undistort
    */
-  virtual Eigen::Vector2i DistortPixel(const Eigen::Vector2i& pixel) = 0;
+  Eigen::Vector2d DistortPixel(const Eigen::Vector2d& pixel);
 
   /**
    * @brief Method to undistort point
    * @return Vec2 undistorted point
    * @param pixel to undistort
    */
-  virtual Eigen::Vector2i UndistortPixel(const Eigen::Vector2i& pixel) = 0;
+  Eigen::Vector2d UndistortPixel(const Eigen::Vector2d& pixel);
 
   /**
    * @brief Method to compute jacobian of the distortion function
    * @return Jacobian
    * @param pixel to compute jacobian around
    */
-  virtual Eigen::Matrix2d
-      ComputeDistortionJacobian(const Eigen::Vector2i& pixel) = 0;
+  Eigen::Matrix2d ComputeDistortionJacobian(const Eigen::Vector2d& pixel);
 
   double fx_;
   double fy_;
