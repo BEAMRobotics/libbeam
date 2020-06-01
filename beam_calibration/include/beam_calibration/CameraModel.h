@@ -6,9 +6,12 @@
 
 #include <beam_utils/utils.hpp>
 
-#include <experimental/optional>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
+#include <optional>
+
+template<class T>
+using opt = std::optional<T>;
 
 namespace beam_calibration {
 
@@ -39,8 +42,7 @@ public:
    * @param pixel reference to an optional vector with image coordinates after
    * point has been projected into the image plane [u,v]^T
    */
-  virtual std::experimental::optional<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point) = 0;
+  virtual opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) = 0;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
@@ -52,16 +54,15 @@ public:
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
-  virtual std::experimental::optional<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) = 0;
+  virtual opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point,
+                                            Eigen::MatrixXd& J) = 0;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  virtual std::experimental::optional<Eigen::Vector3d>
-      BackProject(const Eigen::Vector2i& pixel) = 0;
+  virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
 
   /**
    * @brief Method for validating the inputs. This will be called in the load

@@ -2,6 +2,33 @@
 
 This module contains the multiple different camera models and distortion models used for BEAMRobotics.
 
+## Install instructions
+
+As of May 2020, libbeam requires c++ version 17 which requires g++/gcc 7.
+To install g++/gcc 7 on Ubuntu 16.04, run:
+
+```
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-7 g++-7
+```
+
+Then, get your current version using
+
+```
+g++ -v
+gcc -v
+```
+
+And replace the symlinks:
+
+```
+sudo rm /usr/bin/gcc
+sudo rm /usr/bin/g++
+sudo ln -s /usr/bin/gcc-7 /usr/bin/gcc
+sudo ln -s /usr/bin/g++-7 /usr/bin/g++
+```
+
 ## Supported Camera Models
 
 1. **Pinhole** Intrinsics: [fx, fy, cx, cy]
@@ -11,7 +38,7 @@ This module contains the multiple different camera models and distortion models 
 3. ~~**Extended Unified**~~ Intrinsics: [fx, fy, cx, cy, alpha, beta]
     * Supported Distortion Models
         * Radial-tangential: [k1, k2, k3, r1, r2]
-4. **Ladybug** 
+4. **Ladybug**
     * Intrinsics: [fx, fy, cy, cx]
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
 

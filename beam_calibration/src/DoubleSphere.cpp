@@ -15,8 +15,7 @@ DoubleSphere::DoubleSphere(const std::string& file_path) {
   alpha_ = intrinsics_[5];
 }
 
-std::experimental::optional<Eigen::Vector2i>
-    DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
+opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
   double w1;
   if (alpha_ > 0.5) {
     w1 = (1 - alpha_) / alpha_;
@@ -43,12 +42,10 @@ std::experimental::optional<Eigen::Vector2i>
 }
 
 // todo
-std::experimental::optional<Eigen::Vector2i>
-    DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
-                               Eigen::MatrixXd& J) {}
+opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
+                                                Eigen::MatrixXd& J) {}
 
-std::experimental::optional<Eigen::Vector3d>
-    DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
+opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
   double mx = (pixel[0] - cx_) / fx_;
   double my = (pixel[1] - cy_) / fy_;
   double r2 = mx * mx + my * my;

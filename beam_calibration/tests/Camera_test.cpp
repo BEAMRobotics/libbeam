@@ -7,8 +7,6 @@
 #include "beam_utils/math.hpp"
 #include <catch2/catch.hpp>
 
-using namespace std::experimental;
-
 TEST_CASE("Test projection and back project -- radtan") {
   std::string radtan_location = __FILE__;
   radtan_location.erase(radtan_location.end() - 21, radtan_location.end());
@@ -18,8 +16,8 @@ TEST_CASE("Test projection and back project -- radtan") {
       std::make_unique<beam_calibration::Radtan>(radtan_location);
 
   Eigen::Vector3d test_point(50, 50, 200);
-  optional<Eigen::Vector2i> result_point = radtan->ProjectPoint(test_point);
-  optional<Eigen::Vector3d> back_point =
+  opt<Eigen::Vector2i> result_point = radtan->ProjectPoint(test_point);
+  opt<Eigen::Vector3d> back_point =
       radtan->BackProject(result_point.value());
 
   std::stringstream bp, norm;
@@ -44,8 +42,8 @@ TEST_CASE("Test projection and back project -- kannala brandt") {
   std::unique_ptr<beam_calibration::CameraModel> kb =
       std::make_unique<beam_calibration::KannalaBrandt>(kb_location);
   Eigen::Vector3d test_point(5, 10, 15);
-  optional<Eigen::Vector2i> result_point = kb->ProjectPoint(test_point);
-  optional<Eigen::Vector3d> back_point = kb->BackProject(result_point.value());
+  opt<Eigen::Vector2i> result_point = kb->ProjectPoint(test_point);
+  opt<Eigen::Vector3d> back_point = kb->BackProject(result_point.value());
 
   std::stringstream bp, norm;
   bp << back_point.value();
@@ -69,8 +67,8 @@ TEST_CASE("Test projection and back project -- double sphere") {
   std::unique_ptr<beam_calibration::CameraModel> db =
       std::make_unique<beam_calibration::DoubleSphere>(db_location);
   Eigen::Vector3d test_point(50, 50, 200);
-  optional<Eigen::Vector2i> result_point = db->ProjectPoint(test_point);
-  optional<Eigen::Vector3d> back_point = db->BackProject(result_point.value());
+  opt<Eigen::Vector2i> result_point = db->ProjectPoint(test_point);
+  opt<Eigen::Vector3d> back_point = db->BackProject(result_point.value());
 
   std::stringstream bp, norm;
   bp << back_point.value();
@@ -95,8 +93,8 @@ TEST_CASE("Test projection and back project -- ladybug") {
       std::make_unique<beam_calibration::Ladybug>(lb_location);
 
   Eigen::Vector3d test_point(50, 50, 200);
-  optional<Eigen::Vector2i> result_point = lb->ProjectPoint(test_point);
-  optional<Eigen::Vector3d> back_point = lb->BackProject(result_point.value());
+  opt<Eigen::Vector2i> result_point = lb->ProjectPoint(test_point);
+  opt<Eigen::Vector3d> back_point = lb->BackProject(result_point.value());
 
   std::stringstream bp, norm;
   bp << back_point.value();

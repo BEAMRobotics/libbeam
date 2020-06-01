@@ -28,7 +28,7 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cy_, cx_;
 }
 
-std::experimental::optional<Eigen::Vector2i>
+opt<Eigen::Vector2i>
     Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
@@ -59,11 +59,10 @@ std::experimental::optional<Eigen::Vector2i>
 }
 
 // todo
-std::experimental::optional<Eigen::Vector2i>
+opt<Eigen::Vector2i>
     Ladybug::ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) {}
 
-std::experimental::optional<Eigen::Vector3d>
-    Ladybug::BackProject(const Eigen::Vector2i& pixel) {
+opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector2d pixel_out = {0, 0};
   Eigen::Vector3d out_point;
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel[0], pixel[1],

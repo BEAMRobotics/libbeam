@@ -79,6 +79,6 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2);
  * @param depth_image depth image to search
  * @return Vec2
  */
-beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image);
+Eigen::Vector2i FindClosest(Eigen::Vector2i search_pixel, cv::Mat depth_image);
 
 } // namespace beam_cv

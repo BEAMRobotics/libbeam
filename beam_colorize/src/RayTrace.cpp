@@ -35,7 +35,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   auto input_cloud = std::get<0>(reduced_cloud);
   // indices stores a mapping back to the original cloud
   auto indices = std::get<1>(reduced_cloud);
-  // create kdtree for faster searching
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
 
   if (input_cloud->size() > 0) {
@@ -49,11 +48,13 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
       beam::Vec3 point;
       point << input_cloud->points[i].x, input_cloud->points[i].y,
           input_cloud->points[i].z;
-      beam::Vec2 coords;
-
-      coords = intrinsics_->ProjectPoint(point);
-
-      uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
+      opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
+      if (!coords.has_value()) {
+        BEAM_WARN("Cannot project point.");
+        continue;
+      }
+      uint16_t u = std::round(coords.value()(0, 0)),
+               v = std::round(coords.value()(1, 0));
       if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
         tmp.at<cv::Vec3b>(v, u).val[0] = 255;
       }
@@ -81,8 +82,13 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 
   for (uint32_t i = 0; i < input->points.size(); i++) {
     point << input->points[i].x, input->points[i].y, input->points[i].z;
-    beam::Vec2 coords = intrinsics->ProjectPoint(point);
-    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
+    opt<Eigen::Vector2i> coords = intrinsics->ProjectPoint(point);
+    if (!coords.has_value()) {
+      BEAM_WARN("Cannot project point.");
+      continue;
+    }
+    uint16_t u = std::round(coords.value()(0, 0)),
+             v = std::round(coords.value()(1, 0));
     uint16_t vmax = image->rows;
     uint16_t umax = image->cols;
     if (u > 0 && v > 0 && v < vmax && u < umax && point(2, 0) > 0) {

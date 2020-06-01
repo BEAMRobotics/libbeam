@@ -52,7 +52,7 @@ std::shared_ptr<beam_calibration::CameraModel> GetIntrinsics() {
   intrinsics_location.erase(intrinsics_location.end() - 17,
                             intrinsics_location.end());
   intrinsics_location += "test_data/" + intrinsics_name;
-  std::shared_ptr<beam_calibration::CameraModel> F1 =
+  std::shared_ptr<beam_calibration::CameraModel> F1 = std::shared_ptr<beam_calibration::CameraModel>
       beam_calibration::CameraModel::LoadJSON(intrinsics_location);
   return F1;
 }

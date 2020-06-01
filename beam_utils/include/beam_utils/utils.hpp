@@ -9,8 +9,8 @@
 #ifndef BEAM_UTILS_UTILS_HPP
 #define BEAM_UTILS_UTILS_HPP
 
+#include "beam_utils/angles.hpp"
 #include "beam_utils/math.hpp"
 #include "beam_utils/time.hpp"
-#include "beam_utils/angles.hpp"
 
-#endif  // BEAM_UTILS_UTILS_HPP
+#endif // BEAM_UTILS_UTILS_HPP

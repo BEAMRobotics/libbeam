@@ -15,7 +15,7 @@ KannalaBrandt::KannalaBrandt(const std::string& file_path) {
   k4_ = intrinsics_[7];
 }
 
-std::experimental::optional<Eigen::Vector2i>
+opt<Eigen::Vector2i>
     KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point) {
   Eigen::Vector2i out_point;
   double x = point[0], y = point[1], z = point[2];
@@ -40,7 +40,7 @@ std::experimental::optional<Eigen::Vector2i>
   return {};
 }
 
-std::experimental::optional<Eigen::Vector2i>
+opt<Eigen::Vector2i>
     KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
                                 Eigen::MatrixXd& J) {
   Eigen::Vector2i out_point;
@@ -64,8 +64,7 @@ std::experimental::optional<Eigen::Vector2i>
   return {};
 }
 
-std::experimental::optional<Eigen::Vector3d>
-    KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
+opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector3d out_ray;
 
   double u = pixel[0], v = pixel[1];

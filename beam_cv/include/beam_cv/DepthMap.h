@@ -3,14 +3,13 @@
  */
 
 #pragma once
-// beam
-#include "beam_calibration/CameraModel.h"
-// OpenCV
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
-// PCL
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+
+#include <beam_calibration/CameraModel.h>
 
 namespace beam_cv {
 
@@ -122,7 +121,7 @@ public:
    * @param pixel u,v pixel of image
    * @return x,y,z coordinates
    */
-  beam::Vec3 GetXYZ(beam::Vec2 pixel);
+  Eigen::Vector3d GetXYZ(Eigen::Vector2i pixel);
 
   /**
    * @brief returns distance in world between two pixels in depth map
@@ -130,7 +129,7 @@ public:
    * @param p2 pixel input two
    * @return Vec2
    */
-  float GetDistance(beam::Vec2 p1, beam::Vec2 p2);
+  float GetDistance(Eigen::Vector2i p1, Eigen::Vector2i p2);
 
   /***********************Member variables**********************/
 protected:

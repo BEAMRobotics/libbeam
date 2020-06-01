@@ -183,7 +183,7 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
   return distance;
 }
 
-beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image) {
+Eigen::Vector2i FindClosest(Eigen::Vector2i search_pixel, cv::Mat depth_image) {
   cv::Point2i sp(search_pixel[0], search_pixel[1]);
   std::vector<double> distances;
   std::vector<cv::Point2i> pixels;
@@ -197,7 +197,7 @@ beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image) {
   });
   int min_index =
       std::min_element(distances.begin(), distances.end()) - distances.begin();
-  beam::Vec2 output(pixels[min_index].x, pixels[min_index].y);
+  Eigen::Vector2i output(pixels[min_index].x, pixels[min_index].y);
   return output;
 }
 } // namespace beam_cv

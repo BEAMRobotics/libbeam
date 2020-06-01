@@ -19,32 +19,30 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
     BEAM_CRITICAL("Colorizer not properly initialized.");
   }
 
-  beam::Vec3 point;
-  cv::Vec3b colors;
-  beam::Vec2 coords;
-  uint16_t u, v;
   uint16_t vmax = image_->rows;
   uint16_t umax = image_->cols;
-  uchar blue, green, red;
   int counter = 0;
 
   for (uint32_t i = 0; i < input_point_cloud_->points.size(); i++) {
-    point(0, 0) = input_point_cloud_->points[i].x;
-    point(1, 0) = input_point_cloud_->points[i].y;
-    point(2, 0) = input_point_cloud_->points[i].z;
+    Eigen::Vector3d point(input_point_cloud_->points[i].x,
+                          input_point_cloud_->points[i].y,
+                          input_point_cloud_->points[i].z);
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
 
-    coords = intrinsics_->ProjectPoint(point);
-
-    u = std::round(coords(0, 0));
-    v = std::round(coords(1, 0));
+    opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
+    if (!coords.has_value()) {
+      BEAM_WARN("Cannot project point.");
+      continue;
+    }
+    uint16_t u = std::round(coords.value()(0, 0));
+    uint16_t v = std::round(coords.value()(1, 0));
     if (u > 0 && v > 0 && v < vmax && u < umax) {
-      colors = image_->at<cv::Vec3b>(v, u);
-      blue = colors.val[0];
-      green = colors.val[1];
-      red = colors.val[2];
+      cv::Vec3b colors = image_->at<cv::Vec3b>(v, u);
+      uchar blue = colors.val[0];
+      uchar green = colors.val[1];
+      uchar red = colors.val[2];
       // ignore black colors, this happens at edges when images are undistored
       if (red == 0 && green == 0 && blue == 0) {
         continue;
@@ -75,28 +73,28 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     BEAM_CRITICAL("Colorizer not properly initialized.");
   }
 
-  beam::Vec3 point;
-  beam::Vec2 coords;
-  uint16_t u, v;
   uint16_t vmax = image_->rows;
   uint16_t umax = image_->cols;
   int counter = 0;
-  uchar color_scale;
 
   for (uint32_t i = 0; i < input_point_cloud_->points.size(); i++) {
-    point(0, 0) = input_point_cloud_->points[i].x;
-    point(1, 0) = input_point_cloud_->points[i].y;
-    point(2, 0) = input_point_cloud_->points[i].z;
+    Eigen::Vector3d point(input_point_cloud_->points[i].x,
+                          input_point_cloud_->points[i].y,
+                          input_point_cloud_->points[i].z);
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
 
-    coords = intrinsics_->ProjectPoint(point);
+    opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
+    if (!coords.has_value()) {
+      BEAM_WARN("Cannot project point.");
+      continue;
+    }
 
-    u = std::round(coords(0, 0));
-    v = std::round(coords(1, 0));
+    uint16_t u = std::round(coords.value()(0, 0));
+    uint16_t v = std::round(coords.value()(1, 0));
     if (u > 0 && v > 0 && v < vmax && u < umax) {
-      color_scale = image_->at<uchar>(v, u);
+      uchar color_scale = image_->at<uchar>(v, u);
       // ignore black colors, this happens at edges when images are undistored
       //      std::cout << "Color scale = " << color_scale << std::endl;
       if (color_scale == 0) {

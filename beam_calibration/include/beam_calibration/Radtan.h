@@ -28,8 +28,7 @@ public:
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
    */
-  std::experimental::optional<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point) override;
+  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) override;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
@@ -40,16 +39,15 @@ public:
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
-  std::experimental::optional<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) override;
+  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point,
+                                    Eigen::MatrixXd& J) override;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  std::experimental::optional<Eigen::Vector3d>
-      BackProject(const Eigen::Vector2i& pixel) override;
+  opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion

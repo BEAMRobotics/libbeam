@@ -1,10 +1,10 @@
-// beam
-#include "beam_cv/DepthMap.h"
-#include "beam_cv/RayCast.h"
-#include "beam_cv/Utils.h"
-#include "beam_utils/math.hpp"
-// PCL
+#include <beam_cv/DepthMap.h>
+
 #include <pcl/io/pcd_io.h>
+
+#include <beam_cv/RayCast.h>
+#include <beam_cv/Utils.h>
+#include <beam_utils/math.hpp>
 
 namespace beam_cv {
 
@@ -79,7 +79,7 @@ int DepthMap::DepthInterpolation(int window_width, int window_height,
         for (std::vector<int> window : windows) {
           int start_x = window[0], end_x = window[1], start_y = window[2],
               end_y = window[3];
-          beam::Vec2 point_f;
+          Eigen::Vector2i point_f;
           float min_dist = sqrt((window_width * window_width) +
                                 (window_height * window_height));
           float found_depth = 0.0;
@@ -215,21 +215,25 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   BEAM_INFO("Performing Point Cloud Construction...");
   pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud =
       boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-      for (int row = 0; row < depth_image_->rows; row += 2) {
-        for (int col = 0; col < depth_image_->cols; col += 2) {
-          float distance = depth_image_->at<float>(row, col);
-          if (distance > 0) {
-            beam::Vec2 pixel(col, row);
-            beam::Vec3 direction = model_->BackProject(pixel);
-            beam::Vec3 coords = distance * direction;
-            pcl::PointXYZ point(coords[0], coords[1], coords[2]);
-            dense_cloud->points.push_back(point);
-          }
+  for (int row = 0; row < depth_image_->rows; row += 2) {
+    for (int col = 0; col < depth_image_->cols; col += 2) {
+      float distance = depth_image_->at<float>(row, col);
+      if (distance > 0) {
+        Eigen::Vector2i pixel(col, row);
+        opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
+        if (direction.has_value()) {
+          Eigen::Vector3d coords = distance * direction.value();
+          pcl::PointXYZ point(coords[0], coords[1], coords[2]);
+          dense_cloud->points.push_back(point);
+        } else {
+          BEAM_WARN("Pixel cannot be back projected, skipping.");
         }
       }
-      dense_cloud->width = 1;
-      dense_cloud->height = dense_cloud->points.size();
-      return dense_cloud;
+    }
+  }
+  dense_cloud->width = 1;
+  dense_cloud->height = dense_cloud->points.size();
+  return dense_cloud;
 }
 
 /***********************Helper Functions**********************/
@@ -243,19 +247,24 @@ bool DepthMap::CheckState() {
   return state;
 }
 
-beam::Vec3 DepthMap::GetXYZ(beam::Vec2 pixel) {
+Eigen::Vector3d DepthMap::GetXYZ(Eigen::Vector2i pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    beam::Vec2 c = beam_cv::FindClosest(pixel, *depth_image_);
+    Eigen::Vector2i c = beam_cv::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
-  beam::Vec3 direction = model_->BackProject(pixel);
-  beam::Vec3 coords = distance * direction;
-  return coords;
+  opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
+  if (direction.has_value()) {
+    Eigen::Vector3d coords = distance * direction.value();
+    return coords;
+  } else {
+    BEAM_WARN("Pixel cannot be back projected, skipping.");
+    return Eigen::Vector3d(0, 0, 0);
+  }
 }
 
-float DepthMap::GetDistance(beam::Vec2 p1, beam::Vec2 p2) {
-  beam::Vec3 coord1 = GetXYZ(p1), coord2 = GetXYZ(p2);
+float DepthMap::GetDistance(Eigen::Vector2i p1, Eigen::Vector2i p2) {
+  Eigen::Vector3d coord1 = GetXYZ(p1), coord2 = GetXYZ(p2);
   return beam::distance(coord1, coord2);
 }
 
