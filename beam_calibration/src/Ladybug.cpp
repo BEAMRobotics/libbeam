@@ -3,8 +3,8 @@
 namespace beam_calibration {
 
 Ladybug::Ladybug(const std::string& file_path) {
-  BEAM_INFO("Loading file: {}", file_path);
   type_ = CameraType::LADYBUG;
+  BEAM_INFO("Loading file: {}", file_path);
   lb_error_ = ladybugCreateContext(&lb_context_);
   LadybugCheckError();
   lb_error_ = ladybugLoadConfig(lb_context_, file_path.c_str());
@@ -28,8 +28,7 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cy_, cx_;
 }
 
-opt<Eigen::Vector2i>
-    Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
+opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
 
@@ -59,8 +58,8 @@ opt<Eigen::Vector2i>
 }
 
 // todo
-opt<Eigen::Vector2i>
-    Ladybug::ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) {}
+opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
+                                           Eigen::MatrixXd& J) {}
 
 opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector2d pixel_out = {0, 0};

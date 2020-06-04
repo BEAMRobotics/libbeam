@@ -1,11 +1,10 @@
 #include "beam_calibration/DoubleSphere.h"
 
-#include <math.h>
-
 namespace beam_calibration {
 
 DoubleSphere::DoubleSphere(const std::string& file_path) {
   type_ = CameraType::DOUBLESPHERE;
+  BEAM_INFO("Loading file: {}", file_path);
   LoadJSON(file_path);
   fx_ = intrinsics_[0];
   fy_ = intrinsics_[1];
@@ -61,12 +60,6 @@ opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
 }
 
 void DoubleSphere::ValidateInputs() {
-  if (type_ != CameraType::DOUBLESPHERE) {
-    BEAM_WARN(
-        "Invalid camera model type read. Read {}, changing to DOUBLESPHERE");
-    type_ = CameraType::DOUBLESPHERE;
-  }
-
   if (intrinsics_.size() != intrinsics_size_[type_]) {
     BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
                   intrinsics_.size(), intrinsics_size_[type_]);

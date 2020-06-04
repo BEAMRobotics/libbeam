@@ -71,7 +71,7 @@ void CameraModel::LoadJSON(const std::string& file_location) {
   json J;
   std::ifstream file(file_location);
   file >> J;
-
+  // get string repr of class type
   std::string class_type;
   for (std::map<std::string, CameraType>::iterator it =
            intrinsics_types_.begin();
@@ -87,11 +87,10 @@ void CameraModel::LoadJSON(const std::string& file_location) {
                   camera_type.c_str());
     OutputCameraTypes();
   } else if (intrinsics_types_[camera_type] != this->type_) {
-    BEAM_CRITICAL(
-        "Invalid camera type read from json. Type read: {}, Expected: {}",
-        camera_type.c_str(), class_type.c_str());
+    BEAM_CRITICAL("Camera type read from JSON does not match expected type. "
+                  "Type read: {}, Expected: {}",
+                  camera_type.c_str(), class_type.c_str());
   }
-
   // get params
   calibration_date_ = J["date"];
   image_width_ = J["image_width"];
