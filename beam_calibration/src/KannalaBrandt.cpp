@@ -51,10 +51,10 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
    *  g1(x,y,z) = x / (sqrt(x^2 + y^2))
    *  g2(x,y,z) = y / (sqrt(x^2 + y^2))
    */
+  double x = point[0], y = point[1], z = point[2];
   double r = sqrt(x * x + y * y);
   double TH = atan(r / z);
   double TH2 = TH * TH, TH4 = TH2 * TH2, TH6 = TH4 * TH2, TH8 = TH4 * TH4;
-  double x = point[0], y = point[1], z = point[2];
   double dTHdx = (x * z) / ((x * x + y * y + z * z) * r);
   double dTHdy = (y * z) / ((x * x + y * y + z * z) * r);
   double dTHdz = -r / (x * x + y * y + z * z);
@@ -98,6 +98,8 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
   double dP2dx = df2dx * g2 + dg2dx * f2;
   double dP2dy = df2dy * g2 + dg2dy * f2;
   double dP2dz = df2dz * g2 + dg2dz * f2;
+
+  // fill jacobian matrix
   J(0, 0) = dP1dx;
   J(0, 1) = dP1dy;
   J(0, 2) = dP1dz;
@@ -141,14 +143,6 @@ opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
   out_ray[2] = cos(th);
   out_ray.normalize();
   return out_ray;
-}
-
-void KannalaBrandt::ValidateInputs() {
-  if (intrinsics_.size() != intrinsics_size_[type_]) {
-    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
-                  intrinsics_.size(), intrinsics_size_[type_]);
-    throw std::invalid_argument{"Invalid number of instrinsics read."};
-  }
 }
 
 } // namespace beam_calibration

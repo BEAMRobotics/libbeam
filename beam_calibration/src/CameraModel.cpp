@@ -102,7 +102,11 @@ void CameraModel::LoadJSON(const std::string& file_location) {
   }
 
   intrinsics_ = Eigen::VectorXd::Map(intrinsics.data(), intrinsics.size());
-  ValidateInputs();
+  if (intrinsics_.size() != intrinsics_size_[type_]) {
+    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
+                  intrinsics_.size(), intrinsics_size_[type_]);
+    throw std::invalid_argument{"Invalid number of instrinsics read."};
+  }
 }
 
 void CameraModel::OutputCameraTypes() {

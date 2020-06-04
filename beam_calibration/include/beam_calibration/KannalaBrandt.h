@@ -30,8 +30,7 @@ public:
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
    */
-  opt<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point) override;
+  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) override;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
@@ -42,8 +41,8 @@ public:
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
-  opt<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J) override;
+  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point,
+                                    Eigen::MatrixXd& J) override;
 
   /**
    * @brief Method back projecting
@@ -53,13 +52,6 @@ public:
   opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
 
 protected:
-  /**
-   * @brief Method for validating the inputs. This will be called in the load
-   * configuration file step and should validate the intrinsics (i.e. size) and
-   * the type
-   */
-  void ValidateInputs() override;
-
   double fx_;
   double fy_;
   double cx_;

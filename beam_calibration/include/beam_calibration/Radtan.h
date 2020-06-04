@@ -58,13 +58,6 @@ public:
 
 protected:
   /**
-   * @brief Method for validating the inputs. This will be called in the load
-   * configuration file step and should validate the intrinsics (i.e. size) and
-   * the type
-   */
-  void ValidateInputs() override;
-
-  /**
    * @brief Method to distort point
    * @return Vec2 distorted point
    * @param pixel to undistort

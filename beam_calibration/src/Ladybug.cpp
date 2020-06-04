@@ -57,9 +57,12 @@ opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
   return {};
 }
 
-// todo
 opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
-                                           Eigen::MatrixXd& J) {}
+                                           Eigen::MatrixXd& J) {
+  BEAM_WARN(
+      "Ladybug canot be re-calibrated, no effect on Jacobian matrix passed");
+  return ProjectPoint(point);
+}
 
 opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector2d pixel_out = {0, 0};
@@ -72,18 +75,6 @@ opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   LadybugCheckError();
   return out_point;
 }
-
-void Ladybug::ValidateInputs() {
-  if (intrinsics_.size() != intrinsics_size_[type_]) {
-    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
-                  intrinsics_.size(), intrinsics_size_[type_]);
-    throw std::invalid_argument{"Invalid number of instrinsics read."};
-  }
-}
-
-// todo
-void Ladybug::UndistortImage(const cv::Mat& image_input,
-                             cv::Mat& image_output) {}
 
 void Ladybug::SetCameraID(unsigned int id) {
   cam_id_ = id;

@@ -59,12 +59,4 @@ opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
   return Eigen::Vector3d(A * mx, A * my, A * mz - eps_);
 }
 
-void DoubleSphere::ValidateInputs() {
-  if (intrinsics_.size() != intrinsics_size_[type_]) {
-    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
-                  intrinsics_.size(), intrinsics_size_[type_]);
-    throw std::invalid_argument{"Invalid number of instrinsics read."};
-  }
-}
-
 } // namespace beam_calibration

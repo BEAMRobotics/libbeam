@@ -57,26 +57,12 @@ public:
   opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
 
   /**
-   * @brief Method for undistorting an image based on camera's distortion
-   * @param image_input image to be undistorted
-   * @param image_output reference to Mat object to store output
-   */
-  void UndistortImage(const cv::Mat& image_input, cv::Mat& image_output);
-
-  /**
    * @brief Method for setting which camera to use
    * @param id of the camera to use
    */
   void SetCameraID(unsigned int id);
 
 protected:
-  /**
-   * @brief Method for validating the inputs. This will be called in the load
-   * configuration file step and should validate the intrinsics (i.e. size) and
-   * the type
-   */
-  void ValidateInputs() override;
-
   /**
    * @brief Checks if recent api call caused an error
    */

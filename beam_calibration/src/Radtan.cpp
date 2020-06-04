@@ -26,7 +26,7 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point) {
   const double rz = 1.0 / z;
   out_point << (x * rz), (y * rz);
   // Distort point using radtan distortion model
-  out_point = DistortPixel(out_point);
+  out_point = this->DistortPixel(out_point);
   double xx = out_point[0], yy = out_point[1];
   out_point[0] = (fx_ * xx + cx_);
   out_point[1] = (fy_ * yy + cy_);
@@ -40,11 +40,10 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point) {
 opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
                                           Eigen::MatrixXd& J) {
   // check if point is behind image plane
-  if (point[2] < 0) { return {}; }
-
   Eigen::Vector2d tmp;
-  const double rz = 1.0 / point[2];
-  tmp << (point[0] * rz), (point[1] * rz);
+  const double x = point[0], y = point[1], z = point[2];
+  const double rz = 1.0 / z;
+  tmp << (x * rz), (y * rz);
   /* assuming ProjectPoint(P) = G(H(F(P)))
    * where F(P) = [Px/Pz
    *               Py/Pz]
@@ -59,7 +58,7 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
   dGdH(1, 0) = 0;
   dGdH(0, 1) = 0;
   dGdH(1, 1) = fy_;
-  dHdF = ComputeDistortionJacobian(tmp);
+  dHdF = this->ComputeDistortionJacobian(tmp);
   dFdP(0, 0) = 1 / z;
   dFdP(1, 0) = 0;
   dFdP(0, 1) = 0;
@@ -67,7 +66,6 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
   dFdP(0, 2) = -x / (z * z);
   dFdP(1, 2) = -y / (z * z);
   J = dGdH * dHdF * dFdP;
-
   return ProjectPoint(point);
 }
 
@@ -76,18 +74,10 @@ opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector2d kp;
   kp[0] = (pixel[0] - cx_) / fx_;
   kp[1] = (pixel[1] - cy_) / fy_;
-  Eigen::Vector2d undistorted = UndistortPixel(kp);
+  Eigen::Vector2d undistorted = this->UndistortPixel(kp);
   out_point << undistorted[0], (undistorted[1]), 1;
   out_point.normalize();
   return out_point;
-}
-
-void Radtan::ValidateInputs() {
-  if (intrinsics_.size() != intrinsics_size_[type_]) {
-    BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
-                  intrinsics_.size(), intrinsics_size_[type_]);
-    throw std::invalid_argument{"Invalid number of instrinsics read."};
-  }
 }
 
 void Radtan::UndistortImage(const cv::Mat& image_input, cv::Mat& image_output) {

@@ -52,13 +52,6 @@ public:
   opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
 
 protected:
-  /**
-   * @brief Method for validating the inputs. This will be called in the load
-   * configuration file step and should validate the intrinsics (i.e. size) and
-   * the type
-   */
-  void ValidateInputs() override;
-
   double fx_;
   double fy_;
   double cx_;

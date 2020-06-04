@@ -10,7 +10,7 @@
 #include <opencv2/opencv.hpp>
 #include <optional>
 
-template<class T>
+template <class T>
 using opt = std::optional<T>;
 
 namespace beam_calibration {
@@ -63,13 +63,6 @@ public:
    * @param point [u,v]
    */
   virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
-
-  /**
-   * @brief Method for validating the inputs. This will be called in the load
-   * configuration file step and should validate the intrinsics (i.e. size) and
-   * the type
-   */
-  virtual void ValidateInputs() = 0;
 
   /**
    * @brief Method for adding the frame id
