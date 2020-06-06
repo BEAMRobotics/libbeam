@@ -1,21 +1,20 @@
-// beam
-#include "beam_cv/DepthMap.h"
-#include "beam_cv/Utils.h"
-// std
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-// opencv
+
 #include <opencv/cv.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/ximgproc.hpp>
-// pcl
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+
+#include <beam_calibration/Radtan.h>
+#include <beam_cv/DepthMap.h>
+#include <beam_cv/Utils.h>
 
 using namespace cv;
 using namespace std;
@@ -39,7 +38,7 @@ struct SuperPixel {
 
 int main() {
   string intrinsics_loc = cur_dir + "F1.json";
-  F1 = beam_calibration::CameraModel::LoadJSON(intrinsics_loc);
+  F1 = std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_dir + "test.pcd", *cloud);
   TestDepthMap();
 }

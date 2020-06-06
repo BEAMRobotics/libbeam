@@ -1,16 +1,16 @@
-#include "beam_calibration/CameraModel.h"
-#include "beam_calibration/TfTree.h"
-#include "beam_colorize/Projection.h"
-#include "beam_colorize/RayTrace.h"
-#include "beam_utils/math.hpp"
+#include <iostream>
 
 #include <boost/filesystem.hpp>
-
-#include <iostream>
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
+
+#include <beam_calibration/Radtan.h>
+#include <beam_calibration/TfTree.h>
+#include <beam_colorize/Projection.h>
+#include <beam_colorize/RayTrace.h>
+#include <beam_utils/math.hpp>
 
 int main() {
   // load intrinsics
@@ -21,8 +21,7 @@ int main() {
   intrinsics_location += "tests/test_data/";
   intrinsics_location += intrinsics_name;
 
-  std::shared_ptr<beam_calibration::CameraModel> F1 =
-      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
+  std::shared_ptr<beam_calibration::CameraModel> F1 = std::make_shared<beam_calibration::Radtan>(intrinsics_location);
 
   // load Image
   std::string image_name = "image18reduced.jpg";

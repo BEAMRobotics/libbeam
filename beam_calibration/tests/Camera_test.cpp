@@ -1,11 +1,13 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_calibration/CameraModel.h"
-#include "beam_calibration/DoubleSphere.h"
-#include "beam_calibration/KannalaBrandt.h"
-#include "beam_calibration/Ladybug.h"
-#include "beam_calibration/Radtan.h"
-#include "beam_utils/math.hpp"
+
 #include <catch2/catch.hpp>
+
+#include <beam_calibration/CameraModel.h>
+#include <beam_calibration/DoubleSphere.h>
+#include <beam_calibration/KannalaBrandt.h>
+#include <beam_calibration/Ladybug.h>
+#include <beam_calibration/Radtan.h>
+#include <beam_utils/math.hpp>
 
 TEST_CASE("Test projection and back project -- radtan") {
   std::string radtan_location = __FILE__;
@@ -118,5 +120,3 @@ TEST_CASE("Test projection and back project -- ladybug") {
   REQUIRE(beam::fltcmp(back_point.value()[1], test_point[1], 0.01) == 0);
   REQUIRE(beam::fltcmp(back_point.value()[2], test_point[2], 0.01) == 0);
 }*/
-
-TEST_CASE("Testing LoadJSON function") {}

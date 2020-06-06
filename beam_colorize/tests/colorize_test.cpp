@@ -1,20 +1,19 @@
 #define CATCH_CONFIG_MAIN
-#include <pcl/common/transforms.h>
-#include <pcl/io/pcd_io.h>
-
-#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <typeinfo>
 
+#include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
 
-#include "beam_calibration/CameraModel.h"
-#include "beam_calibration/TfTree.h"
-#include "beam_colorize/Projection.h"
-#include "beam_colorize/RayTrace.h"
-#include "beam_utils/math.hpp"
+#include <beam_calibration/Radtan.h>
+#include <beam_calibration/TfTree.h>
+#include <beam_colorize/Projection.h>
+#include <beam_colorize/RayTrace.h>
+#include <beam_utils/math.hpp>
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr GetPCD() {
   std::string pcd_name = "map18crop.pcd";
@@ -52,8 +51,8 @@ std::shared_ptr<beam_calibration::CameraModel> GetIntrinsics() {
   intrinsics_location.erase(intrinsics_location.end() - 17,
                             intrinsics_location.end());
   intrinsics_location += "test_data/" + intrinsics_name;
-  std::shared_ptr<beam_calibration::CameraModel> F1 = std::shared_ptr<beam_calibration::CameraModel>
-      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
+  std::shared_ptr<beam_calibration::CameraModel> F1 =
+      std::make_shared<beam_calibration::Radtan>(intrinsics_location);
   return F1;
 }
 

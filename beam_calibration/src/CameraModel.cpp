@@ -38,12 +38,12 @@ const std::string CameraModel::GetCalibrationDate() const {
   return calibration_date_;
 }
 
-const uint32_t CameraModel::GetHeight() const {
+uint32_t CameraModel::GetHeight() const {
   if (image_height_ == 0) { BEAM_WARN("Image height not set."); }
   return image_height_;
 }
 
-const uint32_t CameraModel::GetWidth() const {
+uint32_t CameraModel::GetWidth() const {
   if (image_width_ == 0) { BEAM_WARN("Image width not set."); }
   return image_width_;
 }

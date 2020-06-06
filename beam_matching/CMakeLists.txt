@@ -1,7 +1,5 @@
 PROJECT(beam_matching)
 
-SET(CMAKE_CXX_STANDARD 17)
-
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
