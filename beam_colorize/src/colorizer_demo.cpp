@@ -1,15 +1,13 @@
-#include "beam_calibration/CameraModel.h"
-#include "beam_colorize/Projection.h"
-#include "beam_colorize/RayTrace.h"
-#include "beam_utils/math.hpp"
-
-#include "beam_cv/Utils.h"
-
 #include <boost/filesystem.hpp>
-
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/pcl_visualizer.h>
+
+#include <beam_calibration/Radtan.h>
+#include <beam_colorize/Projection.h>
+#include <beam_colorize/RayTrace.h>
+#include <beam_utils/math.hpp>
+#include <beam_cv/Utils.h>
 
 int main(int argc, char* argv[]) {
   if (argc < 2 || argc > 2) {
@@ -34,7 +32,7 @@ int main(int argc, char* argv[]) {
       // load point cloud and camera intrinsics
       std::string intrinsics_loc = cur_dir + "camera0.json";
       std::shared_ptr<beam_calibration::CameraModel> model =
-          beam_calibration::CameraModel::LoadJSON(intrinsics_loc);
+          std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(
           new pcl::PointCloud<pcl::PointXYZ>);
       std::string cloud_loc = cur_dir + "test2/259_map.pcd";

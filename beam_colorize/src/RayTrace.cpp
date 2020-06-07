@@ -1,7 +1,8 @@
+#include <beam_colorize/RayTrace.h>
+
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include "beam_colorize/RayTrace.h"
-#include "beam_cv/RayCast.h"
+#include <beam_cv/RayCast.h>
 
 namespace beam_colorize {
 

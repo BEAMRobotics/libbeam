@@ -13,8 +13,6 @@
 
 namespace beam_cv {
 
-namespace beam_cv {
-
 class DepthMap {
 public:
   /**
@@ -100,7 +98,7 @@ public:
    * @param pixel u,v pixel of image
    * @return x,y,z coordinates
    */
-  Eigen::Vector3d GetXYZ(Eigen::Vector2i pixel);
+  Eigen::Vector3d GetXYZ(const Eigen::Vector2i &pixel);
 
   /**
    * @brief returns distance in world between two pixels in depth map
@@ -108,14 +106,14 @@ public:
    * @param p2 pixel input two
    * @return Vec2
    */
-  float GetDistance(Eigen::Vector2i p1, Eigen::Vector2i p2);
+  float GetDistance(const Eigen::Vector2i& p1, const Eigen::Vector2i& p2);
 
   /**
    * @brief returns area of a pixel in world scale
    * @param pixel
    * @return float
    */
-  float GetPixelScale(beam::Vec2 pixel);
+  float GetPixelScale(const Eigen::Vector2i& pixel);
 
 protected:
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_;

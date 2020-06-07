@@ -141,4 +141,30 @@ cv::Mat CreateHitMask(int mask_size,
   return hit_mask;
 }
 
+cv::Mat CreateHitMask(int mask_size,
+                      std::shared_ptr<beam_calibration::CameraModel> model,
+                      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud) {
+  // create image mask where white pixels = projection hit
+  cv::Size image_s(model->GetHeight(), model->GetWidth());
+  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
+  cv::Mat hit_mask;
+  for (uint32_t i = 0; i < cloud->points.size(); i++) {
+    Eigen::Vector3d point;
+    point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
+    opt<Eigen::Vector2i> coords = model->ProjectPoint(point);
+    if (!coords.has_value()) {
+      BEAM_WARN("Unable to back project pixel.");
+      continue;
+    }
+    uint16_t u = std::round(coords.value()(0, 0)),
+             v = std::round(coords.value()(1, 0));
+    if (u > 0 && v > 0 && v < model->GetWidth() && u < model->GetHeight()) {
+      tmp.at<cv::Vec3b>(u, v).val[0] = 255;
+    }
+  }
+  cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
+             cv::Point(-1, -1), 1, 1, 1);
+  return hit_mask;
+}
+
 } // namespace beam_cv
