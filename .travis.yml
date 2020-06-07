@@ -17,6 +17,19 @@ env:
     - CI_SOURCE_PATH=$(pwd)
     - CONTINUOUS_INTEGRATION='True'
 
+matrix:
+  include:
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
 # Check installation script
 install:
   - cd $CI_SOURCE_PATH
@@ -37,4 +50,3 @@ script:
   - cd $HOME/catkin_ws/build/libbeam/beam_cv
   - ./beam_cv_utils_tests
   - ./beam_cv_depth_tests
-
