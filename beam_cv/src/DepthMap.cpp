@@ -6,15 +6,24 @@
 #include <beam_cv/Utils.h>
 #include <beam_utils/math.hpp>
 
+// TODO: Why is this outside the namespace?
+void HitBehaviour(std::shared_ptr<cv::Mat> image,
+                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                  const int* position, int index) {
+  pcl::PointXYZ origin(0, 0, 0);
+  image->at<float>(position[0], position[1]) =
+      beam::distance(cloud->points[index], origin);
+}
+
 namespace beam_cv {
 
 DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
                    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input) {
   this->SetCloud(cloud_input);
-  this->SetModel(model);
+  this->SetCameraModel(model);
 }
 
-int DepthMap::ExtractDepthMap(double threshold, int mask_size) {
+int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
   if (!point_cloud_initialized_ || !model_initialized_) {
     BEAM_CRITICAL("Variables not properly initialized.");
     throw std::runtime_error{"Variables not properly initialized."};
@@ -22,12 +31,12 @@ int DepthMap::ExtractDepthMap(double threshold, int mask_size) {
   BEAM_INFO("Extracting Depth Image...");
   // create image mask where white pixels = projection hit
   cv::Mat hit_mask = beam_cv::CreateHitMask(mask_size, model_, cloud_);
-  /// create image with 3 channels for coordinates
+  // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
                                            model_->GetWidth(), CV_32FC1);
   // perform ray casting of cloud to create depth_image_
-  beam_cv::RayCastXYZ(depth_image_, cloud_, hit_mask, threshold, model_,
-                      HitBehaviour);
+  beam_cv::RayCast(depth_image_, cloud_, hit_mask, threshold, model_,
+                   HitBehaviour);
 
   depth_image_extracted_ = true;
   int num_extracted = 0;
@@ -42,7 +51,40 @@ int DepthMap::ExtractDepthMap(double threshold, int mask_size) {
           if (distance < min_depth_) { min_depth_ = distance; }
         }
       });
-  cv::dilate(*depth_image_, *depth_image_, beam::GetFullKernel(5));
+  return num_extracted;
+}
+
+int DepthMap::ExtractDepthMapProjection() {
+  // create image with 3 channels for coordinates
+  depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
+                                           model_->GetWidth(), CV_32FC1);
+  for (uint32_t i = 0; i < cloud_->points.size(); i++) {
+    beam::Vec3 origin;
+    origin << 0, 0, 0;
+    beam::Vec3 point;
+    point << cloud_->points[i].x, cloud_->points[i].y, cloud_->points[i].z;
+    beam::Vec2 coords;
+    coords = model_->ProjectPoint(point);
+    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
+    if (u > 0 && v > 0 && u < model_->GetHeight() && v < model_->GetWidth() &&
+        cloud_->points[i].z > 0) {
+      float dist = beam::distance(point, origin);
+      if (dist < 6) { depth_image_->at<float>(u, v) = dist; }
+    }
+  }
+  depth_image_extracted_ = true;
+  int num_extracted = 0;
+  // compute min and max depth in the image
+  min_depth_ = 1000, max_depth_ = 0;
+  depth_image_->forEach<float>(
+      [&](float& distance, const int* position) -> void {
+        (void)position;
+        if (distance != 0.0) {
+          num_extracted++;
+          if (distance > max_depth_) { max_depth_ = distance; }
+          if (distance < min_depth_) { min_depth_ = distance; }
+        }
+      });
   return num_extracted;
 }
 
@@ -236,8 +278,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   return dense_cloud;
 }
 
-/***********************Helper Functions**********************/
-
 bool DepthMap::CheckState() {
   bool state = false;
   if (point_cloud_initialized_ && depth_image_extracted_ &&
@@ -268,7 +308,21 @@ float DepthMap::GetDistance(Eigen::Vector2i p1, Eigen::Vector2i p2) {
   return beam::distance(coord1, coord2);
 }
 
-/***********************Getters/Setters**********************/
+float DepthMap::GetPixelScale(beam::Vec2 pixel) {
+  float distance = depth_image_->at<float>(pixel[0], pixel[1]);
+  if (distance == 0.0) {
+    beam::Vec2 c = beam_cv::FindClosest(pixel, *depth_image_);
+    distance = depth_image_->at<float>(c[0], c[1]);
+  }
+  beam::Vec2 left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
+  beam::Vec3 dir_left = model_->BackProject(left),
+             dir_right = model_->BackProject(right);
+  beam::Vec3 coords_left = distance * dir_left,
+             coords_right = distance * dir_right;
+  float area = beam::distance(coords_left, coords_right) *
+               beam::distance(coords_left, coords_right);
+  return area;
+}
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::GetCloud() {
   if (!point_cloud_initialized_) {
@@ -292,7 +346,7 @@ cv::Mat DepthMap::GetDepthImage() {
   return *depth_image_;
 }
 
-void DepthMap::SetDepthImage(cv::Mat1d input) {
+void DepthMap::SetDepthImage(cv::Mat input) {
   depth_image_ = std::make_shared<cv::Mat>(input);
   depth_image_extracted_ = true;
   min_depth_ = 1000, max_depth_ = 0;
@@ -306,7 +360,7 @@ void DepthMap::SetDepthImage(cv::Mat1d input) {
       });
 }
 
-std::shared_ptr<beam_calibration::CameraModel> DepthMap::GetModel() {
+std::shared_ptr<beam_calibration::CameraModel> DepthMap::GetCameraModel() {
   if (!model_initialized_) {
     BEAM_CRITICAL("Camera model not set.");
     throw std::runtime_error{"Camera model not set."};
@@ -314,18 +368,10 @@ std::shared_ptr<beam_calibration::CameraModel> DepthMap::GetModel() {
   return model_;
 }
 
-void DepthMap::SetModel(
+void DepthMap::SetCameraModel(
     std::shared_ptr<beam_calibration::CameraModel> input_model) {
   model_ = input_model;
   model_initialized_ = true;
-}
-
-void HitBehaviour(std::shared_ptr<cv::Mat> image,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                  const int* position, int index) {
-  pcl::PointXYZ origin(0, 0, 0);
-  image->at<float>(position[0], position[1]) =
-      beam::distance(cloud->points[index], origin);
 }
 
 } // namespace beam_cv

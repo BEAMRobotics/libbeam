@@ -1,19 +1,20 @@
-#include "beam_cv/RayCast.h"
-#include "beam_utils/math.hpp"
+#include <beam_cv/RayCast.h>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
+#include <beam_utils/math.hpp>
+
 using namespace cv;
 namespace beam_cv {
 
-void RayCastXYZ(std::shared_ptr<cv::Mat> image,
-                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, cv::Mat hit_mask,
-                float threshold,
-                std::shared_ptr<beam_calibration::CameraModel> model,
-                void (*f)(std::shared_ptr<cv::Mat> image_i,
-                          pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_i,
-                          const int* position, int index)) {
+void RayCast(std::shared_ptr<cv::Mat> image,
+             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, cv::Mat hit_mask,
+             float threshold,
+             std::shared_ptr<beam_calibration::CameraModel> model,
+             void (*f)(std::shared_ptr<cv::Mat> image_i,
+                       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_i,
+                       const int* position, int index)) {
   /// create image with 3 channels for coordinates
   pcl::PointXYZ origin(0, 0, 0);
   pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
@@ -61,14 +62,13 @@ void RayCastXYZ(std::shared_ptr<cv::Mat> image,
   });
 }
 
-void RayCastXYZRGB(std::shared_ptr<cv::Mat> image,
-                   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-                   cv::Mat hit_mask, float threshold,
-                   std::shared_ptr<beam_calibration::CameraModel> model,
-                   void (*f)(std::shared_ptr<cv::Mat> image_i,
-                             pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_i,
-                             const int* position, int index)) {
-  /// create image with 3 channels for coordinates
+void RayCast(std::shared_ptr<cv::Mat> image,
+             pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, cv::Mat hit_mask,
+             float threshold,
+             std::shared_ptr<beam_calibration::CameraModel> model,
+             void (*f)(std::shared_ptr<cv::Mat> image_i,
+                       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_i,
+                       const int* position, int index)) {
   pcl::PointXYZ origin(0, 0, 0);
   pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
   kdtree.setInputCloud(cloud);

@@ -13,12 +13,7 @@
 
 namespace beam_cv {
 
-/*
- * @brief behaviour for raytrace
- */
-void HitBehaviour(std::shared_ptr<cv::Mat> image,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                  const int* position, int index);
+namespace beam_cv {
 
 class DepthMap {
 public:
@@ -38,7 +33,6 @@ public:
    */
   ~DepthMap() = default;
 
-  /***********************Getters/Setters**********************/
   /**
    * @brief Gets point cloud member attribute
    * @return Returns point to XYZ point cloud
@@ -49,6 +43,7 @@ public:
    * @param input_cloud point cloud to set
    */
   void SetCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud);
+
   /**
    * @brief Gets depth image attribe
    * @return Returns cv::mat representing depth image
@@ -58,19 +53,19 @@ public:
    * @brief Sets depth image attribute
    * @param input depth image to set
    */
-  void SetDepthImage(cv::Mat1d input);
+  void SetDepthImage(cv::Mat input);
   /**
    * @brief Gets camera model
    * @return Returns a pointer to a camera model
    */
-  std::shared_ptr<beam_calibration::CameraModel> GetModel();
+  std::shared_ptr<beam_calibration::CameraModel> GetCameraModel();
   /**
    * @brief Sets camera model
    * @param Camera model to set
    */
-  void SetModel(std::shared_ptr<beam_calibration::CameraModel> input_model);
+  void SetCameraModel(
+      std::shared_ptr<beam_calibration::CameraModel> input_model);
 
-  /***********************Computation methods**********************/
   /**
    * @brief Computes the depth image based on the given point cloud and image
    * @param threshold threshold value to be used to determine hit detection of
@@ -78,36 +73,20 @@ public:
    * @param mask_size used as input for beam_cv::CreateHitMask
    * @return number of points extracted
    */
-  int ExtractDepthMap(double threshold, int mask_size);
+  int ExtractDepthMap(float threshold, int mask_size);
 
   /**
-   * @brief Performs interpolation to densify depth map
-   * @param window_width width (columns) distance to check for point to use for
-   *        interpolation
-   * @param window height height (rows) distance to check for point to use for
-   *        interpolation
-   * @param threshold maximum distance between to points to use for
-   *        interpolation
-   * @param iterations number of interpolation iterations to perform
-   * @return number of points interpolated
+   * @brief Computes the depth image based on the given point cloud and image
+   * using projection over ray casting
+   * @return number of points extracted
    */
-  int DepthInterpolation(int window_width, int window_height, float threshold,
-                         int iterations);
+  int ExtractDepthMapProjection();
 
   /*
-   * @brief Performs Completiion using k means
-   * @param K number of segments
-   * @param img color image
-   */
-  void KMeansCompletion(int K, cv::Mat img);
-
-  /*
-   * @brief Creates point cloud form interpolated depth image
+   * @brief Creates point cloud from interpolated depth image
    * @return point cloud
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr ExtractPointCloud();
-
-  /***********************Helper Functions**********************/
 
   /**
    * @brief Checks if variables (point_cloud_initialized_,
@@ -131,17 +110,18 @@ public:
    */
   float GetDistance(Eigen::Vector2i p1, Eigen::Vector2i p2);
 
-  /***********************Member variables**********************/
+  /**
+   * @brief returns area of a pixel in world scale
+   * @param pixel
+   * @return float
+   */
+  float GetPixelScale(beam::Vec2 pixel);
+
 protected:
-  // input point cloud
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_;
-  // pointer to hold depth image
   std::shared_ptr<cv::Mat> depth_image_;
-  // camera model used
   std::shared_ptr<beam_calibration::CameraModel> model_;
-  // stores the min and max depth in the depth map
-  double min_depth_, max_depth_;
-  // verification variables
+  float min_depth_, max_depth_;
   bool point_cloud_initialized_ = false, model_initialized_ = false,
        depth_image_extracted_ = false;
 };

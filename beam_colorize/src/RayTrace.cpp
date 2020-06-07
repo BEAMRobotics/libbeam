@@ -28,44 +28,13 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     BEAM_CRITICAL("Colorizer not properly initialized.");
     return cloud_colored;
   }
-  // remove points which will not be in the projection
-  auto reduced_cloud =
-      RayTrace::ReduceCloud(input_point_cloud_, image_, intrinsics_);
+  // create image mask where white pixels = projection hit
+  cv::Mat hit_mask =
+      beam_cv::CreateHitMask(dilation_, intrinsics_, input_point_cloud_);
+  // This lambda performs ray tracing in parallel on each pixel in the image
+  beam_cv::RayCast(image_, cloud_colored, hit_mask, hit_threshold_, intrinsics_,
+                   HitBehaviour);
 
-  auto input_cloud = std::get<0>(reduced_cloud);
-  // indices stores a mapping back to the original cloud
-  auto indices = std::get<1>(reduced_cloud);
-  pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
-
-  if (input_cloud->size() > 0) {
-    kdtree.setInputCloud(input_cloud);
-    // create image mask where white pixels = projection hit
-
-    cv::Mat tmp = cv::Mat::zeros(image_->size(), CV_8UC3);
-
-    cv::Mat hit_mask;
-    for (uint32_t i = 0; i < input_cloud->points.size(); i++) {
-      beam::Vec3 point;
-      point << input_cloud->points[i].x, input_cloud->points[i].y,
-          input_cloud->points[i].z;
-      opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
-      if (!coords.has_value()) {
-        BEAM_WARN("Cannot project point.");
-        continue;
-      }
-      uint16_t u = std::round(coords.value()(0, 0)),
-               v = std::round(coords.value()(1, 0));
-      if (u > 0 && v > 0 && v < image_->rows && u < image_->cols) {
-        tmp.at<cv::Vec3b>(v, u).val[0] = 255;
-      }
-    }
-    cv::dilate(tmp, hit_mask, cv::Mat(dilation_, dilation_, CV_8UC1),
-               cv::Point(-1, -1), 1, 1, 1);
-
-    // This lambda performs ray tracing in parallel on each pixel in the image
-    beam_cv::RayCastXYZRGB(image_, cloud_colored, hit_mask, hit_threshold_,
-                           intrinsics_, HitBehaviour);
-  }
   return cloud_colored;
 }
 
