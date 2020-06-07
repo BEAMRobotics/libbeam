@@ -65,13 +65,10 @@ int DepthMap::ExtractDepthMapProjection() {
     point << cloud_->points[i].x, cloud_->points[i].y, cloud_->points[i].z;
     opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
-    uint16_t u = std::round(coords.value()(0, 0)),
-             v = std::round(coords.value()(1, 0));
-    if (u > 0 && v > 0 && u < model_->GetHeight() && v < model_->GetWidth() &&
-        cloud_->points[i].z > 0) {
-      float dist = beam::distance(point, origin);
-      if (dist < 6) { depth_image_->at<float>(u, v) = dist; }
-    }
+    // if successful projeciton calculate distance and fill depth image
+    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
+    float dist = beam::distance(point, origin);
+    if (dist < 6) { depth_image_->at<float>(u, v) = dist; }
   }
   depth_image_extracted_ = true;
   int num_extracted = 0;
@@ -158,7 +155,7 @@ float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
   Eigen::Vector2i left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
   opt<Eigen::Vector3d> dir_left = model_->BackProject(left);
   opt<Eigen::Vector3d> dir_right = model_->BackProject(right);
-  if(!dir_left.has_value() || !dir_right.has_value()){
+  if (!dir_left.has_value() || !dir_right.has_value()) {
     BEAM_ERROR("Cannot get pixel scale. Pixel invalid, cannot back project.");
     return 0;
   }

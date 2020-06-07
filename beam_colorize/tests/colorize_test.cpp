@@ -72,7 +72,6 @@ TEST_CASE("Test correct projection colorization") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = GetPCD(test1_pcd);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-
   colorizer->SetImage(image);
   colorizer->SetIntrinsics(model);
   colorizer->SetDistortion(image_distorted);

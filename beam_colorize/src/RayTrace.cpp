@@ -57,18 +57,13 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
       BEAM_WARN("Cannot project point.");
       continue;
     }
-    uint16_t u = std::round(coords.value()(0, 0)),
-             v = std::round(coords.value()(1, 0));
-    uint16_t vmax = image->rows;
-    uint16_t umax = image->cols;
-    if (u > 0 && v > 0 && v < vmax && u < umax && point(2, 0) > 0) {
-      pcl::PointXYZRGB new_point;
-      new_point.x = point(0, 0);
-      new_point.y = point(1, 0);
-      new_point.z = point(2, 0);
-      cloud->points.push_back(new_point);
-      indices.push_back(i);
-    }
+    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
+    pcl::PointXYZRGB new_point;
+    new_point.x = point(0, 0);
+    new_point.y = point(1, 0);
+    new_point.z = point(2, 0);
+    cloud->points.push_back(new_point);
+    indices.push_back(i);
   }
   return std::make_tuple(cloud, indices);
 }

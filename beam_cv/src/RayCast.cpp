@@ -22,16 +22,13 @@ void RayCast(std::shared_ptr<cv::Mat> image,
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
     (void)pixel;
-    int v = position[0], u = position[1];
-    if (hit_mask.at<cv::Vec3b>(v, u).val[0] == 255) {
+    int u = position[0], v = position[1];
+    if (hit_mask.at<cv::Vec3b>(u, v).val[0] == 255) {
       Eigen::Vector3d ray(0, 0, 0);
       // get direction vector
       Eigen::Vector2i input_point(u, v);
       opt<Eigen::Vector3d> point = model->BackProject(input_point);
-      if (!point.has_value()) {
-        BEAM_WARN("Unable to back project pixel.");
-        return;
-      }
+      if (!point.has_value()) { return; }
       // while loop to ray trace
       uint16_t raypt = 0;
       while (true) {
@@ -75,16 +72,13 @@ void RayCast(std::shared_ptr<cv::Mat> image,
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
     (void)pixel;
-    int v = position[0], u = position[1];
-    if (hit_mask.at<cv::Vec3b>(v, u).val[0] == 255) {
+    int u = position[0], v = position[1];
+    if (hit_mask.at<cv::Vec3b>(u, v).val[0] == 255) {
       Eigen::Vector3d ray(0, 0, 0);
       // get direction vector
       Eigen::Vector2i input_point(u, v);
       opt<Eigen::Vector3d> point = model->BackProject(input_point);
-      if (!point.has_value()) {
-        BEAM_WARN("Unable to back project pixel.");
-        return;
-      }
+      if (!point.has_value()) { return; }
       // while loop to ray trace
       uint16_t raypt = 0;
       while (true) {
@@ -126,15 +120,9 @@ cv::Mat CreateHitMask(int mask_size,
     Eigen::Vector3d point;
     point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
     opt<Eigen::Vector2i> coords = model->ProjectPoint(point);
-    if (!coords.has_value()) {
-      BEAM_WARN("Unable to back project pixel.");
-      continue;
-    }
-    uint16_t u = std::round(coords.value()(0, 0)),
-             v = std::round(coords.value()(1, 0));
-    if (u > 0 && v > 0 && v < model->GetHeight() && u < model->GetWidth()) {
-      tmp.at<cv::Vec3b>(v, u).val[0] = 255;
-    }
+    if (!coords.has_value()) { continue; }
+    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
+    tmp.at<cv::Vec3b>(u, v).val[0] = 255;
   }
   cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
              cv::Point(-1, -1), 1, 1, 1);
@@ -152,15 +140,9 @@ cv::Mat CreateHitMask(int mask_size,
     Eigen::Vector3d point;
     point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
     opt<Eigen::Vector2i> coords = model->ProjectPoint(point);
-    if (!coords.has_value()) {
-      BEAM_WARN("Unable to back project pixel.");
-      continue;
-    }
-    uint16_t u = std::round(coords.value()(0, 0)),
-             v = std::round(coords.value()(1, 0));
-    if (u > 0 && v > 0 && v < model->GetWidth() && u < model->GetHeight()) {
-      tmp.at<cv::Vec3b>(u, v).val[0] = 255;
-    }
+    if (!coords.has_value()) { continue; }
+    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
+    tmp.at<cv::Vec3b>(u, v).val[0] = 255;
   }
   cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
              cv::Point(-1, -1), 1, 1, 1);
