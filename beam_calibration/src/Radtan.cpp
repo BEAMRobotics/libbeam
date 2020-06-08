@@ -39,33 +39,22 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point) {
 
 opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
                                           Eigen::MatrixXd& J) {
-  // check if point is behind image plane
   Eigen::Vector2d tmp;
   const double x = point[0], y = point[1], z = point[2];
   const double rz = 1.0 / z;
   tmp << (x * rz), (y * rz);
-  /* assuming ProjectPoint(P) = G(H(F(P)))
-   * where F(P) = [Px/Pz
-   *               Py/Pz]
-   *       H(P') = distortion function
-   *       G(P") = [ P"x fx + Cx
-   *                 P"y fy + Cy]
-   */
-  Eigen::MatrixXd dGdH = Eigen::MatrixXd(2, 2);
-  Eigen::MatrixXd dHdF = Eigen::MatrixXd(2, 2);
-  Eigen::MatrixXd dFdP = Eigen::MatrixXd(2, 3);
-  dGdH(0, 0) = fx_;
-  dGdH(1, 0) = 0;
-  dGdH(0, 1) = 0;
-  dGdH(1, 1) = fy_;
   dHdF = this->ComputeDistortionJacobian(tmp);
-  dFdP(0, 0) = 1 / z;
-  dFdP(1, 0) = 0;
-  dFdP(0, 1) = 0;
-  dFdP(1, 1) = 1 / z;
-  dFdP(0, 2) = -x / (z * z);
-  dFdP(1, 2) = -y / (z * z);
-  J = dGdH * dHdF * dFdP;
+
+  const double rz = 1 / z;
+  const double rz2 = rz * rz;
+  const double duf_dx = fx_ * dHdF(0, 0) * rz;
+  const double duf_dy = fx_ * dHdF(0, 1) * rz;
+  const double duf_dz = -fx_ * (x * dHdF(0, 0) + y * dHdF(0, 1)) * rz2;
+  const double dvf_dx = fy_ * dHdF(1, 0) * rz;
+  const double dvf_dy = fy_ * dHdF(1, 1) * rz;
+  const double dvf_dz = -fy_ * (x * dHdF(1, 0) + y * dHdF(1, 1)) * rz2;
+  J << duf_dx, duf_dy, duf_dz, dvf_dx, dvf_dy, dvf_dz;
+
   return ProjectPoint(point);
 }
 
