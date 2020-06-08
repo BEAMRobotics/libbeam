@@ -45,7 +45,7 @@ install_routine()
     # Import functions to install required dependencies
     source $INSTALL_SCRIPTS/beam_dependencies_install.bash
     install_gcc7
-
+    
     # source catkin setup script
     source $INSTALL_SCRIPTS/catkin_setup.bash
     
@@ -57,7 +57,6 @@ install_routine()
 
     link_routine
     bash $INSTALL_SCRIPTS/rosdeps_install.bash
-
 
     # Ensure wget is available
     sudo apt-get install -qq wget  > /dev/null
