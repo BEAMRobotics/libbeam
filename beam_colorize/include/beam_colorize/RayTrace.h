@@ -3,15 +3,12 @@
  */
 
 #pragma once
-#include "beam_colorize/Colorizer.h"
 
-// PCL
-#include <pcl/point_cloud.h>
-
-// Standard lib
 #include <mutex>
 #include <thread>
 #include <tuple>
+#include <pcl/point_cloud.h>
+#include <beam_colorize/Colorizer.h>
 
 namespace beam_colorize {
 

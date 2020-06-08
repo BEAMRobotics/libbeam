@@ -104,13 +104,13 @@ public:
    * @brief Method for getting the image height
    * @return image height
    */
-  const uint32_t GetHeight() const;
+  uint32_t GetHeight() const;
 
   /**
    * @brief Method for getting the image width
    * @return image width
    */
-  const uint32_t GetWidth() const;
+  uint32_t GetWidth() const;
 
   /**
    * @brief Method for retrieving the intrinsic values of the model

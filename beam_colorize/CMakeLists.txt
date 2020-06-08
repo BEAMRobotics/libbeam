@@ -28,15 +28,15 @@ target_link_libraries(${PROJECT_NAME}_tests
   Boost::boost
 )
 ############# Debug files #############
-add_executable(${PROJECT_NAME}_example
-  src/example.cpp
+add_executable(${PROJECT_NAME}_demo
+  src/colorizer_demo.cpp
 )
-target_include_directories(${PROJECT_NAME}_example
+target_include_directories(${PROJECT_NAME}_demo
   PUBLIC
     include
     ${OpenCV_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME}_example
+target_link_libraries(${PROJECT_NAME}_demo
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
