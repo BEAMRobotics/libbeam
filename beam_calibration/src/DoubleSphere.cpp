@@ -4,7 +4,6 @@ namespace beam_calibration {
 
 DoubleSphere::DoubleSphere(const std::string& file_path) {
   type_ = CameraType::DOUBLESPHERE;
-  BEAM_INFO("Loading file: {}", file_path);
   LoadJSON(file_path);
   fx_ = intrinsics_[0];
   fy_ = intrinsics_[1];
@@ -40,9 +39,42 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
   return {};
 }
 
-// todo
 opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
-                                                Eigen::MatrixXd& J) {}
+                                                Eigen::MatrixXd& J) {
+  double Px = point[0];
+  double Py = point[1];
+  double Pz = point[2];
+  double d1 = sqrt(Px * Px + Py * Py + Pz * Pz);
+  double d2 = sqrt(Px * Px + Py * Py + (eps_ * d1 + Pz) * (eps_ * d1 + Pz));
+
+  double H = 1 / (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + Pz));
+
+  Eigen::MatrixXd dPxdP(1, 3);
+  Eigen::MatrixXd dPydP(1, 3);
+  dPxdP << 1, 0, 0;
+  dPydP << 0, 1, 0;
+
+  Eigen::MatrixXd dd1dP(1, 3);
+  dd1dP << Px / d1, Py / d1, Pz / d1;
+
+  double tmp = (eps_ + 1 + eps_ / d1) / d2;
+  Eigen::MatrixXd dd2dP(1, 3);
+  dd2dP << Px * tmp, Py * tmp, Pz * tmp;
+
+  Eigen::MatrixXd dPzdP(1, 3);
+  dPzdP << 0, 0, 1;
+
+  Eigen::MatrixXd dldP(1, 3);
+  dldP = alpha_ * dd2dP + eps_ * (1 - alpha_) * dd1dP + (1 - alpha_) * dPzdP;
+
+  Eigen::MatrixXd dHdP(1, 3);
+  double tmp2 = alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + Pz);
+  dHdP = -1 / (tmp2 * tmp2) * dldP;
+
+  J.block(0, 0, 1, 3) = fx_ * (dPxdP * H + Px * dHdP);
+  J.block(1, 0, 1, 3) = fy_ * (dPydP * H + Py * dHdP);
+  return ProjectPoint(point);
+}
 
 opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
   double mx = (pixel[0] - cx_) / fx_;
