@@ -15,68 +15,38 @@
 #include <beam_colorize/RayTrace.h>
 #include <beam_utils/math.hpp>
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr GetPCD(std::string name) {
+TEST_CASE("Test correct projection colorization") {
   std::string cur_dir = __FILE__;
-  cur_dir.erase(cur_dir.end() - 17, cur_dir.end());
-  cur_dir += "test_data/";
-  std::string pcd_location = cur_dir + name;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud) == -1) {
-    BEAM_INFO("Couldn't read pcd file:  {}\n", pcd_location);
-  } else {
-    BEAM_INFO("Opened file: {}", pcd_location);
-  }
-  return cloud;
-}
+  cur_dir.erase(cur_dir.end() - 23, cur_dir.end());
+  cur_dir += "tests/test_data/";
 
-cv::Mat GetImage(std::string name) {
-  std::string cur_dir = __FILE__;
-  cur_dir.erase(cur_dir.end() - 17, cur_dir.end());
-  cur_dir += "test_data/";
-  std::string image_location = cur_dir + name;
+  std::unique_ptr<beam_colorize::Colorizer> colorizer =
+      beam_colorize::Colorizer::Create(
+          beam_colorize::ColorizerType::PROJECTION);
+
+  // load camera intrinsics
+  std::string intrinsics_loc = cur_dir + "camera0.json";
+  std::shared_ptr<beam_calibration::CameraModel> model =
+      std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
+  // load pcd file
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  std::string cloud_loc = cur_dir + "test1/101_map.pcd";
+  pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *cloud);
+  // load Image
+  std::string image_location = cur_dir + "test1/101_mask.jpg";
   cv::Mat image;
   image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
-  if (!image.data) {
-    std::cout << "Could not open or find the image" << std::endl;
-  } else {
-    BEAM_INFO("Opened file: {}", image_location);
-  }
-  return image;
-}
 
-std::shared_ptr<beam_calibration::CameraModel> GetIntrinsics(std::string name) {
-  std::string cur_dir = __FILE__;
-  cur_dir.erase(cur_dir.end() - 17, cur_dir.end());
-  cur_dir += "test_data/";
-  std::string intrinsics_location = cur_dir + name;
-  std::shared_ptr<beam_calibration::CameraModel> model =
-      std::make_shared<beam_calibration::Radtan>(intrinsics_location);
-  return model;
-}
-
-TEST_CASE("Test correct projection colorization") {
-  auto colorizer = beam_colorize::Colorizer::Create(
-      beam_colorize::ColorizerType::PROJECTION);
-
-  // load intrinsics
-  std::string intrinsics_name = "camera0.json";
-  std::string test1_pcd = "test1/101_map.pcd";
-  std::string test2_pcd = "test2/259_map.pcd";
-  std::string test1_img = "test1/101_mask.jpg";
-  std::string test2_img = "test2/259_mask.jpg";
-  std::shared_ptr<beam_calibration::CameraModel> model =
-      GetIntrinsics(intrinsics_name);
-  bool image_distorted = false;
-  // Test case 1
-  cv::Mat image = GetImage(test1_img);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = GetPCD(test1_pcd);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
+  // set colorizer values
+  bool image_distorted = true;
+  colorizer->SetPointCloud(cloud);
   colorizer->SetImage(image);
   colorizer->SetIntrinsics(model);
   colorizer->SetDistortion(image_distorted);
-  colorizer->SetPointCloud(cloud);
   cloud_colored = colorizer->ColorizePointCloud();
+
   int non_red = 0;
   for (int i = 0; i < cloud_colored->points.size(); i++) {
     int r = cloud_colored->points[i].r;
@@ -107,16 +77,23 @@ TEST_CASE("Test factory method") {
 }
 
 TEST_CASE("Test setter functions") {
-  std::string test1_pcd = "test1/101_map.pcd";
-  std::string intrinsics_name = "camera0.json";
-  std::string test1_img = "test1/101_mask.jpg";
-  // load intrinsics
-  std::shared_ptr<beam_calibration::CameraModel> F1 =
-      GetIntrinsics(intrinsics_name);
+  std::string cur_dir = __FILE__;
+  cur_dir.erase(cur_dir.end() - 23, cur_dir.end());
+  cur_dir += "tests/test_data/";
+  // load camera intrinsics
+  std::string intrinsics_loc = cur_dir + "camera0.json";
+  std::shared_ptr<beam_calibration::CameraModel> model =
+      std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
+  // load pcd file
+  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  std::string cloud_loc = cur_dir + "test1/101_map.pcd";
+  pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *XYZ_cloud);
   // load Image
-  cv::Mat image = GetImage(test1_img);
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD(test1_pcd);
+  std::string image_location = cur_dir + "test1/101_mask.jpg";
+  cv::Mat image;
+  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
@@ -128,40 +105,47 @@ TEST_CASE("Test setter functions") {
   REQUIRE_THROWS(projection.ColorizePointCloud());
   REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
   REQUIRE_NOTHROW(projection.SetImage(image));
-  REQUIRE_NOTHROW(projection.SetIntrinsics(F1));
+  REQUIRE_NOTHROW(projection.SetIntrinsics(model));
 
   beam_colorize::RayTrace raytrace;
   REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
   REQUIRE_THROWS(raytrace.ColorizePointCloud());
   REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
   REQUIRE_NOTHROW(raytrace.SetImage(image));
-  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1));
+  REQUIRE_NOTHROW(raytrace.SetIntrinsics(model));
 }
 
 TEST_CASE("Test correct raytrace colorization") {
-  auto colorizer =
+  std::string cur_dir = __FILE__;
+  cur_dir.erase(cur_dir.end() - 23, cur_dir.end());
+  cur_dir += "tests/test_data/";
+
+  std::unique_ptr<beam_colorize::Colorizer> colorizer =
       beam_colorize::Colorizer::Create(beam_colorize::ColorizerType::RAY_TRACE);
 
-  // load intrinsics
-  std::string intrinsics_name = "camera0.json";
-  std::string test1_pcd = "test1/101_map.pcd";
-  std::string test2_pcd = "test2/259_map.pcd";
-  std::string test1_img = "test1/101_mask.jpg";
-  std::string test2_img = "test2/259_mask.jpg";
+  // load camera intrinsics
+  std::string intrinsics_loc = cur_dir + "camera0.json";
   std::shared_ptr<beam_calibration::CameraModel> model =
-      GetIntrinsics(intrinsics_name);
-  bool image_distorted = false;
-  // Test case 1
-  cv::Mat image = GetImage(test1_img);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = GetPCD(test1_pcd);
+      std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
+  // load pcd file
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  std::string cloud_loc = cur_dir + "test1/101_map.pcd";
+  pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *cloud);
+  // load Image
+  std::string image_location = cur_dir + "test1/101_mask.jpg";
+  cv::Mat image;
+  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-
+  // set colorizer values
+  bool image_distorted = true;
+  colorizer->SetPointCloud(cloud);
   colorizer->SetImage(image);
   colorizer->SetIntrinsics(model);
   colorizer->SetDistortion(image_distorted);
-  colorizer->SetPointCloud(cloud);
   cloud_colored = colorizer->ColorizePointCloud();
+
   int non_red = 0;
   for (int i = 0; i < cloud_colored->points.size(); i++) {
     int r = cloud_colored->points[i].r;

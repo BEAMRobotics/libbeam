@@ -43,9 +43,8 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
   const double x = point[0], y = point[1], z = point[2];
   const double rz = 1.0 / z;
   tmp << (x * rz), (y * rz);
-  dHdF = this->ComputeDistortionJacobian(tmp);
+  Eigen::MatrixXd dHdF = this->ComputeDistortionJacobian(tmp);
 
-  const double rz = 1 / z;
   const double rz2 = rz * rz;
   const double duf_dx = fx_ * dHdF(0, 0) * rz;
   const double duf_dy = fx_ * dHdF(0, 1) * rz;
