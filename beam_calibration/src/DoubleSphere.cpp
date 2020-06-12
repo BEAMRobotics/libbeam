@@ -31,10 +31,10 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
   Eigen::Vector2i point_projected;
   point_projected[0] =
       fx_ * point[0] /
-      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2]) + cx_);
+      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) + cx_;
   point_projected[1] =
       fy_ * point[1] /
-      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2]) + cy_);
+      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) + cy_;
   if (PixelInImage(point_projected)) { return point_projected; }
   return {};
 }
