@@ -24,16 +24,17 @@ void LoadCameraModel() {
 
 TEST_CASE("Test projection and back project") {
   LoadCameraModel();
-  
+
   // create random test points
-  int numRandomCases1 = 10;
+  int numRandomCases1 = 20;
   double min_x = -2;
   double max_x = 2;
   double min_y = -2;
   double max_y = 2;
   double min_z = 2;
   double max_z = 10;
-  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> points;
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
+      points;
   for (int i = 0; i < numRandomCases1; i++) {
     double x = fRand(min_x, max_x);
     double y = fRand(min_y, max_y);
@@ -41,18 +42,20 @@ TEST_CASE("Test projection and back project") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
-  for (Eigen::Vector3d point : points){
+  for (Eigen::Vector3d point : points) {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    if(!pixel.has_value()){
-      continue;
-    }
-    opt<Eigen::Vector3d> back_projected_ray = camera_model_->BackProject(pixel.value());
-    REQUIRE(back_projected_ray.has_value() == true);
-    if(back_projected_ray.has_value()){
-      Eigen::Vector3d back_projected_point = point.norm() * back_projected_ray.value();
-      REQUIRE(point[0] == Approx(back_projected_point[0]));
-      REQUIRE(point[1] == Approx(back_projected_point[1]));
-      REQUIRE(point[2] == Approx(back_projected_point[2]));
+    if (!pixel.has_value()) { continue; }
+    opt<Eigen::Vector3d> back_projected_ray =
+        camera_model_->BackProject(pixel.value());
+    REQUIRE(back_projected_ray.has_value());
+    if (back_projected_ray.has_value()) {
+      Eigen::Vector3d back_projected_point =
+          point.norm() * back_projected_ray.value();
+      opt<Eigen::Vector2i> back_projected_pixel =
+          camera_model_->ProjectPoint(back_projected_point);
+      REQUIRE(back_projected_pixel.has_value());
+      REQUIRE(std::abs(pixel.value()[0] - back_projected_pixel.value()[0]) < 2);
+      REQUIRE(std::abs(pixel.value()[1] - back_projected_pixel.value()[1]) < 2);
     }
   }
 }
