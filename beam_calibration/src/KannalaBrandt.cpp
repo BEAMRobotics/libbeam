@@ -17,30 +17,15 @@ KannalaBrandt::KannalaBrandt(const std::string& file_path) {
 }
 
 opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point) {
-  // check if point is behind image plane
-  if (point[2] < 0) { return {}; }
-
-  Eigen::Vector2i out_point;
-  double x = point[0], y = point[1], z = point[2];
-  double Xsq_plus_Ysq = x * x + y * y;
-  double theta = atan2(sqrt(Xsq_plus_Ysq), z);
-  double r = sqrt(x * x + y * y);
-
-  double theta2 = theta * theta;
-  double theta3 = theta2 * theta;
-  double theta5 = theta3 * theta2;
-  double theta7 = theta5 * theta2;
-  double theta9 = theta7 * theta2;
-  double d = theta + k1_ * theta3 + k2_ * theta5 + k3_ * theta7 + k4_ * theta9;
-
-  out_point[0] = fx_ * d * (x / r) + cx_;
-  out_point[1] = fy_ * d * (y / r) + cy_;
-
-  if (PixelInImage(out_point)) { return out_point; }
+  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+  if (pixel.has_value()) {
+    Eigen::Vector2i pixel_rounded;
+    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
+    return pixel_rounded;
+  }
   return {};
 }
 
-// todo
 opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
                                                  Eigen::MatrixXd& J) {
   /* assuming ProjectPoint(P) = [P1(x,y,z), P2(x,y,z)]^T
@@ -107,6 +92,30 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
   J(1, 1) = dP2dy;
   J(1, 2) = dP2dz;
   return ProjectPoint(point);
+}
+
+opt<Eigen::Vector2d>
+    KannalaBrandt::ProjectPointPrecise(const Eigen::Vector3d& point) {
+  // check if point is behind image plane
+  if (point[2] < 0) { return {}; }
+
+  Eigen::Vector2d out_point;
+  double x = point[0], y = point[1], z = point[2];
+  double Xsq_plus_Ysq = x * x + y * y;
+  double theta = atan2(sqrt(Xsq_plus_Ysq), z);
+  double r = sqrt(x * x + y * y);
+
+  double theta2 = theta * theta;
+  double theta3 = theta2 * theta;
+  double theta5 = theta3 * theta2;
+  double theta7 = theta5 * theta2;
+  double theta9 = theta7 * theta2;
+  double d = theta + k1_ * theta3 + k2_ * theta5 + k3_ * theta7 + k4_ * theta9;
+  out_point[0] = fx_ * d * (x / r) + cx_;
+  out_point[1] = fy_ * d * (y / r) + cy_;
+
+  if (PixelInImage(out_point)) { return out_point; }
+  return {};
 }
 
 opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {

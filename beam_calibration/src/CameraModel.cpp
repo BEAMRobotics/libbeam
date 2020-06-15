@@ -20,7 +20,7 @@ void CameraModel::SetImageDims(const uint32_t height, const uint32_t width) {
 }
 
 void CameraModel::SetIntrinsics(const Eigen::VectorXd& intrinsics) {
-  if (intrinsics.size() != intrinsics_size_[this->GetType()]) {
+  if (intrinsics.size() != intrinsics_size_[GetType()]) {
     BEAM_CRITICAL("Invalid number of elements in intrinsics vector.");
     throw std::runtime_error{
         "Invalid number of elements in intrinsics vector."};
@@ -64,6 +64,14 @@ bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
   return true;
 }
 
+bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
+  double max_width = image_width_, max_height = image_height_;
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > max_width ||
+      pixel[1] > max_height)
+    return false;
+  return true;
+}
+
 void CameraModel::LoadJSON(const std::string& file_location) {
   BEAM_INFO("Loading file: {}", file_location);
 
@@ -76,7 +84,7 @@ void CameraModel::LoadJSON(const std::string& file_location) {
   for (std::map<std::string, CameraType>::iterator it =
            intrinsics_types_.begin();
        it != intrinsics_types_.end(); it++) {
-    if (intrinsics_types_[it->first] == this->type_) { class_type = it->first; }
+    if (intrinsics_types_[it->first] == type_) { class_type = it->first; }
   }
   // check type
   std::string camera_type = J["camera_type"];
@@ -86,7 +94,7 @@ void CameraModel::LoadJSON(const std::string& file_location) {
     BEAM_CRITICAL("Invalid camera type read from json. Type read: {}",
                   camera_type.c_str());
     OutputCameraTypes();
-  } else if (intrinsics_types_[camera_type] != this->type_) {
+  } else if (intrinsics_types_[camera_type] != type_) {
     BEAM_CRITICAL("Camera type read from JSON does not match expected type. "
                   "Type read: {}, Expected: {}",
                   camera_type.c_str(), class_type.c_str());

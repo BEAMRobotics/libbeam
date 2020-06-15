@@ -50,6 +50,15 @@ public:
                                     Eigen::MatrixXd& J) override;
 
   /**
+   * @brief Method for projecting a point into an image plane (continous)
+   * @param point 3d point to be projected [x,y,z]^T
+   * @param pixel reference to an optional vector with image coordinates after
+   * point has been projected into the image plane [u,v]^T
+   */
+  opt<Eigen::Vector2d>
+      ProjectPointPrecise(const Eigen::Vector3d& point) override;
+
+  /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
