@@ -183,7 +183,7 @@ TEST_CASE("Test jacobian") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
-  double eps = std::sqrt(1e-8);
+  double eps = std::sqrt(1e-10);
   for (Eigen::Vector3d point : points) {
     // calculate analytical jacobian (from camera model)
     Eigen::MatrixXd J_analytical(2, 3);
@@ -198,8 +198,8 @@ TEST_CASE("Test jacobian") {
       Eigen::Vector3d point_right_pert = point + perturbation;
       Eigen::Vector2d pixel_left_pert = ProjectPointPrecise(point_left_pert);
       Eigen::Vector2d pixel_right_pert = ProjectPointPrecise(point_right_pert);
-      J_numerical(0, i) = (pixel_left_pert[0] - pixel_right_pert[0]) / (2*eps);
-      J_numerical(1, i) = (pixel_left_pert[1] - pixel_right_pert[1]) / (2*eps);
+      J_numerical(0, i) = (pixel_right_pert[0] - pixel_left_pert[0]) / (2*eps);
+      J_numerical(1, i) = (pixel_right_pert[1] - pixel_left_pert[1]) / (2*eps);
     }
     REQUIRE(beam::RoundMatrix(J_numerical, 4) ==
             beam::RoundMatrix(J_analytical, 4));
