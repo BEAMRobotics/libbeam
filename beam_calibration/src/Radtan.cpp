@@ -16,6 +16,25 @@ Radtan::Radtan(const std::string& file_path) {
   p2_ = intrinsics_[7];
 }
 
+
+opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point) {
+  // check if point is behind image plane
+  if (point[2] < 0) { return {}; }
+  Eigen::Vector2d out_point;
+  // Project point
+  const double x = point[0], y = point[1], z = point[2];
+  const double rz = 1.0 / z;
+  out_point << (x * rz), (y * rz);
+  // Distort point using radtan distortion model
+  out_point = DistortPixel(out_point);
+  double xx = out_point[0], yy = out_point[1];
+  out_point[0] = (fx_ * xx + cx_);
+  out_point[1] = (fy_ * yy + cy_);
+
+  if (PixelInImage(out_point)) { return out_point; }
+  return {};
+}
+
 opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point) {
   opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
   if (pixel.has_value()) {
@@ -56,24 +75,6 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
   J = dGdH * dHdF * dFdP;
 
   return ProjectPoint(point);
-}
-
-opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point) {
-  // check if point is behind image plane
-  if (point[2] < 0) { return {}; }
-  Eigen::Vector2d out_point;
-  // Project point
-  const double x = point[0], y = point[1], z = point[2];
-  const double rz = 1.0 / z;
-  out_point << (x * rz), (y * rz);
-  // Distort point using radtan distortion model
-  out_point = DistortPixel(out_point);
-  double xx = out_point[0], yy = out_point[1];
-  out_point[0] = (fx_ * xx + cx_);
-  out_point[1] = (fy_ * yy + cy_);
-
-  if (PixelInImage(out_point)) { return out_point; }
-  return {};
 }
 
 opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {

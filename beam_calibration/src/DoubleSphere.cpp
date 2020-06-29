@@ -14,20 +14,6 @@ DoubleSphere::DoubleSphere(const std::string& file_path) {
   alpha_ = intrinsics_[5];
 }
 
-opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
-  if (pixel.has_value()) {
-    Eigen::Vector2i pixel_rounded;
-    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
-    return pixel_rounded;
-  }
-  return {};
-}
-
-// todo
-opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
-                                                Eigen::MatrixXd& J) {}
-
 opt<Eigen::Vector2d>
     DoubleSphere::ProjectPointPrecise(const Eigen::Vector3d& point) {
   double w1;
@@ -54,6 +40,20 @@ opt<Eigen::Vector2d>
   if (PixelInImage(point_projected)) { return point_projected; }
   return {};
 }
+
+opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
+  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+  if (pixel.has_value()) {
+    Eigen::Vector2i pixel_rounded;
+    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
+    return pixel_rounded;
+  }
+  return {};
+}
+
+// todo
+opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
+                                                Eigen::MatrixXd& J) {}
 
 opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
   double mx = (pixel[0] - cx_) / fx_;

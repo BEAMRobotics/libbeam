@@ -28,23 +28,6 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cy_, cx_;
 }
 
-opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
-  if (pixel.has_value()) {
-    Eigen::Vector2i pixel_rounded;
-    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
-    return pixel_rounded;
-  }
-  return {};
-}
-
-opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
-                                           Eigen::MatrixXd& J) {
-  BEAM_WARN(
-      "Ladybug canot be re-calibrated, no effect on Jacobian matrix passed");
-  return ProjectPoint(point);
-}
-
 opt<Eigen::Vector2d>
     Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point) {
   // check if point is behind image plane
@@ -71,6 +54,23 @@ opt<Eigen::Vector2d>
 
   if (PixelInImage(pixel_out)) { return pixel_out; }
   return {};
+}
+
+opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
+  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+  if (pixel.has_value()) {
+    Eigen::Vector2i pixel_rounded;
+    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
+    return pixel_rounded;
+  }
+  return {};
+}
+
+opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
+                                           Eigen::MatrixXd& J) {
+  BEAM_WARN(
+      "Ladybug canot be re-calibrated, no effect on Jacobian matrix passed");
+  return ProjectPoint(point);
 }
 
 opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {

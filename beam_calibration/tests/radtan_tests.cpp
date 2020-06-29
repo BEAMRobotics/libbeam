@@ -171,18 +171,13 @@ TEST_CASE("Test jacobian") {
     for (int i = 0; i < 3; i++) {
       Eigen::Vector3d perturbation(0, 0, 0);
       perturbation[i] = eps;
-      Eigen::Vector3d point_plus_pert = point + perturbation;
-      Eigen::Vector3d point_minus_pert = point - perturbation;
-      opt<Eigen::Vector2d> pixel_plus =
-          camera_model_->ProjectPointPrecise(point_plus_pert);
-      opt<Eigen::Vector2d> pixel_minus =
-          camera_model_->ProjectPointPrecise(point_minus_pert);
-      J_numerical(0, i) =
-          (pixel_plus.value()[0] - pixel_minus.value()[0]) / (2 * eps);
-      J_numerical(1, i) =
-          (pixel_plus.value()[1] - pixel_minus.value()[1]) / (2 * eps);
+      Eigen::Vector3d point_pert = point + perturbation;
+      opt<Eigen::Vector2d> pixel = camera_model_->ProjectPointPrecise(point);
+      opt<Eigen::Vector2d> pixel_pert =
+          camera_model_->ProjectPointPrecise(point_pert);
+      J_numerical(0, i) = (pixel_pert.value()[0] - pixel.value()[0]) / eps;
+      J_numerical(1, i) = (pixel_pert.value()[1] - pixel.value()[1]) / eps;
     }
-    REQUIRE(beam::RoundMatrix(J_numerical, 4) ==
-            beam::RoundMatrix(J_analytical, 4));
+    REQUIRE(J_numerical.isApprox(J_analytical, 0.001));
   }
 }
