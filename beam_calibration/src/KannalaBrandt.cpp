@@ -18,9 +18,6 @@ KannalaBrandt::KannalaBrandt(const std::string& file_path) {
 
 opt<Eigen::Vector2d>
     KannalaBrandt::ProjectPointPrecise(const Eigen::Vector3d& point) {
-  // check if point is behind image plane
-  if (point[2] < 0) { return {}; }
-
   Eigen::Vector2d out_point;
   double x = point[0], y = point[1], z = point[2];
   double Xsq_plus_Ysq = x * x + y * y;
@@ -116,6 +113,8 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
 }
 
 opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
+  if (!PixelInImage(pixel)) { return {}; }
+
   Eigen::Vector3d out_ray;
 
   double u = pixel[0], v = pixel[1];

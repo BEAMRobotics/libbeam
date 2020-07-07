@@ -16,7 +16,6 @@ Radtan::Radtan(const std::string& file_path) {
   p2_ = intrinsics_[7];
 }
 
-
 opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point) {
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
@@ -78,6 +77,8 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
 }
 
 opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {
+  if (!PixelInImage(pixel)) { return {}; }
+
   Eigen::Vector3d out_point;
   Eigen::Vector2d kp;
   kp[0] = (pixel[0] - cx_) / fx_;

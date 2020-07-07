@@ -145,10 +145,10 @@ TEST_CASE("Test jacobian") {
 
   // create random test points
   int numRandomCases1 = 30;
-  double min_x = -2;
-  double max_x = 2;
-  double min_y = -2;
-  double max_y = 2;
+  double min_x = -1;
+  double max_x = 1;
+  double min_y = -1;
+  double max_y = 1;
   double min_z = 2;
   double max_z = 10;
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
