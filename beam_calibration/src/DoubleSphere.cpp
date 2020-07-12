@@ -30,11 +30,11 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
                    (eps_ * d1 + point[2]) * (eps_ * d1 + point[2]));
   Eigen::Vector2i point_projected;
   point_projected[0] =
-      fx_ * point[0] /
-      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) + cx_;
+      fx_ * point[0] / (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) +
+      cx_;
   point_projected[1] =
-      fy_ * point[1] /
-      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) + cy_;
+      fy_ * point[1] / (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) +
+      cy_;
   if (PixelInImage(point_projected)) { return point_projected; }
   return {};
 }
@@ -59,9 +59,11 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
   Eigen::MatrixXd dd1dP(1, 3);
   dd1dP << Px / d1, Py / d1, Pz / d1;
 
-  double tmp = (eps_ * eps_ + 1 + eps_ / d1) / d2;
+  double tmp = (eps_ * eps_ + 1 + eps_ * Pz / d1) / d2;
+  double dd2dPz =
+      ((eps_ * eps_ + 1) * Pz + 2 * eps_ * d1 + 2 * eps_ * Pz * Pz / d1) / d2;
   Eigen::MatrixXd dd2dP(1, 3);
-  dd2dP << Px * tmp, Py * tmp, Pz * tmp;
+  dd2dP << Px * tmp, Py * tmp, Pz * tmp, dd2dPz;
 
   Eigen::MatrixXd dldP(1, 3);
   dldP = alpha_ * dd2dP + eps_ * (1 - alpha_) * dd1dP + (1 - alpha_) * dPzdP;
