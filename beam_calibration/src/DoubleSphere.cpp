@@ -61,9 +61,9 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
 
   double tmp = (eps_ * eps_ + 1 + eps_ * Pz / d1) / d2;
   double dd2dPz =
-      ((eps_ * eps_ + 1) * Pz + 2 * eps_ * d1 + 2 * eps_ * Pz * Pz / d1) / d2;
+      ((eps_ * eps_ + 1) * Pz + eps_ * d1 + eps_ * Pz * Pz / d1) / d2;
   Eigen::MatrixXd dd2dP(1, 3);
-  dd2dP << Px * tmp, Py * tmp, Pz * tmp, dd2dPz;
+  dd2dP << Px * tmp, Py * tmp, dd2dPz;
 
   Eigen::MatrixXd dldP(1, 3);
   dldP = alpha_ * dd2dP + eps_ * (1 - alpha_) * dd1dP + (1 - alpha_) * dPzdP;
