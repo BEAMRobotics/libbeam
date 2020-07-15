@@ -37,6 +37,15 @@ public:
   virtual ~CameraModel() = default;
 
   /**
+   * @brief Method for projecting a point into an image plane (continous)
+   * @param point 3d point to be projected [x,y,z]^T
+   * @param pixel reference to an optional vector with image coordinates after
+   * point has been projected into the image plane [u,v]^T
+   */
+  virtual opt<Eigen::Vector2d>
+      ProjectPointPrecise(const Eigen::Vector3d& point) = 0;
+
+  /**
    * @brief Method for projecting a point into an image plane
    * @param point 3d point to be projected [x,y,z]^T
    * @param pixel reference to an optional vector with image coordinates after
@@ -130,6 +139,13 @@ public:
    * @param pixel
    */
   bool PixelInImage(const Eigen::Vector2i& pixel);
+
+  /**
+   * @brief Method for checking if pixel is in image
+   * @return Returns boolean
+   * @param pixel
+   */
+  bool PixelInImage(const Eigen::Vector2d& pixel);
 
 protected:
   /**

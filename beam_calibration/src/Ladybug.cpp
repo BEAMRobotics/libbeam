@@ -28,7 +28,8 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cy_, cx_;
 }
 
-opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
+opt<Eigen::Vector2d>
+    Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point) {
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
 
@@ -51,9 +52,17 @@ opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
   lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, coords[0], coords[1],
                                     &pixel_out[0], &pixel_out[1]);
 
-  Eigen::Vector2i rounded_pixel;
-  rounded_pixel << std::round(pixel_out[0]), std::round(pixel_out[1]);
-  if (PixelInImage(rounded_pixel)) { return rounded_pixel; }
+  if (PixelInImage(pixel_out)) { return pixel_out; }
+  return {};
+}
+
+opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
+  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+  if (pixel.has_value()) {
+    Eigen::Vector2i pixel_rounded;
+    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
+    return pixel_rounded;
+  }
   return {};
 }
 

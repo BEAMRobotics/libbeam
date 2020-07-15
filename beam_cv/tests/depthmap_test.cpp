@@ -14,7 +14,6 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
   cur_location.erase(cur_location.end() - 23, cur_location.end());
   cur_location += "tests/test_data/";
   std::string intrinsics_loc = cur_location + "F1.json";
-
   // load other objects
   cv::Mat img = cv::imread(cur_location + "test.jpg", cv::IMREAD_COLOR);
   std::shared_ptr<beam_calibration::CameraModel> F1 =
@@ -36,13 +35,11 @@ TEST_CASE("Test Depth map extractor.") {
   cur_location.erase(cur_location.end() - 23, cur_location.end());
   cur_location += "tests/test_data/";
   std::string intrinsics_loc = cur_location + "F1.json";
-
   // load other objects
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
-
   // test method exception throwing
   beam_cv::DepthMap dm(F1, cloud);
   int low_density = dm.ExtractDepthMap(0.02, 3);

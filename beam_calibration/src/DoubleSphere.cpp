@@ -13,7 +13,8 @@ DoubleSphere::DoubleSphere(const std::string& file_path) {
   alpha_ = intrinsics_[5];
 }
 
-opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
+opt<Eigen::Vector2d>
+    DoubleSphere::ProjectPointPrecise(const Eigen::Vector3d& point) {
   double w1;
   if (alpha_ > 0.5) {
     w1 = (1 - alpha_) / alpha_;
@@ -28,7 +29,7 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
   if (point[2] <= -w2 * d1) { return {}; }
   double d2 = sqrt(point[0] * point[0] + point[1] * point[1] +
                    (eps_ * d1 + point[2]) * (eps_ * d1 + point[2]));
-  Eigen::Vector2i point_projected;
+  Eigen::Vector2d point_projected;
   point_projected[0] =
       fx_ * point[0] / (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) +
       cx_;
