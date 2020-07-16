@@ -165,6 +165,8 @@ TEST_CASE("Test jacobian") {
     // calculate analytical jacobian (from camera model)
     Eigen::MatrixXd J_analytical(2, 3);
     opt<Eigen::Vector2i> tmp = camera_model_->ProjectPoint(point, J_analytical);
+    REQUIRE(tmp.has_value());
+
     // calculate numerical jacobian
     Eigen::MatrixXd J_numerical(2, 3);
     for (int i = 0; i < 3; i++) {
