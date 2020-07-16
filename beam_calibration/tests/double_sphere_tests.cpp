@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 
-#include <beam_calibration/Radtan.h>
+#include <beam_calibration/DoubleSphere.h>
 #include <beam_utils/math.hpp>
 #include <catch2/catch.hpp>
 
@@ -13,13 +13,36 @@ double fRand(double fMin, double fMax) {
 
 void LoadCameraModel() {
   std::string intrinsics_location = __FILE__;
-  std::string current_file_path = "radtan_tests.cpp";
+  std::string current_file_path = "double_sphere_tests.cpp";
   intrinsics_location.erase(intrinsics_location.end() -
                                 current_file_path.length(),
                             intrinsics_location.end());
-  intrinsics_location += "test_data/Radtan_test.json";
+  intrinsics_location += "test_data/DS_test.json";
   camera_model_ =
-      std::make_unique<beam_calibration::Radtan>(intrinsics_location);
+      std::make_unique<beam_calibration::DoubleSphere>(intrinsics_location);
+}
+
+Eigen::Vector2d ProjectPointPrecise(const Eigen::Vector3d& point){
+  Eigen::VectorXd intrinsics = camera_model_->GetIntrinsics();
+  double fx_ = intrinsics[0];
+  double fy_ = intrinsics[1];
+  double cx_ = intrinsics[2];
+  double cy_ = intrinsics[3];
+  double eps_ = intrinsics[4];
+  double alpha_ = intrinsics[5];
+
+  double d1 =
+      sqrt(point[0] * point[0] + point[1] * point[1] + point[2] * point[2]);
+  double d2 = sqrt(point[0] * point[0] + point[1] * point[1] +
+                   (eps_ * d1 + point[2]) * (eps_ * d1 + point[2]));
+  Eigen::Vector2d point_projected;
+  point_projected[0] =
+      fx_ * point[0] /
+      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) + cx_;
+  point_projected[1] =
+      fy_ * point[1] /
+      (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) + cy_;
+  return point_projected;
 }
 
 TEST_CASE("Test projection and back project with random points") {
@@ -145,10 +168,10 @@ TEST_CASE("Test jacobian") {
 
   // create random test points
   int numRandomCases1 = 30;
-  double min_x = -1;
-  double max_x = 1;
-  double min_y = -1;
-  double max_y = 1;
+  double min_x = -2;
+  double max_x = 2;
+  double min_y = -2;
+  double max_y = 2;
   double min_z = 2;
   double max_z = 10;
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
@@ -172,13 +195,14 @@ TEST_CASE("Test jacobian") {
     for (int i = 0; i < 3; i++) {
       Eigen::Vector3d perturbation(0, 0, 0);
       perturbation[i] = eps;
-      Eigen::Vector3d point_pert = point + perturbation;
-      opt<Eigen::Vector2d> pixel = camera_model_->ProjectPointPrecise(point);
-      opt<Eigen::Vector2d> pixel_pert =
-          camera_model_->ProjectPointPrecise(point_pert);
-      J_numerical(0, i) = (pixel_pert.value()[0] - pixel.value()[0]) / eps;
-      J_numerical(1, i) = (pixel_pert.value()[1] - pixel.value()[1]) / eps;
+      Eigen::Vector3d point_left_pert = point - perturbation;
+      Eigen::Vector3d point_right_pert = point + perturbation;
+      Eigen::Vector2d pixel_left_pert = ProjectPointPrecise(point_left_pert);
+      Eigen::Vector2d pixel_right_pert = ProjectPointPrecise(point_right_pert);
+      J_numerical(0, i) = (pixel_right_pert[0] - pixel_left_pert[0]) / (2*eps);
+      J_numerical(1, i) = (pixel_right_pert[1] - pixel_left_pert[1]) / (2*eps);
     }
-    REQUIRE(J_numerical.isApprox(J_analytical, 0.001));
+    REQUIRE(beam::RoundMatrix(J_numerical, 4) ==
+            beam::RoundMatrix(J_analytical, 4));
   }
 }

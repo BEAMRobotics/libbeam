@@ -2,8 +2,6 @@
 
 #include <catch2/catch.hpp>
 
-#include <beam_calibration/CameraModel.h>
-#include <beam_calibration/DoubleSphere.h>
 #include <beam_calibration/KannalaBrandt.h>
 #include <beam_calibration/Ladybug.h>
 #include <beam_calibration/Radtan.h>
@@ -66,34 +64,6 @@ TEST_CASE("Test projection and back project -- kannala brandt") {
   REQUIRE(beam::fltcmp(back_point.value()[2], test_point[2], 0.01) == 0);
 }
 
-TEST_CASE("Test projection and back project -- double sphere") {
-  std::string db_location = __FILE__;
-  db_location.erase(db_location.end() - 21, db_location.end());
-  db_location += "tests/test_data/DS_test.json";
-
-  std::unique_ptr<beam_calibration::CameraModel> db =
-      std::make_unique<beam_calibration::DoubleSphere>(db_location);
-
-  Eigen::Vector3d test_point(5, 20, 98);
-  opt<Eigen::Vector2i> result_point = db->ProjectPoint(test_point);
-  opt<Eigen::Vector3d> back_point = db->BackProject(result_point.value());
-
-  std::stringstream bp, norm, res;
-  bp << back_point.value();
-  test_point.normalize();
-  norm << test_point;
-  res << result_point.value();
-  INFO("Back projected point:");
-  INFO(bp.str());
-  INFO("Normalized input point:");
-  INFO(norm.str());
-  INFO("Resulting pixel projection:");
-  INFO(res.str());
-  // require back projected point to be equal to test point normalized
-  REQUIRE(beam::fltcmp(back_point.value()[0], test_point[0], 0.01) == 0);
-  REQUIRE(beam::fltcmp(back_point.value()[1], test_point[1], 0.01) == 0);
-  REQUIRE(beam::fltcmp(back_point.value()[2], test_point[2], 0.01) == 0);
-}
 /*
 TEST_CASE("Test projection and back project -- ladybug") {
   std::string lb_location = __FILE__;
