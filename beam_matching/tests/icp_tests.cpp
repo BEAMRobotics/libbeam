@@ -1,8 +1,10 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include <pcl/io/pcd_io.h>
 #include <random>
+
+#include <pcl/io/pcd_io.h>
+#include <pcl/search/impl/search.hpp>
 
 #include "beam_matching/IcpMatcher.hpp"
 
