@@ -21,19 +21,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ################ tests ##################
-add_executable(${PROJECT_NAME}_camera_tests
-  tests/Camera_test.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_camera_tests
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_camera_tests
-  ${PROJECT_NAME}
-  Catch2::Catch2
-)
-
 add_executable(${PROJECT_NAME}_double_sphere_tests
   tests/double_sphere_tests.cpp
 )
