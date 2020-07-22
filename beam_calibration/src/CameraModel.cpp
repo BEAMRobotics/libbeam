@@ -22,23 +22,16 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
     json J;
     std::ifstream file(file_location);
     file >> J;
-
     std::string camera_type = J["camera_type"];
-    std::map<std::string, CameraType>::iterator it =
-        intrinsics_types_.find(camera_type);
-    if (it == intrinsics_types_.end()) {
-      BEAM_CRITICAL("Invalid camera type read from json. Type read: {}",
-                    camera_type.c_str());
-      throw std::runtime_error{"Invalid camera type read from json."};
+    if (camera_type == "KANNALABRANDT") {
+      camera_model = std::make_shared<KannalaBrandt>(file_location);
+    } else if (camera_type == "DOUBLESPHERE") {
+      camera_model = std::make_shared<DoubleSphere>(file_location);
+    } else if (camera_type == "RADTAN") {
+      camera_model = std::make_shared<Radtan>(file_location);
     } else {
-      CameraType type = intrinsics_types_[camera_type];
-      if (type == CameraType::KANNALABRANDT) {
-        camera_model = std::make_shared<KannalaBrandt>(file_location);
-      } else if (type == CameraType::DOUBLESPHERE) {
-        camera_model = std::make_shared<DoubleSphere>(file_location);
-      } else if (type == CameraType::RADTAN) {
-        camera_model = std::make_shared<Radtan>(file_location);
-      }
+      BEAM_CRITICAL("Invalid camera type read from JSON.");
+      throw std::runtime_error{"Invalid camera type read from JSON."};
     }
   }
   return camera_model;

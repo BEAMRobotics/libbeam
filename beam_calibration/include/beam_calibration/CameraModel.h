@@ -35,11 +35,11 @@ public:
    * @brief Default destructor
    */
   virtual ~CameraModel() = default;
- 
+
   /**
    * @brief Factory method to create camera models at runtime
    */
-  std::shared_ptr<CameraModel> Create(std::string& file_location);
+  static std::shared_ptr<CameraModel> Create(std::string& file_location);
 
   /**
    * @brief Method for projecting a point into an image plane (continous)
