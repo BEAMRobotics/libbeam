@@ -1,10 +1,10 @@
 #define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
 
+#include <catch2/catch.hpp>
 #include <pcl/io/pcd_io.h>
 #include <pcl/search/impl/search.hpp>
 
-#include "beam_matching/GicpMatcher.hpp"
+#include <beam_matching/GicpMatcher.hpp>
 
 namespace beam_matching {
 

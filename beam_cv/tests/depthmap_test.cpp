@@ -1,12 +1,15 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_cv/DepthMap.h"
-#include "beam_cv/Utils.h"
+
 #include <catch2/catch.hpp>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
+#include <beam_calibration/Radtan.h>
+#include <beam_cv/DepthMap.h>
+#include <beam_cv/Utils.h>
+
 TEST_CASE("Test Constructor, Getters/Setters.") {
-  // fiel locations
+  // file locations
   std::string cur_location = __FILE__;
   cur_location.erase(cur_location.end() - 23, cur_location.end());
   cur_location += "tests/test_data/";
@@ -14,7 +17,7 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
   // load other objects
   cv::Mat img = cv::imread(cur_location + "test.jpg", cv::IMREAD_COLOR);
   std::shared_ptr<beam_calibration::CameraModel> F1 =
-      beam_calibration::CameraModel::LoadJSON(intrinsics_loc);
+      std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
   // test method exception throwing
@@ -27,14 +30,14 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
 }
 
 TEST_CASE("Test Depth map extractor.") {
-  // fiel locations
+  // file locations
   std::string cur_location = __FILE__;
   cur_location.erase(cur_location.end() - 23, cur_location.end());
   cur_location += "tests/test_data/";
   std::string intrinsics_loc = cur_location + "F1.json";
   // load other objects
   std::shared_ptr<beam_calibration::CameraModel> F1 =
-      beam_calibration::CameraModel::LoadJSON(intrinsics_loc);
+      std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
   // test method exception throwing

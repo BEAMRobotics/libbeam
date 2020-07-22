@@ -1,8 +1,8 @@
-#include "beam_cv/Utils.h"
+#include <beam_cv/Utils.h>
 
 #include <algorithm>
 
-#include "beam_utils/uf.hpp"
+#include <beam_utils/uf.hpp>
 
 namespace beam_cv {
 
@@ -185,7 +185,8 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
   return distance;
 }
 
-beam::Vec2 FindClosest(beam::Vec2 search_pixel, const cv::Mat& depth_image) {
+Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
+                            const cv::Mat& depth_image) {
   cv::Point2i sp(search_pixel[0], search_pixel[1]);
   std::vector<double> distances;
   std::vector<cv::Point2i> pixels;
@@ -199,7 +200,7 @@ beam::Vec2 FindClosest(beam::Vec2 search_pixel, const cv::Mat& depth_image) {
   });
   int min_index =
       std::min_element(distances.begin(), distances.end()) - distances.begin();
-  beam::Vec2 output(pixels[min_index].x, pixels[min_index].y);
+  Eigen::Vector2i output(pixels[min_index].x, pixels[min_index].y);
   return output;
 }
 
@@ -236,7 +237,7 @@ std::vector<cv::Mat> SegmentMultiscale(const cv::Mat& depth_image) {
   return segments;
 }
 
-void SaveDepthImageBW(const cv::Mat& depth_image, std::string path) {
+void SaveDepthImageBW(const cv::Mat& depth_image, const std::string& path) {
   cv::Mat depth_bw =
       cv::Mat::zeros(cv::Size(depth_image.cols, depth_image.rows), CV_8UC1);
 

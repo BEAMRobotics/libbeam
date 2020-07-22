@@ -17,7 +17,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/DepthCompletion.cpp
 )
 
-############# Debug files #############
+############# Test files #############
 add_executable(${PROJECT_NAME}_utils_tests
   tests/utils_test.cpp
 )

@@ -1,7 +1,8 @@
+#include <beam_colorize/RayTrace.h>
+
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include "beam_colorize/RayTrace.h"
-#include "beam_cv/RayCast.h"
+#include <beam_cv/RayCast.h>
 
 namespace beam_colorize {
 
@@ -51,18 +52,18 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 
   for (uint32_t i = 0; i < input->points.size(); i++) {
     point << input->points[i].x, input->points[i].y, input->points[i].z;
-    beam::Vec2 coords = intrinsics->ProjectPoint(point);
-    uint16_t u = std::round(coords(0, 0)), v = std::round(coords(1, 0));
-    uint16_t vmax = image->rows;
-    uint16_t umax = image->cols;
-    if (u > 0 && v > 0 && v < vmax && u < umax && point(2, 0) > 0) {
-      pcl::PointXYZRGB new_point;
-      new_point.x = point(0, 0);
-      new_point.y = point(1, 0);
-      new_point.z = point(2, 0);
-      cloud->points.push_back(new_point);
-      indices.push_back(i);
+    opt<Eigen::Vector2i> coords = intrinsics->ProjectPoint(point);
+    if (!coords.has_value()) {
+      BEAM_WARN("Cannot project point.");
+      continue;
     }
+    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
+    pcl::PointXYZRGB new_point;
+    new_point.x = point(0, 0);
+    new_point.y = point(1, 0);
+    new_point.z = point(2, 0);
+    cloud->points.push_back(new_point);
+    indices.push_back(i);
   }
   return std::make_tuple(cloud, indices);
 }

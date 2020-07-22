@@ -13,26 +13,14 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     OpenCV::OpenCV
   SOURCES
     src/TfTree.cpp
+    src/Radtan.cpp
+    src/DoubleSphere.cpp
     src/CameraModel.cpp
-    src/LadybugCamera.cpp
-    src/PinholeCamera.cpp
+    src/Ladybug.cpp
+    src/KannalaBrandt.cpp
 )
 
 ################ tests ##################
-#
-add_executable(${PROJECT_NAME}_camera_tests
-  tests/Camera_test.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_camera_tests
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_camera_tests
-  ${PROJECT_NAME}
-  Catch2::Catch2
-)
-
 add_executable(${PROJECT_NAME}_extrinsics_tests
   tests/TfTree_test.cpp
 )
@@ -47,4 +35,44 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Boost::boost
   catkin::catkin
 )
+
+add_executable(${PROJECT_NAME}_double_sphere_tests
+  tests/double_sphere_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_double_sphere_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_double_sphere_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_radtan_tests
+  tests/radtan_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_radtan_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_radtan_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_kannala_brandt_tests
+  tests/kannala_brandt_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_kannala_brandt_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_kannala_brandt_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
 #######################################

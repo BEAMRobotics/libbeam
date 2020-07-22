@@ -5,7 +5,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
-#include "beam_utils/math.hpp"
+#include <beam_utils/math.hpp>
 
 namespace beam_cv {
 
@@ -76,9 +76,9 @@ double PixelDistance(cv::Point2i p1, cv::Point2i p2);
  * @brief returns closest non zero pixel
  * @param search_pixel u,v search pixel
  * @param depth_image depth image to search
- * @return Vec2
+ * @return Eigen::Vector2i
  */
-beam::Vec2 FindClosest(beam::Vec2 search_pixel, const cv::Mat& depth_image);
+Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel, const cv::Mat& depth_image);
 
 /**
  * @brief returns vector of mats where each mat represents a certain depth range
