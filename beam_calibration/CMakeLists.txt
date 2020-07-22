@@ -21,19 +21,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ################ tests ##################
-add_executable(${PROJECT_NAME}_double_sphere_tests
-  tests/double_sphere_tests.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_double_sphere_tests
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_double_sphere_tests
-  ${PROJECT_NAME}
-  Catch2::Catch2
-)
-
 add_executable(${PROJECT_NAME}_extrinsics_tests
   tests/TfTree_test.cpp
 )
@@ -47,6 +34,19 @@ target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   Catch2::Catch2
   Boost::boost
   catkin::catkin
+)
+
+add_executable(${PROJECT_NAME}_double_sphere_tests
+  tests/double_sphere_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_double_sphere_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_double_sphere_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
 )
 
 add_executable(${PROJECT_NAME}_radtan_tests
