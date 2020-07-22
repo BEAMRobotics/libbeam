@@ -1,10 +1,48 @@
 #include "beam_calibration/CameraModel.h"
+#include "beam_calibration/DoubleSphere.h"
+#include "beam_calibration/KannalaBrandt.h"
+#include "beam_calibration/Ladybug.h"
+#include "beam_calibration/Radtan.h"
 
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
 namespace beam_calibration {
+
+std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
+  BEAM_INFO("Loading file: {}", file_location);
+  std::shared_ptr<CameraModel> camera_model;
+
+  std::string file_ext = file_location.substr(file_location.size() - 4);
+  if (file_ext != "json") {
+    camera_model = std::make_shared<Ladybug>(file_location);
+  } else {
+    // load JSON
+    json J;
+    std::ifstream file(file_location);
+    file >> J;
+
+    std::string camera_type = J["camera_type"];
+    std::map<std::string, CameraType>::iterator it =
+        intrinsics_types_.find(camera_type);
+    if (it == intrinsics_types_.end()) {
+      BEAM_CRITICAL("Invalid camera type read from json. Type read: {}",
+                    camera_type.c_str());
+      throw std::runtime_error{"Invalid camera type read from json."};
+    } else {
+      CameraType type = intrinsics_types_[camera_type];
+      if (type == CameraType::KANNALABRANDT) {
+        camera_model = std::make_shared<KannalaBrandt>(file_location);
+      } else if (type == CameraType::DOUBLESPHERE) {
+        camera_model = std::make_shared<DoubleSphere>(file_location);
+      } else if (type == CameraType::RADTAN) {
+        camera_model = std::make_shared<Radtan>(file_location);
+      }
+    }
+  }
+  return camera_model;
+}
 
 void CameraModel::SetFrameID(const std::string& id) {
   frame_id_ = id;
