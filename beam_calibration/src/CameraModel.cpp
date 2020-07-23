@@ -1,10 +1,47 @@
 #include "beam_calibration/CameraModel.h"
+#include "beam_calibration/DoubleSphere.h"
+#include "beam_calibration/KannalaBrandt.h"
+#include "beam_calibration/Ladybug.h"
+#include "beam_calibration/Radtan.h"
 
+#include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
 namespace beam_calibration {
+
+std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
+  BEAM_INFO("Loading file: {}", file_location);
+  std::shared_ptr<CameraModel> camera_model;
+
+  std::string file_ext = boost::filesystem::extension(file_location);
+  if (file_ext == ".conf") {
+    camera_model = std::make_shared<Ladybug>(file_location);
+  } else if (file_ext == ".json") {
+    // load JSON
+    json J;
+    std::ifstream file(file_location);
+    file >> J;
+    std::string camera_type = J["camera_type"];
+    if (camera_type == "KANNALABRANDT") {
+      camera_model = std::make_shared<KannalaBrandt>(file_location);
+    } else if (camera_type == "DOUBLESPHERE") {
+      camera_model = std::make_shared<DoubleSphere>(file_location);
+    } else if (camera_type == "RADTAN") {
+      camera_model = std::make_shared<Radtan>(file_location);
+    } else {
+      BEAM_CRITICAL("Invalid camera type read from JSON.");
+      throw std::runtime_error{"Invalid camera type read from JSON."};
+    }
+  } else {
+    BEAM_CRITICAL("Invalid file type read for camera intialization.");
+    throw std::runtime_error{
+        "Invalid file type read for camera intialization."};
+  }
+
+  return camera_model;
+}
 
 void CameraModel::SetFrameID(const std::string& id) {
   frame_id_ = id;

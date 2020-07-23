@@ -37,6 +37,11 @@ public:
   virtual ~CameraModel() = default;
 
   /**
+   * @brief Factory method to create camera models at runtime
+   */
+  static std::shared_ptr<CameraModel> Create(std::string& file_location);
+
+  /**
    * @brief Method for projecting a point into an image plane (continous)
    * @param point 3d point to be projected [x,y,z]^T
    * @param pixel reference to an optional vector with image coordinates after

@@ -4,7 +4,6 @@ namespace beam_calibration {
 
 KannalaBrandt::KannalaBrandt(const std::string& file_path) {
   type_ = CameraType::KANNALABRANDT;
-  BEAM_INFO("Loading file: {}", file_path);
   LoadJSON(file_path);
   fx_ = intrinsics_[0];
   fy_ = intrinsics_[1];

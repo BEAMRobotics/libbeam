@@ -1,6 +1,8 @@
 #define CATCH_CONFIG_MAIN
 
 #include <beam_calibration/KannalaBrandt.h>
+
+#include <beam_calibration/CameraModel.h>
 #include <beam_utils/math.hpp>
 #include <catch2/catch.hpp>
 
@@ -20,6 +22,18 @@ void LoadCameraModel() {
   intrinsics_location += "test_data/KB_test.json";
   camera_model_ =
       std::make_unique<beam_calibration::KannalaBrandt>(intrinsics_location);
+}
+
+TEST_CASE("Test create method") {
+  std::string intrinsics_location = __FILE__;
+  std::string current_file_path = "kannala_brandt_tests.cpp";
+  intrinsics_location.erase(intrinsics_location.end() -
+                                current_file_path.length(),
+                            intrinsics_location.end());
+  intrinsics_location += "test_data/KB_test.json";
+  std::shared_ptr<beam_calibration::CameraModel> cm =
+      beam_calibration::CameraModel::Create(intrinsics_location);
+  REQUIRE(cm->GetType() == beam_calibration::CameraType::KANNALABRANDT);
 }
 
 TEST_CASE("Test projection and back project with random points") {

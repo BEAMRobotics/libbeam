@@ -22,6 +22,18 @@ void LoadCameraModel() {
       std::make_unique<beam_calibration::Radtan>(intrinsics_location);
 }
 
+TEST_CASE("Test create method") {
+  std::string intrinsics_location = __FILE__;
+  std::string current_file_path = "radtan_tests.cpp";
+  intrinsics_location.erase(intrinsics_location.end() -
+                                current_file_path.length(),
+                            intrinsics_location.end());
+  intrinsics_location += "test_data/Radtan_test.json";
+  std::shared_ptr<beam_calibration::CameraModel> cm =
+      beam_calibration::CameraModel::Create(intrinsics_location);
+  REQUIRE(cm->GetType() == beam_calibration::CameraType::RADTAN);
+}
+
 TEST_CASE("Test projection and back project with random points") {
   LoadCameraModel();
 
