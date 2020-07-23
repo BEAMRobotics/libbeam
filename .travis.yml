@@ -25,7 +25,7 @@ install:
 # Run unit test scripts
 script:
   - cd $HOME/catkin_ws/build/libbeam
-  - bash ./beam_calibration/run_all_tests.sh
+  - bash ./beam_calibration/run_all_tests.bash
   - cd $HOME/catkin_ws/build/libbeam/beam_defects
   - ./beam_defects_delam_tests
   - ./beam_defects_spall_tests
