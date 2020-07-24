@@ -13,3 +13,7 @@ This module contains special point cloud filters used for BEAMRobotics.
 2. **DROR**:
     * Dynamic Radius Outlier Filter
     * Based on Nick and Steve's paper at CRV 2018: https://ieeexplore.ieee.org/abstract/document/8575761
+
+3. **VoxelDownsample**:
+    * VoxelDownsample downsamples a point cloud by converting points to a voxel grid where all points in each voxel are replaced with a point in the centroid.  
+    * WIP
