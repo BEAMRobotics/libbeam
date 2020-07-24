@@ -41,4 +41,8 @@ target_link_libraries(${PROJECT_NAME}_demo
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
 #######################################

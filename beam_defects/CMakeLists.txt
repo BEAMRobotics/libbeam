@@ -95,3 +95,7 @@ target_link_libraries(${PROJECT_NAME}_corrosion_tests
 file(COPY tests/test_data
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)

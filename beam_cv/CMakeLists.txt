@@ -56,3 +56,7 @@ target_link_libraries(${PROJECT_NAME}_kitti
   Eigen3::Eigen
   ${CERES_LIBRARIES}
 )
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
