@@ -66,3 +66,7 @@ target_link_libraries(${PROJECT_NAME}_gicp_tests
 
 # Copy the test data
 file(COPY tests/data tests/config DESTINATION ${PROJECT_BINARY_DIR}/tests)
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)

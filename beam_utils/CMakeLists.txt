@@ -28,3 +28,7 @@ target_link_libraries(${PROJECT_NAME}_unit_tests
   Catch2::Catch2
   ${PROJECT_NAME}
 )
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
