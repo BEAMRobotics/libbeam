@@ -59,16 +59,15 @@ int DepthMap::ExtractDepthMapProjection() {
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
                                            model_->GetWidth(), CV_32FC1);
   for (uint32_t i = 0; i < cloud_->points.size(); i++) {
-    Eigen::Vector3d origin;
-    origin << 0, 0, 0;
-    Eigen::Vector3d point;
-    point << cloud_->points[i].x, cloud_->points[i].y, cloud_->points[i].z;
+    Eigen::Vector3d origin(0, 0, 0);
+    Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
+                          cloud_->points[i].z);
     opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
     // if successful projeciton calculate distance and fill depth image
-    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
+    uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
     float dist = beam::distance(point, origin);
-    if (dist < 6) { depth_image_->at<float>(u, v) = dist; }
+    if (dist < 10) { depth_image_->at<float>(row, col) = dist; }
   }
   depth_image_extracted_ = true;
   int num_extracted = 0;

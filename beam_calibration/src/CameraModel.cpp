@@ -94,17 +94,15 @@ CameraType CameraModel::GetType() const {
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
-  int max_width = image_width_, max_height = image_height_;
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > max_width ||
-      pixel[1] > max_height)
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > image_width_ - 1 ||
+      pixel[1] > image_height_ - 1)
     return false;
   return true;
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
-  double max_width = image_width_, max_height = image_height_;
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > max_width ||
-      pixel[1] > max_height)
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > image_width_ - 1 ||
+      pixel[1] > image_height_ - 1)
     return false;
   return true;
 }
