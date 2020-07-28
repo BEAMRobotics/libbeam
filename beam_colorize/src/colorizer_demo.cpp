@@ -31,18 +31,15 @@ int main(int argc, char* argv[]) {
 
       // load point cloud and camera intrinsics
       std::string intrinsics_loc = cur_dir + "camera0.json";
-      // std::string intrinsics_loc = "/home/jake/data/F1.json";
       std::shared_ptr<beam_calibration::CameraModel> model =
           std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(
           new pcl::PointCloud<pcl::PointXYZ>);
       std::string cloud_loc = cur_dir + "259_map.pcd";
-      // std::string cloud_loc = "/home/jake/data/204_cloud.pcd";
       pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *cloud);
 
       // load Image
       std::string image_location = cur_dir + "259_mask.jpg";
-      // std::string image_location = "/home/jake/data/image204.jpg";
       cv::Mat image;
       image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
       if (!image.data) {
