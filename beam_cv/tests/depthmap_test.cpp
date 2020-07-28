@@ -34,15 +34,23 @@ TEST_CASE("Test Depth map extractor.") {
   std::string cur_location = __FILE__;
   cur_location.erase(cur_location.end() - 23, cur_location.end());
   cur_location += "tests/test_data/";
-  std::string intrinsics_loc = cur_location + "F1.json";
+  std::string intrinsics_loc = cur_location + "F2.json";
   // load other objects
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
+  pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "259_map.pcd", *cloud);
   // test method exception throwing
   beam_cv::DepthMap dm(F1, cloud);
-  int low_density = dm.ExtractDepthMap(0.02, 3);
-  int high_density = dm.ExtractDepthMap(0.1, 20);
-  REQUIRE(low_density < high_density);
+  dm.ExtractDepthMap(0.1, 1);
+  int num_out = 0;
+  cv::Mat depth = dm.GetDepthImage();
+  cv::Mat img = cv::imread(cur_location + "259_mask.jpg", cv::IMREAD_GRAYSCALE);
+  for (int row = 0; row < depth.rows; row++) {
+    for (int col = 0; col < depth.cols; col++) {
+      float distance = depth.at<float>(row, col);
+      if (distance > 0.001 && img.at<uint8_t>(row, col) == 0) { num_out++; }
+    }
+  }
+  REQUIRE(num_out < 200);
 }

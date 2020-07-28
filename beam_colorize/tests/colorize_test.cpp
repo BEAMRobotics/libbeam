@@ -28,10 +28,10 @@ void LoadColorizer(beam_colorize::ColorizerType type) {
   camera_model_ =
       std::make_shared<beam_calibration::Radtan>(intrinsics_location);
   // load point cloud
-  std::string cloud_location = cur_dir + "test_data/test1/101_map.pcd";
+  std::string cloud_location = cur_dir + "test_data/259_map.pcd";
   pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_location, *cloud_);
   // load image
-  std::string image_location = cur_dir + "test_data/test1/101_mask.jpg";
+  std::string image_location = cur_dir + "test_data/259_mask.jpg";
   image_ = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
   // init variables
   bool image_distorted = true;
@@ -58,7 +58,7 @@ TEST_CASE("Test correct projection colorization") {
       if (r != 254) { non_red++; }
     }
   }
-  REQUIRE(non_red < 80);
+  REQUIRE(non_red < 300);
   INFO(non_red);
 }
 
@@ -79,7 +79,7 @@ TEST_CASE("Test correct raytrace colorization") {
       if (r != 254) { non_red++; }
     }
   }
-  REQUIRE(non_red < 30);
+  REQUIRE(non_red < 300);
   INFO(non_red);
 }
 
@@ -110,10 +110,10 @@ TEST_CASE("Test setter functions") {
   // load pcd file
   pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud(
       new pcl::PointCloud<pcl::PointXYZ>);
-  std::string cloud_loc = cur_dir + "test1/101_map.pcd";
+  std::string cloud_loc = cur_dir + "259_map.pcd";
   pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *XYZ_cloud);
   // load Image
-  std::string image_location = cur_dir + "test1/101_mask.jpg";
+  std::string image_location = cur_dir + "259_mask.jpg";
   cv::Mat image;
   image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
 

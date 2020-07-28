@@ -55,6 +55,7 @@ public:
    * @param point 3d point to be projected [x,y,z]^T
    * @param pixel reference to an optional vector with image coordinates after
    * point has been projected into the image plane [u,v]^T
+   * [u = col, v = row]
    */
   virtual opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) = 0;
 
@@ -74,7 +75,7 @@ public:
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
-   * @param point [u,v]
+   * @param point [u = col, v = row]
    */
   virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
 

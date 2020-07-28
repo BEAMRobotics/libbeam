@@ -22,11 +22,11 @@ void RayCast(std::shared_ptr<cv::Mat> image,
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
     (void)pixel;
-    int u = position[0], v = position[1];
-    if (hit_mask.at<cv::Vec3b>(u, v).val[0] == 255) {
+    int row = position[0], col = position[1];
+    if (hit_mask.at<cv::Vec3b>(row, col).val[0] == 255) {
       Eigen::Vector3d ray(0, 0, 0);
       // get direction vector
-      Eigen::Vector2i input_point(u, v);
+      Eigen::Vector2i input_point(col, row);
       opt<Eigen::Vector3d> point = model->BackProject(input_point);
       if (!point.has_value()) { return; }
       // while loop to ray trace
@@ -72,11 +72,11 @@ void RayCast(std::shared_ptr<cv::Mat> image,
   /// Compute depth image with point cloud
   image->forEach<float>([&](float& pixel, const int* position) -> void {
     (void)pixel;
-    int u = position[0], v = position[1];
-    if (hit_mask.at<cv::Vec3b>(u, v).val[0] == 255) {
+    int row = position[0], col = position[1];
+    if (hit_mask.at<cv::Vec3b>(row, col).val[0] == 255) {
       Eigen::Vector3d ray(0, 0, 0);
       // get direction vector
-      Eigen::Vector2i input_point(u, v);
+      Eigen::Vector2i input_point(col, row);
       opt<Eigen::Vector3d> point = model->BackProject(input_point);
       if (!point.has_value()) { return; }
       // while loop to ray trace
@@ -121,8 +121,8 @@ cv::Mat CreateHitMask(int mask_size,
     point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
     opt<Eigen::Vector2i> coords = model->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
-    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
-    tmp.at<cv::Vec3b>(u, v).val[0] = 255;
+    uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
+    tmp.at<cv::Vec3b>(row, col).val[0] = 255;
   }
   cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
              cv::Point(-1, -1), 1, 1, 1);
@@ -141,8 +141,8 @@ cv::Mat CreateHitMask(int mask_size,
     point << cloud->points[i].x, cloud->points[i].y, cloud->points[i].z;
     opt<Eigen::Vector2i> coords = model->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
-    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
-    tmp.at<cv::Vec3b>(u, v).val[0] = 255;
+    uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
+    tmp.at<cv::Vec3b>(row, col).val[0] = 255;
   }
   cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
              cv::Point(-1, -1), 1, 1, 1);
