@@ -1,7 +1,7 @@
 #include <opencv/cv.h>
 
-#include "beam_cv/DepthCompletion.h"
-#include "beam_cv/DepthMap.h"
+#include "beam_depth/DepthCompletion.h"
+#include "beam_depth/DepthMap.h"
 #include "beam_utils/math.hpp"
 
 #include <dirent.h>
@@ -12,7 +12,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
   if (argc < 4 || argc > 4) {
     std::cout
-        << "Usage: ./beam_cv_kitti [current drive] [kitti folder location] "
+        << "Usage: ./beam_depth_kitti [current drive] [kitti folder location] "
            "[image_02 or image_01]"
         << std::endl;
   } else {
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
           Mat depth_img;
           Mat depth = imread(depth_image_path, IMREAD_GRAYSCALE);
           depth.convertTo(depth_img, CV_32F);
-          beam_cv::MultiscaleInterpolation(depth_img);
+          beam_depth::MultiscaleInterpolation(depth_img);
           std::string output_location = prediction_dir + depth_image_name;
           imwrite(output_location, depth_img);
         }

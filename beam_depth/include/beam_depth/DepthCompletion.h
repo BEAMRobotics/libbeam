@@ -1,11 +1,11 @@
 /** @file
- * @ingroup cv
+ * @ingroup depth
  */
 
 #pragma once
 #include <opencv2/opencv.hpp>
 
-namespace beam_cv {
+namespace beam_depth {
 
 /**
  * @brief Applies a cross shaped window to each valid depth pixel. Searches for
@@ -55,4 +55,4 @@ void IDWInterpolation(cv::Mat& depth_image, int window_size);
  */
 void MultiscaleInterpolation(cv::Mat& depth_image);
 
-} // namespace beam_cv
+} // namespace beam_depth

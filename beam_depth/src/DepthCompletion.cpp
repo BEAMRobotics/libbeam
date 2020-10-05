@@ -1,7 +1,7 @@
-#include "beam_cv/DepthCompletion.h"
-#include "beam_cv/Utils.h"
+#include "beam_depth/DepthCompletion.h"
+#include "beam_depth/Utils.h"
 
-namespace beam_cv {
+namespace beam_depth {
 
 void DepthInterpolation(int window_width, int window_height, float threshold,
                         cv::Mat& depth_image) {
@@ -175,12 +175,12 @@ void MultiscaleInterpolation(cv::Mat& depth_image) {
     throw std::runtime_error{"Invalid OpenCV Mat type, requires CV_32F."};
   }
   // segment into 4 channels
-  std::vector<cv::Mat> channels = beam_cv::SegmentMultiscale(depth_image);
+  std::vector<cv::Mat> channels = beam_depth::SegmentMultiscale(depth_image);
   // perform completion on each
   for (int i = 0; i < 4; i++) {
     cv::Mat dst = channels[i];
-    beam_cv::DepthInterpolation(21, 21, 5, channels[i]);
-    beam_cv::DepthInterpolation(15, 15, 5, channels[i]);
+    beam_depth::DepthInterpolation(21, 21, 5, channels[i]);
+    beam_depth::DepthInterpolation(15, 15, 5, channels[i]);
     cv::Mat diamondKernel5 = beam::GetEllipseKernel(5);
     diamondKernel5.at<uchar>(1, 0) = 0;
     diamondKernel5.at<uchar>(1, 4) = 0;
@@ -227,4 +227,4 @@ void MultiscaleInterpolation(cv::Mat& depth_image) {
   });
 }
 
-} // namespace beam_cv
+} // namespace beam_depth

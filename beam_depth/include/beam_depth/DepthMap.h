@@ -1,5 +1,5 @@
 /** @file
- * @ingroup cv
+ * @ingroup depth
  */
 
 #pragma once
@@ -11,7 +11,7 @@
 
 #include <beam_calibration/CameraModel.h>
 
-namespace beam_cv {
+namespace beam_depth {
 
 class DepthMap {
 public:
@@ -98,7 +98,7 @@ public:
    * @param pixel u,v pixel of image
    * @return x,y,z coordinates
    */
-  Eigen::Vector3d GetXYZ(const Eigen::Vector2i &pixel);
+  Eigen::Vector3d GetXYZ(const Eigen::Vector2i& pixel);
 
   /**
    * @brief returns distance in world between two pixels in depth map
@@ -123,4 +123,4 @@ protected:
   bool point_cloud_initialized_ = false, model_initialized_ = false,
        depth_image_extracted_ = false;
 };
-} // namespace beam_cv
+} // namespace beam_depth

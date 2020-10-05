@@ -1,9 +1,9 @@
-#include <beam_cv/DepthMap.h>
+#include <beam_depth/DepthMap.h>
 
 #include <pcl/io/pcd_io.h>
 
 #include <beam_cv/RayCast.h>
-#include <beam_cv/Utils.h>
+#include <beam_depth/Utils.h>
 #include <beam_utils/math.hpp>
 
 // TODO: Why is this outside the namespace?
@@ -15,7 +15,7 @@ void HitBehaviour(std::shared_ptr<cv::Mat> image,
       beam::distance(cloud->points[index], origin);
 }
 
-namespace beam_cv {
+namespace beam_depth {
 
 DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
                    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input) {
@@ -126,7 +126,7 @@ bool DepthMap::CheckState() {
 Eigen::Vector3d DepthMap::GetXYZ(const Eigen::Vector2i& pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    Eigen::Vector2i c = beam_cv::FindClosest(pixel, *depth_image_);
+    Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
@@ -148,7 +148,7 @@ float DepthMap::GetDistance(const Eigen::Vector2i& p1,
 float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    Eigen::Vector2i c = beam_cv::FindClosest(pixel, *depth_image_);
+    Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   Eigen::Vector2i left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
@@ -215,4 +215,4 @@ void DepthMap::SetCameraModel(
   model_initialized_ = true;
 }
 
-} // namespace beam_cv
+} // namespace beam_depth
