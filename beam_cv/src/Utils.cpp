@@ -6,26 +6,6 @@
 
 namespace beam_cv {
 
-cv::Mat VisualizeDepthImage(const cv::Mat& input) {
-  cv::Mat image = input.clone();
-  float max_depth = 0;
-  image.forEach<float>([&](float& distance, const int* position) -> void {
-    (void)position;
-    if (distance > max_depth) { max_depth = distance; }
-  });
-
-  int scale = 255 / max_depth;
-  cv::Mat gs_depth;
-  image.convertTo(gs_depth, CV_8UC1);
-
-  image.forEach<float>([&](float& distance, const int* position) -> void {
-    uint8_t pixel_value = (scale * distance);
-    gs_depth.at<uchar>(position[0], position[1]) = pixel_value;
-  });
-  applyColorMap(gs_depth, gs_depth, cv::COLORMAP_JET);
-  return gs_depth;
-}
-
 cv::Mat AdaptiveHistogram(const cv::Mat& input) {
   cv::Mat lab_image;
   cv::cvtColor(input, lab_image, CV_BGR2Lab);
@@ -179,12 +159,6 @@ std::map<int, std::vector<cv::Point2i>>
   return sets;
 }
 
-double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
-  double distance =
-      sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
-  return distance;
-}
-
 Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
                             const cv::Mat& depth_image) {
   cv::Point2i sp(search_pixel[0], search_pixel[1]);
@@ -193,7 +167,8 @@ Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
   depth_image.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
     if (pixel > 0) {
       cv::Point2i p(position[0], position[1]);
-      double d = PixelDistance(sp, p);
+      double d =
+          sqrt((sp.x - p.x) * (sp.x - p.x) + (sp.y - p.y) * (sp.y - p.y));
       distances.push_back(d);
       pixels.push_back(p);
     }

@@ -1,5 +1,5 @@
 /** @file
- * @ingroup cv
+ * @ingroup utils
  */
 
 #pragma once
@@ -10,6 +10,10 @@ using namespace std;
 
 namespace beam {
 
+/**
+ * @brief This class provides a simple yet efficient Union-Find data structure
+ * which is helpful in finding disjoint sets in various datasets
+ */
 class UF {
 public:
   /**
