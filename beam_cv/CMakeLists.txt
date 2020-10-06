@@ -15,7 +15,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ############# Test files #############
-
 add_executable(${PROJECT_NAME}_utils_tests
   tests/utils_test.cpp
 )
