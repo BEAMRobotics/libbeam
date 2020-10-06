@@ -1,0 +1,3 @@
+# beam_cv/geometry
+
+This submodule should contain implementations of various geometric computer vision algorithms: P3P, GP3P, 5/6/7/8-point algorithm, point triangulation, epipolar geometry calculations etc...
