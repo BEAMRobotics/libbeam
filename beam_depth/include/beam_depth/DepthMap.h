@@ -76,9 +76,10 @@ public:
   /**
    * @brief Computes the depth image based on the given point cloud and image
    * using projection over ray casting
+   * @param thresh depth threshold to limit points being projected
    * @return number of points extracted
    */
-  int ExtractDepthMapProjection();
+  int ExtractDepthMapProjection(float thresh);
 
   /*
    * @brief Creates point cloud from interpolated depth image
@@ -114,6 +115,13 @@ public:
    * @return float
    */
   float GetPixelScale(const Eigen::Vector2i& pixel);
+
+  /**
+   * @brief returns area of a pixel in world scale
+   * @param pixel
+   * @return float
+   */
+  void Subsample(const float percentage_drop);
 
 protected:
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_;

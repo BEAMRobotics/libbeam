@@ -55,7 +55,7 @@ int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
   return num_extracted;
 }
 
-int DepthMap::ExtractDepthMapProjection() {
+int DepthMap::ExtractDepthMapProjection(float thresh) {
   // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
                                            model_->GetWidth(), CV_32FC1);
@@ -68,7 +68,11 @@ int DepthMap::ExtractDepthMapProjection() {
     // if successful projeciton calculate distance and fill depth image
     uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
     float dist = beam::distance(point, origin);
-    if (dist < 10) { depth_image_->at<float>(row, col) = dist; }
+    if ((depth_image_->at<float>(row, col) > dist ||
+         depth_image_->at<float>(row, col) > dist) &&
+        dist < thresh) {
+      depth_image_->at<float>(row, col) = dist;
+    }
   }
   depth_image_extracted_ = true;
   int num_extracted = 0;
@@ -164,6 +168,39 @@ float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
   float area = beam::distance(coords_left, coords_right) *
                beam::distance(coords_left, coords_right);
   return area;
+}
+
+void DepthMap::Subsample(const float percentage_keep) {
+  int gcd = beam::gcd(depth_image_->rows, depth_image_->cols);
+  BEAM_INFO("Subsample window size: {}", gcd);
+  for (int row = 0; row < depth_image_->rows; row++) {
+    for (int col = 0; col < depth_image_->cols; col++) {
+      if (row % gcd == 0 && col % gcd == 0) {
+        // valid window start position
+        std::vector<std::tuple<float, cv::Point2i>> window_depths;
+        for (int window_row = row; window_row <= row + gcd; window_row++) {
+          for (int window_col = col; window_col <= col + gcd; window_col++) {
+            cv::Point2i p(window_row, window_col);
+            float depth = depth_image_->at<float>(window_row, window_col);
+            if (depth != 0) {
+              window_depths.push_back(std::make_tuple(depth, p));
+            }
+          }
+        }
+
+        int step = 1 / percentage_keep;
+        int count = 0;
+        for (int i = 0; i < window_depths.size(); i += step) {
+          if (i % step != 0) {
+            cv::Point2i p = std::get<1>(window_depths[i]);
+            depth_image_->at<float>(p.x, p.y) = 0;
+            count++;
+          }
+        }
+        BEAM_DEBUG("Points dropped in window: {}", count);
+      }
+    }
+  }
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::GetCloud() {

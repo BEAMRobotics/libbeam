@@ -10,10 +10,10 @@
 #pragma once
 
 #include <beam_utils/time.hpp>
+#include <fstream>
 #include <nlohmann/json.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-#include <fstream>
 
 namespace beam_containers {
 /** @addtogroup containers
@@ -39,29 +39,28 @@ public:
    * @return is_bgr_image_set_
    */
 
-  bool IsBGRImageSet(){return is_bgr_image_set_;}
+  bool IsBGRImageSet() { return is_bgr_image_set_; }
 
   /**
    * @brief Method getting whether or not the BGR mask has been set
    * @param is_bgr_mask_set_
    */
 
-  bool IsBGRMaskSet(){return is_bgr_mask_set_;}
+  bool IsBGRMaskSet() { return is_bgr_mask_set_; }
 
   /**
    * @brief Method getting whether or not the IR image has been set
    * @return is_ir_image_set_
    */
 
-  bool IsIRImageSet(){return is_ir_image_set_;}
+  bool IsIRImageSet() { return is_ir_image_set_; }
 
   /**
    * @brief Method getting whether or not the IR mask has been set
    * @param is_ir_mask_set_
    */
 
-  bool IsIRMaskSet(){return is_ir_mask_set_;}
-
+  bool IsIRMaskSet() { return is_ir_mask_set_; }
 
   /**
    * @brief Method for setting the BGR image to the container
@@ -82,8 +81,8 @@ public:
   /**
    * @brief Method for setting the BGR mask to the container
    * @param bgr_mask Image mask with one "grayscale" field. For this class,
-   * values of 0, 1, 2 and 3 correspond to no defect, crack, spall and
-   * corrosion staining, respectively.
+   * values of 0, 1, 2, 3 and 4 correspond to no defect, crack, delamination,
+   * corrosion and spall, respectively.
    */
   void SetBGRMask(cv::Mat& bgr_mask) {
     bgr_mask_ = bgr_mask;
