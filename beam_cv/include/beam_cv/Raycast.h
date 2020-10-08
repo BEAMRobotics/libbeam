@@ -41,11 +41,10 @@ public:
   void Execute(int dilation, float threshold, func behaviour) {
     BEAM_INFO("Performing ray casting.");
     cv::Mat hit_mask = CreateHitMask(dilation);
-    /// create image with 3 channels for coordinates
     PointType origin(0, 0, 0);
     pcl::KdTreeFLANN<PointType> kdtree;
     kdtree.setInputCloud(cloud_);
-    /// Compute depth image with point cloud
+    // cast ray for every pixel
     image_->forEach<float>([&](float& pixel, const int* position) -> void {
       (void)pixel;
       int row = position[0], col = position[1];
@@ -68,7 +67,7 @@ public:
           std::vector<float> point_distance(1);
           kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
           float distance = sqrt(point_distance[0]);
-          // if the point is within 1cm then color it appropriately
+          // if the point is within threshold then call behaviour
           if (distance < threshold) {
             behaviour(image_, cloud_, position, point_idx[0]);
             break;
@@ -83,9 +82,44 @@ public:
         }
       }
     });
-    cv::Mat vis = beam_depth::VisualizeDepthImage(*image_);
-    cv::imwrite("/home/jake/depth.jpg", vis);
   }
+
+  /**
+   * @brief Cloud setter
+   * @param cloud_i cloud to set
+   * @return void
+   */
+  void SetCloud(typename pcl::PointCloud<PointType>::Ptr cloud_i) {
+    cloud_ = cloud_i;
+  }
+
+  /**
+   * @brief Camera model setter
+   * @param model_i camera model to set
+   * @return void
+   */
+  void SetCameraModel(std::shared_ptr<beam_calibration::CameraModel> model_i) {
+    model_ = model_i;
+  }
+
+  /**
+   * @brief Image setter
+   * @param image_i image to set
+   * @return void
+   */
+  void SetImage(std::shared_ptr<cv::Mat> image_i) { image_ = image_i; }
+
+  /**
+   * @brief Cloud getter
+   * @return point cloud
+   */
+  typename pcl::PointCloud<PointType>::Ptr GetCloud() { return cloud_; }
+
+  /**
+   * @brief Image getter
+   * @return image
+   */
+  std::shared_ptr<cv::Mat> GetImage() { return image_; }
 
   /**
    * @brief Default destructor

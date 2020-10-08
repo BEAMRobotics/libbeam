@@ -34,7 +34,10 @@ int main() {
                      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
                      const int* position, int index) {
                    pcl::PointXYZ origin(0, 0, 0);
-                   img->at<float>(position[0], position[1]) =
-                       beam::distance(cloud->points[index], origin);
+                   float d = beam::distance(cloud->points[index], origin);
+                   img->at<float>(position[0], position[1]) = d;
                  });
+  depth_image = caster.GetImage();
+  cv::Mat vis = beam_depth::VisualizeDepthImage(*depth_image);
+  cv::imwrite("/home/jake/depth.jpg", vis);
 }
