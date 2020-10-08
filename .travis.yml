@@ -30,6 +30,7 @@ script:
   - bash ./beam_containers/run_all_tests.bash
   - bash ./beam_cv/run_all_tests.bash
   - bash ./beam_defects/run_all_tests.bash
+  - bash ./beam_depth/run_all_tests.bash
   - bash ./beam_filtering/run_all_tests.bash
   - bash ./beam_mapping/run_all_tests.bash
   - bash ./beam_matching/run_all_tests.bash
