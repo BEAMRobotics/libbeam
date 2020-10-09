@@ -40,4 +40,7 @@ target_link_libraries(${PROJECT_NAME}_debug
   ${PROJECT_NAME}
 )
 
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
 
