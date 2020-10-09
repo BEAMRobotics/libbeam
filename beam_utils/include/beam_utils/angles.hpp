@@ -1,32 +1,49 @@
-#ifndef BEAM_UTILS_ANGLES_HPP
-#define BEAM_UTILS_ANGLES_HPP
+#pragma once
 
 #include <cmath>
 
 namespace beam {
 
-  #define DEG_TO_RAD 0.0174532925199433
-  #define RAD_TO_DEG 57.2957795130823209  
-
-/** Wraps input angle to the interval [-PI, PI).
- *
- * @param[in] angle the original angle.
+/**
+ * @Brief Wraps input angle to the interval [-PI, PI).
+ * @param angle the original angle.
  * @return the wrapped angle.
  */
-double wrapToPi(double angle);
+double WrapToPi(double angle);
 
-/** Wraps input angle to the interval [0, 2*PI).
- *
- * @param[in] angle the original angle.
+/**
+ * @Brief Wraps input angle to the interval [0, 2*PI).
+ * @param angle the original angle.
  * @return the wrapped angle.
  */
-double wrapToTwoPi(double angle);
+double WrapToTwoPi(double angle);
+
+/**
+ * @Brief Return the smallest difference between two angles. This takes into
+ * account the case where one or both angles are outside (0, 360). By smallest
+ * error, we mean for example: GetSmallestAngleErrorDeg(10, 350) = 20, not 340
+ * @param angle 1 in degrees
+ * @param angle 2 in degrees
+ * @return error in degrees
+ */
+double GetSmallestAngleErrorDeg(double angle1, double angle2);
+
+/**
+ * @Brief Return the smallest difference between two angles. This takes into
+ * account the case where one or both angles are outside (0, 2PI). By smallest
+ * error, we mean for example: GetSmallestAngleErrorDeg(0.1PI, 1.9PI) = 0.2PI,
+ * not 1.8PI
+ * @param angle 1 in radians
+ * @param angle 2 in radians
+ * @return error in radians
+ */
+double GetSmallestAngleErrorRad(double angle1, double angle2);
 
 /** Converts degrees to radians. */
-double deg2rad(double d);
+double Deg2Rad(double d);
 
 /** Converts radians to degrees. */
-double rad2deg(double r);
+double Rad2Deg(double r);
 
 /** Wraps `euler_angle` to 180 degrees **/
 double wrapTo180(double euler_angle);
@@ -34,5 +51,4 @@ double wrapTo180(double euler_angle);
 /** Wraps `euler_angle` to 360 degrees **/
 double wrapTo360(double euler_angle);
 
-}  // namespace beam
-#endif  // BEAM_UTILS_ANGLES_HPP
+} // namespace beam
