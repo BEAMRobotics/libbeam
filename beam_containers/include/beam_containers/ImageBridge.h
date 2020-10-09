@@ -82,8 +82,8 @@ public:
   /**
    * @brief Method for setting the BGR mask to the container
    * @param bgr_mask Image mask with one "grayscale" field. For this class,
-   * values of 0, 1, 2 and 3 correspond to no defect, crack, spall and
-   * corrosion staining, respectively.
+   * values of 0, 1, 2, 3 and 4 correspond to no defect, crack, delamination, 
+   * corrosion and spall, respectively.
    */
   void SetBGRMask(cv::Mat& bgr_mask) {
     bgr_mask_ = bgr_mask;

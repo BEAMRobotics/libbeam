@@ -9,7 +9,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include "beam_calibration/CameraModel.h"
+#include <beam_calibration/CameraModel.h>
 
 namespace beam_cv {
 

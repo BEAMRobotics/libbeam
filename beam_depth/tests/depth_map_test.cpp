@@ -5,8 +5,7 @@
 #include <pcl/point_types.h>
 
 #include <beam_calibration/Radtan.h>
-#include <beam_cv/DepthMap.h>
-#include <beam_cv/Utils.h>
+#include <beam_depth/DepthMap.h>
 
 TEST_CASE("Test Constructor, Getters/Setters.") {
   // file locations
@@ -21,7 +20,7 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
   // test method exception throwing
-  beam_cv::DepthMap dm;
+  beam_depth::DepthMap dm;
   REQUIRE_THROWS(dm.ExtractDepthMap(0.03, 5));
   REQUIRE_THROWS(dm.ExtractPointCloud());
   REQUIRE_NOTHROW(dm.SetCloud(cloud));
@@ -41,7 +40,7 @@ TEST_CASE("Test Depth map extractor.") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "259_map.pcd", *cloud);
   // test method exception throwing
-  beam_cv::DepthMap dm(F1, cloud);
+  beam_depth::DepthMap dm(F1, cloud);
   dm.ExtractDepthMap(0.1, 1);
   int num_out = 0;
   cv::Mat depth = dm.GetDepthImage();
