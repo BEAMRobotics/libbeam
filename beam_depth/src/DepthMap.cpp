@@ -132,7 +132,7 @@ bool DepthMap::CheckState() {
 Eigen::Vector3d DepthMap::GetXYZ(const Eigen::Vector2i& pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    Eigen::Vector2i c = beam_cv::FindClosest(pixel, *depth_image_);
+    Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
@@ -154,7 +154,7 @@ float DepthMap::GetDistance(const Eigen::Vector2i& p1,
 float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
   float distance = depth_image_->at<float>(pixel[0], pixel[1]);
   if (distance == 0.0) {
-    Eigen::Vector2i c = beam_cv::FindClosest(pixel, *depth_image_);
+    Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   Eigen::Vector2i left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);

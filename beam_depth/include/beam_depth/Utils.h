@@ -17,6 +17,15 @@ namespace beam_depth {
 cv::Mat VisualizeDepthImage(const cv::Mat&);
 
 /**
+ * @brief returns closest non zero pixel in depth image
+ * @param search_pixel u,v search pixel
+ * @param depth_image depth image to search
+ * @return Eigen::Vector2i
+ */
+Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
+                            const cv::Mat& depth_image);
+
+/**
  * @brief Computes distance between two pixels
  * @param p1 pixel one
  * @param p2 pixel two

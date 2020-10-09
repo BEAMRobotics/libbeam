@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ./beam_cv/
+cd ./beam_depth/
 
-./beam_cv_utils_tests
-./beam_cv_depth_tests
+./beam_depth_map_tests
+./beam_depth_utils_tests
