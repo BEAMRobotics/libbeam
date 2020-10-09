@@ -2,15 +2,13 @@
  * @ingroup filtering
  */
 
-// PCL specific headers
+#pragma once
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#pragma once
-
 namespace beam_filtering {
-/** @addtogroup filtering
- *  @{ */
+/// @addtogroup filtering
 
 /**
  * @brief class for crop box filter
@@ -101,7 +99,5 @@ private:
   bool min_vec_set_ = false, max_vec_set_ = false,
        remove_outside_points_ = true;
 };
-
-/** @} group filtering */
 
 } // namespace beam_filtering
