@@ -26,6 +26,26 @@ cv::Mat VisualizeDepthImage(const cv::Mat& input) {
   return gs_depth;
 }
 
+Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
+                            const cv::Mat& depth_image) {
+  cv::Point2i sp(search_pixel[0], search_pixel[1]);
+  std::vector<double> distances;
+  std::vector<cv::Point2i> pixels;
+  depth_image.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
+    if (pixel > 0) {
+      cv::Point2i p(position[0], position[1]);
+      double d =
+          sqrt((sp.x - p.x) * (sp.x - p.x) + (sp.y - p.y) * (sp.y - p.y));
+      distances.push_back(d);
+      pixels.push_back(p);
+    }
+  });
+  int min_index =
+      std::min_element(distances.begin(), distances.end()) - distances.begin();
+  Eigen::Vector2i output(pixels[min_index].x, pixels[min_index].y);
+  return output;
+}
+
 std::vector<cv::Mat> SegmentMultiscale(const cv::Mat& depth_image) {
   float min_depth_ = 1000, max_depth_ = 0;
   depth_image.forEach<float>([&](float& distance, const int* position) -> void {

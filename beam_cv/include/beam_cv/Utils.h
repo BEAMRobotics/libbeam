@@ -57,13 +57,4 @@ std::vector<cv::Mat> SegmentComponents(const cv::Mat& image);
 std::map<int, std::vector<cv::Point2i>>
     ConnectedComponents(const cv::Mat& image);
 
-/**
- * @brief returns closest non zero pixel
- * @param search_pixel u,v search pixel
- * @param depth_image depth image to search
- * @return Eigen::Vector2i
- */
-Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
-                            const cv::Mat& depth_image);
-
 } // namespace beam_cv

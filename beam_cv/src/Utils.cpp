@@ -131,13 +131,13 @@ std::vector<cv::Mat> SegmentComponents(const cv::Mat& image) {
 std::map<int, std::vector<cv::Point2i>>
     ConnectedComponents(const cv::Mat& image) {
   auto UnionCoords = [](cv::Mat image, int x, int y, int x2, int y2,
-                        beam::UF& uf) {
+                        beam::UnionFind& uf) {
     if (y2 < image.cols && x2 < image.rows &&
         image.at<uchar>(x, y) == image.at<uchar>(x2, y2)) {
       uf.UnionSets(x * image.cols + y, x2 * image.cols + y2);
     }
   };
-  beam::UF uf;
+  beam::UnionFind uf;
   uf.Initialize(image.rows * image.cols);
   for (int x = 0; x < image.rows; x++) {
     for (int y = 0; y < image.cols; y++) {
@@ -157,26 +157,6 @@ std::map<int, std::vector<cv::Point2i>>
     }
   }
   return sets;
-}
-
-Eigen::Vector2i FindClosest(const Eigen::Vector2i& search_pixel,
-                            const cv::Mat& depth_image) {
-  cv::Point2i sp(search_pixel[0], search_pixel[1]);
-  std::vector<double> distances;
-  std::vector<cv::Point2i> pixels;
-  depth_image.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
-    if (pixel > 0) {
-      cv::Point2i p(position[0], position[1]);
-      double d =
-          sqrt((sp.x - p.x) * (sp.x - p.x) + (sp.y - p.y) * (sp.y - p.y));
-      distances.push_back(d);
-      pixels.push_back(p);
-    }
-  });
-  int min_index =
-      std::min_element(distances.begin(), distances.end()) - distances.begin();
-  Eigen::Vector2i output(pixels[min_index].x, pixels[min_index].y);
-  return output;
 }
 
 std::vector<cv::Mat> SegmentMultiscale(const cv::Mat& depth_image) {

@@ -2,19 +2,19 @@
 
 namespace beam {
 
-void UF::Initialize(int n) {
+void UnionFind::Initialize(int n) {
   for (int i = 0; i < n; i++) {
     id_.push_back(i);
     rank_.push_back(0);
   }
 }
 
-int UF::FindSet(int p) {
+int UnionFind::FindSet(int p) {
   if (p != id_[p]) { id_[p] = this->FindSet(id_[p]); }
   return id_[p];
 }
 
-void UF::UnionSets(int p, int q) {
+void UnionFind::UnionSets(int p, int q) {
   int i = this->FindSet(p);
   int j = this->FindSet(q);
   if (i != j) {

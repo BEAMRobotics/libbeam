@@ -19,7 +19,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 ############# Test files #############
 
 add_executable(${PROJECT_NAME}_map_tests
-  tests/depthmap_test.cpp
+  tests/depth_map_test.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_map_tests
@@ -27,6 +27,19 @@ target_include_directories(${PROJECT_NAME}_map_tests
     include
 )
 target_link_libraries(${PROJECT_NAME}_map_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_utils_tests
+  tests/utils_test.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_utils_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_utils_tests
   ${PROJECT_NAME}
   Catch2::Catch2
 )
@@ -41,7 +54,6 @@ target_include_directories(${PROJECT_NAME}_kitti
 target_link_libraries(${PROJECT_NAME}_kitti
   ${PROJECT_NAME}
   Eigen3::Eigen
-  ${CERES_LIBRARIES}
 )
 
 file(COPY tests/run_all_tests.bash
