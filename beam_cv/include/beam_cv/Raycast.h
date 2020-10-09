@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <beam_depth/Utils.h>
-#include <beam_utils/utils.hpp>
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <pcl/common/transforms.h>
@@ -16,6 +13,8 @@
 #include <pcl/point_types.h>
 
 #include <beam_calibration/CameraModel.h>
+#include <beam_depth/Utils.h>
+#include <beam_utils/utils.hpp>
 
 namespace beam_cv {
 
@@ -23,7 +22,7 @@ template <typename PointType>
 class Raycast {
 public:
   /**
-   * @brief Custom constructor
+   * @brief Constructor for initializing with cloud, camera model and image
    */
   Raycast(typename pcl::PointCloud<PointType>::Ptr cloud_i,
           std::shared_ptr<beam_calibration::CameraModel> model_i,
@@ -32,15 +31,15 @@ public:
 
   /**
    * @brief Performs ray casting with custom behaviour on hit
-   * @param dilation for area around point to search
    * @param threshold threshold to determine ray contact (how far between ray
    * tip and point is considered a hit in metres)
    * @param behaviour function that determines the hit behaviour
    */
   template <typename func>
-  void Execute(int dilation, float threshold, func behaviour) {
+  void Execute(float threshold, func behaviour) {
     BEAM_INFO("Performing ray casting.");
-    cv::Mat hit_mask = CreateHitMask(dilation);
+    cv::Mat1b hit_mask = this->CreateHitMask();
+    cv::imwrite("/home/jake/mask.jpg", hit_mask);
     PointType origin(0, 0, 0);
     pcl::KdTreeFLANN<PointType> kdtree;
     kdtree.setInputCloud(cloud_);
@@ -48,7 +47,7 @@ public:
     image_->forEach<float>([&](float& pixel, const int* position) -> void {
       (void)pixel;
       int row = position[0], col = position[1];
-      if (hit_mask.at<cv::Vec3b>(row, col).val[0] == 255) {
+      if (hit_mask.at<uchar>(row, col) == 255) {
         Eigen::Vector3d ray(0, 0, 0);
         // get direction vector
         Eigen::Vector2i input_point(col, row);
@@ -133,27 +132,22 @@ protected:
 
   /**
    * @brief Creates hit mask to speed up ray casting
-   * @param mask_size size of mask used for dilating hit mask
-   * @param model camera model used for projecting points
-   * @param cloud cloud to use for hit detection
    * @return cv::Mat
    */
-  cv::Mat CreateHitMask(int mask_size) {
+  cv::Mat1b CreateHitMask() {
     // create image mask where white pixels = projection hit
-    cv::Size image_s(model_->GetHeight(), model_->GetWidth());
-    cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
-    cv::Mat hit_mask;
+    cv::Mat1b image(model_->GetHeight(), model_->GetWidth());
     for (uint32_t i = 0; i < cloud_->points.size(); i++) {
-      Eigen::Vector3d point;
-      point << cloud_->points[i].x, cloud_->points[i].y, cloud_->points[i].z;
+      Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
+                            cloud_->points[i].z);
+
       opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
       if (!coords.has_value()) { continue; }
-      uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
-      tmp.at<cv::Vec3b>(row, col).val[0] = 255;
+      uint16_t col = coords.value()(0, 0);
+      uint16_t row = coords.value()(1, 0);
+      image.at<cv::Vec3b>(row, col) = 255;
     }
-    cv::dilate(tmp, hit_mask, cv::Mat(mask_size, mask_size, CV_8UC1),
-               cv::Point(-1, -1), 1, 1, 1);
-    return hit_mask;
+    return image;
   }
 };
 } // namespace beam_cv

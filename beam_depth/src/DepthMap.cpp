@@ -32,6 +32,7 @@ int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
   BEAM_INFO("Extracting Depth Image...");
   // create image mask where white pixels = projection hit
   cv::Mat hit_mask = beam_cv::CreateHitMask(mask_size, model_, cloud_);
+  cv::imwrite("/home/jake/mask2.jpg", hit_mask);
   // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
                                            model_->GetWidth(), CV_32FC1);

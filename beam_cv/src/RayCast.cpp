@@ -134,7 +134,7 @@ cv::Mat CreateHitMask(int mask_size,
                       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud) {
   // create image mask where white pixels = projection hit
   cv::Size image_s(model->GetHeight(), model->GetWidth());
-  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC3);
+  cv::Mat tmp = cv::Mat::zeros(image_s, CV_8UC1);
   cv::Mat hit_mask;
   for (uint32_t i = 0; i < cloud->points.size(); i++) {
     Eigen::Vector3d point;
