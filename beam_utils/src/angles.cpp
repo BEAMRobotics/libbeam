@@ -2,40 +2,47 @@
 
 namespace beam {
 
-double wrapToPi(double angle) {
-    double wrapped_angle = wrapToTwoPi(angle + M_PI) - M_PI;
-    return wrapped_angle;
+double WrapToPi(double angle) {
+  double wrapped_angle = WrapToTwoPi(angle + M_PI) - M_PI;
+  return wrapped_angle;
 }
 
-double wrapToTwoPi(double angle) {
-    double wrapped_angle = fmod(angle, 2 * M_PI);
-
-    if (wrapped_angle < 0) {
-        wrapped_angle += 2 * M_PI;
-    }
-
-    return wrapped_angle;
+double WrapToTwoPi(double angle) {
+  double wrapped_angle = fmod(angle, 2 * M_PI);
+  if (wrapped_angle < 0) { wrapped_angle += 2 * M_PI; }
+  return wrapped_angle;
 }
 
-double deg2rad(double d) {
-    return d * (M_PI / 180);
+double Deg2Rad(double d) {
+  return d * (M_PI / 180);
 }
 
-double rad2deg(double r) {
-    return r * (180 / M_PI);
+double Rad2Deg(double r) {
+  return r * (180 / M_PI);
 }
 
-double wrapTo180(double euler_angle) {
-    return fmod((euler_angle + 180.0), 360.0) - 180.0;
+double WrapTo180(double euler_angle) {
+  return Rad2Deg(WrapToPi(Deg2Rad(euler_angle)));
 }
 
-double wrapTo360(double euler_angle) {
-    if (euler_angle > 0) {
-        return fmod(euler_angle, 360.0);
-    } else {
-        euler_angle += 360.0;
-        return fmod(euler_angle, 360.0);
-    }
+double WrapTo360(double euler_angle) {
+  return Rad2Deg(WrapToTwoPi(Deg2Rad(euler_angle)));
 }
 
-}  // namespace beam
+double GetSmallestAngleErrorDeg(double angle1, double angle2) {
+  return Rad2Deg(GetSmallestAngleErrorRad(Deg2Rad(angle1), Deg2Rad(angle2)));
+}
+
+double GetSmallestAngleErrorRad(double angle1, double angle2) {
+  double angle1_wrapped = WrapToTwoPi(angle1);
+  double angle2_wrapped = WrapToTwoPi(angle2);
+  if (std::min(angle1_wrapped, angle2_wrapped) < M_PI / 2 &&
+      std::max(angle1_wrapped, angle2_wrapped) > 3 * M_PI / 2) {
+    return 2 * M_PI - (std::max(angle1_wrapped, angle2_wrapped) -
+                       std::min(angle1_wrapped, angle2_wrapped));
+  } else {
+    return std::max(angle1_wrapped, angle2_wrapped) -
+           std::min(angle1_wrapped, angle2_wrapped);
+  }
+}
+} // namespace beam
