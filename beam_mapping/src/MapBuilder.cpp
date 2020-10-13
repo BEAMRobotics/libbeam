@@ -201,8 +201,8 @@ void MapBuilder::OverrideOutputDir(const std::string& output_dir) {
 }
 
 void MapBuilder::LoadTrajectory(const std::string& pose_file) {
-  std::string pose_type =
-      pose_file_path_.substr(pose_file_path_.rfind("."), pose_file_path_.size());
+  std::string pose_type = pose_file_path_.substr(pose_file_path_.rfind("."),
+                                                 pose_file_path_.size());
   if (pose_type == ".json") {
     slam_poses_.LoadFromJSON(pose_file);
   } else if (pose_type == ".ply") {
@@ -218,9 +218,9 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 
   if (slam_poses_.GetBagName() != bag_file_name_) {
     BEAM_WARN("Bag file name from MapBuilder config file is not the same "
-                  "as the name listed in the pose file.\nMapBuilderConfig: "
-                  "{}\nPoseFile: {}",
-                  bag_file_name_.c_str(), slam_poses_.GetBagName().c_str());
+              "as the name listed in the pose file.\nMapBuilderConfig: "
+              "{}\nPoseFile: {}",
+              bag_file_name_.c_str(), slam_poses_.GetBagName().c_str());
     // throw std::invalid_argument{
     //     "Bag file name from MapBuilder config file is "
     //     "not the same as the name listed in the pose file."};
@@ -228,19 +228,20 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 
   extrinsics_.LoadJSON(extrinsics_file_);
 
-  if(poses_moving_frame_ == ""){
+  if (poses_moving_frame_ == "") {
     BEAM_CRITICAL("Set moving frame in map builder before building map.");
-    throw std::runtime_error{"Set moving frame in map builder before building map."};
-  } else if (poses_fixed_frame_ == ""){
+    throw std::runtime_error{
+        "Set moving frame in map builder before building map."};
+  } else if (poses_fixed_frame_ == "") {
     BEAM_CRITICAL("Set fixed frame in map builder before building map");
-    throw std::runtime_error{"Set fixed frame in map builder before building map"};
+    throw std::runtime_error{
+        "Set fixed frame in map builder before building map"};
   }
 
   int num_poses = slam_poses_.time_stamps.size();
   for (int k = 0; k < num_poses; k++) {
     trajectory_.AddTransform(slam_poses_.poses[k], poses_fixed_frame_,
-                             poses_moving_frame_,
-                             slam_poses_.time_stamps[k]);
+                             poses_moving_frame_, slam_poses_.time_stamps[k]);
   }
 }
 
@@ -255,8 +256,9 @@ PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
   return cropped_cloud;
 }
 
-PointCloud::Ptr MapBuilder::FilterPointCloud(
-    PointCloud::Ptr cloud, std::vector<FilterParamsType> filter_params) {
+PointCloud::Ptr
+    MapBuilder::FilterPointCloud(PointCloud::Ptr cloud,
+                                 std::vector<FilterParamsType> filter_params) {
   PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>(*cloud);
   for (uint8_t i = 0; i < filter_params.size(); i++) {
     PointCloud::Ptr input_cloud =
@@ -310,8 +312,7 @@ bool MapBuilder::CheckPoseChange() {
                   (scan_pose_last_(2, 3) - scan_pose_current_(2, 3)) *
                       (scan_pose_last_(2, 3) - scan_pose_current_(2, 3));
 
-  double minRotSq =
-      min_rotation_deg_ * DEG_TO_RAD * min_rotation_deg_ * DEG_TO_RAD;
+  double minRotSq = beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
   Eigen::Vector3d eps1, eps2, diffSq;
   eps1 = beam::RToLieAlgebra(scan_pose_last_.rotation());
   eps2 = beam::RToLieAlgebra(scan_pose_current_.rotation());
@@ -386,7 +387,8 @@ void MapBuilder::LoadScans(uint8_t lidar_number) {
     output_message += std::to_string(lidar_number + 1);
     beam::OutputPercentComplete(message_counter, total_messages,
                                 output_message);
-    ProcessPointCloudMsg(iter, lidar_number);  }
+    ProcessPointCloudMsg(iter, lidar_number);
+  }
 }
 
 void MapBuilder::GenerateMap(uint8_t lidar_number) {
@@ -410,11 +412,8 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
 
     // get the transforms we will need:
     T_FIXED_MOVING = interpolated_poses_.poses[k];
-    T_FIXED_LIDAR =
-        T_FIXED_MOVING * T_MOVING_LIDAR;
-    if(intermediary_size == 1){
-      T_FIXED_INT = T_FIXED_LIDAR;
-    }
+    T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
+    if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
     T_INT_LIDAR = T_FIXED_INT.inverse() * T_FIXED_LIDAR;
 
     PointCloud::Ptr scan_intermediate_frame = boost::make_shared<PointCloud>();
@@ -422,10 +421,12 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
     pcl::transformPointCloud(*scans_[k], *scan_intermediate_frame, T_INT_LIDAR);
     *scan_intermediary += *scan_intermediate_frame;
 
-    if (intermediary_size == this->intermediary_map_size_ || k == scans_.size()){
+    if (intermediary_size == this->intermediary_map_size_ ||
+        k == scans_.size()) {
       *scan_intermediate_frame =
           *this->FilterPointCloud(scan_intermediary, intermediary_filters_);
-      pcl::transformPointCloud(*scan_intermediate_frame, *intermediary_transformed, T_FIXED_INT);
+      pcl::transformPointCloud(*scan_intermediate_frame,
+                               *intermediary_transformed, T_FIXED_INT);
       *scan_aggregate += *intermediary_transformed;
       scan_intermediary->clear();
       intermediary_size = 0;
@@ -455,19 +456,19 @@ void MapBuilder::SaveMaps() {
   }
 }
 
-void MapBuilder::SetPosesMovingFrame(std::string& moving_frame){
+void MapBuilder::SetPosesMovingFrame(std::string& moving_frame) {
   poses_moving_frame_ = moving_frame;
 }
 
-std::string MapBuilder::GetPosesMovingFrame(){
+std::string MapBuilder::GetPosesMovingFrame() {
   return poses_moving_frame_;
 }
 
-void MapBuilder::SetPosesFixedFrame(std::string& fixed_frame){
+void MapBuilder::SetPosesFixedFrame(std::string& fixed_frame) {
   poses_fixed_frame_ = fixed_frame;
 }
 
-std::string MapBuilder::GetPosesFixedFrame(){
+std::string MapBuilder::GetPosesFixedFrame() {
   return poses_fixed_frame_;
 }
 
