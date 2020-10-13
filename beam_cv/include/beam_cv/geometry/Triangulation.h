@@ -44,10 +44,10 @@ public:
   /**
    * @brief Triangulates list of corresponding points in each camera model
    */
-  static opt<std::vector<Eigen::Vector3d>> TriangulatePoints(
+  static std::vector<opt<Eigen::Vector3d>> TriangulatePoints(
       std::shared_ptr<beam_calibration::CameraModel> camR,
-      std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::Affine3d Pr,
-      Eigen::Affine3d Pc,
+      std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::Matrix4d Pr,
+      Eigen::Matrix4d Pc,
       std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i>> points);
 };
 

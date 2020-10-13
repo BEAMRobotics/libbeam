@@ -9,7 +9,7 @@ namespace beam_cv {
 /**
  * @brief static class implementing the 8 point algorithm with ransac
  */
-class EightPoint {
+class PoseEstimator {
 public:
 protected:
 };
