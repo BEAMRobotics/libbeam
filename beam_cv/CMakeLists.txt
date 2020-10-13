@@ -12,6 +12,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Utils.cpp
     src/RayCast.cpp
+    src/geometry/Triangulation.cpp
 )
 
 ############# Test files #############
@@ -26,6 +27,17 @@ target_include_directories(${PROJECT_NAME}_utils_tests
 target_link_libraries(${PROJECT_NAME}_utils_tests
   ${PROJECT_NAME}
   Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_debug
+  tests/debug.cpp
+)
+target_include_directories(${PROJECT_NAME}_debug
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_debug
+  ${PROJECT_NAME}
 )
 
 file(COPY tests/run_all_tests.bash
