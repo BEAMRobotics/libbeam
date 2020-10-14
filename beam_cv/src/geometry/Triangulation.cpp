@@ -36,7 +36,7 @@ std::vector<opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     Eigen::Matrix4d Pc,
     std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i>> points) {
   std::vector<opt<Eigen::Vector3d>> result_pts3d;
-  for (int i = 0; i < points.size(); i++) {
+  for (uint32_t i = 0; i < points.size(); i++) {
     std::tuple pair = points[i];
     Eigen::Vector2i pr = std::get<0>(pair);
     Eigen::Vector2i pc = std::get<1>(pair);

@@ -22,16 +22,6 @@ namespace beam_cv {
 class Triangulation {
 public:
   /**
-   * @brief Default constructor
-   */
-  Triangulation() = default;
-
-  /**
-   * @brief Default destructor
-   */
-  ~Triangulation() = default;
-
-  /**
    * @brief Triangulates single point given two camera models and corresponding
    * pixel locations
    * @param camR camera model for image 1
