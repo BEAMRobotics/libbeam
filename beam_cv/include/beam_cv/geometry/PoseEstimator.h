@@ -4,6 +4,11 @@
 
 #pragma once
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
+#include <beam_calibration/CameraModel.h>
+
 namespace beam_cv {
 
 /**
@@ -11,7 +16,15 @@ namespace beam_cv {
  */
 class PoseEstimator {
 public:
-protected:
+  /**
+   * @brief Default constructor
+   */
+  PoseEstimator() = default;
+
+  /**
+   * @brief Default destructor
+   */
+  ~PoseEstimator() = default;
 };
 
 } // namespace beam_cv

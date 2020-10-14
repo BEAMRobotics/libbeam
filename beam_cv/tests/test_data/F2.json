@@ -1,0 +1,18 @@
+{
+  "date": "2018_12_20",
+  "method": "matlab",
+  "camera_type": "RADTAN",
+  "image_width": 480,
+  "image_height": 640,
+  "frame_id": "F2_link",
+  "intrinsics": [
+    719.5459,
+    719.5459,
+    240,
+    320,
+    0,
+    0,
+    0,
+    0
+  ]
+}

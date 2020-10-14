@@ -16,8 +16,10 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::Vector4d Pr1 = Pr.row(0), Pr2 = Pr.row(1), Pr3 = Pr.row(2);
   Eigen::Vector4d Pc1 = Pc.row(0), Pc2 = Pc.row(1), Pc3 = Pc.row(2);
   Eigen::Matrix4d A;
-  A << (mxr * Pr3) - (mzr * Pr1), (myr * Pr3) - (mzr * Pr2),
-      (mxc * Pc3) - (mzc * Pc1), (myc * Pc3) - (mzc * Pc2);
+  A.row(0) = (mxr * Pr3) - (mzr * Pr1);
+  A.row(1) = (myr * Pr3) - (mzr * Pr2);
+  A.row(2) = (mxc * Pc3) - (mzc * Pc1);
+  A.row(3) = (myc * Pc3) - (mzc * Pc2);
   /* Solve the system by finding the right nullspace of A using the SVD
   decomposition*/
   Eigen::Vector4d x;
@@ -34,7 +36,7 @@ std::vector<opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     Eigen::Matrix4d Pc,
     std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i>> points) {
   std::vector<opt<Eigen::Vector3d>> result_pts3d;
-  for (int i = 0; i < points.length(); i++) {
+  for (int i = 0; i < points.size(); i++) {
     std::tuple pair = points[i];
     Eigen::Vector2i pr = std::get<0>(pair);
     Eigen::Vector2i pc = std::get<1>(pair);
