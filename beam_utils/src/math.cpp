@@ -84,6 +84,28 @@ void mat2vec(MatX A, std::vector<double>& x) {
   }
 }
 
+void vec2mat(VecX x, int rows, int cols, MatX& y) {
+  int idx;
+  // setup
+  idx = 0;
+  y.resize(rows, cols);
+
+  // load matrix
+  for (int i = 0; i < cols; i++) {
+    for (int j = 0; j < rows; j++) {
+      y(j, i) = x[idx];
+      idx++;
+    }
+  }
+}
+
+void mat2vec(MatX A, VecX& x) {
+  x.resize(A.rows() * A.cols());
+  for (int i = 0; i < A.cols(); i++) {
+    for (int j = 0; j < A.rows(); j++) { x[i * j] = A(j, i); }
+  }
+}
+
 int euler2rot(Vec3 euler, int euler_seq, Mat3& R) {
   double R11, R12, R13, R21, R22, R23, R31, R32, R33;
   double phi, theta, psi;
@@ -346,6 +368,16 @@ bool IsRotationMatrix(Eigen::Matrix3d R) {
   } else {
     return 0;
   }
+}
+
+Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B) {
+  const int m = A.rows(), n = A.cols();
+  const int p = B.rows(), q = B.cols();
+  Eigen::MatrixXd C(p * m, q * n);
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) { C.block(i * p, j * q, p, q) = A(i, j) * B; }
+  }
+  return C;
 }
 
 Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d R) {

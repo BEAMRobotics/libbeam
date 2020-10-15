@@ -134,6 +134,12 @@ void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
 /** Reshapes a matrix to a vector*/
 void mat2vec(MatX A, std::vector<double>& x);
 
+/** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
+void vec2mat(VecX x, int rows, int cols, MatX& y);
+
+/** Reshapes a matrix to a vector*/
+void mat2vec(MatX A, VecX& x);
+
 /** Convert euler angle to rotation matrix **/
 int euler2rot(Vec3 euler, int euler_seq, Mat3& R);
 
@@ -182,6 +188,14 @@ bool IsTransformationMatrix(Eigen::Matrix4d T);
  * @param R rotation matrix
  **/
 bool IsRotationMatrix(Eigen::Matrix3d R);
+
+/**
+ * @brief Computes kronecker product in brute force manner
+ * @param A n x m input matrix
+ * @param B p x q input matrix
+ * @return pm x qn matrix
+ **/
+Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B);
 
 /**
  * @brief Convert from rotation matrix to its associated Lie Algebra

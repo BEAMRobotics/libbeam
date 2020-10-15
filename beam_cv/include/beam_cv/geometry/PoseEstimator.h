@@ -5,12 +5,13 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <Eigen/Geometry>
 
 #include <beam_calibration/CameraModel.h>
 
-namespace beam_cv {
+template <class T>
+using opt = std::optional<T>;
 
+namespace beam_cv {
 /**
  * @brief static class implementing various pose estimation algorithms
  */
@@ -23,10 +24,10 @@ public:
    * @param xs corresponding pixels in image 1 (min 8)
    * @param xss corresponding pixels in image 2 (min 8)
    */
-  static Eigen::Matrix3d
+  static opt<Eigen::Matrix3d>
       EssentialMatrix8Point(std::shared_ptr<beam_calibration::CameraModel> camR,
                             std::shared_ptr<beam_calibration::CameraModel> camC,
-                            Eigen::MatrixXd xs, Eigen::MatrixXd xss);
+                            Eigen::MatrixXi xs, Eigen::MatrixXi xss);
 
   /**
    * @brief Computes the transformation matrix given essential matrix

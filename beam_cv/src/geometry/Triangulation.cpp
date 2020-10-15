@@ -1,11 +1,14 @@
 #include "beam_cv/geometry/Triangulation.h"
 
+#include <Eigen/Geometry>
+
 namespace beam_cv {
 
 opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::Matrix4d Pr,
     Eigen::Matrix4d Pc, Eigen::Vector2i pr, Eigen::Vector2i pc) {
+  // we triangulate back projected points to be camera model invariant
   opt<Eigen::Vector3d> mr = camR->BackProject(pr);
   opt<Eigen::Vector3d> mc = camC->BackProject(pc);
   if (!mr.has_value() || !mc.has_value()) { return {}; }
@@ -35,6 +38,7 @@ std::vector<opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::Matrix4d Pr,
     Eigen::Matrix4d Pc,
     std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i>> points) {
+  // loop through point vector and perform single point triangulation
   std::vector<opt<Eigen::Vector3d>> result_pts3d;
   for (uint32_t i = 0; i < points.size(); i++) {
     std::tuple pair = points[i];

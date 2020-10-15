@@ -4,12 +4,11 @@
 
 #pragma once
 
+#include <optional>
+
 #include <Eigen/Dense>
-#include <Eigen/Geometry>
 
 #include <beam_calibration/CameraModel.h>
-
-#include <optional>
 
 template <class T>
 using opt = std::optional<T>;
