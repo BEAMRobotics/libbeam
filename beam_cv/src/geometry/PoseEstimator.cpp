@@ -56,6 +56,11 @@ opt<Eigen::Matrix3d> PoseEstimator::EssentialMatrix8Point(
   return E;
 }
 
+opt<Eigen::Matrix3d> PoseEstimator::RANSACEstimator(
+    std::shared_ptr<beam_calibration::CameraModel> camR,
+    std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::MatrixXi xs,
+    Eigen::MatrixXi xss, EstimatorMethod method) {}
+
 void PoseEstimator::RtFromE(Eigen::Matrix3d E, std::vector<Eigen::Matrix3d>& R,
                             std::vector<Eigen::Vector3d>& t) {
   // decompose E into 4 possibilities

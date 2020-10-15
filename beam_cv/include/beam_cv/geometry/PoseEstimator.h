@@ -12,6 +12,9 @@ template <class T>
 using opt = std::optional<T>;
 
 namespace beam_cv {
+
+enum class EstimatorMethod { EIGHTPOINT = 0, SEVENPOINT, FIVEPOINT };
+
 /**
  * @brief static class implementing various pose estimation algorithms
  */
@@ -28,6 +31,19 @@ public:
       EssentialMatrix8Point(std::shared_ptr<beam_calibration::CameraModel> camR,
                             std::shared_ptr<beam_calibration::CameraModel> camC,
                             Eigen::MatrixXi xs, Eigen::MatrixXi xss);
+
+  /**
+   * @brief Computes the essential matrix for 2 cameras given associated pixels
+   * @param camR camera model for image 1
+   * @param camC camera model for image 2
+   * @param xs corresponding pixels in image 1 (min 8)
+   * @param xss corresponding pixels in image 2 (min 8)
+   */
+  static opt<Eigen::Matrix3d>
+      RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> camR,
+                      std::shared_ptr<beam_calibration::CameraModel> camC,
+                      Eigen::MatrixXi xs, Eigen::MatrixXi xss,
+                      EstimatorMethod method);
 
   /**
    * @brief Computes the transformation matrix given essential matrix
