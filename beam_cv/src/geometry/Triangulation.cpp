@@ -36,16 +36,13 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
 std::vector<opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::Matrix4d Pr,
-    Eigen::Matrix4d Pc,
-    std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i>> points) {
+    Eigen::Matrix4d Pc, std::vector<Eigen::Vector2i> pr_v,
+    std::vector<Eigen::Vector2i> pc_v) {
   // loop through point vector and perform single point triangulation
   std::vector<opt<Eigen::Vector3d>> result_pts3d;
-  for (uint32_t i = 0; i < points.size(); i++) {
-    std::tuple pair = points[i];
-    Eigen::Vector2i pr = std::get<0>(pair);
-    Eigen::Vector2i pc = std::get<1>(pair);
+  for (uint32_t i = 0; i < pr_v.size(); i++) {
     opt<Eigen::Vector3d> pt3d =
-        Triangulation::TriangulatePoint(camR, camC, Pr, Pc, pr, pc);
+        Triangulation::TriangulatePoint(camR, camC, Pr, Pc, pr_v[i], pc_v[i]);
     result_pts3d.push_back(pt3d);
   }
   return result_pts3d;

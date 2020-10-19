@@ -45,11 +45,12 @@ public:
    * @param Pc transformation matrix from world to image 2 frame
    * @param points list of correspondences to triangulate
    */
-  static std::vector<opt<Eigen::Vector3d>> TriangulatePoints(
-      std::shared_ptr<beam_calibration::CameraModel> camR,
-      std::shared_ptr<beam_calibration::CameraModel> camC, Eigen::Matrix4d Pr,
-      Eigen::Matrix4d Pc,
-      std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i>> points);
+  static std::vector<opt<Eigen::Vector3d>>
+      TriangulatePoints(std::shared_ptr<beam_calibration::CameraModel> camR,
+                        std::shared_ptr<beam_calibration::CameraModel> camC,
+                        Eigen::Matrix4d Pr, Eigen::Matrix4d Pc,
+                        std::vector<Eigen::Vector2i> pr_v,
+                        std::vector<Eigen::Vector2i> pc_v);
 };
 
 } // namespace beam_cv
