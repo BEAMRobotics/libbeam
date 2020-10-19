@@ -30,8 +30,8 @@ public:
   static opt<Eigen::Matrix3d>
       EssentialMatrix8Point(std::shared_ptr<beam_calibration::CameraModel> camR,
                             std::shared_ptr<beam_calibration::CameraModel> camC,
-                            std::vector<Eigen::Vector2i> xs,
-                            std::vector<Eigen::Vector2i> xss);
+                            std::vector<Eigen::Vector2i> pr_v,
+                            std::vector<Eigen::Vector2i> pc_v);
 
   /**
    * @brief Computes the essential matrix for 2 cameras given associated pixels
@@ -43,8 +43,8 @@ public:
   static opt<Eigen::Matrix3d>
       EssentialMatrix7Point(std::shared_ptr<beam_calibration::CameraModel> camR,
                             std::shared_ptr<beam_calibration::CameraModel> camC,
-                            std::vector<Eigen::Vector2i> xs,
-                            std::vector<Eigen::Vector2i> xss);
+                            std::vector<Eigen::Vector2i> pr_v,
+                            std::vector<Eigen::Vector2i> pc_v);
 
   /**
    * @brief Performs RANSAC on the given estimator
@@ -57,8 +57,8 @@ public:
   static opt<Eigen::Matrix4d>
       RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> camR,
                       std::shared_ptr<beam_calibration::CameraModel> camC,
-                      std::vector<Eigen::Vector2i> xs,
-                      std::vector<Eigen::Vector2i> xss, EstimatorMethod method,
+                      std::vector<Eigen::Vector2i> pr_v,
+                      std::vector<Eigen::Vector2i> pc_v, EstimatorMethod method,
                       int max_iterations, double inlier_threshold);
 
   /**
@@ -80,7 +80,7 @@ public:
   static Eigen::Matrix4d RecoverPose(
       std::shared_ptr<beam_calibration::CameraModel> camR,
       std::shared_ptr<beam_calibration::CameraModel> camC,
-      std::vector<Eigen::Vector2i> xs, std::vector<Eigen::Vector2i> xss,
+      std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
       std::vector<Eigen::Matrix3d>& R, std::vector<Eigen::Vector3d>& t);
 
   /**
@@ -89,12 +89,14 @@ public:
    * @param camC camera model for image 2
    * @param xs corresponding pixels in image 1
    * @param xss corresponding pixels in image 2
-   * @param T relative transform from camR to camC
+   * @param T_camC_world relative transform from camR to camC (assume camR is
+   * the world coords)
    */
   static int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
                           std::shared_ptr<beam_calibration::CameraModel> camC,
-                          std::vector<Eigen::Vector2i> xs,
-                          std::vector<Eigen::Vector2i> xss, Eigen::Matrix4d T,
+                          std::vector<Eigen::Vector2i> pr_v,
+                          std::vector<Eigen::Vector2i> pc_v,
+                          Eigen::Matrix4d T_camC_world,
                           double inlier_threshold);
 };
 
