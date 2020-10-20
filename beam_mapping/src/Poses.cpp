@@ -184,6 +184,42 @@ void Poses::LoadFromJSON(const std::string input_pose_file_path) {
   BEAM_INFO("Read {} poses.", pose_counter);
 }
 
+void Poses::WriteToTXT(const std::string output_dir) {
+  if (poses.size() != time_stamps.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+  std::string output_file;
+  std::string last_five_chars =
+      output_dir.substr(output_dir.size() - 4, output_dir.size());
+  if (last_five_chars == ".txt" || last_five_chars == ".TXT") {
+    output_file = output_dir;
+  } else {
+    if (!boost::filesystem::is_directory(output_dir)) {
+      BEAM_INFO("Output directory does not exist, creating now.");
+      boost::filesystem::create_directories(output_dir);
+    }
+    output_file = output_dir + pose_file_date + "_poses.txt";
+  }
+
+  std::ofstream outfile(output_file);
+  for (size_t k = 0; k < poses.size(); k++) {
+    beam::Mat4 Tk = poses[k].matrix();
+    std::stringstream line;
+    line << time_stamps[k].sec << time_stamps[k].nsec << ", " << Tk(0, 0)
+         << ", " << Tk(0, 1) << ", " << Tk(0, 2) << ", " << Tk(0, 3) << ", "
+         << Tk(1, 0) << ", " << Tk(1, 1) << ", " << Tk(1, 2) << ", " << Tk(1, 3)
+         << ", " << Tk(2, 0) << ", " << Tk(2, 1) << ", " << Tk(2, 2) << ", "
+         << Tk(2, 3) << ", " << Tk(3, 0) << ", " << Tk(3, 1) << ", " << Tk(3, 2)
+         << ", " << Tk(3, 3) << std::endl;
+    std::string line_str = line.str();
+    outfile << line_str;
+  }
+  BEAM_INFO("Saving poses to file: {}", output_file.c_str());
+}
+
 void Poses::LoadFromTXT(const std::string input_pose_file_path) {
   // declare variables
   std::ifstream infile;
