@@ -75,6 +75,20 @@ opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
     BEAM_CRITICAL("Point match vectors are not of the same size.");
     return {};
   }
+  // determine sample vector size
+  int N = 0;
+  if (method == EstimatorMethod::EIGHTPOINT) {
+    N = 8;
+  } else if (method == EstimatorMethod::SEVENPOINT) {
+    N = 7;
+  } else if (method == EstimatorMethod::FIVEPOINT) {
+    N = 5;
+  }
+  // retur nothing if not enough points
+  if (pr_v.size() < N) {
+    BEAM_CRITICAL("Not enough point correspondences, expecting at least {}", N);
+    return {};
+  }
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
   // seed random num generator with time
@@ -82,15 +96,6 @@ opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
   for (int epoch = 0; epoch < max_iterations; epoch++) {
     std::vector<Eigen::Vector2i> pr_copy = pr_v;
     std::vector<Eigen::Vector2i> pc_copy = pc_v;
-    // determine sample vector size
-    int N = 0;
-    if (method == EstimatorMethod::EIGHTPOINT) {
-      N = 8;
-    } else if (method == EstimatorMethod::SEVENPOINT) {
-      N = 7;
-    } else if (method == EstimatorMethod::FIVEPOINT) {
-      N = 5;
-    }
     // fill new point vectors with randomly sampled points from xs and xss
     std::vector<Eigen::Vector2i> sampled_pr;
     std::vector<Eigen::Vector2i> sampled_pc;
@@ -126,6 +131,7 @@ opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
       current_pose = pose;
     }
   }
+  return current_pose;
 }
 
 void PoseEstimator::RtFromE(Eigen::Matrix3d E, std::vector<Eigen::Matrix3d>& R,
@@ -160,6 +166,7 @@ Eigen::Matrix4d PoseEstimator::RecoverPose(
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
     std::vector<Eigen::Matrix3d>& R, std::vector<Eigen::Vector3d>& t) {
   Eigen::Matrix4d pose;
+  // iterate through each possibility
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       pose.block<3, 3>(0, 0) = R[i];
@@ -170,6 +177,7 @@ Eigen::Matrix4d PoseEstimator::RecoverPose(
           Triangulation::TriangulatePoints(camR, camC, I, pose, pr_v, pc_v);
       int size = points.size();
       int count = 0;
+      // check if each point is in front of both cameras
       for (int point_idx = 0; point_idx < size; point_idx++) {
         Eigen::Vector4d pt_h;
         pt_h << points[point_idx].value()[0], points[point_idx].value()[1],
@@ -178,6 +186,7 @@ Eigen::Matrix4d PoseEstimator::RecoverPose(
         Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
         if (points[point_idx].value()[2] > 0 && ptc[2] > 0) { count++; }
       }
+      // if all points are in front of both, return the pose
       if (count == size) { return pose; }
     }
   }
