@@ -208,12 +208,23 @@ void Poses::WriteToTXT(const std::string output_dir) {
   for (size_t k = 0; k < poses.size(); k++) {
     beam::Mat4 Tk = poses[k].matrix();
     std::stringstream line;
-    line << time_stamps[k].sec << time_stamps[k].nsec << ", " << Tk(0, 0)
-         << ", " << Tk(0, 1) << ", " << Tk(0, 2) << ", " << Tk(0, 3) << ", "
-         << Tk(1, 0) << ", " << Tk(1, 1) << ", " << Tk(1, 2) << ", " << Tk(1, 3)
-         << ", " << Tk(2, 0) << ", " << Tk(2, 1) << ", " << Tk(2, 2) << ", "
-         << Tk(2, 3) << ", " << Tk(3, 0) << ", " << Tk(3, 1) << ", " << Tk(3, 2)
-         << ", " << Tk(3, 3) << std::endl;
+    line << time_stamps[k].sec;
+    //get num digits in nsec
+    int length = 1;
+    int x = time_stamps[k].nsec;
+    while (x /= 10) length++;
+    //extend nsec with 0's to fill 9 digits
+    if (length < 9) {
+      int extend = 9 - length;
+      for(int i = 0; i < extend; i++){
+        line << "0";
+      }
+    } 
+    line << time_stamps[k].nsec << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", " << Tk(0, 2) << ", "
+         << Tk(0, 3) << ", " << Tk(1, 0) << ", " << Tk(1, 1) << ", " << Tk(1, 2)
+         << ", " << Tk(1, 3) << ", " << Tk(2, 0) << ", " << Tk(2, 1) << ", "
+         << Tk(2, 2) << ", " << Tk(2, 3) << ", " << Tk(3, 0) << ", " << Tk(3, 1)
+         << ", " << Tk(3, 2) << ", " << Tk(3, 3) << std::endl;
     std::string line_str = line.str();
     outfile << line_str;
   }
