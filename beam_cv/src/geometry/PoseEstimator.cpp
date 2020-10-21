@@ -170,7 +170,9 @@ Eigen::Matrix4d PoseEstimator::RecoverPose(
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       pose.block<3, 3>(0, 0) = R[i];
-      pose.block<3, 1>(0, 2) = t[i];
+      pose.block<3, 1>(0, 3) = t[i].transpose();
+      Eigen::Vector4d v{0, 0, 0, 1};
+      pose.row(3) = v;
       Eigen::Matrix4d I = Eigen::Matrix4d::Identity();
       // triangulate correspondences
       std::vector<opt<Eigen::Vector3d>> points =
