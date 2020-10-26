@@ -80,7 +80,7 @@ void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
 
 void mat2vec(MatX A, std::vector<double>& x) {
   for (int i = 0; i < A.cols(); i++) {
-    for (int j = 0; j < A.rows(); j++) { x.push_back(A(j, i)); }
+    for (int j = 0; j < A.rows(); j++) { x.push_back(A(i, j)); }
   }
 }
 
@@ -93,17 +93,16 @@ void vec2mat(VecX x, int rows, int cols, MatX& y) {
   // load matrix
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      y(j, i) = x[idx];
+      y(i, j) = x[idx];
       idx++;
     }
   }
 }
 
 void mat2vec(MatX A, VecX& x) {
-  x.resize(A.rows() * A.cols());
-  for (int i = 0; i < A.cols(); i++) {
-    for (int j = 0; j < A.rows(); j++) { x[i * j] = A(j, i); }
-  }
+  std::vector<double> x_p;
+  beam::mat2vec(A, x_p);
+  x = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(x_p.data(), x_p.size());
 }
 
 int euler2rot(Vec3 euler, int euler_seq, Mat3& R) {

@@ -141,12 +141,8 @@ void PoseEstimator::RtFromE(Eigen::Matrix3d E, std::vector<Eigen::Matrix3d>& R,
   Eigen::Matrix3d U, V;
   U = E_svd.matrixU();
   V = E_svd.matrixV();
-  Eigen::Matrix3d W, Z;
+  Eigen::Matrix3d W;
   W << 0, -1, 0, 1, 0, 0, 0, 0, 1;
-  Z << 0, 1, 0, -1, 0, 0, 0, 0, 0;
-  // skew-symmetric matrix (translation vector)
-  Eigen::Matrix3d S;
-  S = U * Z * U.transpose();
   // two possible translation vectors
   t.resize(2);
   t[0] = U.block<3, 1>(0, 2);
