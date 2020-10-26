@@ -1,4 +1,4 @@
-#include "beam_cv/geometry/PoseEstimator.h"
+#include "beam_cv/geometry/RelativePoseEstimator.h"
 #include "beam_cv/geometry/Triangulation.h"
 #include "beam_utils/math.hpp"
 
@@ -9,7 +9,7 @@
 
 namespace beam_cv {
 
-opt<Eigen::Matrix3d> PoseEstimator::EssentialMatrix8Point(
+opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
@@ -59,14 +59,14 @@ opt<Eigen::Matrix3d> PoseEstimator::EssentialMatrix8Point(
   return E;
 }
 
-opt<Eigen::Matrix3d> PoseEstimator::EssentialMatrix7Point(
+opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix7Point(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
   // TODO
 }
 
-opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
+opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
@@ -111,8 +111,8 @@ opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
     // perform pose estimation of the given method
     opt<Eigen::Matrix3d> E;
     if (method == EstimatorMethod::EIGHTPOINT) {
-      E = PoseEstimator::EssentialMatrix8Point(camR, camC, sampled_pr,
-                                               sampled_pc);
+      E = RelativePoseEstimator::EssentialMatrix8Point(camR, camC, sampled_pr,
+                                                       sampled_pc);
     } else if (method == EstimatorMethod::SEVENPOINT) {
     } else if (method == EstimatorMethod::FIVEPOINT) {
     }
@@ -120,12 +120,12 @@ opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
     if (!E.has_value()) { continue; }
     std::vector<Eigen::Matrix3d> R;
     std::vector<Eigen::Vector3d> t;
-    PoseEstimator::RtFromE(E.value(), R, t);
+    RelativePoseEstimator::RtFromE(E.value(), R, t);
     Eigen::Matrix4d pose =
-        PoseEstimator::RecoverPose(camR, camC, sampled_pr, sampled_pc, R, t);
+        RelativePoseEstimator::RecoverPose(camR, camC, sampled_pr, sampled_pc, R, t);
     // check number of inliers and update current best estimate
-    int inliers = PoseEstimator::CheckInliers(camR, camC, pr_v, pc_v, pose,
-                                              inlier_threshold);
+    int inliers = RelativePoseEstimator::CheckInliers(camR, camC, pr_v, pc_v,
+                                                      pose, inlier_threshold);
     if (inliers > current_inliers) {
       current_inliers = inliers;
       current_pose = pose;
@@ -134,8 +134,9 @@ opt<Eigen::Matrix4d> PoseEstimator::RANSACEstimator(
   return current_pose;
 }
 
-void PoseEstimator::RtFromE(Eigen::Matrix3d E, std::vector<Eigen::Matrix3d>& R,
-                            std::vector<Eigen::Vector3d>& t) {
+void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
+                                    std::vector<Eigen::Matrix3d>& R,
+                                    std::vector<Eigen::Vector3d>& t) {
   Eigen::JacobiSVD<Eigen::Matrix3d> E_svd(E, Eigen::ComputeFullU |
                                                  Eigen::ComputeFullV);
   Eigen::Matrix3d U, V;
@@ -156,7 +157,7 @@ void PoseEstimator::RtFromE(Eigen::Matrix3d E, std::vector<Eigen::Matrix3d>& R,
   if (R[1].determinant() < 0) { R[1] = -R[1].eval(); }
 }
 
-Eigen::Matrix4d PoseEstimator::RecoverPose(
+Eigen::Matrix4d RelativePoseEstimator::RecoverPose(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
@@ -190,7 +191,7 @@ Eigen::Matrix4d PoseEstimator::RecoverPose(
   }
 }
 
-int PoseEstimator::CheckInliers(
+int RelativePoseEstimator::CheckInliers(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,

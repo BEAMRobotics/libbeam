@@ -14,7 +14,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Utils.cpp
     src/RayCast.cpp
     src/geometry/Triangulation.cpp
-    src/geometry/PoseEstimator.cpp
+    src/geometry/RelativePoseEstimator.cpp
+    src/geometry/AbsolutePoseEstimator.cpp
 )
 
 ############# Test files #############

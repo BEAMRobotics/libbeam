@@ -18,7 +18,7 @@ enum class EstimatorMethod { EIGHTPOINT = 0, SEVENPOINT, FIVEPOINT };
 /**
  * @brief static class implementing various pose estimation algorithms
  */
-class PoseEstimator {
+class RelativePoseEstimator {
 public:
   /**
    * @brief Computes the essential matrix for 2 cameras given associated pixels
