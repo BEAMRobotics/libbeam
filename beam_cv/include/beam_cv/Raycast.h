@@ -38,49 +38,60 @@ public:
   template <typename func>
   void Execute(float threshold, func behaviour) {
     BEAM_INFO("Performing ray casting.");
-    cv::Mat1b hit_mask = this->CreateHitMask();
-    cv::imwrite("/home/jake/mask.jpg", hit_mask);
+    // create image mask where white pixels = projection hit
+    cv::Mat1b hit_mask(model_->GetHeight(), model_->GetWidth());
+    for (uint32_t i = 0; i < cloud_->points.size(); i++) {
+      Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
+                            cloud_->points[i].z);
+
+      opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
+      if (!coords.has_value()) { continue; }
+      uint16_t col = coords.value()(0, 0);
+      uint16_t row = coords.value()(1, 0);
+      hit_mask.at<uchar>(row, col) = 255;
+    }
     PointType origin(0, 0, 0);
     pcl::KdTreeFLANN<PointType> kdtree;
     kdtree.setInputCloud(cloud_);
     // cast ray for every pixel
-    image_->forEach<float>([&](float& pixel, const int* position) -> void {
-      (void)pixel;
-      int row = position[0], col = position[1];
-      if (hit_mask.at<uchar>(row, col) == 255) {
-        Eigen::Vector3d ray(0, 0, 0);
-        // get direction vector
-        Eigen::Vector2i input_point(col, row);
-        opt<Eigen::Vector3d> point = model_->BackProject(input_point);
-        if (!point.has_value()) { return; }
-        // while loop to ray trace
-        uint16_t raypt = 0;
-        while (true) {
-          // get point at end of ray
-          PointType search_point;
-          search_point.x = ray(0, 0);
-          search_point.y = ray(1, 0);
-          search_point.z = ray(2, 0);
-          // search for closest point to ray
-          std::vector<int> point_idx(1);
-          std::vector<float> point_distance(1);
-          kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
-          float distance = sqrt(point_distance[0]);
-          // if the point is within threshold then call behaviour
-          if (distance < threshold) {
-            behaviour(image_, cloud_, position, point_idx[0]);
-            break;
-          } else if (raypt >= 20) {
-            break;
-          } else {
-            raypt++;
-            ray(0, 0) = ray(0, 0) + distance * point.value()(0, 0);
-            ray(1, 0) = ray(1, 0) + distance * point.value()(1, 0);
-            ray(2, 0) = ray(2, 0) + distance * point.value()(2, 0);
+    for (int row = 0; row < image_->rows; row++) {
+      for (int col = 0; col < image_->cols; col++) {
+        if (hit_mask.at<uchar>(row, col) == 255) {
+          Eigen::Vector3d ray(0, 0, 0);
+          // get direction vector
+          Eigen::Vector2i input_point(col, row);
+          opt<Eigen::Vector3d> point = model_->BackProject(input_point);
+          if (!point.has_value()) { return; }
+          // while loop to ray trace
+          uint16_t raypt = 0;
+          while (raypt <= 20) {
+            // get point at end of ray
+            PointType search_point;
+            search_point.x = ray(0, 0);
+            search_point.y = ray(1, 0);
+            search_point.z = ray(2, 0);
+            // search for closest point to ray
+            std::vector<int> point_idx(1);
+            std::vector<float> point_distance(1);
+            kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
+            float distance = sqrt(point_distance[0]);
+            // if the point is within threshold then call behaviour
+            if (distance < threshold) {
+              int position[2];
+              position[0] = row;
+              position[1] = col;
+              behaviour(image_, cloud_, position, point_idx[0]);
+              break;
+            } else {
+              raypt++;
+              ray(0, 0) = ray(0, 0) + distance * point.value()(0, 0);
+              ray(1, 0) = ray(1, 0) + distance * point.value()(1, 0);
+              ray(2, 0) = ray(2, 0) + distance * point.value()(2, 0);
+            }
           }
         }
       }
-    });
+    }
   }
 
   /**
@@ -129,25 +140,5 @@ protected:
   typename pcl::PointCloud<PointType>::Ptr cloud_;
   std::shared_ptr<beam_calibration::CameraModel> model_;
   std::shared_ptr<cv::Mat> image_;
-
-  /**
-   * @brief Creates hit mask to speed up ray casting
-   * @return cv::Mat
-   */
-  cv::Mat1b CreateHitMask() {
-    // create image mask where white pixels = projection hit
-    cv::Mat1b image(model_->GetHeight(), model_->GetWidth());
-    for (uint32_t i = 0; i < cloud_->points.size(); i++) {
-      Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
-                            cloud_->points[i].z);
-
-      opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
-      if (!coords.has_value()) { continue; }
-      uint16_t col = coords.value()(0, 0);
-      uint16_t row = coords.value()(1, 0);
-      image.at<cv::Vec3b>(row, col) = 255;
-    }
-    return image;
-  }
 };
 } // namespace beam_cv
