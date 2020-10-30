@@ -38,6 +38,14 @@ public:
   template <typename func>
   void Execute(float threshold, func behaviour) {
     BEAM_INFO("Performing ray casting.");
+    // create copied point cloud to use for kdtree
+    pcl::PointCloud<pcl::PointXYZ>::Ptr template_cloud =
+        boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    for (size_t i = 0; i < cloud_->points.size(); i++) {
+      pcl::PointXYZ p(cloud_->points[i].x, cloud_->points[i].y,
+                      cloud_->points[i].z);
+      template_cloud->points.push_back(p);
+    }
     // create image mask where white pixels = projection hit
     cv::Mat1b hit_mask(model_->GetHeight(), model_->GetWidth());
     for (uint32_t i = 0; i < cloud_->points.size(); i++) {
@@ -50,9 +58,9 @@ public:
       uint16_t row = coords.value()(1, 0);
       hit_mask.at<uchar>(row, col) = 255;
     }
-    PointType origin(0, 0, 0);
-    pcl::KdTreeFLANN<PointType> kdtree;
-    kdtree.setInputCloud(cloud_);
+    // create kdtree
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud(template_cloud);
     // cast ray for every pixel
     for (int row = 0; row < image_->rows; row++) {
       for (int col = 0; col < image_->cols; col++) {
@@ -66,7 +74,7 @@ public:
           uint16_t raypt = 0;
           while (raypt <= 20) {
             // get point at end of ray
-            PointType search_point;
+            pcl::PointXYZ search_point;
             search_point.x = ray(0, 0);
             search_point.y = ray(1, 0);
             search_point.z = ray(2, 0);

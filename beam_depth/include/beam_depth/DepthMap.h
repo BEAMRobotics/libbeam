@@ -68,10 +68,9 @@ public:
    * @brief Computes the depth image based on the given point cloud and image
    * @param threshold threshold value to be used to determine hit detection of
    * ray cast
-   * @param mask_size used as input for beam_cv::CreateHitMask
    * @return number of points extracted
    */
-  int ExtractDepthMap(float threshold, int mask_size);
+  int ExtractDepthMap(float thresh);
 
   /**
    * @brief Computes the depth image based on the given point cloud and image

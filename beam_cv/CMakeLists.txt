@@ -12,7 +12,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
   SOURCES
     src/Utils.cpp
-    src/RayCast.cpp
 )
 
 ############# Test files #############
