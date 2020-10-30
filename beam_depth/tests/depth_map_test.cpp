@@ -10,7 +10,7 @@
 TEST_CASE("Test Constructor, Getters/Setters.") {
   // file locations
   std::string cur_location = __FILE__;
-  cur_location.erase(cur_location.end() - 23, cur_location.end());
+  cur_location.erase(cur_location.end() - 24, cur_location.end());
   cur_location += "tests/test_data/";
   std::string intrinsics_loc = cur_location + "F1.json";
   // load other objects
@@ -31,7 +31,7 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
 TEST_CASE("Test Depth map extractor.") {
   // file locations
   std::string cur_location = __FILE__;
-  cur_location.erase(cur_location.end() - 23, cur_location.end());
+  cur_location.erase(cur_location.end() - 24, cur_location.end());
   cur_location += "tests/test_data/";
   std::string intrinsics_loc = cur_location + "F2.json";
   // load other objects
