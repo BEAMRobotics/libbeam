@@ -209,22 +209,21 @@ void Poses::WriteToTXT(const std::string output_dir) {
     beam::Mat4 Tk = poses[k].matrix();
     std::stringstream line;
     line << time_stamps[k].sec;
-    //get num digits in nsec
+    // get num digits in nsec
     int length = 1;
     int x = time_stamps[k].nsec;
     while (x /= 10) length++;
-    //extend nsec with 0's to fill 9 digits
+    // extend nsec with 0's to fill 9 digits
     if (length < 9) {
       int extend = 9 - length;
-      for(int i = 0; i < extend; i++){
-        line << "0";
-      }
-    } 
-    line << time_stamps[k].nsec << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", " << Tk(0, 2) << ", "
-         << Tk(0, 3) << ", " << Tk(1, 0) << ", " << Tk(1, 1) << ", " << Tk(1, 2)
-         << ", " << Tk(1, 3) << ", " << Tk(2, 0) << ", " << Tk(2, 1) << ", "
-         << Tk(2, 2) << ", " << Tk(2, 3) << ", " << Tk(3, 0) << ", " << Tk(3, 1)
-         << ", " << Tk(3, 2) << ", " << Tk(3, 3) << std::endl;
+      for (int i = 0; i < extend; i++) { line << "0"; }
+    }
+    line << time_stamps[k].nsec << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", "
+         << Tk(0, 2) << ", " << Tk(0, 3) << ", " << Tk(1, 0) << ", " << Tk(1, 1)
+         << ", " << Tk(1, 2) << ", " << Tk(1, 3) << ", " << Tk(2, 0) << ", "
+         << Tk(2, 1) << ", " << Tk(2, 2) << ", " << Tk(2, 3) << ", " << Tk(3, 0)
+         << ", " << Tk(3, 1) << ", " << Tk(3, 2) << ", " << Tk(3, 3)
+         << std::endl;
     std::string line_str = line.str();
     outfile << line_str;
   }
@@ -244,32 +243,35 @@ void Poses::LoadFromTXT(const std::string input_pose_file_path) {
   while (!infile.eof()) {
     // get timestamp k
     std::getline(infile, line, ',');
-    try {
-      int n_sec = std::stod(line.substr(line.length() - 9, line.length()));
-      int sec = std::stod(line.substr(0, line.length() - 10));
-      time_stamp_k.sec = sec;
-      time_stamp_k.nsec = n_sec;
-    } catch (const std::invalid_argument& e) {
-      BEAM_CRITICAL("Invalid argument, probably at end of file");
-      throw std::invalid_argument{"Invalid argument, probably at end of file"};
-    }
+    if (line.length() > 0) {
+      try {
+        int n_sec = std::stod(line.substr(line.length() - 9, line.length()));
+        int sec = std::stod(line.substr(0, line.length() - 9));
+        time_stamp_k.sec = sec;
+        time_stamp_k.nsec = n_sec;
+      } catch (const std::invalid_argument& e) {
+        BEAM_CRITICAL("Invalid argument, probably at end of file");
+        throw std::invalid_argument{
+            "Invalid argument, probably at end of file"};
+      }
 
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        if (i == 3 && j == 3) {
-          std::getline(infile, line, '\n');
-          Tk(i, j) = std::stod(line);
-        } else {
-          std::getline(infile, line, ',');
-          Tk(i, j) = std::stod(line);
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          if (i == 3 && j == 3) {
+            std::getline(infile, line, '\n');
+            Tk(i, j) = std::stod(line);
+          } else {
+            std::getline(infile, line, ',');
+            Tk(i, j) = std::stod(line);
+          }
         }
       }
+      time_stamps.push_back(time_stamp_k);
+      Eigen::Affine3d TA_k;
+      TA_k.matrix() = Tk;
+      pose_counter++;
+      poses.push_back(TA_k);
     }
-    time_stamps.push_back(time_stamp_k);
-    Eigen::Affine3d TA_k;
-    TA_k.matrix() = Tk;
-    pose_counter++;
-    poses.push_back(TA_k);
   }
   BEAM_INFO("Read {} poses.", pose_counter);
 }
