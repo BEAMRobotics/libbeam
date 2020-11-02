@@ -32,6 +32,19 @@ target_link_libraries(${PROJECT_NAME}_utils_tests
   Catch2::Catch2
 )
 
+add_executable(${PROJECT_NAME}_geometry_tests
+  tests/geometry_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_geometry_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_geometry_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
 add_executable(${PROJECT_NAME}_debug
   tests/debug.cpp
 )

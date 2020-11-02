@@ -52,7 +52,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
-    EstimatorMethod method, int max_iterations, double inlier_threshold) {
+    EstimatorMethod method, int max_iterations, double inlier_threshold, int seed) {
   if (pc_v.size() != pr_v.size()) {
     BEAM_CRITICAL("Point match vectors are not of the same size.");
     return {};
@@ -74,7 +74,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
   // seed random num generator with time
-  srand(time(0));
+  srand(seed);
   for (int epoch = 0; epoch < max_iterations; epoch++) {
     std::vector<Eigen::Vector2i> pr_copy = pr_v;
     std::vector<Eigen::Vector2i> pc_copy = pc_v;
