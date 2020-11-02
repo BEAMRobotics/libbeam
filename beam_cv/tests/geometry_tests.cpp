@@ -1,11 +1,11 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_cv/Utils.h"
-#include "beam_cv/geometry/RelativePoseEstimator.h"
-#include "beam_cv/geometry/Triangulation.h"
-#include <catch2/catch.hpp>
-
 #include <fstream>
 #include <iostream>
+
+#include <catch2/catch.hpp>
+
+#include <beam_cv/geometry/RelativePoseEstimator.h>
+#include <beam_cv/geometry/Triangulation.h>
 
 void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
                  std::vector<Eigen::Vector2i>& matches2) {

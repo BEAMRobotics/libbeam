@@ -1,11 +1,13 @@
-#include "beam_cv/geometry/RelativePoseEstimator.h"
-#include "beam_cv/geometry/Triangulation.h"
-#include "beam_utils/math.hpp"
-
-#include <Eigen/Geometry>
+#include <beam_cv/geometry/RelativePoseEstimator.h>
 
 #include <chrono>
 #include <cstdlib>
+
+#include <Eigen/Geometry>
+
+#include <beam_cv/geometry/Triangulation.h>
+#include <beam_utils/math.hpp>
+
 
 namespace beam_cv {
 
@@ -96,7 +98,11 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       E = RelativePoseEstimator::EssentialMatrix8Point(camR, camC, sampled_pr,
                                                        sampled_pc);
     } else if (method == EstimatorMethod::SEVENPOINT) {
+      BEAM_CRITICAL("Seven point algorithm not yet implemented.");
+      return {};
     } else if (method == EstimatorMethod::FIVEPOINT) {
+      BEAM_CRITICAL("Five point algorithm not yet implemented.");
+      return {};
     }
     // recover pose from estimated essential matrix
     if (!E.has_value()) { continue; }

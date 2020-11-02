@@ -1,4 +1,4 @@
-#include "beam_cv/geometry/Triangulation.h"
+#include <beam_cv/geometry/Triangulation.h>
 
 #include <Eigen/Geometry>
 
