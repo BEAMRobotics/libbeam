@@ -105,6 +105,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
         Eigen::Vector2i pixel(col, row);
         opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
         if (direction.has_value()) {
+          direction.value().normalize();
           Eigen::Vector3d coords = distance * direction.value();
           pcl::PointXYZ point(coords[0], coords[1], coords[2]);
           dense_cloud->points.push_back(point);

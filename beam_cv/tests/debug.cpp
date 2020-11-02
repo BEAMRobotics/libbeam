@@ -8,6 +8,9 @@
 #include "beam_utils/math.hpp"
 #include <beam_containers/PointBridge.h>
 
+#include <fstream>
+#include <iostream>
+
 #include <pcl/io/pcd_io.h>
 
 using namespace std;
@@ -16,6 +19,7 @@ void CalculateGTError(double scale);
 void RelabelMask();
 void QuantifyDefects();
 void TestTriangulation();
+void TestEssentialMatrix();
 
 int main(int argc, char* argv[]) {
   // double scale;
@@ -23,12 +27,13 @@ int main(int argc, char* argv[]) {
   // CalculateGTError(scale);
   // RelabelMask();
   // QuantifyDefects();
+  TestEssentialMatrix();
 }
 
 void TestTriangulation() {
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 15, cam_loc.end());
-  cam_loc += "tests/test_data/iphone.json";
+  cam_loc += "tests/test_data/K.json";
   std::shared_ptr<beam_calibration::CameraModel> cam =
       beam_calibration::CameraModel::Create(cam_loc);
 
@@ -69,7 +74,6 @@ void TestTriangulation() {
   }
 }
 
-
 void CalculateGTError(double scale) {
   double area = 0;
   cv::Mat mask = cv::imread("/home/jake/mask.jpg", cv::IMREAD_GRAYSCALE);
@@ -109,4 +113,61 @@ void QuantifyDefects() {
   for (auto& defect : delam_vector_) {
     std::cout << "Delam size is: " << defect->GetSize() << "m^2" << std::endl;
   }
+}
+
+void TestEssentialMatrix() {
+  std::string cam_loc = __FILE__;
+  cam_loc.erase(cam_loc.end() - 15, cam_loc.end());
+  cam_loc += "tests/test_data/K.json";
+  std::shared_ptr<beam_calibration::CameraModel> cam =
+      beam_calibration::CameraModel::Create(cam_loc);
+
+  std::string frame1_loc = __FILE__;
+  frame1_loc.erase(frame1_loc.end() - 15, frame1_loc.end());
+  frame1_loc += "tests/test_data/frame1_matches.txt";
+  std::string frame2_loc = __FILE__;
+  frame2_loc.erase(frame2_loc.end() - 15, frame2_loc.end());
+  frame2_loc += "tests/test_data/frame2_matches.txt";
+  // declare variables
+  std::ifstream infile;
+  std::string line;
+  // open file
+  infile.open(frame1_loc);
+  // extract poses
+  std::vector<Eigen::Vector2i> frame1_matches;
+  while (!infile.eof()) {
+    // get timestamp k
+    std::getline(infile, line, ',');
+    int u = std::stod(line);
+    std::getline(infile, line, '\n');
+    int v = std::stod(line);
+    Eigen::Vector2i p{u, v};
+    frame1_matches.push_back(p);
+  }
+  // declare variables
+  std::ifstream infile2;
+  std::string line2;
+  // open file
+  infile2.open(frame2_loc);
+  // extract poses
+  std::vector<Eigen::Vector2i> frame2_matches;
+  while (!infile2.eof()) {
+    // get timestamp k
+    std::getline(infile2, line2, ',');
+    int u = std::stod(line2);
+    std::getline(infile2, line2, '\n');
+    int v = std::stod(line2);
+    Eigen::Vector2i p{u, v};
+    frame2_matches.push_back(p);
+  }
+  opt<Eigen::Matrix3d> E =
+      beam_cv::RelativePoseEstimator::EssentialMatrix8Point(
+          cam, cam, frame1_matches, frame2_matches);
+  std::cout << E.value() << "\n--------- " << std::endl;
+  std::vector<Eigen::Matrix3d> R;
+  std::vector<Eigen::Vector3d> t;
+  beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
+  Eigen::Matrix4d pose = beam_cv::RelativePoseEstimator::RecoverPose(
+      cam, cam, frame1_matches, frame2_matches, R, t);
+  std::cout << pose << std::endl;
 }

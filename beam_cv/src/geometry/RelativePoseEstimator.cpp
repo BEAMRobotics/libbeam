@@ -13,11 +13,11 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
-  const int N = 8;
-  if (pc_v.size() != N || pr_v.size() != N) {
+  if (pc_v.size() < 8 || pr_v.size() < 8 || pr_v.size() != pc_v.size()) {
     BEAM_CRITICAL("Invalid number of input point matches.");
     return {};
   }
+  int N = pc_v.size();
   // normalize input points via back projection
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
@@ -35,10 +35,8 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   // construct A matrix
   Eigen::MatrixXd A(N, 9);
   for (int i = 0; i < N; i++) {
-    Eigen::MatrixXd K = beam::KroneckerProduct(X_r[i], X_c[i]);
-    Eigen::VectorXd ai;
-    beam::mat2vec(K, ai);
-    A.row(i) = ai;
+    Eigen::VectorXd K = beam::KroneckerProduct(X_r[i], X_c[i]);
+    A.row(i) = K;
   }
   // perform SVD on A matrix
   Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeFullV);
@@ -47,23 +45,7 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   // initial E estimate
   Eigen::MatrixXd Ea;
   beam::vec2mat(x, 3, 3, Ea);
-  // SVD decomp of E
-  Eigen::JacobiSVD<Eigen::MatrixXd> svdEA(Ea, Eigen::ComputeFullV |
-                                                  Eigen::ComputeFullU);
-  Eigen::MatrixXd Va = svdEA.matrixV();
-  Eigen::MatrixXd Ua = svdEA.matrixU();
-  // determine algebraically best E (constrain to rank 2)
-  Eigen::Vector3d D;
-  D << 1, 1, 0;
-  Eigen::MatrixXd E = Ua * D.asDiagonal() * Va;
-  return E;
-}
-
-opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix7Point(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
-  // TODO
+  return Ea;
 }
 
 opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
@@ -121,8 +103,8 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::vector<Eigen::Matrix3d> R;
     std::vector<Eigen::Vector3d> t;
     RelativePoseEstimator::RtFromE(E.value(), R, t);
-    Eigen::Matrix4d pose =
-        RelativePoseEstimator::RecoverPose(camR, camC, sampled_pr, sampled_pc, R, t);
+    Eigen::Matrix4d pose = RelativePoseEstimator::RecoverPose(
+        camR, camC, sampled_pr, sampled_pc, R, t);
     // check number of inliers and update current best estimate
     int inliers = RelativePoseEstimator::CheckInliers(camR, camC, pr_v, pc_v,
                                                       pose, inlier_threshold);

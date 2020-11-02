@@ -34,19 +34,6 @@ public:
                             std::vector<Eigen::Vector2i> pc_v);
 
   /**
-   * @brief Computes the essential matrix for 2 cameras given associated pixels
-   * @param camR camera model for image 1
-   * @param camC camera model for image 2
-   * @param xs corresponding pixels in image 1 (min 8)
-   * @param xss corresponding pixels in image 2 (min 8)
-   */
-  static opt<Eigen::Matrix3d>
-      EssentialMatrix7Point(std::shared_ptr<beam_calibration::CameraModel> camR,
-                            std::shared_ptr<beam_calibration::CameraModel> camC,
-                            std::vector<Eigen::Vector2i> pr_v,
-                            std::vector<Eigen::Vector2i> pc_v);
-
-  /**
    * @brief Performs RANSAC on the given estimator
    * @param camR camera model for image 1
    * @param camC camera model for image 2
