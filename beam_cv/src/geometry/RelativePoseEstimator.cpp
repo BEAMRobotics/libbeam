@@ -47,7 +47,17 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   // initial E estimate
   Eigen::MatrixXd Ea;
   beam::vec2mat(x, 3, 3, Ea);
-  return Ea;
+
+  Eigen::JacobiSVD<Eigen::MatrixXd> svdEA(Ea, Eigen::ComputeFullV |
+                                                  Eigen::ComputeFullU);
+  Eigen::MatrixXd Va = svdEA.matrixV();
+  Eigen::MatrixXd Ua = svdEA.matrixU();
+  double s = (svdEA.singularValues()[0] + svdEA.singularValues()[1])/2;
+  // determine algebraically best E (constrain to rank 2)
+  Eigen::Vector3d D;
+  D << s, s, 0;
+  Eigen::MatrixXd E = Ua * D.asDiagonal() * Va.transpose();
+  return E;
 }
 
 opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(

@@ -111,6 +111,6 @@ TEST_CASE("RANSAC Pose estimator.") {
   int num_inliers = beam_cv::RelativePoseEstimator::CheckInliers(
       cam, cam, frame1_matches, frame2_matches, pose.value(), 5);
   INFO(num_inliers);
-  REQUIRE(num_inliers == 22);
+  REQUIRE(num_inliers == 19);
 
 }
