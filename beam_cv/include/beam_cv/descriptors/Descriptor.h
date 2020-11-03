@@ -6,6 +6,9 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/features2d.hpp>
+
+#include <beam_utils/utils.hpp> 
 
 namespace beam_cv {
 
@@ -22,7 +25,7 @@ public:
   /**
    * @brief Default destructor
    */
-  ~Descriptor() = default;
+  virtual ~Descriptor() = default;
 
   /** Extracts keypoint descriptors from an image. Calls a different extractor
    *  depending on the derived class.

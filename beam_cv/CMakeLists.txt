@@ -14,6 +14,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
+    src/descriptors/BRISKDescriptor.cpp
+    src/descriptors/ORBDescriptor.cpp
 )
 
 ############# Test files #############
