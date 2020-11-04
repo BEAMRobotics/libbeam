@@ -22,11 +22,6 @@ namespace beam_cv {
 class SIFTDetector : public Detector {
 public:
   /**
-   * @brief Default cosntructor
-   */
-  SIFTDetector() = default;
-
-  /**
    * @brief Constructor
    * @param nfeatures
    * @param nOctaveLayers

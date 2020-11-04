@@ -18,10 +18,6 @@ namespace beam_cv {
  */
 class FASTDetector : public Detector {
 public:
-  /**
-   * @brief Default cosntructor
-   */
-  FASTDetector() = default;
 
   /**
    * @brief Constructor

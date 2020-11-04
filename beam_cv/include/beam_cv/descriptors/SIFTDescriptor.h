@@ -21,10 +21,6 @@ namespace beam_cv {
  */
 class SIFTDescriptor : public Descriptor {
 public:
-  /**
-   * @brief Default cosntructor
-   */
-  SIFTDescriptor()  = default;
 
   /**
    * @brief Constructor

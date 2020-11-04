@@ -17,10 +17,6 @@ namespace beam_cv {
  */
 class ORBDescriptor : public Descriptor {
 public:
-  /**
-   * @brief Default cosntructor
-   */
-  ORBDescriptor() = default;
 
   /**
    * @brief Constructor

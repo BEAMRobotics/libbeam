@@ -19,11 +19,6 @@ namespace beam_cv {
 class BRISKDescriptor : public Descriptor {
 public:
   /**
-   * @brief Default cosntructor
-   */
-  BRISKDescriptor() = default;
-
-  /**
    * @brief Custom constructor
    * @param rlist defines radius of each subsequent circle in pixels
    * @param nlist defines number of points in each circle (must be same size as
@@ -31,9 +26,9 @@ public:
    * @param d_max maximum threshold for short pairs
    * @param d_min minimum threshold for long pairs
    */
-  BRISKDescriptor(const std::vector<float>& rlist,
-                  const std::vector<int>& nlist, const float d_max = 5.85,
-                  const float d_min = 8.2);
+  BRISKDescriptor(const std::vector<float>& rlist = {0.0, 2.47, 4.17, 6.29, 9.18},
+                  const std::vector<int>& nlist = {1, 10, 14, 15, 20},
+                  const float d_max = 5.85, const float d_min = 8.2);
 
   /**
    * @brief Default destructor

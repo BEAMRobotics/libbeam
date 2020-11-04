@@ -18,10 +18,6 @@ namespace beam_cv {
 class ORBDetector : public Detector {
 public:
   /**
-   * @brief Default cosntructor
-   */
-  ORBDetector() = default;
-  /**
    * @brief Constructor
    * @param tuple_size The number of points that compose the ORB descriptor.
    * @param patch_size The size of the square patch used in the random point
