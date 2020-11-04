@@ -16,6 +16,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/geometry/AbsolutePoseEstimator.cpp
     src/descriptors/BRISKDescriptor.cpp
     src/descriptors/ORBDescriptor.cpp
+    src/descriptors/SIFTDescriptor.cpp
 )
 
 ############# Test files #############
