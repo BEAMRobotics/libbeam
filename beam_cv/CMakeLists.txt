@@ -17,6 +17,9 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/descriptors/BRISKDescriptor.cpp
     src/descriptors/ORBDescriptor.cpp
     src/descriptors/SIFTDescriptor.cpp
+    src/detectors/ORBDetector.cpp
+    src/detectors/FASTDetector.cpp
+    src/detectors/SIFTDetector.cpp
 )
 
 ############# Test files #############

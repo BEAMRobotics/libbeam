@@ -24,7 +24,7 @@ public:
   /**
    * @brief Default cosntructor
    */
-  SIFTDescriptor() = default;
+  SIFTDescriptor()  = default;
 
   /**
    * @brief Constructor
@@ -35,8 +35,8 @@ public:
    * @param sigma
    */
   SIFTDescriptor(const int nfeatures = 0, const int nOctaveLayers = 3,
-                 const double contrastThreshold = 0.04, const double edgeThreshold = 10,
-                 const double sigma = 1.6);
+                 const double contrastThreshold = 0.04,
+                 const double edgeThreshold = 10, const double sigma = 1.6);
 
   /**
    * @brief Default destructor

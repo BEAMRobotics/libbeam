@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/xfeatures2d/nonfree.hpp>
+
 #include <beam_cv/detectors/Detector.h>
 
 namespace beam_cv {

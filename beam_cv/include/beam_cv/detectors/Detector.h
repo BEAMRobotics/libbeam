@@ -21,7 +21,7 @@ public:
   /**
    * @brief Default destructor
    */
-  ~Detector() = default;
+  virtual ~Detector() = default;
 
   /** Detects features in an image. Calls a different detector depending on
    *  the derived class.
