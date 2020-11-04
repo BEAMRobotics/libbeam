@@ -7,42 +7,39 @@
 #include <string>
 #include <vector>
 
-#include <beam_cv/descriptors/Descriptor.h>
+#include <beam_cv/detectors/Detector.h>
 
 namespace beam_cv {
 
-/** Representation of a descriptor extractor using the ORB algorithm.
+
+/** Representation of a keypoint detector using the ORB algorithm.
  * Internally, this class is wrapping OpenCV's ORB descriptor module. More info
  * can be found here: http://docs.opencv.org/trunk/db/d95/classcv_1_1ORB.html
  */
-class ORBDescriptor : public Descriptor {
+class ORBDetector : public Detector {
 public:
   /**
    * @brief Default cosntructor
    */
-  ORBDescriptor() = default;
-
+  ORBDetector() = default;
   /**
    * @brief Constructor
    * @param tuple_size The number of points that compose the ORB descriptor.
    * @param patch_size The size of the square patch used in the random point
    * sampling to construct the descriptor
    */
-  ORBDescriptor(const int tuple_size = 2, const int patch_size = 31);
+  ORBDetector(const int tuple_size = 2, const int patch_size = 31);
 
   /**
    * @brief Default destructor
    */
-  ~ORBDescriptor() override = default;
+  ~ORBDetector() override = default;
 
-  /** Extracts descriptors from the keypoints in an image, using the ORB
-   *  descriptor extractor.
+  /** Detects features in an image.
    *  @param image the image to detect features in.
-   *  @param keypoints the keypoints from the detected image
-   *  @return an array containing the computed descriptors.
+   *  @return a vector containing all of the keypoints found within the image.
    */
-  cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
   /** The number of points that compose the ORB descriptor. A value of 2
@@ -70,7 +67,7 @@ private:
    */
   int patch_size_ = 31;
   /** The pointer to the wrapped cv::ORB object. */
-  cv::Ptr<cv::ORB> orb_descriptor_;
+  cv::Ptr<cv::ORB> orb_detector_;
 
   /** Checks whether the desired configuration is valid.
    */

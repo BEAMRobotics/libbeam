@@ -7,21 +7,22 @@
 #include <string>
 #include <vector>
 
-#include <beam_cv/descriptors/Descriptor.h>
+#include <beam_cv/detectors/Detector.h>
 
 namespace beam_cv {
 
-/** Representation of a descriptor extractor using the BRISK algorithm.
+
+/** Representation of a keypoint detector using the BRISK algorithm.
  *  Internally, this class is wrapping OpenCV's BRISK descriptor module.
  *  More info can be found here:
  *  http://docs.opencv.org/trunk/de/dbf/classcv_1_1BRISK.html
  */
-class BRISKDescriptor : public Descriptor {
+class BRISKDetector : public Detector {
 public:
   /**
    * @brief Default cosntructor
    */
-  BRISKDescriptor() = default;
+  BRISKDetector() = default;
 
   /**
    * @brief Custom constructor
@@ -31,23 +32,20 @@ public:
    * @param d_max maximum threshold for short pairs
    * @param d_min minimum threshold for long pairs
    */
-  BRISKDescriptor(const std::vector<float>& rlist,
+  BRISKDetector(const std::vector<float>& rlist,
                   const std::vector<int>& nlist, const float d_max = 5.85,
                   const float d_min = 8.2);
 
   /**
    * @brief Default destructor
    */
-  ~BRISKDescriptor() override = default;
+  ~BRISKDetector() override = default;
 
-  /** Extracts descriptors from the keypoints in an image, using the ORB
-   *  descriptor extractor.
+  /** Detects features in an image.
    *  @param image the image to detect features in.
-   *  @param keypoints the keypoints from the detected image
-   *  @return an array containing the computed descriptors.
+   *  @return a vector containing all of the keypoints found within the image.
    */
-  cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
   /** radius_list defines the radius of each subsequent circle (in pixels).
@@ -75,7 +73,7 @@ private:
    */
   float d_min_ = 8.2;
   /** The pointer to the wrapped cv::BRISK object. */
-  cv::Ptr<cv::BRISK> brisk_descriptor_;
+  cv::Ptr<cv::BRISK> brisk_detector_;
 
   /** Checks whether the desired configuration is valid.
    */

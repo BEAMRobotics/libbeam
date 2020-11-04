@@ -7,24 +7,21 @@
 #include <string>
 #include <vector>
 
-#include <opencv2/xfeatures2d.hpp>
-#include <opencv2/xfeatures2d/nonfree.hpp>
-
-#include <beam_cv/descriptors/Descriptor.h>
+#include <beam_cv/detectors/Detector.h>
 
 namespace beam_cv {
 
-/** Representation of a descriptor extractor using the SIFT algorithm.
+/** Representation of a keypoint detector using the SIFT algorithm.
  *
  * Internally, this class is wrapping OpenCV's SIFT descriptor module. More info
  * can be found here: http://docs.opencv.org/trunk/db/d95/classcv_1_1SIFT.html
  */
-class SIFTDescriptor : public Descriptor {
+class SIFTDetector : public Detector {
 public:
   /**
    * @brief Default cosntructor
    */
-  SIFTDescriptor() = default;
+  SIFTDetector() = default;
 
   /**
    * @brief Constructor
@@ -34,23 +31,20 @@ public:
    * @param edgeThreshold
    * @param sigma
    */
-  SIFTDescriptor(const int nfeatures = 0, const int nOctaveLayers = 3,
-                 const double contrastThreshold = 0.04, const double edgeThreshold = 10,
-                 const double sigma = 1.6);
+  SIFTDetector(const int nfeatures = 0, const int nOctaveLayers = 3,
+               const double contrastThreshold = 0.04,
+               const double edgeThreshold = 10, const double sigma = 1.6);
 
   /**
    * @brief Default destructor
    */
-  ~SIFTDescriptor() override = default;
+  ~SIFTDetector() override = default;
 
-  /** Extracts descriptors from the keypoints in an image, using the SIFT
-   *  descriptor extractor.
+  /** Detects features in an image.
    *  @param image the image to detect features in.
-   *  @param keypoints the keypoints from the detected image
-   *  @return an array containing the computed descriptors.
+   *  @return a vector containing all of the keypoints found within the image.
    */
-  cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
   /**	The number of best features to retain. The features are ranked by their
@@ -78,8 +72,8 @@ private:
    *  to reduce the number.
    */
   double sigma_ = 1.6;
-
-  cv::Ptr<cv::xfeatures2d::SIFT> sift_descriptor_;
+/** The pointer to the wrapped cv::SIFT object. */
+  cv::Ptr<cv::xfeatures2d::SIFT> sift_detector_;
 
   /** Checks whether the desired configuration is valid.
    */

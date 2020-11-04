@@ -7,8 +7,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <opencv2/features2d/features2d.hpp>
-
 namespace beam_cv {
 
 /** Representation of a generic keypoint detector
