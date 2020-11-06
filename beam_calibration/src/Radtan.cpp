@@ -15,6 +15,21 @@ Radtan::Radtan(const std::string& file_path) {
   p2_ = intrinsics_[7];
 }
 
+Radtan::Radtan(uint32_t image_height, uint32_t image_width,
+               const Eigen::Matrix<double, 8, 1>& intrinsics) {
+  type_ = CameraType::RADTAN;
+  image_height_ = image_height;
+  image_width_ = image_width;
+  intrinsics_[0] = intrinsics(0, 0);
+  intrinsics_[1] = intrinsics(1, 0);
+  intrinsics_[2] = intrinsics(2, 0);
+  intrinsics_[3] = intrinsics(3, 0);
+  intrinsics_[4] = intrinsics(4, 0);
+  intrinsics_[5] = intrinsics(5, 0);
+  intrinsics_[6] = intrinsics(6, 0);
+  intrinsics_[7] = intrinsics(7, 0);
+}
+
 opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point) {
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
