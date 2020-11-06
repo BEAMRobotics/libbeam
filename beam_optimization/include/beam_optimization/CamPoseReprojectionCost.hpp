@@ -19,9 +19,12 @@ struct CameraProjectionFunctor {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
     std::optional<Eigen::Vector2d> pixel_projected =
         camera_model_->ProjectPointPrecise(P_CAMERA_eig);
+    //get image dims to set residual to large value proportionate to image size
+    uint16_t height = camera_model_->GetHeight() != 0 ? camera_model_->GetHeight() : 5000; 
+    uint16_t width = camera_model_->GetWidth() != 0 ? camera_model_->GetWidth() : 5000;
     if (!pixel_projected.has_value()) {
-      pixel[0] = 5000;  // set the residual to a large value if the projection fails 
-      pixel[1] = 5000;  
+      pixel[0] = 2*height;  // set the residual to a large value if the projection fails 
+      pixel[1] = 2*width;  
       return false; 
     }
     pixel[0] = pixel_projected.value()[0];
@@ -32,8 +35,8 @@ struct CameraProjectionFunctor {
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
 };
 
-struct CeresCameraCostFunction {
-  CeresCameraCostFunction(
+struct CeresReprojectionCostFunction {
+  CeresReprojectionCostFunction(
       Eigen::Vector2d pixel_detected, Eigen::Vector3d P_STRUCT,
       std::shared_ptr<beam_calibration::CameraModel> camera_model)
       : pixel_detected_(pixel_detected),
@@ -76,8 +79,8 @@ struct CeresCameraCostFunction {
   static ceres::CostFunction* Create(
       const Eigen::Vector2d pixel_detected, const Eigen::Vector3d P_STRUCT,
       const std::shared_ptr<beam_calibration::CameraModel> camera_model) {
-    return (new ceres::AutoDiffCostFunction<CeresCameraCostFunction, 2, 7>(
-        new CeresCameraCostFunction(pixel_detected, P_STRUCT,
+    return (new ceres::AutoDiffCostFunction<CeresReprojectionCostFunction, 2, 7>(
+        new CeresReprojectionCostFunction(pixel_detected, P_STRUCT,
                                     camera_model)));
   }
 

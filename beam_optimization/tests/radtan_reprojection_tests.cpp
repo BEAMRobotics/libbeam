@@ -108,9 +108,12 @@ TEST_CASE("Test rt projection - no noise") {
 
   // Create intrinsics
   // TODO update for relative path
-  std::string camera_model_location = "/home/cameron/projects/beam_robotics/libbeam/beam_optimization/config/CamFactorIntrinsics.json";
+  std::string file_location = __FILE__;
+  file_location.erase(file_location.end() - 36, file_location.end());
+  file_location += "/config/CamFactorIntrinsics.json";
+  std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
-      beam_calibration::CameraModel::Create(camera_model_location);
+      beam_calibration::CameraModel::Create(file_location);
 
   // Create initial transform 
   Eigen::Matrix4d T_CW = Eigen::Matrix4d::Identity();
@@ -185,7 +188,7 @@ TEST_CASE("Test rt projection - no noise") {
 
       // add residuals for perfect init
       std::unique_ptr<ceres::CostFunction> cost_function1(
-          CeresCameraCostFunction::Create(pixels[i], P_CAMERA,
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
                                           camera_model));
 
       problem1->AddResidualBlock(cost_function1.release(), loss_function_.get(),
@@ -193,7 +196,7 @@ TEST_CASE("Test rt projection - no noise") {
 
       // add residuals for perturbed init
       std::unique_ptr<ceres::CostFunction> cost_function2(
-          CeresCameraCostFunction::Create(pixels[i], P_CAMERA,
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
                                           camera_model));
       problem2->AddResidualBlock(cost_function2.release(), loss_function_.get(),
                                  &(results_perturbed_init[0]));
@@ -375,7 +378,7 @@ TEST_CASE("Test rt projection - with noise") {
 
       // add residuals for perfect init
       std::unique_ptr<ceres::CostFunction> cost_function1(
-          CeresCameraCostFunction::Create(pixels[i], P_CAMERA,
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
                                           camera_model));
 
       problem1->AddResidualBlock(cost_function1.release(), loss_function_.get(),
@@ -383,7 +386,7 @@ TEST_CASE("Test rt projection - with noise") {
 
       // add residuals for perturbed init
       std::unique_ptr<ceres::CostFunction> cost_function2(
-          CeresCameraCostFunction::Create(pixels[i], P_CAMERA,
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
                                           camera_model));
       problem2->AddResidualBlock(cost_function2.release(), loss_function_.get(),
                                  &(results_perturbed_init[0]));
@@ -558,7 +561,7 @@ TEST_CASE("Test rt projection - with clipping") {
 
       // add residuals for perfect init
       std::unique_ptr<ceres::CostFunction> cost_function1(
-          CeresCameraCostFunction::Create(pixels[i], P_CAMERA,
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
                                           camera_model));
 
       problem1->AddResidualBlock(cost_function1.release(), loss_function_.get(),
@@ -566,7 +569,7 @@ TEST_CASE("Test rt projection - with clipping") {
 
       // add residuals for perturbed init
       std::unique_ptr<ceres::CostFunction> cost_function2(
-          CeresCameraCostFunction::Create(pixels[i], P_CAMERA,
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
                                           camera_model));
       problem2->AddResidualBlock(cost_function2.release(), loss_function_.get(),
                                  &(results_perturbed_init[0]));
