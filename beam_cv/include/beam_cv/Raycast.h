@@ -16,8 +16,15 @@
 #include <beam_depth/Utils.h>
 #include <beam_utils/utils.hpp>
 
+#include <functional>
+#include <type_traits>
+
 namespace beam_cv {
 
+/*
+ * Allowed Point types are: pcl::PointXYZ, pcl::PointZXYZRGB, and
+ * beam_containers::PointBridge
+ */
 template <typename PointType>
 class Raycast {
 public:
@@ -37,6 +44,9 @@ public:
    */
   template <typename func>
   void Execute(float threshold, func behaviour) {
+    static_assert(std::is_invocable_r_v<void, func, std::shared_ptr<cv::Mat>&,
+                                    pcl::PointCloud<pcl::PointXYZ>::Ptr&,
+                                    const int*, int>);
     BEAM_INFO("Performing ray casting.");
     // create copied point cloud to use for kdtree
     pcl::PointCloud<pcl::PointXYZ>::Ptr template_cloud =
