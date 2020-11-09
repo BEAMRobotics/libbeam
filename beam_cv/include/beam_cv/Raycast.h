@@ -13,6 +13,7 @@
 #include <pcl/point_types.h>
 
 #include <beam_calibration/CameraModel.h>
+#include <beam_containers/PointBridge.h>
 #include <beam_depth/Utils.h>
 #include <beam_utils/utils.hpp>
 
@@ -42,16 +43,26 @@ public:
       : cloud_(cloud_i), model_(model_i), image_(image_i) {}
 
   /**
+   * @brief Default destructor
+   */
+  ~Raycast() = default;
+
+  /**
    * @brief Performs ray casting with custom behaviour on hit
    * @param threshold threshold to determine ray contact (how far between ray
    * tip and point is considered a hit in metres)
-   * @param behaviour function that determines the hit behaviour
+   * @param behaviour function that determines the hit behaviour, expected
+   signature:
+   * {std::shared_ptr<cv::Mat>& image,
+                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,
+                     const int* position, int index}
    */
   template <typename func>
   void Execute(float threshold, func behaviour) {
-    static_assert(std::is_invocable_r_v<void, func, std::shared_ptr<cv::Mat>&,
-                                        pcl::PointCloud<pcl::PointXYZ>::Ptr&,
-                                        const int*, int>);
+    if (!(this->CheckValidFunction(behaviour))) {
+      BEAM_CRITICAL("Invalid lambda signature defined");
+      throw std::runtime_error{"Invalid lambda signature defined"};
+    }
     BEAM_INFO("Performing ray casting.");
     // create copied point cloud to use for kdtree
     pcl::PointCloud<pcl::PointXYZ>::Ptr template_cloud =
@@ -154,14 +165,29 @@ public:
    */
   std::shared_ptr<cv::Mat> GetImage() { return image_; }
 
-  /**
-   * @brief Default destructor
-   */
-  ~Raycast() = default;
-
 protected:
   typename pcl::PointCloud<PointType>::Ptr cloud_;
   std::shared_ptr<beam_calibration::CameraModel> model_;
   std::shared_ptr<cv::Mat> image_;
+
+  /**
+   * @brief Determiens if given function is valid
+   * @return bool
+   */
+  template <typename func>
+  bool CheckValidFunction(func behaviour) {
+    bool valid_func_xyz =
+        std::is_invocable_r_v<void, func, std::shared_ptr<cv::Mat>&,
+                              pcl::PointCloud<pcl::PointXYZ>::Ptr&, const int*,
+                              int>;
+    bool valid_func_xyzrgb =
+        std::is_invocable_r_v<void, func, std::shared_ptr<cv::Mat>&,
+                              pcl::PointCloud<pcl::PointXYZRGB>::Ptr&,
+                              const int*, int>;
+    bool valid_func_bridge = std::is_invocable_r_v<
+        void, func, std::shared_ptr<cv::Mat>&,
+        pcl::PointCloud<beam_containers::PointBridge>::Ptr&, const int*, int>;
+    return (valid_func_xyz || valid_func_xyzrgb || valid_func_bridge);
+  }
 };
 } // namespace beam_cv
