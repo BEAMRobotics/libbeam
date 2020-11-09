@@ -6,31 +6,25 @@
 
 namespace beam_filtering {
 
-VoxelDownsample::VoxelDownsample(Eigen::Vector3f& voxel_size) {
+VoxelDownsample::VoxelDownsample(const Eigen::Vector3f& voxel_size) {
   voxel_size_ = voxel_size;
 }
 
-Eigen::Vector3f VoxelDownsample::GetVoxelSize() {
+Eigen::Vector3f VoxelDownsample::GetVoxelSize() const {
   return voxel_size_;
 }
 
-void VoxelDownsample::SetVoxelSize(Eigen::Vector3f& voxel_size) {
+void VoxelDownsample::SetVoxelSize(const Eigen::Vector3f& voxel_size) {
   voxel_size_ = voxel_size;
 }
 
-void VoxelDownsample::Filter(PointCloudXYZ& input_cloud,
+void VoxelDownsample::Filter(const PointCloudXYZ& input_cloud,
                              PointCloudXYZ& output_cloud) {
-  // Do not filter if the voxel size is less than 1mm.
-  if (voxel_size_[0] < 0.001 || voxel_size_[1] < 0.001 ||
-      voxel_size_[2] < 0.001) {
-    return;
-  }
-
   output_cloud.clear();
 
   // Filter cloud in pieces to prevent integer overflow.
   std::vector<PointCloudXYZPtr> broken_cloud_ptrs =
-      breakUpPointCloud(input_cloud);
+      BreakUpPointCloud(input_cloud);
   // Create a pcl voxel grid filter and use voxel_size_ as grid size.
   pcl::VoxelGrid<pcl::PointXYZ> downsampler;
   downsampler.setLeafSize(voxel_size_[0], voxel_size_[1], voxel_size_[2]);
@@ -43,7 +37,7 @@ void VoxelDownsample::Filter(PointCloudXYZ& input_cloud,
 }
 
 std::vector<PointCloudXYZPtr>
-    VoxelDownsample::breakUpPointCloud(const PointCloudXYZ& input_cloud) {
+    VoxelDownsample::BreakUpPointCloud(const PointCloudXYZ& input_cloud) {
   // Determine if integer overflow will occur.
   pcl::PointXYZ min;
   pcl::PointXYZ max;
@@ -63,12 +57,12 @@ std::vector<PointCloudXYZPtr>
     int max_axis;
     axis_dimensions.maxCoeff(&max_axis);
     std::pair<PointCloudXYZPtr, PointCloudXYZPtr> split_clouds_ptrs =
-        splitCloudInTwo(input_cloud, max_axis);
-    // Recursively call breakUpPointCloud on each split.
+        SplitCloudInTwo(input_cloud, max_axis);
+    // Recursively call BreakUpPointCloud on each split.
     std::vector<PointCloudXYZPtr> cloud_ptrs_1 =
-        breakUpPointCloud(*(split_clouds_ptrs.first));
+        BreakUpPointCloud(*(split_clouds_ptrs.first));
     std::vector<PointCloudXYZPtr> cloud_ptrs_2 =
-        breakUpPointCloud(*(split_clouds_ptrs.second));
+        BreakUpPointCloud(*(split_clouds_ptrs.second));
     cloud_ptrs_1.insert(cloud_ptrs_1.end(), cloud_ptrs_2.begin(),
                         cloud_ptrs_2.end());
     return cloud_ptrs_1;
@@ -83,8 +77,8 @@ std::vector<PointCloudXYZPtr>
 }
 
 std::pair<PointCloudXYZPtr, PointCloudXYZPtr>
-    VoxelDownsample::splitCloudInTwo(const PointCloudXYZ& input_cloud,
-                                     int max_axis) {
+    VoxelDownsample::SplitCloudInTwo(const PointCloudXYZ& input_cloud,
+                                     const int max_axis) {
   // Get mid point of cloud.
   pcl::PointXYZ min;
   pcl::PointXYZ max;
