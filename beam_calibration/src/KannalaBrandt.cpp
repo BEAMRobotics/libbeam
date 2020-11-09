@@ -16,9 +16,17 @@ KannalaBrandt::KannalaBrandt(const std::string& file_path) {
 }
 
 opt<Eigen::Vector2d>
-    KannalaBrandt::ProjectPointPrecise(const Eigen::Vector3d& point) {
+    KannalaBrandt::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
+  outside_domain = false;
+
   Eigen::Vector2d out_point;
   double x = point[0], y = point[1], z = point[2];
+
+  if (z <= 0) {
+    outside_domain = true; 
+    return {};
+  }
+
   double Xsq_plus_Ysq = x * x + y * y;
   double theta = atan2(sqrt(Xsq_plus_Ysq), z);
   double r = sqrt(x * x + y * y);
@@ -36,8 +44,8 @@ opt<Eigen::Vector2d>
   return {};
 }
 
-opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
+  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
   if (pixel.has_value()) {
     Eigen::Vector2i pixel_rounded;
     pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
@@ -47,7 +55,7 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point) {
 }
 
 opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
-                                                 Eigen::MatrixXd& J) {
+                                                 Eigen::MatrixXd& J, bool& outside_domain) {
   double x = point[0], y = point[1], z = point[2];
   double x2 = x * x;
   double y2 = y * y;
@@ -108,7 +116,7 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
   // fill jacobian matrix
   J << dP1dx, dP1dy, dP1dz, dP2dx, dP2dy, dP2dz;
 
-  return ProjectPoint(point);
+  return ProjectPoint(point, outside_domain);
 }
 
 opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {

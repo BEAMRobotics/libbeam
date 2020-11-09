@@ -3,6 +3,7 @@
 #include <beam_calibration/DoubleSphere.h>
 #include <beam_utils/math.hpp>
 #include <catch2/catch.hpp>
+#include <math.h>
 
 std::unique_ptr<beam_calibration::CameraModel> camera_model_;
 
@@ -54,9 +55,14 @@ TEST_CASE("Test projection and back project with random points") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
+  bool outside_domain = false;
+
   for (Eigen::Vector3d point : points) {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    if (!pixel.has_value()) { continue; }
+    opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
+    if (!pixel.has_value() || !pixel_b.has_value()) { continue; }
+    REQUIRE((pixel.value()[0] - pixel_b.value()[0]) == 0);
+    REQUIRE((pixel.value()[1] - pixel_b.value()[1]) == 0);
     opt<Eigen::Vector3d> back_projected_ray =
         camera_model_->BackProject(pixel.value());
     REQUIRE(back_projected_ray.has_value());
@@ -70,6 +76,7 @@ TEST_CASE("Test projection and back project with random points") {
       REQUIRE(std::abs(pixel.value()[1] - back_projected_pixel.value()[1]) < 2);
     }
   }
+
 }
 
 TEST_CASE("Test projection and back project with random pixels") {
@@ -150,6 +157,53 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
     REQUIRE(!pixel.has_value());
   }
+
+  // create random test points that result in invalid projections
+
+  Eigen::VectorXd intrinsics = camera_model_->GetIntrinsics(); 
+
+  double eps = intrinsics[4];
+  double alpha = intrinsics[5];
+
+  double w1;
+  if (alpha > 0.5) {
+    w1 = (1 - alpha) / alpha;
+  } else {
+    w1 = alpha / (1 - alpha);
+  }
+  double w2 = (w1 + eps) / sqrt(2 * w1 * eps + eps * eps + 1);
+
+  bool outside_domain = false;
+
+  /*
+   * point invalid if point[2] > -w2 * d1 
+   * point[2]^2 > w2^2 * (point[0]^2 + point[1]^2) / (1-w2^2) 
+   */
+  int numRandomCases3 = 10; 
+  double min_x_b = -4; 
+  double max_x_b = 4; 
+  double min_y_b = -4;
+  double max_y_b = 4;
+  double min_z_off_b = 0.2; 
+  double max_z_off_b = 2; 
+  for (int i = 0; i < numRandomCases3; i++) {
+    double x = fRand(min_x_b,max_x_b);
+    double y = fRand(min_y_b,max_y_b);
+    double z = pow(w2,2) * (pow(x,2) + pow(y,2)) / (1-pow(w2,2)) + fRand(min_z_off_b, max_z_off_b);
+    Eigen::Vector3d point(x, y, z);
+    printf("point x: %f\n", point[0]);
+    printf("point y: %f\n", point[1]);
+    printf("point z: %f\n", point[2]);
+    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
+    if (pixel.has_value()) {
+      printf ("pixel x: %f\n", pixel.value()[0]);
+      printf ("pixel y: %f\n", pixel.value()[1]);
+    }
+    REQUIRE(!pixel.has_value());
+    REQUIRE(outside_domain == true);
+    printf("passed ------------------------------------------------------\n");
+  }
+
 }
 
 TEST_CASE("Test jacobian") {

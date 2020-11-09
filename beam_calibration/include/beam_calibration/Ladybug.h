@@ -33,18 +33,16 @@ public:
   /**
    * @brief Method for projecting a point into an image plane (continous)
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
-   * point has been projected into the image plane [u,v]^T
    */
   opt<Eigen::Vector2d>
-      ProjectPointPrecise(const Eigen::Vector3d& point) override;
+      ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain = outside_domain_default_) override;
 
   /**
    * @brief Method for projecting a point into an image plane
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
    */
-  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) override;
+  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain = outside_domain_default_) override;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
@@ -56,7 +54,7 @@ public:
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
   opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point,
-                                    Eigen::MatrixXd& J) override;
+                                    Eigen::MatrixXd& J, bool& outside_domain = outside_domain_default_) override;
 
   /**
    * @brief Method back projecting
@@ -83,6 +81,8 @@ protected:
   unsigned int cam_id_ = 0;
   const unsigned int LB_FULL_WIDTH_ = 2048;
   const unsigned int LB_FULL_HEIGHT_ = 2464;
+
+  //static bool outside_domain_default_;
 
   double focal_length_;
   double cx_;
