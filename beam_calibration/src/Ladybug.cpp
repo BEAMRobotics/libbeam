@@ -3,6 +3,8 @@
 namespace beam_calibration {
 
 Ladybug::Ladybug(const std::string& file_path) {
+  BEAM_INFO("Loading file: {}", file_path);
+  
   type_ = CameraType::LADYBUG;
   lb_error_ = ladybugCreateContext(&lb_context_);
   LadybugCheckError();

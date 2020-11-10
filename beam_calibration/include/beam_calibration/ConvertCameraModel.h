@@ -50,7 +50,7 @@ public:
         cv::Vec2i new_pixel_locations = pixel_map_.at<cv::Vec2i>(i, j);
         pointT new_pixel_vals;
         if (new_pixel_locations.val[0] == -1 ||
-            new_pixel_locations.val[1] == -1) {
+            new_pixel_locations.val[1] == -1) {    
           new_pixel_vals = pointT();
         } else {
           new_pixel_vals = source_image.at<pointT>(new_pixel_locations.val[0],

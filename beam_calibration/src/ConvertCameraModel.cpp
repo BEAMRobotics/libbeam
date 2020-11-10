@@ -29,6 +29,7 @@ std::shared_ptr<CameraModel> ConvertCameraModel::CreateDefaultCameraModel(
         "first 4 elements in the source camera model are fx, fy, cx, and cy, "
         "respectively."};
   }
+  
   Eigen::Matrix<double, 8, 1> intrinsics;
   intrinsics(0, 0) = source_model->GetIntrinsics()[0];
   intrinsics(1, 0) = source_model->GetIntrinsics()[1];
@@ -76,4 +77,5 @@ void ConvertCameraModel::CreatePixelMap(
     }
   }
 }
+
 } // namespace beam_calibration

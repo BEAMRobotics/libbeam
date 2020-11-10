@@ -1,0 +1,18 @@
+{
+  "date": "2020_11_11",
+  "method": "simulation",
+  "camera_type": "RADTAN",
+  "image_width": 512,
+  "image_height": 384,
+  "frame_id": "F1_link",
+  "intrinsics": [
+    443.4037529529496,
+    443.4037529529496,
+    256.5,
+    192.5,
+    0,
+    0,
+    0,
+    0
+  ]
+}
