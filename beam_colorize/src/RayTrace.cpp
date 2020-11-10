@@ -2,7 +2,7 @@
 
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include <beam_cv/RayCast.h>
+#include <beam_cv/Raycast.h>
 
 namespace beam_colorize {
 
@@ -29,13 +29,17 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     BEAM_CRITICAL("Colorizer not properly initialized.");
     return cloud_colored;
   }
-  // create image mask where white pixels = projection hit
-  cv::Mat hit_mask =
-      beam_cv::CreateHitMask(dilation_, intrinsics_, input_point_cloud_);
-  // This lambda performs ray tracing in parallel on each pixel in the image
-  beam_cv::RayCast(image_, cloud_colored, hit_mask, hit_threshold_, intrinsics_,
-                   HitBehaviour);
-
+  beam_cv::Raycast<pcl::PointXYZRGB> caster(cloud_colored, intrinsics_, image_);
+  // perform ray casting of cloud to colorize with image
+  caster.Execute(hit_threshold_,
+                 [&](std::shared_ptr<cv::Mat>& image,
+                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,
+                     const int* position, int index) -> void {
+                   Pixel& pixel = image->at<Pixel>(position[0], position[1]);
+                   cloud->points[index].r = pixel.z;
+                   cloud->points[index].g = pixel.y;
+                   cloud->points[index].b = pixel.x;
+                 });
   return cloud_colored;
 }
 
@@ -70,69 +74,38 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 
 pcl::PointCloud<beam_containers::PointBridge>::Ptr
     RayTrace::ColorizeMask() const {
-  cv::Mat hit_mask =
-      beam_cv::CreateHitMask(dilation_, intrinsics_, input_point_cloud_);
-  // create and fill point bridge cloud
   pcl::PointCloud<beam_containers::PointBridge>::Ptr return_cloud;
   pcl::copyPointCloud(*input_point_cloud_, *return_cloud);
 
-  pcl::PointXYZ origin(0, 0, 0);
-  pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
-  kdtree.setInputCloud(input_point_cloud_);
+  beam_cv::Raycast<beam_containers::PointBridge> caster(return_cloud,
+                                                        intrinsics_, image_);
+  // perform ray casting of cloud to color with mask
   int counter = 0;
-  // ray trace every valid pixel
-  image_->forEach<uchar>([&](uchar& pixel, const int* position) -> void {
-    (void)pixel;
-    int row = position[0], col = position[1];
-    if (hit_mask.at<cv::Vec3b>(row, col).val[0] == 255) {
-      Eigen::Vector3d ray(0, 0, 0);
-      // get direction vector
-      Eigen::Vector2i input_point(col, row);
-      opt<Eigen::Vector3d> point = intrinsics_->BackProject(input_point);
-      if (!point.has_value()) { return; }
-      // while loop to ray trace
-      uint16_t raypt = 0;
-      while (true) {
-        // get point at end of ray
-        pcl::PointXYZRGB search_point;
-        search_point.x = ray(0, 0);
-        search_point.y = ray(1, 0);
-        search_point.z = ray(2, 0);
-        // search for closest point to ray
-        std::vector<int> point_idx(1);
-        std::vector<float> point_distance(1);
-        kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
-        float distance = sqrt(point_distance[0]);
-        // if the point is within 1cm then label with specific defect
-        if (distance < hit_threshold_) {
-          uchar color_scale = image_->at<uchar>(row, col);
-          if (color_scale == 0) {
-            continue;
-          } else if (color_scale == 1) {
-            return_cloud->points[point_idx[0]].crack = 1;
-            counter++;
-          } else if (color_scale == 2) {
-            return_cloud->points[point_idx[0]].delam = 1;
-            counter++;
-          } else if (color_scale == 3) {
-            return_cloud->points[point_idx[0]].corrosion = 1;
-            counter++;
-          } else if (color_scale == 4) {
-            return_cloud->points[point_idx[0]].spall = 1;
-            counter++;
-          }
-          break;
-        } else if (raypt >= 20) {
-          break;
-        } else {
-          raypt++;
-          ray(0, 0) = ray(0, 0) + distance * point.value()(0, 0);
-          ray(1, 0) = ray(1, 0) + distance * point.value()(1, 0);
-          ray(2, 0) = ray(2, 0) + distance * point.value()(2, 0);
-        }
-      }
-    }
-  });
+  caster.Execute(hit_threshold_,
+                 [&](std::shared_ptr<cv::Mat>& image,
+                     pcl::PointCloud<beam_containers::PointBridge>::Ptr& cloud,
+                     const int* position, int index) -> void {
+                   uchar color_scale =
+                       image->at<uchar>(position[0], position[1]);
+                   switch (color_scale) {
+                     case 1:
+                       cloud->points[index].crack = 1;
+                       counter++;
+                       break;
+                     case 2:
+                       cloud->points[index].delam = 1;
+                       counter++;
+                       break;
+                     case 3:
+                       cloud->points[index].corrosion = 1;
+                       counter++;
+                       break;
+                     case 4:
+                       cloud->points[index].spall = 1;
+                       counter++;
+                       break;
+                   }
+                 });
   BEAM_INFO("Coloured {} of {} total points.", counter,
             input_point_cloud_->points.size());
   return return_cloud;

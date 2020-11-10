@@ -49,7 +49,6 @@ private:
                   std::shared_ptr<beam_calibration::CameraModel>) const;
 
 protected:
-  uint16_t dilation_ = 3, max_ray_ = 20;
   double hit_threshold_ = 0.01;
 };
 
