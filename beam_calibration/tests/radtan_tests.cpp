@@ -54,9 +54,14 @@ TEST_CASE("Test projection and back project with random points") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
+  bool outside_domain = false;
+
   for (Eigen::Vector3d point : points) {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    if (!pixel.has_value()) { continue; }
+    opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
+    if (!pixel.has_value() || !pixel_b.has_value()) { continue; }
+    REQUIRE((pixel.value()[0] - pixel_b.value()[0]) == 0);
+    REQUIRE((pixel.value()[1] - pixel_b.value()[1]) == 0);
     opt<Eigen::Vector3d> back_projected_ray =
         camera_model_->BackProject(pixel.value());
     REQUIRE(back_projected_ray.has_value());
@@ -134,22 +139,44 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     REQUIRE(!ray.has_value());
   }
 
-  // create random test points
+  bool outside_domain = false;
+
+  // create random test points that project out of image frame
   int numRandomCases2 = 30;
-  double min_x = -2;
-  double max_x = 2;
-  double min_y = -2;
-  double max_y = 2;
-  double min_z = -2;
-  double max_z = -10;
+  double min_x = 6;
+  double max_x = 8;
+  double min_y = 6;
+  double max_y = 8;
+  double min_z = 0.01;
+  double max_z = 0.1;
   for (int i = 0; i < numRandomCases2; i++) {
     double x = fRand(min_x, max_x);
     double y = fRand(min_y, max_y);
     double z = fRand(min_z, max_z);
     Eigen::Vector3d point(x, y, z);
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
+    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
     REQUIRE(!pixel.has_value());
+    REQUIRE(!outside_domain);
   }
+
+  // create random test points that are out of projection domain
+  int numRandomCases3 = 30;
+  double min_x_b = 6;
+  double max_x_b = 8;
+  double min_y_b = 6;
+  double max_y_b = 8;
+  double min_z_b = -2;
+  double max_z_b = -8;
+  for (int i = 0; i < numRandomCases3; i++) {
+    double x = fRand(min_x_b, max_x_b);
+    double y = fRand(min_y_b, max_y_b);
+    double z = fRand(min_z_b, max_z_b);
+    Eigen::Vector3d point(x, y, z);
+    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
+    REQUIRE(!pixel.has_value());
+    REQUIRE(outside_domain);
+  }
+
 }
 
 TEST_CASE("Test jacobian") {

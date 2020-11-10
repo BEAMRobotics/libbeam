@@ -22,7 +22,7 @@ opt<Eigen::Vector2d>
   Eigen::Vector2d out_point;
   double x = point[0], y = point[1], z = point[2];
 
-  if (z <= 0) {
+  if (z == 0) {
     outside_domain = true; 
     return {};
   }

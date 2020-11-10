@@ -51,10 +51,9 @@ opt<Eigen::Vector2d>
   lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, coords[0], coords[1],
                                     &pixel_out[0], &pixel_out[1]);
 
-  if (lb_error_ != LADYBUG_OK) {
+  //unrectify function returns (-1,-1) if point projects outside of field of view
+  if ((int)pixel_out[0] == -1 && (int)pixel_out[1] == -1)
     outside_domain = true; 
-    return {};
-  }
                                     
   if (PixelInImage(pixel_out)) { return pixel_out; }
   return {};

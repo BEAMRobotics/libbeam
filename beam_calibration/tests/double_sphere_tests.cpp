@@ -141,24 +141,7 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     REQUIRE(!ray.has_value());
   }
 
-  // create random test points
-  int numRandomCases2 = 30;
-  double min_x = -2;
-  double max_x = 2;
-  double min_y = -2;
-  double max_y = 2;
-  double min_z = -2;
-  double max_z = -10;
-  for (int i = 0; i < numRandomCases2; i++) {
-    double x = fRand(min_x, max_x);
-    double y = fRand(min_y, max_y);
-    double z = fRand(min_z, max_z);
-    Eigen::Vector3d point(x, y, z);
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    REQUIRE(!pixel.has_value());
-  }
-
-  // create random test points that result in invalid projections
+  bool outside_domain = false;
 
   Eigen::VectorXd intrinsics = camera_model_->GetIntrinsics(); 
 
@@ -173,35 +156,47 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
   }
   double w2 = (w1 + eps) / sqrt(2 * w1 * eps + eps * eps + 1);
 
-  bool outside_domain = false;
-
   /*
-   * point invalid if point[2] > -w2 * d1 
-   * point[2]^2 > w2^2 * (point[0]^2 + point[1]^2) / (1-w2^2) 
+   * point invalid if point[2] <= -w2 * d1 =>
+   * -point[2]^2 <= w2^2 * (point[0]^2 + point[1]^2) / (1-w2^2) 
    */
+
+  // create random test points
+  int numRandomCases2 = 30;
+  double min_x = -2;
+  double max_x = 2;
+  double min_y = -2;
+  double max_y = 2;
+  double min_z = -2;
+  double max_z = -10;
+  for (int i = 0; i < numRandomCases2; i++) {
+    double x = fRand(min_x, max_x);
+    double y = fRand(min_y, max_y);
+    double z = fRand(min_z, max_z);
+    Eigen::Vector3d point(x, y, z);
+    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
+    REQUIRE(!pixel.has_value());
+    if (point[2] > -w2*sqrt(pow(point[0],2) + pow(point[1],2) + pow(point[2],2))){
+      REQUIRE(outside_domain == false);
+    }
+  }
+
+  // create random test points that result in invalid projections
   int numRandomCases3 = 10; 
   double min_x_b = -4; 
   double max_x_b = 4; 
   double min_y_b = -4;
   double max_y_b = 4;
-  double min_z_off_b = 0.2; 
+  double min_z_off_b = 0; 
   double max_z_off_b = 2; 
   for (int i = 0; i < numRandomCases3; i++) {
     double x = fRand(min_x_b,max_x_b);
     double y = fRand(min_y_b,max_y_b);
-    double z = pow(w2,2) * (pow(x,2) + pow(y,2)) / (1-pow(w2,2)) + fRand(min_z_off_b, max_z_off_b);
+    double z = -sqrt(pow(w2,2) * (pow(x,2) + pow(y,2)) / (1-pow(w2,2))) - fRand(min_z_off_b, max_z_off_b);
     Eigen::Vector3d point(x, y, z);
-    printf("point x: %f\n", point[0]);
-    printf("point y: %f\n", point[1]);
-    printf("point z: %f\n", point[2]);
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
-    if (pixel.has_value()) {
-      printf ("pixel x: %f\n", pixel.value()[0]);
-      printf ("pixel y: %f\n", pixel.value()[1]);
-    }
     REQUIRE(!pixel.has_value());
     REQUIRE(outside_domain == true);
-    printf("passed ------------------------------------------------------\n");
   }
 
 }
