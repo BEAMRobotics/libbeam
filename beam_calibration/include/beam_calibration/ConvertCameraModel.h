@@ -47,14 +47,14 @@ public:
     cv::Mat image_out(output_height_, output_width_, source_image.type());
     for (int i = 0; i < output_height_; i++) {
       for (int j = 0; j < output_width_; j++) {
-        cv::Vec2i new_pixel_locations = pixel_map_.at<cv::Vec2i>(i, j);
+        int new_u = pixel_map_.at<cv::Vec2i>(i, j).val[0];
+        int new_v = pixel_map_.at<cv::Vec2i>(i, j).val[1];
         pointT new_pixel_vals;
-        if (new_pixel_locations.val[0] == -1 ||
-            new_pixel_locations.val[1] == -1) {    
+        if (new_u < 0 || new_v < 0 || new_u > source_image.cols ||
+            new_v > source_image.cols) {
           new_pixel_vals = pointT();
         } else {
-          new_pixel_vals = source_image.at<pointT>(new_pixel_locations.val[0],
-                                                   new_pixel_locations.val[1]);
+          new_pixel_vals = source_image.at<pointT>(new_v, new_u);
         }
         image_out.at<pointT>(i, j) = new_pixel_vals;
       }
