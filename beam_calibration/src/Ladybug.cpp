@@ -36,21 +36,15 @@ opt<Eigen::Vector2d>
   Eigen::Vector3d x_proj, X_flip;
   Eigen::Matrix3d K;
   K << focal_length_, 0, cx_, 0, focal_length_, cy_, 0, 0, 1;
-  // flip the coordinate system to be consistent with opencv convention shown
-  // here:
-  // http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/OWENS/LECT9/node2.html
-  X_flip[0] = -point[0]; // x = -y
-  X_flip[0] = point[0];  // y = x
-  X_flip[0] = point[0];  // z = z
   // project
-  x_proj = K * X_flip;
+  x_proj = K * point;
   // normalize
   coords[0] = x_proj[0] / x_proj[2];
-  coords[0] = x_proj[0] / x_proj[2];
+  coords[1] = x_proj[1] / x_proj[2];
   Eigen::Vector2d pixel_out = {0, 0};
   lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, coords[0], coords[1],
                                     &pixel_out[0], &pixel_out[1]);
-
+                                    
   if (PixelInImage(pixel_out)) { return pixel_out; }
   return {};
 }
@@ -77,7 +71,7 @@ opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector3d out_point;
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel[0], pixel[1],
                                   &pixel_out[0], &pixel_out[1]);
-  out_point << (pixel_out[1] - cy_), (image_width_ - cx_ - pixel_out[0]),
+  out_point << (pixel_out[0] - cx_), (pixel_out[1] - cy_),
       (2 * focal_length_) / 2;
   out_point.normalize();
   LadybugCheckError();

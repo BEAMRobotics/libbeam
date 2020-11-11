@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     PCL::PCL
     beam::calibration
     beam::utils
+    beam::depth
     OpenCV::OpenCV
     Eigen3::Eigen
   SOURCES
