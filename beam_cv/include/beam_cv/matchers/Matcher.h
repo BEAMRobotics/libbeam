@@ -5,8 +5,8 @@
 #pragma once
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace beam_cv {
 
@@ -23,6 +23,19 @@ public:
    * @brief Default destructor
    */
   ~Matcher() = default;
+
+  /** Remove outliers between matches using epipolar constraints
+   *
+   * @param matches the unfiltered matches computed from two images
+   * @param keypoints_1 the keypoints from the first image
+   * @param keypoints_2 the keypoints from the second image
+   *
+   * @return the filtered matches
+   */
+  std::vector<cv::DMatch>
+      RemoveOutliers(const std::vector<cv::DMatch>& matches,
+                     const std::vector<cv::KeyPoint>& keypoints_1,
+                     const std::vector<cv::KeyPoint>& keypoints_2) const = 0;
 
   /** Matches keypoints descriptors between two images using the
    *  derived matcher.
