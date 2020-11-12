@@ -245,8 +245,8 @@ void Poses::LoadFromTXT(const std::string input_pose_file_path) {
     std::getline(infile, line, ',');
     if (line.length() > 0) {
       try {
-        int n_sec = std::stod(line.substr(line.length() - 9, line.length()));
-        int sec = std::stod(line.substr(0, line.length() - 9));
+        uint64_t n_sec = std::stod(line.substr(line.length() - 9, line.length()));
+        uint64_t sec = std::stod(line.substr(0, line.length() - 9));
         time_stamp_k.sec = sec;
         time_stamp_k.nsec = n_sec;
       } catch (const std::invalid_argument& e) {
