@@ -13,26 +13,16 @@
 #include <beam_cv/detectors/Detector.h>
 #include <beam_cv/matchers/Matcher.h>
 
-#include <beam_cv/LandmarkContainer.h>
+#include <beam_containers/LandmarkContainer.h>
+#include <beam_containers/LandmarkMeasurement.h>
 
 #include <beam_cv/Utils.h>
 #include <beam_utils/utils.hpp>
 
 namespace beam_cv {
 
-struct LandmarkMeasurement {
-  std::chrono::steady_clock::time_point time_point;
-  size_t landmark_id;
-  size_t sensor_id;
-  size_t image;
-  Eigen::Vector2f value;
-  LandmarkMeasurement(const std::chrono::steady_clock::time_point& t,
-                      const size_t& s, const size_t& id, const size_t& img,
-                      const Eigen::Vector2f& v)
-      : time_point{t}, sensor_id{s}, landmark_id{id}, image{img}, value{v} {} {}
-};
-
 using FeatureTrack = std::vector<LandmarkMeasurement>;
+using beam_containers;
 
 /** Image tracker class.
  * The Tracker class is templated on a feature detector, descriptor, and matcher
@@ -44,11 +34,11 @@ using FeatureTrack = std::vector<LandmarkMeasurement>;
 template <typename TDetector, typename TDescriptor, typename TMatcher>
 class Tracker {
 public:
-  /** Default constructor
-   *
+  /** @brief Default constructor
    * @param detector detector object (FAST, ORB, etc...)
    * @param descriptor descriptor object (BRISK, ORB, etc...)
    * @param matcher matcher object (BruteForceMatcher, FLANN)
+   * @param window_size to keep for online use
    */
   Tracker(TDetector detector, TDescriptor descriptor, TMatcher matcher,
           int window_size = 0)
@@ -63,25 +53,21 @@ public:
 
   ~Tracker() = default;
 
-  /** Get the tracks of all features in the requested image from the sequence.
-   *
+  /** @brief Get the tracks of all features in the requested image from the sequence.
    * @param img_num the number of the image to obtain tracks from
    * @return tracks corresponding to all detected landmarks in the image, from
    * the start of time to the given image.
    */
   std::vector<FeatureTrack> GetTracks(const size_t img_num) const;
 
-  /** Track features within an image (presumably the next in a sequence).
-   *
+  /** @brief Track features within an image (presumably the next in a sequence).
    * @param image the image to add.
    * @param current_time the time at which the image was captured
-   * @return image_id
    */
-  size_t AddImage(const cv::Mat& image,
-                  const std::chrono::steady_clock::time_point& current_time);
+  void AddImage(const cv::Mat& image,
+                const std::chrono::steady_clock::time_point& current_time);
 
-  /** Draw tracks for the requested image.
-   *
+  /** @brief Draw tracks for the requested image.
    * @param img_num the number of the image within the sequence
    * @param image the image to draw the tracks on
    * @return the image with the tracks illustrated as arrows.
@@ -89,8 +75,7 @@ public:
   cv::Mat DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
                      const cv::Mat& image) const;
 
-  /** Offline feature tracking, using list of images already loaded.
-   *
+  /** @brief Offline feature tracking, using list of images already loaded.
    * @param image_sequence the sequence of images to analyze.
    * @return the vector of FeatureTracks in each image.
    */
@@ -128,7 +113,7 @@ private:
   std::map<size_t, std::chrono::steady_clock::time_point> img_times_;
 
   // Measurement container variables
-  beam_cv::LandmarkContainer<LandmarkMeasurement> landmarks_;
+  LandmarkContainer<LandmarkMeasurement<size_t>> landmarks_;
 
   // The sensor ID. TODO: Expand this for use with multiple cams.
   int sensor_id_ = 0;
@@ -154,11 +139,7 @@ private:
   /** @brief Register the current time with the current img_count
    * @param current_time the time at which this image was received
    */
-  void TimestampImage(
-      const std::chrono::steady_clock::time_point& current_time) {
-    auto img_count = this->img_times_.size();
-    this->img_times_[img_count] = current_time;
-  }
+  void TimestampImage(const std::chrono::steady_clock::time_point& current_time);
 
   /** @brief Cleans out the LandmarkMeasurementContainer for images outside the
    *  requested window_size.

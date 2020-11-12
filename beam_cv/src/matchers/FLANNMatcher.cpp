@@ -1,5 +1,7 @@
 #include <beam_cv/matchers/FLANNMatcher.h>
 
+namespace beam_cv {
+
 FLANNMatcher::FLANNMatcher(const int flann_method, const double ratio_threshold,
                            const bool auto_remove_outliers, const bool use_knn,
                            const int fm_method, const int distance_threshold) {
@@ -28,7 +30,7 @@ FLANNMatcher::FLANNMatcher(const int flann_method, const double ratio_threshold,
     cv::FlannBasedMatcher matcher(
         cv::makePtr<cv::flann::CompositeIndexParams>(),
         cv::makePtr<cv::flann::SearchParams>());
-    this->flann_matcher = cv::makePtr<cv::FlannBasedMatcher>(matcher);
+    this->flann_matcher_ = cv::makePtr<cv::FlannBasedMatcher>(matcher);
   } else if (this->flann_method_ == FLANN::LSH) {
     // Create LSH params with default values. These are values recommended
     // by Kaehler and Bradski - the LSH struct in OpenCV does not have
@@ -44,12 +46,10 @@ FLANNMatcher::FLANNMatcher(const int flann_method, const double ratio_threshold,
   }
 }
 
-std::vector<cv::DMatch>
-    FLANNMatcher::MatchDescriptors(cv::Mat& descriptors_1,
-                                   cv::Mat& descriptors_2,
-                                   const std::vector<cv::KeyPoint>& keypoints_1,
-                                   const std::vector<cv::KeyPoint>& keypoints_2,
-                                   cv::InputArray mask = cv::noArray()) {
+std::vector<cv::DMatch> FLANNMatcher::MatchDescriptors(
+    cv::Mat& descriptors_1, cv::Mat& descriptors_2,
+    const std::vector<cv::KeyPoint>& keypoints_1,
+    const std::vector<cv::KeyPoint>& keypoints_2, cv::InputArray mask) {
   std::vector<cv::DMatch> filtered_matches;
   // The FLANN matcher (except for the LSH method) requires the descriptors
   // to be of type CV_32F (float, from 0-1.0). Some descriptors
@@ -143,8 +143,7 @@ std::vector<cv::DMatch>
   // Keep any match that is less than the rejection heuristic times minimum
   // distance
   for (auto& match : matches) {
-    if (match.distance <=
-        this->current_config.distance_threshold * min_distance) {
+    if (match.distance <= this->distance_threshold_ * min_distance) {
       filtered_matches.push_back(match);
     }
   }
@@ -158,9 +157,10 @@ std::vector<cv::DMatch> FLANNMatcher::FilterMatches(
     // Calculate ratio between two best matches. Accept if less than
     // ratio heuristic
     float ratio = match[0].distance / match[1].distance;
-    if (ratio <= this->current_config.ratio_threshold) {
+    if (ratio <= this->ratio_threshold_) {
       filtered_matches.push_back(match[0]);
     }
   }
   return filtered_matches;
 }
+}; // namespace beam_cv

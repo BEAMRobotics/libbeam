@@ -14,25 +14,30 @@ namespace beam_cv {
 /**
  * @brief Enum class for different FLANN types
  */
-enum class FLANN { KDTree = 1, KMeans = 2, Composite = 3, LSH = 4 };
+namespace FLANN {
+enum { KDTree = 1, KMeans = 2, Composite = 3, LSH = 4 };
+};
 
 /** Representation of a descriptor matcher using the FLANN algorithm.
- *
  *  Internally, this class is wrapping OpenCV's FLANNBasedMatcher module.
  *  Further reference on the BFMatcher can be found here:
  *  http://docs.opencv.org/trunk/dc/de2/classcv_1_1FlannBasedMatcher.html
  */
 class FLANNMatcher : public Matcher {
 public:
-  /** Default constructor. The user can also specify their own struct with
-   *  desired values. If no struct is provided, default values are used.
-   *
+  /** @brief Default constructor. The user can also specify their own struct
+   * with desired values. If no struct is provided, default values are used.
    */
   FLANNMatcher(const int flann_method = FLANN::KDTree,
                const double ratio_threshold = 0.8,
                const bool auto_remove_outliers = true,
                const bool use_knn = true, const int fm_method = cv::FM_RANSAC,
                const int distance_threshold = 5);
+
+  /**
+   * @brief Default destructor
+   */
+  ~FLANNMatcher() override = default;
 
   /** Remove outliers between matches using epipolar constraints
    *

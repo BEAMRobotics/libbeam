@@ -11,6 +11,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
   SOURCES
     src/Utils.cpp
+    src/Raycast.cpp
+    #src/Tracker.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp

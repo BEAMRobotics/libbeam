@@ -2,7 +2,7 @@
 
 namespace beam_cv {
 
-using namespace beam_cv; 
+using namespace beam_cv;
 
 // Private Functions
 template <typename TDetector, typename TDescriptor, typename TMatcher>
@@ -11,6 +11,12 @@ void Tracker<TDetector, TDescriptor, TMatcher>::DetectAndCompute(
     cv::Mat& descriptor) {
   keypoints = this->detector.DetectFeatures(image);
   descriptor = this->descriptor.ExtractDescriptors(image, keypoints);
+}
+
+void Tracker<TDetector, TDescriptor, TMatcher>::TimestampImage(
+    const std::chrono::steady_clock::time_point& current_time) {
+  auto img_count = this->img_times_.size();
+  this->img_times_[img_count] = current_time;
 }
 
 template <typename TDetector, typename TDescriptor, typename TMatcher>
@@ -44,15 +50,16 @@ std::map<int, size_t>
       auto img_count = this->img_times.size() - 1;
       // Emplace LandmarkMeasurement into LandmarkMeasurementContainer
       this->landmarks_.Emplace(this->img_times.at(img_count), this->sensor_id,
-                              curr_ids.at(m.trainIdx), img_count, landmark);
+                               curr_ids.at(m.trainIdx), img_count, landmark);
     } else {
       // Else, assign new ID
-      auto id = this->generateFeatureID();
+      auto id = this->GenerateFeatureID();
       this->prev_ids[m.queryIdx] = id;
       curr_ids[m.trainIdx] = this->prev_ids.at(m.queryIdx);
       // Since keypoint was not a match before, need to add previous and
       // current points to measurement container
-      Eigen::Vector2d prev_landmark = ConvertKeypoint(this->prev_kp.at(m.queryIdx));
+      Eigen::Vector2d prev_landmark =
+          ConvertKeypoint(this->prev_kp.at(m.queryIdx));
       Eigen::Vector2d curr_landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
       // Find previous and current times from lookup table
       // Subtract one, since images are zero indexed.
@@ -62,11 +69,12 @@ std::map<int, size_t>
       const auto& curr_time = this->img_times.at(curr_img);
       // Add previous and current landmarks to container
       this->landmarks_.Emplace(prev_time, this->sensor_id,
-                              this->prev_ids.at(m.queryIdx), prev_img,
-                              prev_landmark);
+                               this->prev_ids.at(m.queryIdx), prev_img,
+                               prev_landmark);
 
       this->landmarks_.Emplace(curr_time, this->sensor_id,
-                              curr_ids.at(m.trainIdx), curr_img, curr_landmark);
+                               curr_ids.at(m.trainIdx), curr_img,
+                               curr_landmark);
     }
   }
 

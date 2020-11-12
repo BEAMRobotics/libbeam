@@ -22,7 +22,7 @@ public:
   /**
    * @brief Default destructor
    */
-  ~Matcher() = default;
+  virtual ~Matcher() = default;
 
   /** Remove outliers between matches using epipolar constraints
    *
@@ -32,7 +32,7 @@ public:
    *
    * @return the filtered matches
    */
-  std::vector<cv::DMatch>
+  virtual std::vector<cv::DMatch>
       RemoveOutliers(const std::vector<cv::DMatch>& matches,
                      const std::vector<cv::KeyPoint>& keypoints_1,
                      const std::vector<cv::KeyPoint>& keypoints_2) const = 0;
@@ -57,6 +57,30 @@ public:
                        const std::vector<cv::KeyPoint>& keypoints_1,
                        const std::vector<cv::KeyPoint>& keypoints_2,
                        cv::InputArray mask) = 0;
+
+protected:
+  /** Filter matches using a heuristic based method.
+   *
+   *  If the distance between matches is less than the defined heuristic, it
+   *  is rejected.
+   *
+   *  @param matches the unfiltered matches computed from two images.
+   *
+   *  @return the matches with outliers removed.
+   */
+  virtual std::vector<cv::DMatch>
+      FilterMatches(const std::vector<cv::DMatch>& matches) const = 0;
+
+  /** Overloaded method, which takes in a vector of a vector of matches. This
+   *  is designed to be used with the knnMatchDescriptors method, and uses the
+   *  ratio test to filter the matches.
+   *
+   *  @param matches the unfiltered matches computed from two images.
+   *
+   *  @return the filtered matches.
+   */
+  virtual std::vector<cv::DMatch> FilterMatches(
+      const std::vector<std::vector<cv::DMatch>>& matches) const = 0;
 };
 
 } // namespace beam_cv
