@@ -12,27 +12,45 @@
 
 struct CameraProjectionFunctor {
   CameraProjectionFunctor(
-      const std::shared_ptr<beam_calibration::CameraModel>& camera_model)
-      : camera_model_(camera_model) {}
+      const std::shared_ptr<beam_calibration::CameraModel>& camera_model, 
+      Eigen::Vector2d pixel_detected)
+      : camera_model_(camera_model), pixel_detected_(pixel_detected) {}
 
   bool operator()(const double* P, double* pixel) const {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
+    bool outside_domain = false;
     std::optional<Eigen::Vector2d> pixel_projected =
-        camera_model_->ProjectPointPrecise(P_CAMERA_eig);
-    //get image dims to set residual to large value proportionate to image size
+        camera_model_->ProjectPointPrecise(P_CAMERA_eig, outside_domain);
+
+    //get image dims in case projection fails
     uint16_t height = camera_model_->GetHeight() != 0 ? camera_model_->GetHeight() : 5000; 
     uint16_t width = camera_model_->GetWidth() != 0 ? camera_model_->GetWidth() : 5000;
-    if (!pixel_projected.has_value()) {
-      pixel[0] = 2*height;  // set the residual to a large value if the projection fails 
-      pixel[1] = 2*width;  
-      return false; 
+
+    if (pixel_projected.has_value()) {
+      pixel[0] = pixel_projected.value()[0];
+      pixel[1] = pixel_projected.value()[1];
     }
-    pixel[0] = pixel_projected.value()[0];
-    pixel[1] = pixel_projected.value()[1];
-    return true;
+    else {
+      //if the projection failed, set the projected point to be the nearest edge point to the detected point
+      int near_u = (width - pixel_detected_[0]) < pixel_detected_[0] ? width : 0; 
+      int dist_u = (width - pixel_detected_[0]) < pixel_detected_[0] ? (width - pixel_detected_[0]) : pixel_detected_[0]; 
+      int near_v = (height - pixel_detected_[1]) < pixel_detected_[1] ? height : 0; 
+      int dist_v = (height - pixel_detected_[1]) < pixel_detected_[1] ? (height - pixel_detected_[1]) : pixel_detected_[1]; 
+      if (dist_u <= dist_v) {
+        pixel[0] = near_u; 
+        pixel[1] = pixel_detected_[1];
+      }
+      else {
+        pixel[0] = pixel_detected_[0]; 
+        pixel[1] = near_v;
+      }
+    }
+
+    return outside_domain;
   }
 
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
+  Eigen::Vector2d pixel_detected_;
 };
 
 struct CeresReprojectionCostFunction {
@@ -45,7 +63,7 @@ struct CeresReprojectionCostFunction {
         compute_projection.reset(new ceres::CostFunctionToFunctor<2, 3>(
           new ceres::NumericDiffCostFunction<CameraProjectionFunctor,
                                            ceres::CENTRAL, 2, 3>(
-            new CameraProjectionFunctor(camera_model_))));
+            new CameraProjectionFunctor(camera_model_, pixel_detected))));
   }
 
   template <typename T>
@@ -64,13 +82,29 @@ struct CeresReprojectionCostFunction {
 
     const T* P_CAMERA_const = &(P_CAMERA[0]);
 
+    bool outside_domain = false;
+
     T pixel_projected[2];
-    (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
+    outside_domain = (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
+
+/*
+    double* pixel_projected_ptr = &(pixel_projected[0]);
+
+    printf("%f\n", pixel_projected_ptr[0]); 
+*/
 
     residuals[0] = pixel_detected_.cast<T>()[0] - pixel_projected[0];
     residuals[1] = pixel_detected_.cast<T>()[1] - pixel_projected[1];
+    
 
-    return true;
+    //need to handle outside domain failure differently for ladybug camera model 
+    //since all points projecting out of frame provoke this failure
+    if (camera_model_->GetType() == beam_calibration::CameraType::LADYBUG) 
+      return true; // returning outside_domain here would crash many viable solutions, error checking must be done in calling code
+    else 
+      return !outside_domain; // all other camera models have valid out-of-domain conditions that should be avoided
+
+   return true;
     
   }
 

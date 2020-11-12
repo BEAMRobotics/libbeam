@@ -633,7 +633,6 @@ TEST_CASE("Test rt projection - with clipping") {
 
   }
   
-  // with noise, precision will be lower than perfect projection
   REQUIRE(util::RoundMatrix(T_CW, 5) ==
           util::RoundMatrix(T_CW_opt1, 5));
   REQUIRE(util::RoundMatrix(T_CW, 5) ==
