@@ -57,4 +57,43 @@ std::vector<cv::Mat> SegmentComponents(const cv::Mat& image);
 std::map<int, std::vector<cv::Point2i>>
     ConnectedComponents(const cv::Mat& image);
 
+/** @brief Convert a single cv::KeyPoint to Eigen::Vector2d
+ * @param keypoint input keypoint
+ * @param vec_keypoints converted keypoint
+ */
+Eigen::Vector2d ConvertKeypoint(const cv::KeyPoint& keypoint);
+
+/** @brief Convert a single cv::Point2f to Eigen::Vector2d
+ * @param keypoint input keypoint
+ * @param vec_keypoints converted keypoint
+ */
+Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint);
+
+/** @brief Convert a single Eigen::Vector2d to cv::Point2f
+ * @param keypoint input keypoint
+ * @param vec_keypoints converted keypoint
+ */
+cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint);
+
+/** @brief Convert a vector of cv::KeyPoint to a vector of Eigen::Vector2d
+ * @param keypoints input keypoints
+ * @param vec_keypoints converted keypoints
+ */
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::KeyPoint>& keypoints);
+
+/** @brief Convert a vector of cv::Point2f to a vector of Eigen::Vector2d
+ * @param keypoints input keypoints
+ * @param vec_keypoints converted keypoints
+ */
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::Point2f>& keypoints);
+
+/** @brief Convert a vector of Eigen::Vector2d to a vector of cv::Point2f
+ * @param keypoints input keypoints
+ * @param vec_keypoints converted keypoints
+ */
+std::vector<cv::Point2f>
+    ConvertKeypoints(const std::vector<Eigen::Vector2d>& keypoints);
+
 } // namespace beam_cv

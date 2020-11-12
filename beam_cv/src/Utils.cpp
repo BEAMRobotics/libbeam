@@ -216,4 +216,44 @@ void SaveDepthImageBW(const cv::Mat& depth_image, const std::string& path) {
   cv::imwrite(path, depth_bw);
 }
 
+Eigen::Vector2d ConvertKeypoint(const cv::KeyPoint& keypoint) {
+  Eigen::Vector2d vec_keypoint(keypoint.pt.x, keypoint.pt.y);
+  return vec_keypoint;
+}
+
+Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint) {
+  Eigen::Vector2d vec_keypoint(keypoint.x, keypoint.y);
+  return vec_keypoint;
+}
+
+cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint) {
+  cv::Point2f cv_keypoint((float)keypoint(0), (float)keypoint(1));
+  return cv_keypoint;
+}
+
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::KeyPoint>& keypoints) {
+  std::vector<Eigen::Vector2d> vec_keypoints;
+  for (const auto& k : keypoints) {
+    vec_keypoints.emplace_back(k.pt.x, k.pt.y);
+  }
+  return vec_keypoints;
+}
+
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::Point2f>& keypoints) {
+  std::vector<Eigen::Vector2d> vec_keypoints;
+  for (const auto& k : keypoints) { vec_keypoints.emplace_back(k.x, k.y); }
+  return vec_keypoints;
+}
+
+std::vector<cv::Point2f>
+    ConvertKeypoints(const std::vector<Eigen::Vector2d>& keypoints) {
+  std::vector<cv::Point2f> cv_keypoints;
+  for (const auto& k : keypoints) {
+    cv_keypoints.emplace_back((float)k(0), (float)k(1));
+  }
+  return cv_keypoints;
+}
+
 } // namespace beam_cv
