@@ -9,10 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <beam_cv/descriptor/Descriptor.h>
-#include <beam_cv/detectors/Detector.h>
-#include <beam_cv/matchers/Matcher.h>
-
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
 
@@ -51,9 +47,13 @@ public:
     }
   }
 
+  /**
+   * @brief Default destructor
+   */
   ~Tracker() = default;
 
-  /** @brief Get the tracks of all features in the requested image from the sequence.
+  /** @brief Get the tracks of all features in the requested image from the
+   * sequence.
    * @param img_num the number of the image to obtain tracks from
    * @return tracks corresponding to all detected landmarks in the image, from
    * the start of time to the given image.
@@ -139,7 +139,8 @@ private:
   /** @brief Register the current time with the current img_count
    * @param current_time the time at which this image was received
    */
-  void TimestampImage(const std::chrono::steady_clock::time_point& current_time);
+  void
+      TimestampImage(const std::chrono::steady_clock::time_point& current_time);
 
   /** @brief Cleans out the LandmarkMeasurementContainer for images outside the
    *  requested window_size.
