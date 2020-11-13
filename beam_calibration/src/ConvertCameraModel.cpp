@@ -29,12 +29,16 @@ std::shared_ptr<CameraModel> ConvertCameraModel::CreateDefaultCameraModel(
         "first 4 elements in the source camera model are fx, fy, cx, and cy, "
         "respectively."};
   }
-  
+
   Eigen::Matrix<double, 8, 1> intrinsics;
   intrinsics(0, 0) = source_model->GetIntrinsics()[0];
   intrinsics(1, 0) = source_model->GetIntrinsics()[1];
-  intrinsics(2, 0) = source_model->GetIntrinsics()[2];
-  intrinsics(3, 0) = source_model->GetIntrinsics()[3];
+  // intrinsics(2, 0) = source_model->GetIntrinsics()[2];
+  // intrinsics(3, 0) = source_model->GetIntrinsics()[3];
+  // intrinsics(0, 0) = output_width_;
+  // intrinsics(1, 0) = output_width_;
+  intrinsics(2, 0) = output_width_ / 2;
+  intrinsics(3, 0) = output_height_ / 2;
   intrinsics(4, 0) = 0;
   intrinsics(5, 0) = 0;
   intrinsics(6, 0) = 0;
@@ -52,6 +56,19 @@ void ConvertCameraModel::CreatePixelMap(
       source_model->GetHeight() > std::numeric_limits<int32_t>::max()) {
     throw std::invalid_argument{"Input image too large."};
   }
+
+  std::cout << "Input size: [" << source_model->GetHeight() << ", "
+            << source_model->GetWidth() << "]\n"
+            << "Output size: [" << output_model->GetHeight() << ", "
+            << output_model->GetWidth() << "]\n"
+            << "Input Intrinsics: [" << source_model->GetIntrinsics()[0] << ", "
+            << source_model->GetIntrinsics()[1] << ", "
+            << source_model->GetIntrinsics()[2] << ", "
+            << source_model->GetIntrinsics()[3] << "]\n"
+            << "Output Intrinsics: [" << output_model->GetIntrinsics()[0]
+            << ", " << output_model->GetIntrinsics()[1] << ", "
+            << output_model->GetIntrinsics()[2] << ", "
+            << output_model->GetIntrinsics()[3] << "]\n";
 
   pixel_map_ = cv::Mat(output_height_, output_width_, CV_32SC2);
   for (int i = 0; i < output_height_; i++) {

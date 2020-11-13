@@ -47,6 +47,7 @@ void SaveImage(const std::string& image_name, const cv::Mat& image) {
   cv::imwrite(full_name, image);
 }
 
+/*
 TEST_CASE("Test converting a Radtan Image to the same model") {
   // load model that created the image
   std::shared_ptr<beam_calibration::CameraModel> source_model =
@@ -101,6 +102,7 @@ TEST_CASE("Test converting a Radtan Image to the same model") {
   SaveImage("test_case_1_image_original.png", source_image);
   SaveImage("test_case_1_image_new.png", output_image);
 }
+*/
 
 TEST_CASE("Test distorting and undistoring a radtan simulation image") {
   // load model that created the image
@@ -134,7 +136,7 @@ TEST_CASE("Test distorting and undistoring a radtan simulation image") {
 
   // undistort image
   beam_calibration::ConvertCameraModel distorted_to_no_distortion(
-      distorted_model, width, height, source_model);
+      distorted_model, width, height);
   cv::Mat undistorted_image =
       distorted_to_no_distortion.ConvertImage<cv::Vec3b>(distorted_image);
 
@@ -167,13 +169,24 @@ TEST_CASE("Test distorting and undistoring a radtan simulation image") {
 
 TEST_CASE("Test undistorting a ladybug image") {
   if (!run_ladybug_test_) { REQUIRE(true); }
+
   std::shared_ptr<beam_calibration::CameraModel> source_model =
       LoadLadybugCameraModel();
+
+  Eigen::Vector3d point(0,0,1);
+  Eigen::Vector2d pixel = source_model->ProjectPointPrecise(point).value();
+  std::cout << "Point: \n" << point << "\n";
+  std::cout << "Projected Pixel: \n" << pixel << "\n";
+
   std::string image_path = GetDataPath("ladybug_camera_3_image2.png");
   cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
 
+  std::shared_ptr<beam_calibration::CameraModel> distorted_model =
+      LoadRadtanModel("camera_model_conversion_test_intrinsics_ladybug.json");
+
   beam_calibration::ConvertCameraModel converter(
-      source_model, source_model->GetWidth(), source_model->GetHeight());
+      source_model, source_model->GetWidth(), source_model->GetHeight(),
+      distorted_model);
 
   cv::Mat output_image;
   REQUIRE_NOTHROW(output_image =

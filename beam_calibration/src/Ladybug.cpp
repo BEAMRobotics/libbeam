@@ -20,13 +20,13 @@ Ladybug::Ladybug(const std::string& file_path) {
   lb_error_ =
       ladybugGetCameraUnitFocalLength(lb_context_, cam_id_, &focal_length_);
   LadybugCheckError();
-  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cx_, &cy_);
+  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cy_, &cx_);
   LadybugCheckError();
 
   SetImageDims(LB_FULL_HEIGHT_, LB_FULL_WIDTH_);
   // Set intrinsics vector
   intrinsics_.resize(4);
-  intrinsics_ << focal_length_, focal_length_, cy_, cx_;
+  intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
 opt<Eigen::Vector2d>
@@ -34,20 +34,25 @@ opt<Eigen::Vector2d>
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
 
-  Eigen::Vector2d coords;
-  Eigen::Vector3d x_proj, X_flip;
-  Eigen::Matrix3d K;
-  K << focal_length_, 0, cx_, 0, focal_length_, cy_, 0, 0, 1;
+  // change the coordinate frame to match ladybug's
+  // {x = -y, y = x, z = z}
+  // double x = -point[1];
+  // double y = point[0];
+  // double z = point[2];
+  double x = point[0];
+  double y = point[1];
+  double z = point[2];
+
   // project
-  x_proj = K * point;
-  // normalize
-  coords[0] = x_proj[0] / x_proj[2];
-  coords[1] = x_proj[1] / x_proj[2];
-  Eigen::Vector2d pixel_out = {0, 0};
-  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, coords[0], coords[1],
-                                    &pixel_out[0], &pixel_out[1]);
+  Eigen::Vector2d point_projected;
+  point_projected[0] = focal_length_ * x / z + cx_;
+  point_projected[1] = focal_length_ * y / z + cy_;
+
+  Eigen::Vector2d pixel_rectified(0,0);
+  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, point_projected[0], point_projected[1],
+                                    &pixel_rectified[0], &pixel_rectified[1]);
                                     
-  if (PixelInImage(pixel_out)) { return pixel_out; }
+  if (PixelInImage(pixel_rectified)) { return pixel_rectified; }
   return {};
 }
 
@@ -86,10 +91,10 @@ void Ladybug::SetCameraID(unsigned int id) {
   lb_error_ =
       ladybugGetCameraUnitFocalLength(lb_context_, cam_id_, &focal_length_);
   LadybugCheckError();
-  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cx_, &cy_);
+  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cy_, &cx_);
   LadybugCheckError();
 
-  intrinsics_ << focal_length_, focal_length_, cy_, cx_;
+  intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
 void Ladybug::LadybugCheckError() {

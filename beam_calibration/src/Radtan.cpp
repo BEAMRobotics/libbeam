@@ -29,6 +29,14 @@ Radtan::Radtan(uint32_t image_height, uint32_t image_width,
   intrinsics_[5] = intrinsics(5, 0);
   intrinsics_[6] = intrinsics(6, 0);
   intrinsics_[7] = intrinsics(7, 0);
+  fx_ = intrinsics_[0];
+  fy_ = intrinsics_[1];
+  cx_ = intrinsics_[2];
+  cy_ = intrinsics_[3];
+  k1_ = intrinsics_[4];
+  k2_ = intrinsics_[5];
+  p1_ = intrinsics_[6];
+  p2_ = intrinsics_[7];
 }
 
 opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point) {
