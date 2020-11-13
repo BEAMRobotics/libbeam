@@ -71,6 +71,12 @@ public:
    */
   void SetCameraID(unsigned int id);
 
+  /**
+   * @brief Method for determinig pixel map to transform to a distrionless
+   * radtan model
+   */
+  cv::Mat GetUnrectifyMap();
+
 protected:
   /**
    * @brief Checks if recent api call caused an error

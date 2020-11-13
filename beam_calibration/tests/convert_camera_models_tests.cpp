@@ -11,6 +11,7 @@
 
 bool save_images_ = true;
 bool run_ladybug_test_ = true;
+bool run_kb_test_ = false;
 std::string save_path_ = "/tmp/convert_camera_models_tests/";
 
 std::string GetDataPath(const std::string& filename) {
@@ -26,6 +27,13 @@ std::shared_ptr<beam_calibration::CameraModel> LoadLadybugCameraModel() {
   std::string intrinsics_location = GetDataPath("ladybug.conf");
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
       std::make_shared<beam_calibration::Ladybug>(intrinsics_location);
+  return camera_model;
+}
+
+std::shared_ptr<beam_calibration::CameraModel> LoadKBCameraModel() {
+  std::string intrinsics_location = GetDataPath("KB_test.json");
+  std::shared_ptr<beam_calibration::CameraModel> camera_model =
+      std::make_shared<beam_calibration::KannalaBrandt>(intrinsics_location);
   return camera_model;
 }
 
@@ -173,16 +181,27 @@ TEST_CASE("Test undistorting a ladybug image") {
   std::shared_ptr<beam_calibration::CameraModel> source_model =
       LoadLadybugCameraModel();
 
-  Eigen::Vector3d point(0,0,1);
-  Eigen::Vector2d pixel = source_model->ProjectPointPrecise(point).value();
+  std::shared_ptr<beam_calibration::CameraModel> distorted_model =
+      LoadRadtanModel("camera_model_conversion_test_intrinsics_ladybug.json");
+
+  Eigen::Vector2i center(1045, 1212);
+  Eigen::Vector3d ray = distorted_model->BackProject(center).value();
+  std::cout << "Ray to image center: \n" << ray << "\n";
+  Eigen::Vector2i center_dest_model = source_model->ProjectPoint(ray).value();
+  std::cout << "Projected in source: \n" << center_dest_model << "\n";
+
+  Eigen::Vector3d point(0, 0, 1);
+  Eigen::Vector2i pixel = source_model->ProjectPoint(point).value();
   std::cout << "Point: \n" << point << "\n";
   std::cout << "Projected Pixel: \n" << pixel << "\n";
 
+  Eigen::Vector3d bp = source_model->BackProject(pixel).value();
+  std::cout << "Back Projected Pixel: \n" << bp << "\n";
+  Eigen::Vector2i pixel2 = distorted_model->ProjectPoint(bp).value();
+  std::cout << "Projected Pixel In Distorted: \n" << pixel2 << "\n";
+
   std::string image_path = GetDataPath("ladybug_camera_3_image2.png");
   cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
-
-  std::shared_ptr<beam_calibration::CameraModel> distorted_model =
-      LoadRadtanModel("camera_model_conversion_test_intrinsics_ladybug.json");
 
   beam_calibration::ConvertCameraModel converter(
       source_model, source_model->GetWidth(), source_model->GetHeight(),
@@ -193,4 +212,22 @@ TEST_CASE("Test undistorting a ladybug image") {
                       converter.ConvertImage<cv::Vec3b>(source_image));
   SaveImage("test_case_3_image_original.png", source_image);
   SaveImage("test_case_3_image_undistorted.png", output_image);
+}
+
+TEST_CASE("Test undistorting a kannala brandt image") {
+  if (!run_kb_test_) { REQUIRE(true); }
+  std::shared_ptr<beam_calibration::CameraModel> source_model =
+      LoadKBCameraModel();
+  std::shared_ptr<beam_calibration::CameraModel> distorted_model =
+      LoadRadtanModel("camera_model_conversion_test_intrinsics_kb.json");
+  std::string image_path = GetDataPath("img_08.png");
+  cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
+  beam_calibration::ConvertCameraModel converter(
+      source_model, source_model->GetWidth(), source_model->GetHeight(),
+      distorted_model);
+  cv::Mat output_image;
+  REQUIRE_NOTHROW(output_image =
+                      converter.ConvertImage<cv::Vec3b>(source_image));
+  SaveImage("test_case_4_image_original.png", source_image);
+  SaveImage("test_case_4_image_undistorted.png", output_image);
 }

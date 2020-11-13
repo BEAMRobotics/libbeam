@@ -108,7 +108,6 @@ opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {
   kp[1] = (pixel[1] - cy_) / fy_;
   Eigen::Vector2d undistorted = UndistortPixel(kp);
   out_point << undistorted[0], (undistorted[1]), 1;
-  out_point.normalize();
   return out_point;
 }
 

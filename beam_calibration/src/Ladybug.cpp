@@ -4,7 +4,7 @@ namespace beam_calibration {
 
 Ladybug::Ladybug(const std::string& file_path) {
   BEAM_INFO("Loading file: {}", file_path);
-  
+
   type_ = CameraType::LADYBUG;
   lb_error_ = ladybugCreateContext(&lb_context_);
   LadybugCheckError();
@@ -48,10 +48,11 @@ opt<Eigen::Vector2d>
   point_projected[0] = focal_length_ * x / z + cx_;
   point_projected[1] = focal_length_ * y / z + cy_;
 
-  Eigen::Vector2d pixel_rectified(0,0);
-  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, point_projected[0], point_projected[1],
-                                    &pixel_rectified[0], &pixel_rectified[1]);
-                                    
+  Eigen::Vector2d pixel_rectified(0, 0);
+  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, point_projected[0],
+                                    point_projected[1], &pixel_rectified[0],
+                                    &pixel_rectified[1]);
+
   if (PixelInImage(pixel_rectified)) { return pixel_rectified; }
   return {};
 }
@@ -78,9 +79,8 @@ opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector3d out_point;
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel[0], pixel[1],
                                   &pixel_out[0], &pixel_out[1]);
-  out_point << (pixel_out[0] - cx_), (pixel_out[1] - cy_),
-      (2 * focal_length_) / 2;
-  out_point.normalize();
+  out_point << (pixel_out[0] - cx_) / focal_length_,
+      (pixel_out[1] - cy_) / focal_length_, 1;
   LadybugCheckError();
   return out_point;
 }
@@ -102,6 +102,26 @@ void Ladybug::LadybugCheckError() {
     BEAM_CRITICAL("Ladybug threw an error: {}",
                   ladybugErrorToString(lb_error_));
   }
+}
+
+cv::Mat Ladybug::GetUnrectifyMap() {
+  cv::Mat pixel_map = cv::Mat(LB_FULL_HEIGHT_, LB_FULL_WIDTH_, CV_32SC2);
+  for (int i = 0; i < 2464; i++) {
+    for (int j = 0; j < 2048; j++) {
+      double x, y;
+      lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, j, i, &y, &x);
+      if (lb_error_ == LADYBUG_OK) {
+        int u = std::floor(x);
+        int v = std::floor(y);
+        pixel_map.at<cv::Vec2i>(i,j).val[0] = u; 
+        pixel_map.at<cv::Vec2i>(i,j).val[1] = v; 
+      } else{
+        pixel_map.at<cv::Vec2i>(i,j).val[0] = -1; 
+        pixel_map.at<cv::Vec2i>(i,j).val[1] = -1; 
+      }
+    }
+  }
+  return pixel_map;
 }
 
 } // namespace beam_calibration
