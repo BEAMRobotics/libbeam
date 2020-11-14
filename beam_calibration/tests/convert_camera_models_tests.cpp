@@ -175,6 +175,7 @@ TEST_CASE("Test distorting and undistoring a radtan simulation image") {
   REQUIRE(percent_correct > P);
 }
 
+
 TEST_CASE("Test undistorting a ladybug image") {
   if (!run_ladybug_test_) { REQUIRE(true); }
 
@@ -183,22 +184,11 @@ TEST_CASE("Test undistorting a ladybug image") {
 
   std::shared_ptr<beam_calibration::CameraModel> distorted_model =
       LoadRadtanModel("camera_model_conversion_test_intrinsics_ladybug.json");
-
-  Eigen::Vector2i center(1045, 1212);
-  Eigen::Vector3d ray = distorted_model->BackProject(center).value();
-  std::cout << "Ray to image center: \n" << ray << "\n";
-  Eigen::Vector2i center_dest_model = source_model->ProjectPoint(ray).value();
-  std::cout << "Projected in source: \n" << center_dest_model << "\n";
-
+  
   Eigen::Vector3d point(0, 0, 1);
   Eigen::Vector2i pixel = source_model->ProjectPoint(point).value();
   std::cout << "Point: \n" << point << "\n";
   std::cout << "Projected Pixel: \n" << pixel << "\n";
-
-  Eigen::Vector3d bp = source_model->BackProject(pixel).value();
-  std::cout << "Back Projected Pixel: \n" << bp << "\n";
-  Eigen::Vector2i pixel2 = distorted_model->ProjectPoint(bp).value();
-  std::cout << "Projected Pixel In Distorted: \n" << pixel2 << "\n";
 
   std::string image_path = GetDataPath("ladybug_camera_3_image2.png");
   cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);

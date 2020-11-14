@@ -104,24 +104,4 @@ void Ladybug::LadybugCheckError() {
   }
 }
 
-cv::Mat Ladybug::GetUnrectifyMap() {
-  cv::Mat pixel_map = cv::Mat(LB_FULL_HEIGHT_, LB_FULL_WIDTH_, CV_32SC2);
-  for (int i = 0; i < 2464; i++) {
-    for (int j = 0; j < 2048; j++) {
-      double x, y;
-      lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, j, i, &y, &x);
-      if (lb_error_ == LADYBUG_OK) {
-        int u = std::floor(x);
-        int v = std::floor(y);
-        pixel_map.at<cv::Vec2i>(i,j).val[0] = u; 
-        pixel_map.at<cv::Vec2i>(i,j).val[1] = v; 
-      } else{
-        pixel_map.at<cv::Vec2i>(i,j).val[0] = -1; 
-        pixel_map.at<cv::Vec2i>(i,j).val[1] = -1; 
-      }
-    }
-  }
-  return pixel_map;
-}
-
 } // namespace beam_calibration
