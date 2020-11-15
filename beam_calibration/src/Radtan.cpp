@@ -34,7 +34,6 @@ opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point, b
   out_point[0] = (fx_ * xx + cx_);
   out_point[1] = (fy_ * yy + cy_);
 
-  //printf ("%f, %f \n", out_point[0], out_point[1]);
 
   if (PixelInImage(out_point)) { return out_point; }
   return {};

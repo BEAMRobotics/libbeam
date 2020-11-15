@@ -30,7 +30,7 @@ Ladybug::Ladybug(const std::string& file_path) {
 
 opt<Eigen::Vector2d>
     Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
-  outside_domain = true;
+  outside_domain = false;
 
   // check if point is behind image plane
   if (point[2] < 0) { 
@@ -52,8 +52,10 @@ opt<Eigen::Vector2d>
                                     &pixel_out[0], &pixel_out[1]);
 
   //unrectify function returns (-1,-1) if point projects outside of field of view
-  if ((int)pixel_out[0] == -1 && (int)pixel_out[1] == -1)
+  if ((int)pixel_out[0] == -1 && (int)pixel_out[1] == -1) {
     outside_domain = true; 
+  }
+
                                     
   if (PixelInImage(pixel_out)) { return pixel_out; }
   return {};

@@ -524,10 +524,8 @@ TEST_CASE("Test rt projection - with clipping") {
       opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
       if (perturbed_pixel.has_value()) {
         perturbed_pixels[i] = perturbed_pixel.value();
-        printf("projected in frame \n");
       }
       else {
-        printf("initial perturbed point projected out-of-frame \n");
         Eigen::Vector2d zero(0,0);
         perturbed_pixels[i] = zero; //just set missing pixels to zero for visualization
       }
@@ -637,6 +635,190 @@ TEST_CASE("Test rt projection - with clipping") {
           util::RoundMatrix(T_CW_opt1, 5));
   REQUIRE(util::RoundMatrix(T_CW, 5) ==
           util::RoundMatrix(T_CW_opt2, 5));
+}
+
+/******************************************************************************************************************/
+// TEST CASE 4
+// radtan camera model projection with initial perturbed projection outside of camera model domain
+// ceres solution should fail on first iteration with "Solution Failed, Residual and Jacobian evaluation failed"
+/******************************************************************************************************************/
+
+TEST_CASE("Test rt projection - with invalid initial pose") {
+
+  //create point clouds for results visualization
+  pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_p;          //input cloud perturbed
+  pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_p_proj;     //input cloud perturbed projected
+  pcl::PointCloud<pcl::PointXYZ>::Ptr final_cloud_p_proj;     //final solved cloud projected
+  pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud;           //target "detected" cloud
+  Visualizer test3_vis("test_3_vis");
+
+  // create keypoints (larger spread than other test cases so perturbation for clipping doesn't have to be too great)
+  std::vector<Eigen::Vector4d, AlignVec4d> points;
+  double max_distance_x = 4, max_distance_y = 4, max_distance_z = 4;
+  for (int i = 0; i < 80; i++) {
+    double x = ((double)std::rand() / (RAND_MAX)-0.5) * 2 * max_distance_x;
+    double y = ((double)std::rand() / (RAND_MAX)-0.5) * 2 * max_distance_y;
+    double z = ((double)std::rand() / (RAND_MAX)-0) * 1 * max_distance_z;
+    Eigen::Vector4d point(x, y, z, 1);
+    points.push_back(point);
+  }
+
+  // Create intrinsics
+  std::string file_location = __FILE__;
+  file_location.erase(file_location.end() - 36, file_location.end());
+  file_location += "/config/CamFactorIntrinsics.json";
+  std::cout << file_location << std::endl;
+  std::shared_ptr<beam_calibration::CameraModel> camera_model =
+      beam_calibration::CameraModel::Create(file_location);
+
+  // Create initial transform 
+  Eigen::Matrix4d T_CW = Eigen::Matrix4d::Identity();
+  T_CW(2,3) = 4; //simple z translation to start
+
+  // create perturbed initial (different from first test case)
+  Eigen::VectorXd perturbation(6, 1);
+  perturbation << 0, 0, 0, 0, 0, -10;
+  Eigen::Matrix4d T_CW_pert = util::PerturbTransformDegM(T_CW, perturbation);  
+
+  // create projected (detected) points - no noise
+  std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
+  std::vector<bool> pixels_valid(points.size());
+  for (int i = 0; i < points.size(); i++) {
+    Eigen::Vector4d point_transformed = T_CW * points[i];
+    opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
+    if (pixel.has_value()) {
+      pixels_valid[i] = true;
+      pixels[i] = pixel.value();
+    } else {
+      pixels_valid[i] = false;
+    }
+  }
+
+  //Visualization - create target, input_cloud_p, input_cloud_p_proj cloud 
+  if (VISUALIZATION) {
+    target_cloud = util::MakePointCloud(pixels);
+
+    std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
+    std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
+
+    for (uint16_t i = 0; i < points.size(); i++) {
+      perturbed_points[i] = T_CW_pert * points[i];
+      opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
+      if (perturbed_pixel.has_value()) {
+        perturbed_pixels[i] = perturbed_pixel.value();
+      }
+      else {
+        Eigen::Vector2d zero(0,0);
+        perturbed_pixels[i] = zero; //just set missing pixels to zero for visualization
+      }
+    }
+
+    input_cloud_p = util::MakePointCloud(perturbed_points);
+    input_cloud_p_proj = util::MakePointCloud(perturbed_pixels);
+
+  }
+
+  // create values to optimize
+  Eigen::Matrix3d R1 = T_CW.block(0, 0, 3, 3);
+  Eigen::Quaternion<double> q1 = Eigen::Quaternion<double>(R1);
+  std::vector<double> results_perfect_init{
+      q1.w(), q1.x(), q1.y(), q1.z(), T_CW(0, 3), T_CW(1, 3), T_CW(2, 3)};
+  Eigen::Matrix3d R2 = T_CW_pert.block(0, 0, 3, 3);
+  Eigen::Quaternion<double> q2 = Eigen::Quaternion<double>(R2);
+  std::vector<double> results_perturbed_init{
+      q2.w(),          q2.x(),          q2.y(),         q2.z(),
+      T_CW_pert(0, 3), T_CW_pert(1, 3), T_CW_pert(2, 3)};
+  std::vector<double> initial_perturbed_init = results_perturbed_init;
+
+  // build problems
+  std::shared_ptr<ceres::Problem> problem1 = SetupCeresProblem();
+  std::shared_ptr<ceres::Problem> problem2 = SetupCeresProblem();
+
+  problem1->AddParameterBlock(&(results_perfect_init[0]), 7,
+                              se3_parameterization_.get());
+  problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
+                              se3_parameterization_.get());
+
+  for (int i = 0; i < points.size(); i++) {
+    if (pixels_valid[i]) {
+      Eigen::Vector3d P_CAMERA = points[i].hnormalized();
+
+      // add residuals for perfect init
+      std::unique_ptr<ceres::CostFunction> cost_function1(
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
+                                          camera_model));
+
+      problem1->AddResidualBlock(cost_function1.release(), loss_function_.get(),
+                                 &(results_perfect_init[0]));
+
+      // add residuals for perturbed init
+      std::unique_ptr<ceres::CostFunction> cost_function2(
+          CeresReprojectionCostFunction::Create(pixels[i], P_CAMERA,
+                                          camera_model));
+      problem2->AddResidualBlock(cost_function2.release(), loss_function_.get(),
+                                 &(results_perturbed_init[0]));
+
+      // Check that the inputs are correct (within the noise level):
+      opt<Eigen::Vector2d> pixel_projected =
+          camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized()); 
+      REQUIRE(pixel_projected.value().isApprox(pixels[i], 1e-5));
+    }
+  }
+
+  Eigen::Matrix3d R3 = T_CW.block(0, 0, 3, 3);
+  Eigen::Quaternion<double> q3 = Eigen::Quaternion<double>(R3);
+  std::vector<double> initial{
+      q3.w(), q3.x(), q3.y(), q3.z(), T_CW(0, 3), T_CW(1, 3), T_CW(2, 3)};
+
+  LOG_INFO("TESTING WITH PERFECT INITIALIZATION");
+  SolveProblem(problem1, output_results_);
+  Eigen::Matrix4d T_CW_opt1 =
+      util::QuaternionAndTranslationToTransformMatrix(
+          results_perfect_init);
+  
+  LOG_INFO("TESTING WITH INVALID PERTURBED INITIALIZATION");
+  SolveProblem(problem2, output_results_);
+  Eigen::Matrix4d T_CW_opt2 =
+      util::QuaternionAndTranslationToTransformMatrix(
+          results_perturbed_init);
+
+  if (VISUALIZATION) {
+    std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
+    std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
+
+    for (uint16_t i = 0; i < points.size(); i++) {
+      final_points[i] = T_CW_opt2 * points[i];
+      opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
+      if (final_pixel.has_value()) {
+        final_pixels[i] = final_pixel.value();
+      }
+      else {
+        Eigen::Vector2d zero(0,0);
+        final_pixels[i] = zero; //just set missing pixels to zero for visualization
+      }
+    }
+
+    final_cloud_p_proj = util::MakePointCloud(final_pixels);
+
+    test3_vis.startVis(); 
+    // white, red, green, blue
+    test3_vis.displayClouds(target_cloud, input_cloud_p, input_cloud_p_proj, final_cloud_p_proj, "target", "in_pert", "in_pert_proj", "final");
+
+    char end = ' ';
+
+    while (end != 'r') {
+        cin >> end; 
+    }
+
+    test3_vis.endVis();
+
+  }
+  
+  REQUIRE(util::RoundMatrix(T_CW, 5) ==
+          util::RoundMatrix(T_CW_opt1, 5));
+  
+  //require that solution with invalid inital pose fails without modifying pose
+  REQUIRE(results_perturbed_init == initial_perturbed_init);
 }
 
 } //namespace beam_optimization

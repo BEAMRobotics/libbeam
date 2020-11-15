@@ -18,9 +18,9 @@ struct CameraProjectionFunctor {
 
   bool operator()(const double* P, double* pixel) const {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
-    bool outside_domain = false;
+    printf("the projected point is: %f, %f, %f\n", P[0], P[1], P[2]);
     std::optional<Eigen::Vector2d> pixel_projected =
-        camera_model_->ProjectPointPrecise(P_CAMERA_eig, outside_domain);
+        camera_model_->ProjectPointPrecise(P_CAMERA_eig);
 
     //get image dims in case projection fails
     uint16_t height = camera_model_->GetHeight() != 0 ? camera_model_->GetHeight() : 5000; 
@@ -46,7 +46,7 @@ struct CameraProjectionFunctor {
       }
     }
 
-    return outside_domain;
+    return true;
   }
 
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
@@ -63,7 +63,7 @@ struct CeresReprojectionCostFunction {
         compute_projection.reset(new ceres::CostFunctionToFunctor<2, 3>(
           new ceres::NumericDiffCostFunction<CameraProjectionFunctor,
                                            ceres::CENTRAL, 2, 3>(
-            new CameraProjectionFunctor(camera_model_, pixel_detected))));
+            new CameraProjectionFunctor(camera_model_, pixel_detected_))));
   }
 
   template <typename T>
@@ -82,20 +82,23 @@ struct CeresReprojectionCostFunction {
 
     const T* P_CAMERA_const = &(P_CAMERA[0]);
 
-    bool outside_domain = false;
-
     T pixel_projected[2];
-    outside_domain = (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
-
-/*
-    double* pixel_projected_ptr = &(pixel_projected[0]);
-
-    printf("%f\n", pixel_projected_ptr[0]); 
-*/
+    (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
 
     residuals[0] = pixel_detected_.cast<T>()[0] - pixel_projected[0];
     residuals[1] = pixel_detected_.cast<T>()[1] - pixel_projected[1];
-    
+
+    //check if projection is outside the domain of the camera model
+    void* P_CAMERA_temp_x = &(P_CAMERA[0]);
+    void* P_CAMERA_temp_y = &(P_CAMERA[1]);
+    void* P_CAMERA_temp_z = &(P_CAMERA[2]);
+    double* P_CAMERA_check_x{ static_cast<double*>(P_CAMERA_temp_x) };
+    double* P_CAMERA_check_y{ static_cast<double*>(P_CAMERA_temp_y) };
+    double* P_CAMERA_check_z{ static_cast<double*>(P_CAMERA_temp_z) };
+    Eigen::Vector3d P_CAMERA_eig_check{*P_CAMERA_check_x, *P_CAMERA_check_y, *P_CAMERA_check_z};
+    bool outside_domain = false; 
+    std::optional<Eigen::Vector2d> pixel_projected_check =
+        camera_model_->ProjectPointPrecise(P_CAMERA_eig_check, outside_domain); 
 
     //need to handle outside domain failure differently for ladybug camera model 
     //since all points projecting out of frame provoke this failure
@@ -103,8 +106,6 @@ struct CeresReprojectionCostFunction {
       return true; // returning outside_domain here would crash many viable solutions, error checking must be done in calling code
     else 
       return !outside_domain; // all other camera models have valid out-of-domain conditions that should be avoided
-
-   return true;
     
   }
 
@@ -122,6 +123,17 @@ struct CeresReprojectionCostFunction {
   Eigen::Vector3d P_STRUCT_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
   std::unique_ptr<ceres::CostFunctionToFunctor<2, 3>> compute_projection;
+
+  private: 
+
+  bool checkDomain (const double* P) { 
+    Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
+    bool outside_domain = false; 
+    std::optional<Eigen::Vector2d> pixel_projected =
+        camera_model_->ProjectPointPrecise(P_CAMERA_eig, outside_domain);
+    return outside_domain;
+  }
+
 };
 
 #endif
