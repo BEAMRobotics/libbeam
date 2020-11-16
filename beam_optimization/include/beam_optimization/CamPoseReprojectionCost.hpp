@@ -18,7 +18,6 @@ struct CameraProjectionFunctor {
 
   bool operator()(const double* P, double* pixel) const {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
-    printf("the projected point is: %f, %f, %f\n", P[0], P[1], P[2]);
     std::optional<Eigen::Vector2d> pixel_projected =
         camera_model_->ProjectPointPrecise(P_CAMERA_eig);
 
