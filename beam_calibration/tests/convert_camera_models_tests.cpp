@@ -10,9 +10,12 @@
 #include <beam_calibration/ConvertCameraModel.h>
 
 bool save_images_ = false;
-bool run_ladybug_test_ =
-    false; // this takes time to run so by default it is off
 std::string save_path_ = "/tmp/convert_camera_models_tests/";
+
+// These two tests need to be visually assessed for accuracy so they are off by
+// default so that it is not run by travis
+bool run_ladybug_test_ = false;
+bool run_kb_test_ = false;
 
 std::string GetDataPath(const std::string& filename) {
   std::string file_location = __FILE__;
@@ -27,6 +30,13 @@ std::shared_ptr<beam_calibration::CameraModel> LoadLadybugCameraModel() {
   std::string intrinsics_location = GetDataPath("ladybug.conf");
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
       std::make_shared<beam_calibration::Ladybug>(intrinsics_location);
+  return camera_model;
+}
+
+std::shared_ptr<beam_calibration::CameraModel> LoadKBCameraModel() {
+  std::string intrinsics_location = GetDataPath("KB_test.json");
+  std::shared_ptr<beam_calibration::CameraModel> camera_model =
+      std::make_shared<beam_calibration::KannalaBrandt>(intrinsics_location);
   return camera_model;
 }
 
@@ -249,16 +259,14 @@ TEST_CASE("Test undistorting a ladybug image") {
   std::shared_ptr<beam_calibration::CameraModel> source_model =
       LoadLadybugCameraModel();
 
-  std::string image_path = GetDataPath("ladybug_camera_3_image2.png");
+  std::string image_path = GetDataPath("ladybug_undistort.png");
   cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
 
-  Eigen::Vector2i src_image_dims(source_model->GetHeight(),
-                                 source_model->GetWidth());
-  Eigen::Vector2i dst_image_dims(source_model->GetHeight(),
-                                 source_model->GetWidth());
+  Eigen::Vector2i image_dims(source_model->GetHeight(),
+                             source_model->GetWidth());
 
-  beam_calibration::ConvertCameraModel converter(source_model, src_image_dims,
-                                                 dst_image_dims);
+  beam_calibration::ConvertCameraModel converter(source_model, image_dims,
+                                                 image_dims);
 
   cv::Mat upsampled_image = converter.UpsampleImage(source_image);
 
@@ -268,4 +276,32 @@ TEST_CASE("Test undistorting a ladybug image") {
   SaveImage("test_case_3_image_original.png", source_image);
   SaveImage("test_case_3_image_upsampled.png", upsampled_image);
   SaveImage("test_case_3_image_undistorted.png", output_image);
+}
+
+TEST_CASE("Test undistorting a kannala brandt image") {
+  if (!run_kb_test_) {
+    REQUIRE(true);
+    return;
+  }
+  std::shared_ptr<beam_calibration::CameraModel> source_model =
+      LoadKBCameraModel();
+
+  std::string image_path = GetDataPath("kb_undistort.png");
+
+  cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
+
+  Eigen::Vector2i image_dims(source_model->GetHeight(),
+                             source_model->GetWidth());
+
+  beam_calibration::ConvertCameraModel converter(source_model, image_dims,
+                                                 image_dims);
+
+  cv::Mat upsampled_image = converter.UpsampleImage(source_image);
+
+  cv::Mat output_image;
+  REQUIRE_NOTHROW(output_image =
+                      converter.ConvertImage<cv::Vec3b>(upsampled_image));
+  SaveImage("test_case_4_image_original.png", source_image);
+  SaveImage("test_case_4_image_upsampled.png", upsampled_image);
+  SaveImage("test_case_4_image_undistorted.png", output_image);
 }
