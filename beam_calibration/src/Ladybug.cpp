@@ -34,11 +34,6 @@ opt<Eigen::Vector2d>
   // check if point is behind image plane
   if (point[2] < 0) { return {}; }
 
-  // change the coordinate frame to match ladybug's
-  // {x = -y, y = x, z = z}
-  // double x = -point[1];
-  // double y = point[0];
-  // double z = point[2];
   double x = point[0];
   double y = point[1];
   double z = point[2];

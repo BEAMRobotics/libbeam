@@ -20,15 +20,7 @@ Radtan::Radtan(uint32_t image_height, uint32_t image_width,
   type_ = CameraType::RADTAN;
   image_height_ = image_height;
   image_width_ = image_width;
-  intrinsics_ = Eigen::VectorXd(8);
-  intrinsics_[0] = intrinsics(0, 0);
-  intrinsics_[1] = intrinsics(1, 0);
-  intrinsics_[2] = intrinsics(2, 0);
-  intrinsics_[3] = intrinsics(3, 0);
-  intrinsics_[4] = intrinsics(4, 0);
-  intrinsics_[5] = intrinsics(5, 0);
-  intrinsics_[6] = intrinsics(6, 0);
-  intrinsics_[7] = intrinsics(7, 0);
+  intrinsics_ = intrinsics;
   fx_ = intrinsics_[0];
   fy_ = intrinsics_[1];
   cx_ = intrinsics_[2];
