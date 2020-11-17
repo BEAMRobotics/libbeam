@@ -87,7 +87,7 @@ public:
    * @brief Gets camera model, by id
    * @param id to search for
    */
-  shared_ptr<CameraModel> GetIMUIntrinsics(size_t id) {}
+  Eigen::MatrixXd<double, 5, 1> GetIMUIntrinsics(size_t id) {}
 
   /**
    * @brief Gets list of id's associated to cameras
