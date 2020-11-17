@@ -20,6 +20,16 @@ public:
   Radtan(const std::string& file_path);
 
   /**
+   * @brief Constructor specific to Radtan which creates a model without needing
+   * a file
+   * @param image_height
+   * @param image_width
+   * @param intrinsics vector of doubles of dimension 8 x 1
+   */
+  Radtan(uint32_t image_height, uint32_t image_width,
+         const Eigen::Matrix<double, 8, 1>& intrinsics);
+
+  /**
    * @brief Default destructor
    */
   ~Radtan() override = default;
