@@ -26,7 +26,9 @@ namespace beam_calibration {
  * dimensions are smaller than the output camera model image dimensions then it
  * will crop the output image, with the cropping centered in the image. IF YOUR
  * INPUT IMAGE HAS BEEN DOWNSAMPLED, THE OUTPUT IMAGE RESULT WILL NOT BE
- * CORRECT.
+ * CORRECT. To work with downsampled images, you need to first call
+ * UpsampleImage(), then convert to the correct model, and finally call
+ * DownsampleImage() to get the original size of the input.
  */
 class ConvertCameraModel {
 public:
@@ -82,13 +84,30 @@ public:
    * @brief Upsamples the input image to the dimensions of the source camera
    * model. This is useful if converting images produced from a source model
    * that have been compressed/downsampled in some other process.
-   * @param image image to be updampled
+   * @param image image to be upsampled
    * @param interpolation_method interpolation method used. See opencv resize
    * function. Default is bilinear interpolation
    * @return output image of dimensions equal to the source model dimensions
    */
   cv::Mat UpsampleImage(const cv::Mat& image,
                         int interpolation_method = cv::INTER_LINEAR);
+
+  /**
+   * @brief Downsamples the image.
+   * This is useful if converting images produced from a source model
+   * that have been compressed/downsampled in some other process. You will first
+   * need to upsample these images, run the conversion, then if you want to
+   * original input image size, you need to call this downsample function.
+   * @param image image to be downsampled
+   * @param output_size size to downsample image to. Usually you want to set
+   * this as the size of your image before upsampling
+   * @param interpolation_method interpolation method used. See opencv resize
+   * function. Default is bilinear interpolation
+   * @return output image
+   */
+  cv::Mat DownsampleImage(const cv::Mat& image,
+                          const Eigen::Vector2i& output_size,
+                          int interpolation_method = cv::INTER_LINEAR);
 
 private:
   /**
