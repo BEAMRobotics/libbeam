@@ -1,7 +1,7 @@
 /**
  * @file
  * Feature tracker implementation.
- * @ingroup vision
+ * @ingroup beam_cv
  */
 #pragma once
 
@@ -17,8 +17,7 @@
 
 namespace beam_cv {
 
-using FeatureTrack = std::vector<LandmarkMeasurement>;
-using beam_containers;
+using FeatureTrack = std::vector<beam_containers::LandmarkMeasurement<int>>;
 
 /** Image tracker class.
  * The Tracker class is templated on a feature detector, descriptor, and matcher
@@ -41,7 +40,7 @@ public:
       : detector(detector),
         descriptor(descriptor),
         matcher(matcher),
-        window_size(window_size) {
+        window_size_(window_size) {
     if (this->window_size < 0) {
       throw std::invalid_argument("window_size cannot be negative!");
     }
@@ -113,7 +112,9 @@ private:
   std::map<size_t, std::chrono::steady_clock::time_point> img_times_;
 
   // Measurement container variables
-  LandmarkContainer<LandmarkMeasurement<size_t>> landmarks_;
+  beam_containers::LandmarkContainer<
+      beam_containers::LandmarkMeasurement<size_t>>
+      landmarks_;
 
   // The sensor ID. TODO: Expand this for use with multiple cams.
   int sensor_id_ = 0;
@@ -157,9 +158,9 @@ private:
   std::map<int, size_t>
       RegisterKeypoints(const std::vector<cv::KeyPoint>& curr_kp,
                         const std::vector<cv::DMatch>& matches);
+
 };
 
-#include "impl/Tracker.hpp"
-
-/** @} group vision */
 } // namespace beam_cv
+
+#include "impl/Tracker.hpp"

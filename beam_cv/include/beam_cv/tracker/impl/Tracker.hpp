@@ -2,8 +2,6 @@
 
 namespace beam_cv {
 
-using namespace beam_cv;
-
 // Private Functions
 template <typename TDetector, typename TDescriptor, typename TMatcher>
 void Tracker<TDetector, TDescriptor, TMatcher>::DetectAndCompute(
@@ -13,6 +11,7 @@ void Tracker<TDetector, TDescriptor, TMatcher>::DetectAndCompute(
   descriptor = this->descriptor.ExtractDescriptors(image, keypoints);
 }
 
+template <typename TDetector, typename TDescriptor, typename TMatcher>
 void Tracker<TDetector, TDescriptor, TMatcher>::TimestampImage(
     const std::chrono::steady_clock::time_point& current_time) {
   auto img_count = this->img_times_.size();

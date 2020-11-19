@@ -1,7 +1,7 @@
 #pragma once
 
-#include <chrono>
 #include <beam_utils/math.hpp>
+#include <chrono>
 
 namespace beam_containers {
 /** @addtogroup containers
@@ -31,19 +31,16 @@ using TimePoint = std::chrono::steady_clock::time_point;
  */
 template <typename SensorIdType>
 struct LandmarkMeasurement {
-    TimePoint time_point;
-    SensorIdType sensor_id;
-    LandmarkId landmark_id;
-    ImageNum image;
-    beam::Vec2 value;
+  TimePoint time_point;
+  SensorIdType sensor_id;
+  LandmarkId landmark_id;
+  ImageNum image;
+  Eigen::Vector2d value;
 
-    LandmarkMeasurement(const TimePoint &t,
-                        const SensorIdType &s,
-                        const LandmarkId &id,
-                        const ImageNum &img,
-                        const beam::Vec2 &v)
-        : time_point{t}, sensor_id{s}, landmark_id{id}, image{img}, value{v} {}
+  LandmarkMeasurement(const TimePoint& t, const SensorIdType& s,
+                      const LandmarkId& id, const ImageNum& img,
+                      const Eigen::Vector2d& v)
+      : time_point{t}, sensor_id{s}, landmark_id{id}, image{img}, value{v} {}
 };
 
-
-}  // namespace beam_containers
+} // namespace beam_containers

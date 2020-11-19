@@ -123,10 +123,10 @@ public:
   // Capacity
 
   /** Return true if the container has no elements. */
-  bool Empty() const { return this->composite().empty(); }
+  bool empty() const { return this->composite().empty(); }
 
   /** Return the number of elements in the container. */
-  size_t Size() const { return this->composite().size(); }
+  size_t size() const { return this->composite().size(); }
 
   // Modifiers
 
@@ -189,7 +189,7 @@ public:
   }
 
   /** Delete all elements */
-  void Clear() { return this->composite().clear(); }
+  void clear() { return this->composite().clear(); }
 
   // Retrieval
 
@@ -339,4 +339,3 @@ protected:
 };
 
 } // namespace beam_containers
-

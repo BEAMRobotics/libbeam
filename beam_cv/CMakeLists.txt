@@ -5,6 +5,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     catkin::catkin
     PCL::PCL
     beam::calibration
+    beam::containers
     beam::utils
     beam::depth
     OpenCV::OpenCV
@@ -12,7 +13,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
-    #src/Tracker.cpp
+    src/Tracker.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
