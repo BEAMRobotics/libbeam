@@ -174,7 +174,6 @@ inline pcl::PointXY EigenPixelToPCL(const Eigen::Vector2d& pt_in) {
   return pt_out;
 }
 
-
 } // namespace util
 
 } // namespace beam_optimization
