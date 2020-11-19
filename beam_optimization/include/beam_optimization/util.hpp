@@ -1,8 +1,6 @@
 #pragma once
 
 #include <Eigen/Geometry>
-#include <gtsam/geometry/Point2.h>
-#include <gtsam/geometry/Point3.h>
 #include <opencv2/opencv.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -174,22 +172,6 @@ inline pcl::PointXY EigenPixelToPCL(const Eigen::Vector2d& pt_in) {
   pt_out.x = pt_in[0];
   pt_out.y = pt_in[1];
   return pt_out;
-}
-
-inline gtsam::Point3 EigenPointToGTSAM(const Eigen::Vector3d& pt_in) {
-  return gtsam::Point3(pt_in[0], pt_in[1], pt_in[2]);
-}
-
-inline gtsam::Point2 EigenPixelToGTSAM(const Eigen::Vector2d& pt_in) {
-  return gtsam::Point2(pt_in[0], pt_in[1]);
-}
-
-inline gtsam::Point3 PCLPointToGTSAM(const pcl::PointXYZ& pt_in) {
-  return gtsam::Point3(pt_in.x, pt_in.y, pt_in.z);
-}
-
-inline gtsam::Point2 PCLPixelToGTSAM(const pcl::PointXY& pt_in) {
-  return gtsam::Point2(pt_in.x, pt_in.y);
 }
 
 
