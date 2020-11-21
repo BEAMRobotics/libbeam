@@ -59,6 +59,9 @@ public:
   cv::Mat ConvertImage(const cv::Mat& source_image) {
     // check dimensions are consistent
     if (source_image.cols != src_width_ || source_image.rows != src_height_) {
+      BEAM_ERROR(
+          "Invalid source image dimensions. Required: {} x {}, given: {} x {}",
+          src_height_, src_width_, source_image.rows, source_image.cols);
       throw std::runtime_error{"Invalid source image dimensions."};
     }
 
