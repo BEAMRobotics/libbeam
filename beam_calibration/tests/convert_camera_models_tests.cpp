@@ -273,9 +273,22 @@ TEST_CASE("Test undistorting a ladybug image") {
   cv::Mat output_image;
   REQUIRE_NOTHROW(output_image =
                       converter.ConvertImage<cv::Vec3b>(upsampled_image));
+
+  cv::Mat downsampled_image = converter.DownsampleImage(
+      output_image, Eigen::Vector2i(source_image.rows, source_image.cols));
+
   SaveImage("test_case_3_image_original.png", source_image);
   SaveImage("test_case_3_image_upsampled.png", upsampled_image);
+  SaveImage("test_case_3_image_undistorted_downsampled.png", downsampled_image);
   SaveImage("test_case_3_image_undistorted.png", output_image);
+
+  // Check the output image dimensions
+  REQUIRE(source_image.cols == downsampled_image.cols);
+  REQUIRE(source_image.rows == downsampled_image.rows);
+  REQUIRE(upsampled_image.cols == output_image.cols);
+  REQUIRE(upsampled_image.rows == output_image.rows);
+  REQUIRE(upsampled_image.cols == source_model->GetWidth());
+  REQUIRE(upsampled_image.rows == source_model->GetHeight());
 }
 
 TEST_CASE("Test undistorting a kannala brandt image") {
