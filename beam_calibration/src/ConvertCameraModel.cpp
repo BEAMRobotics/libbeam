@@ -49,6 +49,14 @@ cv::Mat ConvertCameraModel::UpsampleImage(const cv::Mat& image,
   return image_out;
 }
 
+cv::Mat ConvertCameraModel::DownsampleImage(
+    const cv::Mat& image, const Eigen::Vector2i& output_size,
+    int interpolation_method) {
+  cv::Mat image_out(output_size[0], output_size[1], image.type());
+  cv::resize(image, image_out, image_out.size(), interpolation_method);
+  return image_out;
+}
+
 std::shared_ptr<CameraModel> ConvertCameraModel::CreateDefaultCameraModel(
     const std::shared_ptr<CameraModel>& source_model) {
   if (source_model->GetIntrinsics().size() < 4) {

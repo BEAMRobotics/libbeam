@@ -123,11 +123,8 @@ void Poses::WriteToJSON(const std::string output_dir) {
   std::string output_file;
   std::string last_five_chars =
       output_dir.substr(output_dir.size() - 5, output_dir.size());
-  std::cout << "output_dir: " << output_dir << "\n";
-  std::cout << "last_five_chars: " << last_five_chars << "\n";
   if (last_five_chars == ".json" || last_five_chars == ".JSON") {
     output_file = output_dir;
-    std::cout << "TEST1\n";
 
   } else {
     if (!boost::filesystem::is_directory(output_dir)) {
@@ -135,7 +132,6 @@ void Poses::WriteToJSON(const std::string output_dir) {
       boost::filesystem::create_directories(output_dir);
     }
     output_file = output_dir + pose_file_date + "_poses.json";
-    std::cout << "TEST2\n";
   }
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream filejson(output_file);

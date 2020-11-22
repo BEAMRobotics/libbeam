@@ -45,6 +45,7 @@ install_routine()
     # Import functions to install required dependencies
     source $INSTALL_SCRIPTS/beam_dependencies_install.bash
     install_gcc7
+    install_gflags
     
     # source catkin setup script
     source $INSTALL_SCRIPTS/catkin_setup.bash
