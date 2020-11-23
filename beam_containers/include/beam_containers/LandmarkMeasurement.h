@@ -9,8 +9,6 @@ namespace beam_containers {
 
 /** The integral type used to track a landmark across multiple measurements
  */
-using ImageNum = std::size_t;
-using LandmarkId = std::size_t;
 using TimePoint = std::chrono::steady_clock::time_point;
 
 /** Storage type for a landmark measurement as a 2D position.
@@ -33,12 +31,12 @@ template <typename SensorIdType>
 struct LandmarkMeasurement {
   TimePoint time_point;
   SensorIdType sensor_id;
-  LandmarkId landmark_id;
-  ImageNum image;
+  size_t landmark_id;
+  size_t image;
   Eigen::Vector2d value;
 
   LandmarkMeasurement(const TimePoint& t, const SensorIdType& s,
-                      const LandmarkId& id, const ImageNum& img,
+                      const size_t& id, const size_t& img,
                       const Eigen::Vector2d& v)
       : time_point{t}, sensor_id{s}, landmark_id{id}, image{img}, value{v} {}
 };

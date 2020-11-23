@@ -11,22 +11,19 @@
 
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
-
 #include <beam_cv/Utils.h>
+#include <beam_cv/descriptors/Descriptor.h>
+#include <beam_cv/detectors/Detector.h>
+#include <beam_cv/matchers/Matcher.h>
 #include <beam_utils/utils.hpp>
 
 namespace beam_cv {
 
-using FeatureTrack = std::vector<beam_containers::LandmarkMeasurement<int>>;
+typedef std::vector<beam_containers::LandmarkMeasurement<int>> FeatureTrack;
 
 /** Image tracker class.
  * The Tracker class is templated on a feature detector, descriptor, and matcher
- * to track features over a sequence of images.
- * @tparam TDetector detector object (FAST, ORB, etc...)
- * @tparam TDescriptor descriptor object (BRISK, ORB, etc...)
- * @tparam TMatcher (FLANN)
- */
-template <typename TDetector, typename TDescriptor, typename TMatcher>
+ * to track features over a sequence of images.*/
 class Tracker {
 public:
   /** @brief Default constructor
@@ -35,16 +32,13 @@ public:
    * @param matcher matcher object (BruteForceMatcher, FLANN)
    * @param window_size to keep for online use
    */
-  Tracker(TDetector detector, TDescriptor descriptor, TMatcher matcher,
-          int window_size = 0)
+  Tracker(std::shared_ptr<beam_cv::Detector> detector,
+          std::shared_ptr<beam_cv::Descriptor> descriptor,
+          std::shared_ptr<beam_cv::Matcher> matcher, int window_size = 0)
       : detector(detector),
         descriptor(descriptor),
         matcher(matcher),
-        window_size_(window_size) {
-    if (this->window_size < 0) {
-      throw std::invalid_argument("window_size cannot be negative!");
-    }
-  }
+        window_size_(window_size) {}
 
   /**
    * @brief Default destructor
@@ -82,12 +76,13 @@ public:
       OfflineTracker(const std::vector<cv::Mat>& image_sequence);
 
   /** The templated FeatureDetector */
-  TDetector detector;
+  std::shared_ptr<beam_cv::Detector> detector;
   /** The templated DescriptorExtractor */
-  TDescriptor descriptor;
+  std::shared_ptr<beam_cv::Descriptor> descriptor;
   /** The templated DescriptorMatcher */
-  TMatcher matcher;
-  /** The size of the LandmarkMeasurementContainer */
+  std::shared_ptr<beam_cv::Matcher> matcher;
+
+  /** The size of the LandmarkContainer */
   size_t lmc_size = 0;
 
 private:
@@ -112,8 +107,7 @@ private:
   std::map<size_t, std::chrono::steady_clock::time_point> img_times_;
 
   // Measurement container variables
-  beam_containers::LandmarkContainer<
-      beam_containers::LandmarkMeasurement<size_t>>
+  beam_containers::LandmarkContainer<beam_containers::LandmarkMeasurement<int>>
       landmarks_;
 
   // The sensor ID. TODO: Expand this for use with multiple cams.
@@ -158,8 +152,7 @@ private:
   std::map<int, size_t>
       RegisterKeypoints(const std::vector<cv::KeyPoint>& curr_kp,
                         const std::vector<cv::DMatch>& matches);
-
-};
+}; // namespace beam_cv
 
 } // namespace beam_cv
 

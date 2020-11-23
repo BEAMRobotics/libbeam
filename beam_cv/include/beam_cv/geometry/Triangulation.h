@@ -38,6 +38,14 @@ public:
                        Eigen::Vector2i pc);
 
   /**
+   * @brief Triangulates single point given two camera models and corresponding
+   * pixel locations
+   */
+  static opt<Eigen::Vector3d>
+      TriangulatePoint(std::vector<std::shared_ptr<beam_calibration::CameraModel>> cams,
+                       std::vector<Eigen::Matrix4d> T_cam_world,
+                       std::vector<Eigen::Vector2i> pixels);
+  /**
    * @brief Triangulates a list of points given two camera models and
    * corresponding pixel locations
    * @param camR camera model for image 1

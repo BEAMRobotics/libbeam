@@ -56,7 +56,7 @@ public:
       MatchDescriptors(cv::Mat& descriptors_1, cv::Mat& descriptors_2,
                        const std::vector<cv::KeyPoint>& keypoints_1,
                        const std::vector<cv::KeyPoint>& keypoints_2,
-                       cv::InputArray mask) = 0;
+                       cv::InputArray mask = cv::noArray()) = 0;
 
 protected:
   /** Filter matches using a heuristic based method.
