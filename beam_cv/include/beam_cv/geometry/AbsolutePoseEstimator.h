@@ -25,7 +25,8 @@ public:
    * @returns 4 possible transformation matrices
    */
   static std::vector<Eigen::Matrix4d>
-      P3PEstimator(std::shared_ptr<beam_calibration::CameraModel> cam,
+      P3PEstimator(
+        // std::shared_ptr<beam_calibration::CameraModel> cam,
                    std::vector<Eigen::Vector2i> pixels,
                    std::vector<Eigen::Vector3d> points);
 };

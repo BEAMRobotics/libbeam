@@ -12,7 +12,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
   SOURCES
     src/Utils.cpp
-    src/RayCast.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
@@ -28,6 +27,18 @@ target_include_directories(${PROJECT_NAME}_utils_tests
     include
 )
 target_link_libraries(${PROJECT_NAME}_utils_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_p3p_test
+  tests/p3p_test.cpp
+)
+target_include_directories(${PROJECT_NAME}_p3p_test
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_p3p_test
   ${PROJECT_NAME}
   Catch2::Catch2
 )
