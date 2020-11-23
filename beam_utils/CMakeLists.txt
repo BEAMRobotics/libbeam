@@ -7,11 +7,13 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     yaml-cpp
     PCL::PCL
     OpenCV::OpenCV
+    gflags
   SOURCES
     src/math.cpp
     src/time.cpp
     src/angles.cpp
     src/uf.cpp
+    src/gflags.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests

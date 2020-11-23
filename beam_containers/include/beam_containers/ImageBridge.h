@@ -9,11 +9,13 @@
 
 #pragma once
 
-#include <beam_utils/time.hpp>
+#include <fstream>
+
 #include <nlohmann/json.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-#include <fstream>
+
+#include <beam_utils/time.hpp>
 
 namespace beam_containers {
 /** @addtogroup containers
@@ -39,35 +41,34 @@ public:
    * @return is_bgr_image_set_
    */
 
-  bool IsBGRImageSet(){return is_bgr_image_set_;}
+  bool IsBGRImageSet() { return is_bgr_image_set_; }
 
   /**
    * @brief Method getting whether or not the BGR mask has been set
    * @param is_bgr_mask_set_
    */
 
-  bool IsBGRMaskSet(){return is_bgr_mask_set_;}
+  bool IsBGRMaskSet() { return is_bgr_mask_set_; }
 
   /**
    * @brief Method getting whether or not the IR image has been set
    * @return is_ir_image_set_
    */
 
-  bool IsIRImageSet(){return is_ir_image_set_;}
+  bool IsIRImageSet() { return is_ir_image_set_; }
 
   /**
    * @brief Method getting whether or not the IR mask has been set
    * @param is_ir_mask_set_
    */
 
-  bool IsIRMaskSet(){return is_ir_mask_set_;}
-
+  bool IsIRMaskSet() { return is_ir_mask_set_; }
 
   /**
    * @brief Method for setting the BGR image to the container
    * @param bgr_image Image with standard b-g-r color fields, no processing done
    */
-  void SetBGRImage(cv::Mat& bgr_image) {
+  void SetBGRImage(const cv::Mat& bgr_image) {
     bgr_image_ = bgr_image;
     is_bgr_image_set_ = true;
   }
@@ -82,10 +83,10 @@ public:
   /**
    * @brief Method for setting the BGR mask to the container
    * @param bgr_mask Image mask with one "grayscale" field. For this class,
-   * values of 0, 1, 2, 3 and 4 correspond to no defect, crack, delamination, 
+   * values of 0, 1, 2, 3 and 4 correspond to no defect, crack, delamination,
    * corrosion and spall, respectively.
    */
-  void SetBGRMask(cv::Mat& bgr_mask) {
+  void SetBGRMask(const cv::Mat& bgr_mask) {
     bgr_mask_ = bgr_mask;
     is_bgr_mask_set_ = true;
   }
@@ -100,7 +101,7 @@ public:
    * @brief Method for setting the IR image to the container
    * @param ir_image Infrared image with standard grayscale color field.
    */
-  void SetIRImage(cv::Mat& ir_image) {
+  void SetIRImage(const cv::Mat& ir_image) {
     ir_image_ = ir_image;
     is_ir_image_set_ = true;
   }
@@ -117,7 +118,7 @@ public:
    * values of 0 and 1 correspond to sound concrete, and delaminated concrete,
    * respectively.
    */
-  void SetIRMask(cv::Mat& ir_mask) {
+  void SetIRMask(const cv::Mat& ir_mask) {
     ir_mask_ = ir_mask;
     is_ir_mask_set_ = true;
   }
@@ -133,7 +134,7 @@ public:
    * @param bgr_mask_method String with the method name that was used to create
    * the mask.
    */
-  void SetBGRMaskMethod(std::string& bgr_mask_method) {
+  void SetBGRMaskMethod(const std::string& bgr_mask_method) {
     bgr_mask_method_ = bgr_mask_method;
   }
 
@@ -149,7 +150,7 @@ public:
    * @param ir_mask_method String with the method name that was used to create
    * the mask.
    */
-  void SetIRMaskMethod(std::string& ir_mask_method) {
+  void SetIRMaskMethod(const std::string& ir_mask_method) {
     ir_mask_method_ = ir_mask_method;
   }
 
@@ -164,7 +165,7 @@ public:
    * @brief Method for setting the name of the frame id of the bgr camera
    * @param bgr_frame_id
    */
-  void SetBGRFrameId(std::string& bgr_frame_id) {
+  void SetBGRFrameId(const std::string& bgr_frame_id) {
     bgr_frame_id_ = bgr_frame_id;
   }
 
@@ -178,7 +179,9 @@ public:
    * @brief Method for setting the name of the frame id of the IR camera
    * @param bgr_frame_id
    */
-  void SetIRFrameId(std::string& ir_frame_id) { ir_frame_id_ = ir_frame_id; }
+  void SetIRFrameId(const std::string& ir_frame_id) {
+    ir_frame_id_ = ir_frame_id;
+  }
 
   /**
    * @brief Method for getting the name of the frame id of the IR camera
@@ -191,7 +194,7 @@ public:
    * from
    * @param bag_name
    */
-  void SetBagName(std::string& bag_name) { bag_name_ = bag_name; }
+  void SetBagName(const std::string& bag_name) { bag_name_ = bag_name; }
 
   /**
    * @brief Method for getting the name of the bag the images were extracted
@@ -204,7 +207,9 @@ public:
    * @brief Method for setting the time stamp associated with the image
    * @param time_stamp
    */
-  void SetTimePoint(beam::TimePoint& time_stamp) { time_stamp_ = time_stamp; }
+  void SetTimePoint(const beam::TimePoint& time_stamp) {
+    time_stamp_ = time_stamp;
+  }
 
   /**
    * @brief Method for getting the time stamp associated with the image
@@ -216,7 +221,7 @@ public:
    * @brief Method for setting the image sequence
    * @param image_seq
    */
-  void SetImageSeq(int& image_seq) { image_seq_ = image_seq; }
+  void SetImageSeq(int image_seq) { image_seq_ = image_seq; }
 
   /**
    * @brief Method for getting the image sequence
@@ -260,7 +265,7 @@ public:
    * @brief Method for writing all the data inside this container
    * @param output_directory absolute path to output directory
    */
-  void Write(std::string output_directory) {
+  void Write(const std::string& output_directory) {
     if (is_bgr_image_set_) {
       cv::imwrite(output_directory + "/BGRImage.jpg", bgr_image_);
     }
@@ -297,7 +302,7 @@ public:
    * @brief Populate container based on JSON file
    * @param path_to_json
    */
-  void LoadFromJSON(std::string path_to_json) {
+  void LoadFromJSON(const std::string& path_to_json) {
     std::stringstream ss_json;
     ss_json << path_to_json << "/ImageBridgeInfo.json";
     nlohmann::json json_config;
@@ -341,14 +346,23 @@ public:
   }
 
 private:
-  cv::Mat bgr_image_, bgr_mask_, ir_image_, ir_mask_;
-  std::string bgr_mask_method_, ir_mask_method_, bag_name_, ir_frame_id_,
-      bgr_frame_id_;
+  cv::Mat bgr_image_;
+  cv::Mat bgr_mask_;
+  cv::Mat ir_image_;
+  cv::Mat ir_mask_;
+  std::string bgr_mask_method_;
+  std::string ir_mask_method_;
+  std::string bag_name_;
+  std::string ir_frame_id_;
+  std::string bgr_frame_id_;
   beam::TimePoint time_stamp_;
   int image_seq_;
-  bool bgr_is_distorted_ = false, ir_is_distorted_ = false,
-       is_bgr_image_set_ = false, is_bgr_mask_set_ = false,
-       is_ir_image_set_ = false, is_ir_mask_set_ = false;
+  bool bgr_is_distorted_{false};
+  bool ir_is_distorted_{false};
+  bool is_bgr_image_set_{false};
+  bool is_bgr_mask_set_{false};
+  bool is_ir_image_set_{false};
+  bool is_ir_mask_set_{false};
 };
 
 /** @} group containers */

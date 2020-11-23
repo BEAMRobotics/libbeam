@@ -3,6 +3,8 @@
 namespace beam_calibration {
 
 Ladybug::Ladybug(const std::string& file_path) {
+  BEAM_INFO("Loading file: {}", file_path);
+
   type_ = CameraType::LADYBUG;
   lb_error_ = ladybugCreateContext(&lb_context_);
   LadybugCheckError();
@@ -18,14 +20,13 @@ Ladybug::Ladybug(const std::string& file_path) {
   lb_error_ =
       ladybugGetCameraUnitFocalLength(lb_context_, cam_id_, &focal_length_);
   LadybugCheckError();
-  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cx_, &cy_);
+  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cy_, &cx_);
   LadybugCheckError();
 
   SetImageDims(LB_FULL_HEIGHT_, LB_FULL_WIDTH_);
   // Set intrinsics vector
   intrinsics_.resize(4);
-  intrinsics_ << focal_length_, focal_length_, cy_, cx_;
-
+  intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
 opt<Eigen::Vector2d>
@@ -38,26 +39,26 @@ opt<Eigen::Vector2d>
     return {}; 
   }
 
-  Eigen::Vector2d coords;
-  Eigen::Vector3d x_proj, X_flip;
-  Eigen::Matrix3d K;
-  K << focal_length_, 0, cx_, 0, focal_length_, cy_, 0, 0, 1;
+  double x = point[0];
+  double y = point[1];
+  double z = point[2];
+
   // project
-  x_proj = K * point;
-  // normalize
-  coords[0] = x_proj[0] / x_proj[2];
-  coords[1] = x_proj[1] / x_proj[2];
-  Eigen::Vector2d pixel_out = {0, 0};
-  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, coords[0], coords[1],
-                                    &pixel_out[0], &pixel_out[1]);
+  Eigen::Vector2d point_projected;
+  point_projected[0] = focal_length_ * x / z + cx_;
+  point_projected[1] = focal_length_ * y / z + cy_;
+
+  Eigen::Vector2d pixel_rectified(0, 0);
+  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, point_projected[0],
+                                    point_projected[1], &pixel_rectified[0],
+                                    &pixel_rectified[1]);
 
   //unrectify function returns (-1,-1) if point projects outside of field of view
-  if ((int)pixel_out[0] == -1 && (int)pixel_out[1] == -1) {
+  if ((int)pixel_rectified[0] == -1 && (int)pixel_rectified[1] == -1) {
     outside_domain = true; 
   }
 
-                                    
-  if (PixelInImage(pixel_out)) { return pixel_out; }
+  if (PixelInImage(pixel_rectified)) { return pixel_rectified; }
   return {};
 }
 
@@ -83,9 +84,8 @@ opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector3d out_point;
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel[0], pixel[1],
                                   &pixel_out[0], &pixel_out[1]);
-  out_point << (pixel_out[0] - cx_), (pixel_out[1] - cy_),
-      (2 * focal_length_) / 2;
-  out_point.normalize();
+  out_point << (pixel_out[0] - cx_) / focal_length_,
+      (pixel_out[1] - cy_) / focal_length_, 1;
   LadybugCheckError();
   return out_point;
 }
@@ -96,10 +96,10 @@ void Ladybug::SetCameraID(unsigned int id) {
   lb_error_ =
       ladybugGetCameraUnitFocalLength(lb_context_, cam_id_, &focal_length_);
   LadybugCheckError();
-  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cx_, &cy_);
+  lb_error_ = ladybugGetCameraUnitImageCenter(lb_context_, cam_id_, &cy_, &cx_);
   LadybugCheckError();
 
-  intrinsics_ << focal_length_, focal_length_, cy_, cx_;
+  intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
 void Ladybug::LadybugCheckError() {

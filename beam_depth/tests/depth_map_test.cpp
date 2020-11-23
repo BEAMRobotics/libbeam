@@ -21,7 +21,7 @@ TEST_CASE("Test Constructor, Getters/Setters.") {
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "test.pcd", *cloud);
   // test method exception throwing
   beam_depth::DepthMap dm;
-  REQUIRE_THROWS(dm.ExtractDepthMap(0.03, 5));
+  REQUIRE_THROWS(dm.ExtractDepthMap(0.03));
   REQUIRE_THROWS(dm.ExtractPointCloud());
   REQUIRE_NOTHROW(dm.SetCloud(cloud));
   REQUIRE_NOTHROW(dm.SetCameraModel(F1));
@@ -41,7 +41,7 @@ TEST_CASE("Test Depth map extractor.") {
   pcl::io::loadPCDFile<pcl::PointXYZ>(cur_location + "259_map.pcd", *cloud);
   // test method exception throwing
   beam_depth::DepthMap dm(F1, cloud);
-  dm.ExtractDepthMap(0.1, 1);
+  dm.ExtractDepthMap(0.1);
   int num_out = 0;
   cv::Mat depth = dm.GetDepthImage();
   cv::Mat img = cv::imread(cur_location + "259_mask.jpg", cv::IMREAD_GRAYSCALE);
@@ -51,5 +51,5 @@ TEST_CASE("Test Depth map extractor.") {
       if (distance > 0.001 && img.at<uint8_t>(row, col) == 0) { num_out++; }
     }
   }
-  REQUIRE(num_out < 200);
+  REQUIRE(num_out < 500);
 }

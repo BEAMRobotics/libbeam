@@ -26,8 +26,7 @@ enum class CameraType { RADTAN = 0, KANNALABRANDT, DOUBLESPHERE, LADYBUG };
 class CameraModel {
 public:
   /**
-   * @brief Constructor
-   * @param input_file path to input file
+   * @brief Default constructor
    */
   CameraModel() = default;
 
