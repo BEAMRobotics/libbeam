@@ -79,6 +79,12 @@ public:
   virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
 
   /**
+   * @brief Method for setting the LadyBug camera ID 
+   * @param id of the camera to use
+   */
+  virtual void SetCameraID(const unsigned int id);
+
+  /**
    * @brief Method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
@@ -170,6 +176,7 @@ protected:
   uint32_t image_height_{0};
   uint32_t image_width_{0};
   Eigen::VectorXd intrinsics_;
+  unsigned int cam_id_ = 0;
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
                                                 {CameraType::RADTAN, 8},
