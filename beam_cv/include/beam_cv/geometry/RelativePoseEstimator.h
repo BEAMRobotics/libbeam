@@ -71,21 +71,6 @@ public:
       std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
       std::vector<Eigen::Matrix3d>& R, std::vector<Eigen::Vector3d>& t);
 
-  /**
-   * @brief Returns only physcially possible transformation from 4 possibilities
-   * @param camR camera model for image 1
-   * @param camC camera model for image 2
-   * @param xs corresponding pixels in image 1
-   * @param xss corresponding pixels in image 2
-   * @param T_camC_world relative transform from camR to camC (assume camR is
-   * the world coords)
-   */
-  static int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
-                          std::shared_ptr<beam_calibration::CameraModel> camC,
-                          std::vector<Eigen::Vector2i> pr_v,
-                          std::vector<Eigen::Vector2i> pc_v,
-                          Eigen::Matrix4d T_camC_world,
-                          double inlier_threshold);
-};
+}; 
 
 } // namespace beam_cv

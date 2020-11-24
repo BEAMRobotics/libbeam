@@ -5,6 +5,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
+#include <beam_calibration/CameraModel.h>
 #include <beam_utils/math.hpp>
 
 namespace beam_cv {
@@ -95,5 +96,21 @@ std::vector<Eigen::Vector2d>
  */
 std::vector<cv::Point2f>
     ConvertKeypoints(const std::vector<Eigen::Vector2d>& keypoints);
+
+/**
+ * @brief computes number of inliers projections
+ * @param camR camera model for image 1
+ * @param camC camera model for image 2
+ * @param xs corresponding pixels in image 1
+ * @param xss corresponding pixels in image 2
+ * @param T_camR_world transform to camera R
+ * @param T_camC_world transform to camera C
+ */
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
+                 std::shared_ptr<beam_calibration::CameraModel> camC,
+                 std::vector<Eigen::Vector2i> pr_v,
+                 std::vector<Eigen::Vector2i> pc_v,
+                 Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
+                 double inlier_threshold);
 
 } // namespace beam_cv

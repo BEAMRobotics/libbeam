@@ -4,6 +4,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <beam_cv/Utils.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
 #include <beam_cv/geometry/Triangulation.h>
 
@@ -53,8 +54,8 @@ TEST_CASE("Test triangulation.") {
   std::vector<Eigen::Vector2i> frame1_matches;
   std::vector<Eigen::Vector2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
-  int num_inliers = beam_cv::RelativePoseEstimator::CheckInliers(
-      cam, cam, frame1_matches, frame2_matches, Pc, 5);
+  int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
+                                          frame2_matches, Pr, Pc, 5);
   INFO(num_inliers);
   REQUIRE(num_inliers == 25);
 }
@@ -89,7 +90,6 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   REQUIRE(pose.isApprox(P, 1e-4));
 }
 
-
 TEST_CASE("RANSAC Pose estimator.") {
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
@@ -107,10 +107,9 @@ TEST_CASE("RANSAC Pose estimator.") {
   opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam, cam, frame1_matches, frame2_matches,
       beam_cv::EstimatorMethod::EIGHTPOINT, 100, 5, 123);
-  
-  int num_inliers = beam_cv::RelativePoseEstimator::CheckInliers(
-      cam, cam, frame1_matches, frame2_matches, pose.value(), 5);
+  Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
+  int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
+                                          frame2_matches, Pr, pose.value(), 5);
   INFO(num_inliers);
   REQUIRE(num_inliers == 19);
-
 }

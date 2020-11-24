@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include <beam_utils/uf.hpp>
+#include <beam_cv/geometry/Triangulation.h>
 
 namespace beam_cv {
 
@@ -254,6 +255,36 @@ std::vector<cv::Point2f>
     cv_keypoints.emplace_back((float)k(0), (float)k(1));
   }
   return cv_keypoints;
+}
+
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
+                 std::shared_ptr<beam_calibration::CameraModel> camC,
+                 std::vector<Eigen::Vector2i> pr_v,
+                 std::vector<Eigen::Vector2i> pc_v,
+                 Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
+                 double inlier_threshold) {
+  int inliers = 0;
+  // triangulate correspondences
+  std::vector<opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
+      camR, camC, T_camR_world, T_camC_world, pr_v, pc_v);
+  // reproject triangulated points and find their error
+  for (size_t i = 0; i < points.size(); i++) {
+    // transform point into camC coordinates
+    Eigen::Vector4d pt_h;
+    pt_h << points[i].value()[0], points[i].value()[1], points[i].value()[2], 1;
+    pt_h = T_camC_world * pt_h;
+    Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
+
+    opt<Eigen::Vector2d> pr_rep = camR->ProjectPointPrecise(points[i].value());
+    opt<Eigen::Vector2d> pc_rep = camC->ProjectPointPrecise(ptc);
+    if (!pr_rep.has_value() || !pc_rep.has_value()) { continue; }
+    Eigen::Vector2d pr_d{pr_v[i][0], pr_v[i][1]};
+    Eigen::Vector2d pc_d{pc_v[i][0], pc_v[i][1]};
+    double dist_c = beam::distance(pc_rep.value(), pc_d);
+    double dist_r = beam::distance(pr_rep.value(), pr_d);
+    if (dist_c < inlier_threshold && dist_r < inlier_threshold) { inliers++; }
+  }
+  return inliers;
 }
 
 } // namespace beam_cv
