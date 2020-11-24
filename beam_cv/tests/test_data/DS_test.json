@@ -1,0 +1,16 @@
+{
+  "date": "2019-06-25",
+  "method": "Kalibr",
+  "camera_type": "DOUBLESPHERE",
+  "image_width": 2048,
+  "image_height": 1536,
+  "frame_id": "ds_link",
+  "intrinsics": [
+    2351.0,
+    2351.0,
+    945.0,
+    765.0,
+    1.0,
+    1.0
+  ]
+}
