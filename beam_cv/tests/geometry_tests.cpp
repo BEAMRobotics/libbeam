@@ -5,8 +5,11 @@
 #include <catch2/catch.hpp>
 
 #include <beam_cv/Utils.h>
+#include <beam_cv/geometry/AbsolutePoseEstimator.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
 #include <beam_cv/geometry/Triangulation.h>
+
+#include <beam_calibration/Radtan.h>
 
 void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
                  std::vector<Eigen::Vector2i>& matches2) {
@@ -32,6 +35,37 @@ void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
     matches1.push_back(p1);
     Eigen::Vector2i p2{u2, v2};
     matches2.push_back(p2);
+  }
+}
+
+void ReadP3PMatches(std::string file, std::vector<Eigen::Vector2i>& pixels,
+                    std::vector<Eigen::Vector3d>& points) {
+  // declare variables
+  std::ifstream infile;
+  std::string line;
+  // open file
+  infile.open(file);
+  // extract contents
+  pixels.clear();
+  points.clear();
+  while (!infile.eof()) {
+    std::getline(infile, line, ',');
+    int px1 = std::stod(line);
+    std::getline(infile, line, ':');
+    int px2 = std::stod(line);
+
+    Eigen::Vector2i pixel{px1, px2};
+    pixels.push_back(pixel);
+
+    std::getline(infile, line, ',');
+    double pt1 = std::stod(line);
+    std::getline(infile, line, ',');
+    double pt2 = std::stod(line);
+    std::getline(infile, line, '\n');
+    double pt3 = std::stod(line);
+
+    Eigen::Vector3d point{pt1, pt2, pt3};
+    points.push_back(point);
   }
 }
 
@@ -112,4 +146,30 @@ TEST_CASE("RANSAC Pose estimator.") {
                                           frame2_matches, Pr, pose.value(), 5);
   INFO(num_inliers);
   REQUIRE(num_inliers == 19);
+}
+
+TEST_CASE("Test P3P Absolute Pose Estimator") {
+  // make camera model
+  std::shared_ptr<beam_calibration::CameraModel> cam;
+  std::string location = __FILE__;
+  location.erase(location.end() - 24, location.end());
+  std::string intrinsics_loc = location + "tests/test_data/K.json";
+  cam = std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
+
+  // get corresponding points and pixels
+  std::vector<Eigen::Vector2i> pixels;
+  std::vector<Eigen::Vector3d> points;
+  std::string matches_loc = location + "tests/test_data/p3p_matches.txt";
+  ReadP3PMatches(matches_loc, pixels, points);
+
+  std::vector<Eigen::Vector2i> pixels3 =
+      std::vector<Eigen::Vector2i>(pixels.begin(), pixels.begin() + 3);
+  std::vector<Eigen::Vector3d> points3 =
+      std::vector<Eigen::Vector3d>(points.begin(), points.begin() + 3);
+  ;
+
+  std::vector<Eigen::Matrix4d> transformations =
+      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, pixels3, points3);
+
+  REQUIRE(1 == 1);
 }

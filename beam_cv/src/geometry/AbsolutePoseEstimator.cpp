@@ -14,19 +14,18 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   std::vector<Eigen::Vector3d> y;
   // store normalized pixels coords
   for (std::size_t i = 0; i < pixels.size(); ++i) {
-    Eigen::Vector3d normal_pixel(pixels[i](0), pixels[i](1), 1);
-    normal_pixel.normalize();
-    y.push_back(normal_pixel);
+    Eigen::Vector3d homogenized_pixel = cam->BackProject(pixels[i]).value();
+    y.push_back(homogenized_pixel);
   };
 
   // compute aij and bij
-  double b12 = -2.0 * pixels[1].dot(pixels[2]);
-  double b13 = -2.0 * pixels[1].dot(pixels[3]);
-  double b23 = -2.0 * pixels[2].dot(pixels[3]);
+  double b12 = -2 * (y[0].dot(y[1]));
+  double b13 = -2 * (y[0].dot(y[2]));
+  double b23 = -2 * (y[1].dot(y[2]));
 
-  Eigen::Vector3d d12 = points[1] - points[2];
-  Eigen::Vector3d d13 = points[1] - points[3];
-  Eigen::Vector3d d23 = points[2] - points[3];
+  Eigen::Vector3d d12 = points[0] - points[1];
+  Eigen::Vector3d d13 = points[0] - points[2];
+  Eigen::Vector3d d23 = points[1] - points[2];
   Eigen::Vector3d d12xd13(d12.cross(d13));
 
   double a12 = d12.squaredNorm();
@@ -43,10 +42,10 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   double s12_squared = 1 - c12 * c12;
 
   double p3 = (a13 * (a23 * s31_squared - a13 * s23_squared));
-  double p2 = 2.0 * blob * a23 * a13 + a13 * (2.0 * a12 + a13) * s23_squared +
+  double p2 = 2 * blob * a23 * a13 + a13 * (2 * a12 + a13) * s23_squared +
               a23 * (a23 - a12) * s31_squared;
   double p1 = a23 * (a13 - a23) * s12_squared - a12 * a12 * s23_squared -
-              2.0 * a12 * (blob * a23 + a13 * s23_squared);
+              2 * a12 * (blob * a23 + a13 * s23_squared);
   double p0 = a12 * (a12 * s23_squared - a23 * s12_squared);
 
   double g = 0;
@@ -58,11 +57,11 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
     g = AbsolutePoseEstimator::SolveCubic(p2, p1, p0, cubic_iterations);
   }
 
-  double A00 = a23 * (1.0 - g);
-  double A01 = (a23 * b12) * 0.5;
-  double A02 = (a23 * b13 * g) * (-0.5);
+  double A00 = a23 * (1 - g);
+  double A01 = (a23 * b12) * .5;
+  double A02 = (a23 * b13 * g) * (-.5);
   double A11 = a23 - a12 + a13 * g;
-  double A12 = b23 * (a13 * g - a12) * 0.5;
+  double A12 = b23 * (a13 * g - a12) * .5;
   double A22 = g * (a13 - a23) - a12;
 
   Eigen::Matrix3d A;
@@ -70,12 +69,13 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   Eigen::Matrix3d V;
   Eigen::Vector3d L;
   AbsolutePoseEstimator::EigenWithKnownZero(A, V, L);
-
   double v = std::sqrt(std::max(double(0), -L(1) / L(0)));
+  std::cout << V << std::endl;
+  std::cout << L << std::endl;
+  std::cout << v << std::endl;
 
   // find lambda vectors representing valid solutions
   std::vector<Eigen::Vector3d> Ls;
-  std::cout << std::endl << "Ls initial size: " << Ls.size() << std::endl;
 
   { // valid solutions via positive v
     double s = v;
@@ -301,53 +301,35 @@ bool AbsolutePoseEstimator::Root2Real(double b, double c, double& r1,
 void AbsolutePoseEstimator::EigenWithKnownZero(Eigen::Matrix3d x,
                                                Eigen::Matrix3d E,
                                                Eigen::Vector3d L) {
-  Eigen::Vector3d v3(x(3) * x(7) - x(6) * x(4), x(6) * x(1) - x(7) * x(0),
-                     x(4) * x(0) - x(3) * x(1));
-  v3.normalize();
+  double p1 = -x(0, 0) - x(1, 1) - x(2, 2);
+  double p0 = -x(0, 1) * x(0, 1) - x(0, 2) * x(0, 2) - x(1, 2) * x(1, 2) +
+              x(0, 0) * (x(1, 1) + x(2, 2)) + x(1, 1) * x(2, 2);
 
-  double x01_squared = x(0, 1) * x(0, 1);
-  // get the two other...
-  double b = -x(0, 0) - x(1, 1) - x(2, 2);
-  double c = -x01_squared - x(0, 2) * x(0, 2) - x(1, 2) * x(1, 2) +
-             x(0, 0) * (x(1, 1) + x(2, 2)) + x(1, 1) * x(2, 2);
-  double e1, e2;
-  // roots(poly(x))
-  AbsolutePoseEstimator::Root2Real(b, c, e1, e2);
+  double disc = std::sqrt(p1 * p1 / 4.0 - p0);
+  double tmp = -p1 / 2.0;
+  double sig1 = tmp + disc;
+  double sig2 = tmp - disc;
 
-  if (std::abs(e1) < std::abs(e2)) std::swap(e1, e2);
-  L(0) = e1;
-  L(1) = e2;
+  if (std::abs(sig1) < std::abs(sig2)) std::swap(sig1, sig2);
+  L(0) = sig1;
+  L(1) = sig2;
+  L(2) = 0;
 
-  double mx0011 = -x(0, 0) * x(1, 1);
-  double prec_0 = x(0, 1) * x(1, 2) - x(0, 2) * x(1, 1);
-  double prec_1 = x(0, 1) * x(0, 2) - x(0, 0) * x(1, 2);
+  double c = sig1 * sig1 + x(0, 0) * x(1, 1) - sig1 * (x(0, 0) + x(1, 1)) -
+             x(0, 1) * x(0, 1);
+  double a1 = (sig1 * x(0, 2) + x(0, 1) * x(1, 2) - x(0, 2) * x(1, 1)) / c;
+  double a2 = (sig1 * x(1, 2) + x(0, 1) * x(0, 2) - x(0, 0) * x(1, 2)) / c;
+  double n = 1.0 / std::sqrt(1 + a1 * a1 + a2 * a2);
+  E.col(0) << a1 * n, a2 * n, n;
 
-  double e = e1;
-  double tmp = 1.0 / (e * (x(0, 0) + x(1, 1)) + mx0011 - e * e + x01_squared);
-  double a1 = -(e * x(0, 2) + prec_0) * tmp;
-  double a2 = -(e * x(1, 2) + prec_1) * tmp;
-  double rnorm = (1.0) / std::sqrt(a1 * a1 + a2 * a2 + 1.0);
-  a1 *= rnorm;
-  a2 *= rnorm;
-  Eigen::Vector3d v1(a1, a2, rnorm);
+  c = sig2 * sig2 + x(0, 0) * x(1, 1) - sig2 * (x(0, 0) + x(1, 1)) -
+      x(0, 1) * x(0, 1);
+  a1 = (sig2 * x(0, 2) + x(0, 1) * x(1, 2) - x(0, 2) * x(1, 1)) / c;
+  a2 = (sig2 * x(1, 2) + x(0, 1) * x(0, 2) - x(0, 0) * x(1, 2)) / c;
+  n = 1.0 / std::sqrt(1 + a1 * a1 + a2 * a2);
+  E.col(1) << a1 * n, a2 * n, n;
 
-  // e=e2;
-  double tmp2 =
-      1.0 / (e2 * (x(0, 0) + x(1, 1)) + mx0011 - e2 * e2 + x01_squared);
-  double a21 = -(e2 * x(0, 2) + prec_0) * tmp2;
-  double a22 = -(e2 * x(1, 2) + prec_1) * tmp2;
-  double rnorm2 = 1.0 / std::sqrt(a21 * a21 + a22 * a22 + 1.0);
-  a21 *= rnorm2;
-  a22 *= rnorm2;
-  Eigen::Vector3d v2(a21, a22, rnorm2);
-
-  // optionally remove axb from v1,v2
-  // costly and makes a very small difference!
-  // v1=(v1-v1.dot(v3)*v3);v1.normalize();
-  // v2=(v2-v2.dot(v3)*v3);v2.normalize();
-  // v2=(v2-v1.dot(v2)*v2);v2.normalize();
-
-  E << v1[0], v2[0], v3[0], v1[1], v2[1], v3[1], v1[2], v2[2], v3[2];
+  E.col(2) = x.col(1).cross(x.col(2)).normalized();
 }
 
 void AbsolutePoseEstimator::GaussNewtonRefine(Eigen::Vector3d& L, double a12,
