@@ -144,7 +144,6 @@ opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
   out_ray[0] = sin(th) * mx / ru;
   out_ray[1] = sin(th) * my / ru;
   out_ray[2] = cos(th);
-  out_ray.normalize();
   return out_ray;
 }
 

@@ -2,19 +2,11 @@
 
 #include <pcl/io/pcd_io.h>
 
-#include <beam_cv/RayCast.h>
+#include <beam_cv/Raycast.h>
 #include <beam_cv/Utils.h>
 #include <beam_depth/Utils.h>
 #include <beam_utils/math.hpp>
 
-// TODO: Why is this outside the namespace?
-void HitBehaviour(std::shared_ptr<cv::Mat> image,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                  const int* position, int index) {
-  pcl::PointXYZ origin(0, 0, 0);
-  image->at<float>(position[0], position[1]) =
-      beam::distance(cloud->points[index], origin);
-}
 
 namespace beam_depth {
 
@@ -24,34 +16,34 @@ DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
   this->SetCameraModel(model);
 }
 
-int DepthMap::ExtractDepthMap(float threshold, int mask_size) {
+int DepthMap::ExtractDepthMap(float thresh) {
   if (!point_cloud_initialized_ || !model_initialized_) {
     BEAM_CRITICAL("Variables not properly initialized.");
     throw std::runtime_error{"Variables not properly initialized."};
   }
   BEAM_INFO("Extracting Depth Image...");
-  // create image mask where white pixels = projection hit
-  cv::Mat hit_mask = beam_cv::CreateHitMask(mask_size, model_, cloud_);
   // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
-                                           model_->GetWidth(), CV_32FC1);
-  // perform ray casting of cloud to create depth_image_
-  beam_cv::RayCast(depth_image_, cloud_, hit_mask, threshold, model_,
-                   HitBehaviour);
+                                           model_->GetWidth(), CV_32FC1, double(0));
 
-  depth_image_extracted_ = true;
-  int num_extracted = 0;
-  // compute min and max depth in the image
+  beam_cv::Raycast<pcl::PointXYZ> caster(cloud_, model_, depth_image_);
   min_depth_ = 1000, max_depth_ = 0;
-  depth_image_->forEach<float>(
-      [&](float& distance, const int* position) -> void {
-        (void)position;
-        if (distance != 0.0) {
-          num_extracted++;
-          if (distance > max_depth_) { max_depth_ = distance; }
-          if (distance < min_depth_) { min_depth_ = distance; }
-        }
-      });
+  int num_extracted = 0;
+  // perform ray casting of cloud to create depth_image_
+  caster.Execute(thresh,
+                 [&](std::shared_ptr<cv::Mat>& image,
+                     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                     const int* position, int index) -> void {
+                   pcl::PointXYZ origin(0, 0, 0);
+                   float d = beam::distance(cloud->points[index], origin);
+                   if (d > max_depth_) { max_depth_ = d; }
+                   if (d < min_depth_) { min_depth_  = d; }
+                   image->at<float>(position[0], position[1]) = d;
+                   num_extracted++;
+                 });
+
+  depth_image_ = caster.GetImage();
+  depth_image_extracted_ = true;
   return num_extracted;
 }
 
@@ -105,6 +97,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
         Eigen::Vector2i pixel(col, row);
         opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
         if (direction.has_value()) {
+          direction.value().normalize();
           Eigen::Vector3d coords = distance * direction.value();
           pcl::PointXYZ point(coords[0], coords[1], coords[2]);
           dense_cloud->points.push_back(point);

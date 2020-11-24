@@ -1,11 +1,13 @@
-#include "beam_cv/geometry/RelativePoseEstimator.h"
-#include "beam_cv/geometry/Triangulation.h"
-#include "beam_utils/math.hpp"
-
-#include <Eigen/Geometry>
+#include <beam_cv/geometry/RelativePoseEstimator.h>
 
 #include <chrono>
 #include <cstdlib>
+
+#include <Eigen/Geometry>
+
+#include <beam_cv/Utils.h>
+#include <beam_cv/geometry/Triangulation.h>
+#include <beam_utils/math.hpp>
 
 namespace beam_cv {
 
@@ -13,11 +15,11 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
-  const int N = 8;
-  if (pc_v.size() != N || pr_v.size() != N) {
+  if (pc_v.size() < 8 || pr_v.size() < 8 || pr_v.size() != pc_v.size()) {
     BEAM_CRITICAL("Invalid number of input point matches.");
     return {};
   }
+  int N = pc_v.size();
   // normalize input points via back projection
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
@@ -35,10 +37,8 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   // construct A matrix
   Eigen::MatrixXd A(N, 9);
   for (int i = 0; i < N; i++) {
-    Eigen::MatrixXd K = beam::KroneckerProduct(X_r[i], X_c[i]);
-    Eigen::VectorXd ai;
-    beam::mat2vec(K, ai);
-    A.row(i) = ai;
+    Eigen::VectorXd K = beam::KroneckerProduct(X_r[i], X_c[i]);
+    A.row(i) = K;
   }
   // perform SVD on A matrix
   Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeFullV);
@@ -47,30 +47,25 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   // initial E estimate
   Eigen::MatrixXd Ea;
   beam::vec2mat(x, 3, 3, Ea);
-  // SVD decomp of E
+
   Eigen::JacobiSVD<Eigen::MatrixXd> svdEA(Ea, Eigen::ComputeFullV |
                                                   Eigen::ComputeFullU);
   Eigen::MatrixXd Va = svdEA.matrixV();
   Eigen::MatrixXd Ua = svdEA.matrixU();
+  double s = (svdEA.singularValues()[0] + svdEA.singularValues()[1]) / 2;
   // determine algebraically best E (constrain to rank 2)
   Eigen::Vector3d D;
-  D << 1, 1, 0;
-  Eigen::MatrixXd E = Ua * D.asDiagonal() * Va;
+  D << s, s, 0;
+  Eigen::MatrixXd E = Ua * D.asDiagonal() * Va.transpose();
   return E;
-}
-
-opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix7Point(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
-  // TODO
 }
 
 opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
-    EstimatorMethod method, int max_iterations, double inlier_threshold) {
+    EstimatorMethod method, int max_iterations, double inlier_threshold,
+    int seed) {
   if (pc_v.size() != pr_v.size()) {
     BEAM_CRITICAL("Point match vectors are not of the same size.");
     return {};
@@ -92,7 +87,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
   // seed random num generator with time
-  srand(time(0));
+  srand(seed);
   for (int epoch = 0; epoch < max_iterations; epoch++) {
     std::vector<Eigen::Vector2i> pr_copy = pr_v;
     std::vector<Eigen::Vector2i> pc_copy = pc_v;
@@ -114,18 +109,23 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       E = RelativePoseEstimator::EssentialMatrix8Point(camR, camC, sampled_pr,
                                                        sampled_pc);
     } else if (method == EstimatorMethod::SEVENPOINT) {
+      BEAM_CRITICAL("Seven point algorithm not yet implemented.");
+      return {};
     } else if (method == EstimatorMethod::FIVEPOINT) {
+      BEAM_CRITICAL("Five point algorithm not yet implemented.");
+      return {};
     }
     // recover pose from estimated essential matrix
     if (!E.has_value()) { continue; }
     std::vector<Eigen::Matrix3d> R;
     std::vector<Eigen::Vector3d> t;
     RelativePoseEstimator::RtFromE(E.value(), R, t);
-    Eigen::Matrix4d pose =
-        RelativePoseEstimator::RecoverPose(camR, camC, sampled_pr, sampled_pc, R, t);
+    Eigen::Matrix4d pose = RelativePoseEstimator::RecoverPose(
+        camR, camC, sampled_pr, sampled_pc, R, t);
+    Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
     // check number of inliers and update current best estimate
-    int inliers = RelativePoseEstimator::CheckInliers(camR, camC, pr_v, pc_v,
-                                                      pose, inlier_threshold);
+    int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
+                                        inlier_threshold);
     if (inliers > current_inliers) {
       current_inliers = inliers;
       current_pose = pose;
@@ -189,36 +189,6 @@ Eigen::Matrix4d RelativePoseEstimator::RecoverPose(
       if (count == size) { return pose; }
     }
   }
-}
-
-int RelativePoseEstimator::CheckInliers(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
-    Eigen::Matrix4d T_camC_world, double inlier_threshold) {
-  int inliers = 0;
-  Eigen::Matrix4d I = Eigen::Matrix4d::Identity();
-  // triangulate correspondences
-  std::vector<opt<Eigen::Vector3d>> points =
-      Triangulation::TriangulatePoints(camR, camC, I, T_camC_world, pr_v, pc_v);
-  // reproject triangulated points and find their error
-  for (size_t i = 0; i < points.size(); i++) {
-    // transform point into camC coordinates
-    Eigen::Vector4d pt_h;
-    pt_h << points[i].value()[0], points[i].value()[1], points[i].value()[2], 1;
-    pt_h = T_camC_world * pt_h;
-    Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
-
-    opt<Eigen::Vector2d> pr_rep = camR->ProjectPointPrecise(points[i].value());
-    opt<Eigen::Vector2d> pc_rep = camC->ProjectPointPrecise(ptc);
-    if (!pr_rep.has_value() || !pc_rep.has_value()) { continue; }
-    Eigen::Vector2d pr_d{pr_v[i][0], pr_v[i][1]};
-    Eigen::Vector2d pc_d{pc_v[i][0], pc_v[i][1]};
-    double dist_c = beam::distance(pc_rep.value(), pc_d);
-    double dist_r = beam::distance(pr_rep.value(), pr_d);
-    if (dist_c < inlier_threshold && dist_r < inlier_threshold) { inliers++; }
-  }
-  return inliers;
 }
 
 } // namespace beam_cv

@@ -5,6 +5,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
+#include <beam_calibration/CameraModel.h>
 #include <beam_utils/math.hpp>
 
 namespace beam_cv {
@@ -56,5 +57,60 @@ std::vector<cv::Mat> SegmentComponents(const cv::Mat& image);
  */
 std::map<int, std::vector<cv::Point2i>>
     ConnectedComponents(const cv::Mat& image);
+
+/** @brief Convert a single cv::KeyPoint to Eigen::Vector2d
+ * @param keypoint input keypoint
+ * @param vec_keypoints converted keypoint
+ */
+Eigen::Vector2d ConvertKeypoint(const cv::KeyPoint& keypoint);
+
+/** @brief Convert a single cv::Point2f to Eigen::Vector2d
+ * @param keypoint input keypoint
+ * @param vec_keypoints converted keypoint
+ */
+Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint);
+
+/** @brief Convert a single Eigen::Vector2d to cv::Point2f
+ * @param keypoint input keypoint
+ * @param vec_keypoints converted keypoint
+ */
+cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint);
+
+/** @brief Convert a vector of cv::KeyPoint to a vector of Eigen::Vector2d
+ * @param keypoints input keypoints
+ * @param vec_keypoints converted keypoints
+ */
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::KeyPoint>& keypoints);
+
+/** @brief Convert a vector of cv::Point2f to a vector of Eigen::Vector2d
+ * @param keypoints input keypoints
+ * @param vec_keypoints converted keypoints
+ */
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::Point2f>& keypoints);
+
+/** @brief Convert a vector of Eigen::Vector2d to a vector of cv::Point2f
+ * @param keypoints input keypoints
+ * @param vec_keypoints converted keypoints
+ */
+std::vector<cv::Point2f>
+    ConvertKeypoints(const std::vector<Eigen::Vector2d>& keypoints);
+
+/**
+ * @brief computes number of inliers projections
+ * @param camR camera model for image 1
+ * @param camC camera model for image 2
+ * @param xs corresponding pixels in image 1
+ * @param xss corresponding pixels in image 2
+ * @param T_camR_world transform to camera R
+ * @param T_camC_world transform to camera C
+ */
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
+                 std::shared_ptr<beam_calibration::CameraModel> camC,
+                 std::vector<Eigen::Vector2i> pr_v,
+                 std::vector<Eigen::Vector2i> pc_v,
+                 Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
+                 double inlier_threshold);
 
 } // namespace beam_cv

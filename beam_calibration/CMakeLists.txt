@@ -13,6 +13,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     OpenCV::OpenCV
   SOURCES
     src/TfTree.cpp
+    src/ConvertCameraModel.cpp
     src/Radtan.cpp
     src/DoubleSphere.cpp
     src/CameraModel.cpp
@@ -71,6 +72,32 @@ target_include_directories(${PROJECT_NAME}_kannala_brandt_tests
     include
 )
 target_link_libraries(${PROJECT_NAME}_kannala_brandt_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_convert_camera_models_tests
+  tests/convert_camera_models_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_convert_camera_models_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_convert_camera_models_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_ladybug_tests
+  tests/ladybug_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_ladybug_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_ladybug_tests
   ${PROJECT_NAME}
   Catch2::Catch2
 )

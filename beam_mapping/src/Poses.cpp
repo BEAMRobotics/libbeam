@@ -123,11 +123,8 @@ void Poses::WriteToJSON(const std::string output_dir) {
   std::string output_file;
   std::string last_five_chars =
       output_dir.substr(output_dir.size() - 5, output_dir.size());
-  std::cout << "output_dir: " << output_dir << "\n";
-  std::cout << "last_five_chars: " << last_five_chars << "\n";
   if (last_five_chars == ".json" || last_five_chars == ".JSON") {
     output_file = output_dir;
-    std::cout << "TEST1\n";
 
   } else {
     if (!boost::filesystem::is_directory(output_dir)) {
@@ -135,7 +132,6 @@ void Poses::WriteToJSON(const std::string output_dir) {
       boost::filesystem::create_directories(output_dir);
     }
     output_file = output_dir + pose_file_date + "_poses.json";
-    std::cout << "TEST2\n";
   }
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream filejson(output_file);
@@ -184,6 +180,52 @@ void Poses::LoadFromJSON(const std::string input_pose_file_path) {
   BEAM_INFO("Read {} poses.", pose_counter);
 }
 
+void Poses::WriteToTXT(const std::string output_dir) {
+  if (poses.size() != time_stamps.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+  std::string output_file;
+  std::string last_five_chars =
+      output_dir.substr(output_dir.size() - 4, output_dir.size());
+  if (last_five_chars == ".txt" || last_five_chars == ".TXT") {
+    output_file = output_dir;
+  } else {
+    if (!boost::filesystem::is_directory(output_dir)) {
+      BEAM_INFO("Output directory does not exist, creating now.");
+      boost::filesystem::create_directories(output_dir);
+    }
+    output_file = output_dir + pose_file_date + "_poses.txt";
+  }
+
+  std::ofstream outfile(output_file);
+  for (size_t k = 0; k < poses.size(); k++) {
+    beam::Mat4 Tk = poses[k].matrix();
+    std::stringstream line;
+    line << time_stamps[k].sec;
+    // get num digits in nsec
+    int length = 1;
+    int x = time_stamps[k].nsec;
+    while (x /= 10) length++;
+    // extend nsec with 0's to fill 9 digits
+    if (length < 9) {
+      int extend = 9 - length;
+      for (int i = 0; i < extend; i++) { line << "0"; }
+    }
+    line << time_stamps[k].nsec << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", "
+         << Tk(0, 2) << ", " << Tk(0, 3) << ", " << Tk(1, 0) << ", " << Tk(1, 1)
+         << ", " << Tk(1, 2) << ", " << Tk(1, 3) << ", " << Tk(2, 0) << ", "
+         << Tk(2, 1) << ", " << Tk(2, 2) << ", " << Tk(2, 3) << ", " << Tk(3, 0)
+         << ", " << Tk(3, 1) << ", " << Tk(3, 2) << ", " << Tk(3, 3)
+         << std::endl;
+    std::string line_str = line.str();
+    outfile << line_str;
+  }
+  BEAM_INFO("Saving poses to file: {}", output_file.c_str());
+}
+
 void Poses::LoadFromTXT(const std::string input_pose_file_path) {
   // declare variables
   std::ifstream infile;
@@ -197,32 +239,35 @@ void Poses::LoadFromTXT(const std::string input_pose_file_path) {
   while (!infile.eof()) {
     // get timestamp k
     std::getline(infile, line, ',');
-    try {
-      int n_sec = std::stod(line.substr(line.length() - 9, line.length()));
-      int sec = std::stod(line.substr(0, line.length() - 10));
-      time_stamp_k.sec = sec;
-      time_stamp_k.nsec = n_sec;
-    } catch (const std::invalid_argument& e) {
-      BEAM_CRITICAL("Invalid argument, probably at end of file");
-      throw std::invalid_argument{"Invalid argument, probably at end of file"};
-    }
+    if (line.length() > 0) {
+      try {
+        uint64_t n_sec = std::stod(line.substr(line.length() - 9, line.length()));
+        uint64_t sec = std::stod(line.substr(0, line.length() - 9));
+        time_stamp_k.sec = sec;
+        time_stamp_k.nsec = n_sec;
+      } catch (const std::invalid_argument& e) {
+        BEAM_CRITICAL("Invalid argument, probably at end of file");
+        throw std::invalid_argument{
+            "Invalid argument, probably at end of file"};
+      }
 
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        if (i == 3 && j == 3) {
-          std::getline(infile, line, '\n');
-          Tk(i, j) = std::stod(line);
-        } else {
-          std::getline(infile, line, ',');
-          Tk(i, j) = std::stod(line);
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          if (i == 3 && j == 3) {
+            std::getline(infile, line, '\n');
+            Tk(i, j) = std::stod(line);
+          } else {
+            std::getline(infile, line, ',');
+            Tk(i, j) = std::stod(line);
+          }
         }
       }
+      time_stamps.push_back(time_stamp_k);
+      Eigen::Affine3d TA_k;
+      TA_k.matrix() = Tk;
+      pose_counter++;
+      poses.push_back(TA_k);
     }
-    time_stamps.push_back(time_stamp_k);
-    Eigen::Affine3d TA_k;
-    TA_k.matrix() = Tk;
-    pose_counter++;
-    poses.push_back(TA_k);
   }
   BEAM_INFO("Read {} poses.", pose_counter);
 }
