@@ -17,8 +17,6 @@ void LoadCameraModel() {
 };
 
 TEST_CASE("Testing p3p progress.") {
-  beam_cv::AbsolutePoseEstimator test;
-
   LoadCameraModel();
 
   Eigen::Vector2i y1, y2, y3;
@@ -28,7 +26,7 @@ TEST_CASE("Testing p3p progress.") {
   y2(1) = 0.0;
   y3(0) = 2.0;
   y3(1) = 1.0;
-  std::vector<Eigen::Vector2i> pixels{y1, y2};
+  std::vector<Eigen::Vector2i> pixels{y1, y2, y3};
 
   Eigen::Vector3d X1, X2, X3;
   X1(0) = 0.0;
@@ -42,6 +40,8 @@ TEST_CASE("Testing p3p progress.") {
   X3(2) = 0.816496580927726;
   std::vector<Eigen::Vector3d> points{X1, X2, X3};
 
-  test.P3PEstimator(camera_model_, pixels, points);
+  std::vector<Eigen::Matrix4d> transformations =
+      beam_cv::AbsolutePoseEstimator::P3PEstimator(camera_model_, pixels,
+                                                   points);
   REQUIRE(1 == 1);
 }
