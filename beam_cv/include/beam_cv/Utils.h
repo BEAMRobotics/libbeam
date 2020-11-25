@@ -5,6 +5,8 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
+#include <cstdlib>
+
 #include <beam_calibration/CameraModel.h>
 #include <beam_utils/math.hpp>
 
@@ -112,5 +114,17 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
                  std::vector<Eigen::Vector2i> pc_v,
                  Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
                  double inlier_threshold);
+
+/**
+ * @brief computes number of inliers projections
+ * @param cam camera model for image
+ * @param points 3d points
+ * @param pixels associated pixels
+ * @param T_cam_world transform to camera
+ */
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
+                 std::vector<Eigen::Vector3d> points,
+                 std::vector<Eigen::Vector2i> pixels,
+                 Eigen::Matrix4d T_cam_world, double inlier_threshold);
 
 } // namespace beam_cv

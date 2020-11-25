@@ -17,30 +17,52 @@ using namespace std;
 int main() {
   // file locations
   std::string intrinsics_loc = "/home/jake/K.json";
-  std::string cloud_loc = "/home/jake/example_cloud.pcd";
   // load other objects
   std::shared_ptr<beam_calibration::CameraModel> F1 =
       std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *cloud);
 
-  std::shared_ptr<cv::Mat> depth_image =
-      std::make_shared<cv::Mat>(F1->GetHeight(), F1->GetWidth(), CV_32FC1);
+  Eigen::Vector2i p1(752, 1043);
+  Eigen::Vector3d pp1 = 10 * F1->BackProject(p1).value();
+  std::cout << p1[0] << "," << p1[1] << ":" << pp1[0] << "," << pp1[1] << ","
+            << pp1[2] << std::endl;
 
-  // make raycasting object
-  beam_cv::Raycast<pcl::PointXYZ> caster(cloud, F1, depth_image);
+  Eigen::Vector2i p2(628, 875);
+  Eigen::Vector3d pp2 = 10 * F1->BackProject(p2).value();
+  std::cout << p2[0] << "," << p2[2] << ":" << pp2[0] << "," << pp2[1] << ","
+            << pp2[2] << std::endl;
 
-  // perform ray casting of cloud to create depth_image_
-  caster.Execute(0.1,
-                 [&](std::shared_ptr<cv::Mat>& image,
-                     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-                     const int* position, int index) -> void {
-                   pcl::PointXYZ origin(0, 0, 0);
-                   float d = beam::distance(cloud->points[index], origin);
-                   image->at<float>(position[0], position[1]) = d;
-                 });
+  Eigen::Vector2i p3(1359, 1070);
+  Eigen::Vector3d pp3 = 10 * F1->BackProject(p3).value();
+  std::cout << p3[0] << "," << p3[1] << ":" << pp3[0] << "," << pp3[1] << ","
+            << pp3[2] << std::endl;
 
-  std::shared_ptr<cv::Mat> image = caster.GetImage();
-  cv::Mat vis = beam_depth::VisualizeDepthImage(*image);
-  cv::imwrite("/home/jake/depth.jpg", vis);
+  Eigen::Vector2i p4(452, 780);
+  Eigen::Vector3d pp4 = 10 * F1->BackProject(p4).value();
+  std::cout << p4[0] << "," << p4[1] << ":" << pp4[0] << "," << pp4[1] << ","
+            << pp4[2] << std::endl;
+
+  Eigen::Vector2i p5(708, 959);
+  Eigen::Vector3d pp5 = 10 * F1->BackProject(p5).value();
+  std::cout << p5[0] << "," << p5[1] << ":" << pp5[0] << "," << pp5[1] << ","
+            << pp5[2] << std::endl;
+
+  Eigen::Vector2i p6(655, 826);
+  Eigen::Vector3d pp6 = 10 * F1->BackProject(p6).value();
+  std::cout << p6[0] << "," << p6[1] << ":" << pp6[0] << "," << pp6[1] << ","
+            << pp6[2] << std::endl;
+
+  Eigen::Vector2i p7(859, 1034);
+  Eigen::Vector3d pp7 = 10 * F1->BackProject(p7).value();
+  std::cout << p7[0] << "," << p7[1] << ":" << pp7[0] << "," << pp7[1] << ","
+            << pp7[2] << std::endl;
+
+  Eigen::Vector2i p8(295, 338);
+  Eigen::Vector3d pp8 = 10 * F1->BackProject(p1).value();
+  std::cout << p8[0] << "," << p8[1] << ":" << pp8[0] << "," << pp8[1] << ","
+            << pp8[2] << std::endl;
+
+  Eigen::Vector2i p9(269, 180);
+  Eigen::Vector3d pp9 = 10 * F1->BackProject(p9).value();
+  std::cout << p9[0] << "," << p9[1] << ":" << pp9[0] << "," << pp9[1] << ","
+            << pp9[2] << std::endl;
 }

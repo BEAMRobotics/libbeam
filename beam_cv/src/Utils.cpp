@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include <beam_utils/uf.hpp>
 #include <beam_cv/geometry/Triangulation.h>
+#include <beam_utils/uf.hpp>
 
 namespace beam_cv {
 
@@ -263,6 +263,10 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
                  std::vector<Eigen::Vector2i> pc_v,
                  Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
                  double inlier_threshold) {
+  if (pc_v.size() != pr_v.size()) {
+    BEAM_WARN("Invalid input, number of pixels must match.");
+    return -1;
+  }
   int inliers = 0;
   // triangulate correspondences
   std::vector<opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
@@ -283,6 +287,31 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
     double dist_c = beam::distance(pc_rep.value(), pc_d);
     double dist_r = beam::distance(pr_rep.value(), pr_d);
     if (dist_c < inlier_threshold && dist_r < inlier_threshold) { inliers++; }
+  }
+  return inliers;
+}
+
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
+                 std::vector<Eigen::Vector3d> points,
+                 std::vector<Eigen::Vector2i> pixels,
+                 Eigen::Matrix4d T_cam_world, double inlier_threshold) {
+  if (points.size() != pixels.size()) {
+    BEAM_WARN("Invalid input, number of points and pixels must match.");
+    return -1;
+  }
+  int inliers = 0;
+  // reproject points and find their error
+  for (size_t i = 0; i < points.size(); i++) {
+    Eigen::Vector4d pt_h;
+    pt_h << points[i][0], points[i][1], points[i][2], 1;
+    pt_h = T_cam_world * pt_h;
+    Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
+
+    opt<Eigen::Vector2d> p = cam->ProjectPointPrecise(ptc);
+    if (!p.has_value()) { continue; }
+    Eigen::Vector2d pd{pixels[i][0], pixels[i][1]};
+    double dist = beam::distance(p.value(), pd);
+    if (dist < inlier_threshold) { inliers++; }
   }
   return inliers;
 }

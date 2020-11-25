@@ -40,7 +40,7 @@ public:
    * @param xs corresponding pixels in image 1 (min 8)
    * @param xss corresponding pixels in image 2 (min 8)
    * @param method essential matrix estimator method
-   * @param seed to seed the random number generator, recommendation: time(0)
+   * @param seed to seed the random number generator, default: time(0)
    */
   static opt<Eigen::Matrix4d>
       RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> camR,
@@ -70,7 +70,6 @@ public:
       std::shared_ptr<beam_calibration::CameraModel> camC,
       std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
       std::vector<Eigen::Matrix3d>& R, std::vector<Eigen::Vector3d>& t);
-
-}; 
+};
 
 } // namespace beam_cv

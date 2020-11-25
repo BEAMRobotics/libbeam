@@ -86,23 +86,12 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   }
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
-  // seed random num generator with time
-  srand(seed);
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    std::vector<Eigen::Vector2i> pr_copy = pr_v;
-    std::vector<Eigen::Vector2i> pc_copy = pc_v;
     // fill new point vectors with randomly sampled points from xs and xss
-    std::vector<Eigen::Vector2i> sampled_pr;
-    std::vector<Eigen::Vector2i> sampled_pc;
-    int n = pr_copy.size();
-    for (int i = 0; i < N; i++) {
-      int idx = rand() % n;
-      sampled_pr.push_back(pr_copy[idx]);
-      pr_copy.erase(pr_copy.begin() + idx);
-      sampled_pc.push_back(pc_copy[idx]);
-      pc_copy.erase(pc_copy.begin() + idx);
-      n--;
-    }
+    std::vector<Eigen::Vector2i> sampled_pr =
+        beam::RandomSample<Eigen::Vector2i>(pr_v, N, seed);
+    std::vector<Eigen::Vector2i> sampled_pc =
+        beam::RandomSample<Eigen::Vector2i>(pc_v, N, seed);
     // perform pose estimation of the given method
     opt<Eigen::Matrix3d> E;
     if (method == EstimatorMethod::EIGHTPOINT) {
