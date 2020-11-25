@@ -13,7 +13,8 @@ using opt = std::optional<T>;
 
 namespace beam_cv {
 /**
- * @brief static class implementing various pose estimation algorithms
+ * @brief static class implementing various pose estimation algorithm.
+ * all p3p code adapted from https://github.com/vlarsson/lambdatwist/
  */
 class AbsolutePoseEstimator {
 public:
@@ -30,29 +31,7 @@ public:
   static std::vector<Eigen::Matrix4d>
       P3PEstimator(std::shared_ptr<beam_calibration::CameraModel> cam,
                    std::vector<Eigen::Vector2i> pixels,
-                   std::vector<Eigen::Vector3d> points,
-                   int cubic_iterations = 50, int refinement_iterations = 5);
-
-  /**
-   * @brief Finds a single root of the cubic polynomial equation, optimized for
-   * the most stable choice.
-   * @param b coefficient of cubic
-   * @param c coefficient of cubic
-   * @param d coefficient of cubic
-   * @param iterations number of iterations used to resolve the root
-   * @return Cubic root picked for stability.
-   *
-   */
-  static double SolveCubic(double b, double c, double d, int iterations);
-
-  /**
-   * @brief Eigen decomp of a matrix which is known to have a 0 eigen value
-   * @param b
-   * @param c
-   * @param r1
-   * @param r2
-   */
-  static bool Root2Real(double b, double c, double& r1, double& r2);
+                   std::vector<Eigen::Vector3d> points);
 
   /**
    * @brief Eigen decomp of a matrix which is known to have a 0 eigen value
@@ -60,16 +39,17 @@ public:
    * @param E eigenvectors
    * @param L eigenvalues
    */
-  static void EigenWithKnownZero(Eigen::Matrix3d x, Eigen::Matrix3d E,
-                                 Eigen::Vector3d L);
+  static void EigenWithKnownZero(const Eigen::Matrix3d& M, Eigen::Matrix3d& E,
+                                 double& sig1, double& sig2);
 
   /**
    * @brief Gauss-Newton method (least squares by refinement) to find L.  L
    * is a vector of signed distances from the camera center to each 3d point.
    */
-  static void GaussNewtonRefine(Eigen::Vector3d& L, double a12, double a13,
-                                double a23, double b12, double b13, double b23,
-                                int iterations);
+  static void RefineLambda(double& lambda1, double& lambda2, double& lambda3,
+                           const double a12, const double a13, const double a23,
+                           const double b12, const double b13,
+                           const double b23);
 };
 
 } // namespace beam_cv

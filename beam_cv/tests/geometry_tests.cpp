@@ -150,11 +150,11 @@ TEST_CASE("RANSAC Pose estimator.") {
 
 TEST_CASE("Test P3P Absolute Pose Estimator") {
   // make camera model
-  std::shared_ptr<beam_calibration::CameraModel> cam;
   std::string location = __FILE__;
   location.erase(location.end() - 24, location.end());
   std::string intrinsics_loc = location + "tests/test_data/K.json";
-  cam = std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
+  std::shared_ptr<beam_calibration::CameraModel> cam =
+      beam_calibration::CameraModel::Create(intrinsics_loc);
 
   // get corresponding points and pixels
   std::vector<Eigen::Vector2i> pixels;
@@ -162,14 +162,35 @@ TEST_CASE("Test P3P Absolute Pose Estimator") {
   std::string matches_loc = location + "tests/test_data/p3p_matches.txt";
   ReadP3PMatches(matches_loc, pixels, points);
 
-  std::vector<Eigen::Vector2i> pixels3 =
-      std::vector<Eigen::Vector2i>(pixels.begin(), pixels.begin() + 3);
-  std::vector<Eigen::Vector3d> points3 =
-      std::vector<Eigen::Vector3d>(points.begin(), points.begin() + 3);
-  ;
+  // get solutions from samples of 3 point correspondences
+  std::vector<Eigen::Matrix4d> transformations;
+  std::vector<Eigen::Vector2i> pixels_sample;
+  std::vector<Eigen::Vector3d> points_sample;
+  std::vector<Eigen::Matrix4d> solution;
 
-  std::vector<Eigen::Matrix4d> transformations =
-      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, pixels3, points3);
+  for (size_t i = 0; i + 2 < pixels.size(); i++) {
+    // grab 3 sequential pixels and points
+    pixels_sample = std::vector<Eigen::Vector2i>(pixels.begin() + i,
+                                                 pixels.begin() + i + 3);
+    points_sample = std::vector<Eigen::Vector3d>(points.begin() + i,
+                                                 points.begin() + i + 3);
+    // p3p
+    solution = beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, pixels_sample,
+                                                            points_sample);
+
+    // push solutions to collection of transformation matrices
+    for (size_t j = 0; j < solution.size(); j++) {
+      transformations.push_back(solution[j]);
+    };
+  }
+
+  // print all transformation matrices
+  for (size_t i = 0; i < transformations.size(); i++) {
+    std::cout << "solution " << i << ": " << std::endl
+              << std::endl
+              << transformations[i] << std::endl
+              << std::endl;
+  };
 
   REQUIRE(1 == 1);
 }

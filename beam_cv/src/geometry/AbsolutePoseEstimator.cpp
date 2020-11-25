@@ -9,385 +9,277 @@
 namespace beam_cv {
 std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
     std::shared_ptr<beam_calibration::CameraModel> cam,
-    std::vector<Eigen::Vector2i> pixels, std::vector<Eigen::Vector3d> points,
-    int cubic_iterations, int refinement_iterations) {
-  std::vector<Eigen::Vector3d> y;
+    std::vector<Eigen::Vector2i> pixels, std::vector<Eigen::Vector3d> points) {
   // store normalized pixels coords
+  std::vector<Eigen::Vector3d> x;
   for (std::size_t i = 0; i < pixels.size(); ++i) {
+    // back project and normalize each pixel before adding it to x
     Eigen::Vector3d homogenized_pixel = cam->BackProject(pixels[i]).value();
-    y.push_back(homogenized_pixel);
+    homogenized_pixel.normalize();
+    x.push_back(homogenized_pixel);
   };
 
-  // compute aij and bij
-  double b12 = -2 * (y[0].dot(y[1]));
-  double b13 = -2 * (y[0].dot(y[2]));
-  double b23 = -2 * (y[1].dot(y[2]));
+  // lambdatwist p3p implementation adapted from
+  // https://github.com/vlarsson/lambdatwist
+  Eigen::Vector3d dX12 = points[0] - points[1];
+  Eigen::Vector3d dX13 = points[0] - points[2];
+  Eigen::Vector3d dX23 = points[1] - points[2];
 
-  Eigen::Vector3d d12 = points[0] - points[1];
-  Eigen::Vector3d d13 = points[0] - points[2];
-  Eigen::Vector3d d23 = points[1] - points[2];
-  Eigen::Vector3d d12xd13(d12.cross(d13));
+  double a12 = dX12.squaredNorm();
+  double b12 = x[0].dot(x[1]);
 
-  double a12 = d12.squaredNorm();
-  double a13 = d13.squaredNorm();
-  double a23 = d23.squaredNorm();
+  double a13 = dX13.squaredNorm();
+  double b13 = x[0].dot(x[2]);
 
-  double c31 = -.5 * b13;
-  double c23 = -.5 * b23;
-  double c12 = -.5 * b12;
-  double blob = c12 * c23 * c31 - 1;
+  double a23 = dX23.squaredNorm();
+  double b23 = x[1].dot(x[2]);
 
-  double s31_squared = 1 - c31 * c31;
-  double s23_squared = 1 - c23 * c23;
-  double s12_squared = 1 - c12 * c12;
+  double a23b12 = a23 * b12;
+  double a12b23 = a12 * b23;
+  double a23b13 = a23 * b13;
+  double a13b23 = a13 * b23;
 
-  double p3 = (a13 * (a23 * s31_squared - a13 * s23_squared));
-  double p2 = 2 * blob * a23 * a13 + a13 * (2 * a12 + a13) * s23_squared +
-              a23 * (a23 - a12) * s31_squared;
-  double p1 = a23 * (a13 - a23) * s12_squared - a12 * a12 * s23_squared -
-              2 * a12 * (blob * a23 + a13 * s23_squared);
-  double p0 = a12 * (a12 * s23_squared - a23 * s12_squared);
+  Eigen::Matrix3d D1, D2;
 
-  double g = 0;
-  {
-    p3 = 1 / p3;
-    p2 *= p3;
-    p1 *= p3;
-    p0 *= p3;
-    g = AbsolutePoseEstimator::SolveCubic(p2, p1, p0, cubic_iterations);
-  }
+  D1 << a23, -a23b12, 0.0, -a23b12, a23 - a12, a12b23, 0.0, a12b23, -a12;
+  D2 << a23, 0.0, -a23b13, 0.0, -a13, a13b23, -a23b13, a13b23, a23 - a13;
 
-  double A00 = a23 * (1 - g);
-  double A01 = (a23 * b12) * .5;
-  double A02 = (a23 * b13 * g) * (-.5);
-  double A11 = a23 - a12 + a13 * g;
-  double A12 = b23 * (a13 * g - a12) * .5;
-  double A22 = g * (a13 - a23) - a12;
+  Eigen::Matrix3d DX1, DX2;
+  DX1 << D1.col(1).cross(D1.col(2)), D1.col(2).cross(D1.col(0)),
+      D1.col(0).cross(D1.col(1));
+  DX2 << D2.col(1).cross(D2.col(2)), D2.col(2).cross(D2.col(0)),
+      D2.col(0).cross(D2.col(1));
 
-  Eigen::Matrix3d A;
-  A << A00, A01, A02, A01, A11, A12, A02, A12, A22;
-  Eigen::Matrix3d V;
-  Eigen::Vector3d L;
-  AbsolutePoseEstimator::EigenWithKnownZero(A, V, L);
-  double v = std::sqrt(std::max(double(0), -L(1) / L(0)));
-  std::cout << V << std::endl;
-  std::cout << L << std::endl;
-  std::cout << v << std::endl;
+  // Coefficients of p(gamma) = det(D1 + gamma*D2)
+  // In the original paper c2 and c1 are switched.
+  double c3 = D2.col(0).dot(DX2.col(0));
+  double c2 = (D1.array() * DX2.array()).sum();
+  double c1 = (D2.array() * DX1.array()).sum();
+  double c0 = D1.col(0).dot(DX1.col(0));
 
-  // find lambda vectors representing valid solutions
-  std::vector<Eigen::Vector3d> Ls;
+  // closed root solver for cubic root
+  const double c3inv = 1.0 / c3;
+  c2 *= c3inv;
+  c1 *= c3inv;
+  c0 *= c3inv;
 
-  { // valid solutions via positive v
-    double s = v;
-
-    double w2 = 1.0 / (s * V(1) - V(0));
-    double w0 = (V(3) - s * V(4)) * w2;
-    double w1 = (V(6) - s * V(7)) * w2;
-
-    double a = 1.0 / ((a13 - a12) * w1 * w1 - a12 * b13 * w1 - a12);
-    double b =
-        (a13 * b12 * w1 - a12 * b13 * w0 - 2.0 * w0 * w1 * (a12 - a13)) * a;
-    double c = ((a13 - a12) * w0 * w0 + a13 * b12 * w0 + a13) * a;
-
-    if (b * b - 4.0 * c >= 0) {
-      double tau1, tau2;
-      AbsolutePoseEstimator::Root2Real(b, c, tau1, tau2);
-      std::cout << std::endl << "+v tau1: " << tau1 << std::endl;
-      std::cout << std::endl << "+v tau2: " << tau2 << std::endl;
-      if (tau1 > 0) {
-        double tau = tau1;
-        double d = a23 / (tau * (b23 + tau) + 1.0);
-
-        double l2 = std::sqrt(d);
-        double l3 = tau * l2;
-
-        double l1 = w0 * l2 + w1 * l3;
-        if (l1 >= 0) { Ls.push_back(Eigen::Vector3d(l1, l2, l3)); }
-      }
-      if (tau2 > 0) {
-        double tau = tau2;
-        double d = a23 / (tau * (b23 + tau) + 1.0);
-
-        double l2 = std::sqrt(d);
-        double l3 = tau * l2;
-        double l1 = w0 * l2 + w1 * l3;
-        if (l1 >= 0) { Ls.push_back(Eigen::Vector3d(l1, l2, l3)); }
-      }
-    }
-  }
-
-  { // valid solutions via negative v
-    double s = -v;
-    double w2 = 1.0 / (s * V(0, 1) - V(0, 0));
-    double w0 = (V(1, 0) - s * V(1, 1)) * w2;
-    double w1 = (V(2, 0) - s * V(2, 1)) * w2;
-
-    double a = 1.0 / ((a13 - a12) * w1 * w1 - a12 * b13 * w1 - a12);
-    double b =
-        (a13 * b12 * w1 - a12 * b13 * w0 - 2.0 * w0 * w1 * (a12 - a13)) * a;
-    double c = ((a13 - a12) * w0 * w0 + a13 * b12 * w0 + a13) * a;
-
-    if (b * b - 4.0 * c >= 0) {
-      double tau1, tau2;
-      Root2Real(b, c, tau1, tau2);
-      std::cout << std::endl << "-v tau1: " << tau1 << std::endl;
-      std::cout << std::endl << "-v tau2: " << tau2 << std::endl;
-      if (tau1 > 0) {
-        double tau = tau1;
-        double d = a23 / (tau * (b23 + tau) + 1.0);
-        if (d > 0) {
-          double l2 = std::sqrt(d);
-
-          double l3 = tau * l2;
-
-          double l1 = w0 * l2 + w1 * l3;
-          if (l1 >= 0) { Ls.push_back(Eigen::Vector3d(l1, l2, l3)); }
-        }
-      }
-      if (tau2 > 0) {
-        double tau = tau2;
-        double d = a23 / (tau * (b23 + tau) + 1.0);
-        if (d > 0) {
-          double l2 = std::sqrt(d);
-
-          double l3 = tau * l2;
-
-          double l1 = w0 * l2 + w1 * l3;
-          if (l1 >= 0) { Ls.push_back(Eigen::Vector3d(l1, l2, l3)); }
-        }
-      }
-    }
-  }
-
-  std::cout << std::endl << "Ls final size: " << Ls.size() << std::endl;
-
-  for (size_t i = 0; i < Ls.size(); ++i) {
-    AbsolutePoseEstimator::GaussNewtonRefine(Ls[i], a12, a13, a23, b12, b13,
-                                             b23, refinement_iterations);
-  }
-
-  std::vector<Eigen::Matrix4d> transformations;
-
-  Eigen::Vector3d ry1, ry2, ry3;
-  Eigen::Vector3d yd1;
-  Eigen::Vector3d yd2;
-  Eigen::Vector3d yd1xd2;
-  Eigen::Matrix3d X;
-  X << d12(0), d13(0), d12xd13(0), d12(1), d13(1), d12xd13(1), d12(2), d13(2),
-      d12xd13(2);
-  X = X.inverse();
-
-  for (size_t i = 0; i < Ls.size(); ++i) {
-    // cout<<"Li="<<Ls(i)<<endl;
-
-    // compute the rotation:
-    ry1 = y[0] * Ls[i](0);
-    ry2 = y[1] * Ls[i](1);
-    ry3 = y[2] * Ls[i](2);
-
-    yd1 = ry1 - ry2;
-    yd2 = ry1 - ry3;
-    yd1xd2 = yd1.cross(yd2);
-
-    Eigen::Matrix3d Y;
-    Y << yd1(0), yd2(0), yd1xd2(0), yd1(1), yd2(1), yd1xd2(1), yd1(2), yd2(2),
-        yd1xd2(2);
-
-    Eigen::Matrix4d solution = Eigen::Matrix4d::Zero();
-    solution(3, 3) = 1;
-    // add rotation to top-left 3x3
-    solution.block(0, 0, 3, 3) = Y * X;
-    // add translation to right column
-    // solution.col(3) = (ry1 - solution.block(0, 0, 3, 3) * points[0]);
-    std::cout << solution << std::endl << points[0];
-    transformations.push_back(solution);
-  }
-
-  return transformations;
-}
-
-// adapted from lambdatwist github
-
-/**
- * h(r) = r^3 + b*r^2 + c*r + d = 0
- *
- * The return root is as stable as possible in the sense that it has as high
- * derivative as possible.  The solution is found by simple Newton-Raphson
- * iterations, and the trick is to choose the intial solution r0 in a clever
- * way.
- *
- * The intial solution is found by considering 5 cases:
- *
- * Cases I and II: h has no stationary points. In this case its derivative
- * is positive.  The inital solution to the NR-iteration is r0 here h has
- * minimal derivative.
- *
- * Case III, IV, and V: has two stationary points, t1 < t2.  In this case,
- * h has negative derivative between t1 and t2.  In these cases, we can make
- * a second order approximation of h around each of t1 and t2, and choose r0
- * as the leftmost or rightmost root of these approximations, depending on
- * whether two, one, or both of h(t1) and h(t2) are > 0.
- */
-double AbsolutePoseEstimator::SolveCubic(double b, double c, double d,
-                                         int iterations) {
-  /* Choose initial solution */
-  double r0;
-  // not monotonic
-  if (b * b >= 3.0 * c) {
-    // h has two stationary points, compute them
-    // T t1 = t - std::sqrt(diff);
-    double v = std::sqrt(b * b - 3.0 * c);
-    double t1 = (-b - v) / (3.0);
-
-    // Check if h(t1) > 0, in this case make a 2-order approx of h around t1
-    double k = ((t1 + b) * t1 + c) * t1 + d;
-
-    if (k > 0.0) {
-      // Find leftmost root of 0.5*(r0 -t1)^2*(6*t1+2*b) +  k = 0
-      r0 = t1 - std::sqrt(-k / (3.0 * t1 + b));
-      // or use the linear comp too
-      // r0=t1 -
-    } else {
-      double t2 = (-b + v) / (3.0);
-      k = ((t2 + b) * t2 + c) * t2 + d;
-      // Find rightmost root of 0.5*(r0 -t2)^2*(6*t2+2*b) +  k1 = 0
-      r0 = t2 + std::sqrt(-k / (3.0 * t2 + b));
-    }
+  double a = c1 - c2 * c2 / 3.0;
+  double b = (2.0 * c2 * c2 * c2 - 9.0 * c2 * c1) / 27.0 + c0;
+  double c = b * b / 4.0 + a * a * a / 27.0;
+  double gamma;
+  if (c > 0) {
+    c = std::sqrt(c);
+    b *= -0.5;
+    gamma = std::cbrt(b + c) + std::cbrt(b - c) - c2 / 3.0;
   } else {
-    r0 = -b / 3.0;
-    if (std::abs(((3.0 * r0 + 2.0 * b) * r0 + c)) < 1e-4) r0 += 1;
+    c = 3.0 * b / (2.0 * a) * std::sqrt(-3.0 / a);
+    gamma = 2.0 * std::sqrt(-a / 3.0) * std::cos(std::acos(c) / 3.0) - c2 / 3.0;
   }
 
-  /* Do ITER Newton-Raphson iterations */
-  /* Break if position of root changes less than 1e.16 */
-  // T starterr=std::abs(r0*(r0*(r0 + b) + c) + d);
-  double fx, fpx;
+  // We do a single newton step on the cubic equation
+  double f = gamma * gamma * gamma + c2 * gamma * gamma + c1 * gamma + c0;
+  double df = 3.0 * gamma * gamma + 2.0 * c2 * gamma + c1;
+  gamma = gamma - f / df;
 
-  for (int cnt = 0; cnt < iterations; ++cnt) {
-    //(+ (* r0 (+  c (* (+ r0 b) r0) )) d )
-    fx = (((r0 + b) * r0 + c) * r0 + d);
+  Eigen::Matrix3d D0 = D1 + gamma * D2;
 
-    // 1e-13 is the numeric limit of double
-    if ((cnt < 7 || std::abs(fx) > 1e-13)) {
-      fpx = ((3.0 * r0 + 2.0 * b) * r0 + c);
+  Eigen::Matrix3d E;
+  double sig1, sig2;
 
-      r0 -= fx / fpx;
-    } else
-      break;
+  AbsolutePoseEstimator::EigenWithKnownZero(D0, E, sig1, sig2);
+
+  double s = std::sqrt(-sig2 / sig1);
+
+  double w0p = (E(1, 0) - s * E(1, 1)) / (s * E(0, 1) - E(0, 0));
+  double w1p = (-s * E(2, 1) + E(2, 0)) / (s * E(0, 1) - E(0, 0));
+
+  double w0n = (E(1, 0) + s * E(1, 1)) / (-s * E(0, 1) - E(0, 0));
+  double w1n = (s * E(2, 1) + E(2, 0)) / (-s * E(0, 1) - E(0, 0));
+
+  // Note that these formulas differ from what is presented in the paper.
+  double ap = (a13 - a12) * w1p * w1p + 2.0 * a12 * b13 * w1p - a12;
+  double bp = -2.0 * a13 * b12 * w1p + 2.0 * a12 * b13 * w0p -
+              2.0 * w0p * w1p * (a12 - a13);
+  double cp = (a13 - a12) * w0p * w0p - 2.0 * a13 * b12 * w0p + a13;
+
+  double an = (a13 - a12) * w1n * w1n + 2.0 * a12 * b13 * w1n - a12;
+  double bn = 2.0 * a12 * b13 * w0n - 2.0 * a13 * b12 * w1n -
+              2.0 * w0n * w1n * (a12 - a13);
+  double cn = (a13 - a12) * w0n * w0n - 2.0 * a13 * b12 * w0n + a13;
+
+  double lambda1, lambda2, lambda3;
+
+  // prep for output
+  std::vector<Eigen::Matrix4d> output;
+  Eigen::Matrix4d solution = Eigen::Matrix4d::Zero();
+  solution(3, 3) = 1;
+
+  Eigen::Matrix3d XX;
+
+  XX << dX12, dX13, dX12.cross(dX13);
+  XX = XX.inverse().eval();
+
+  Eigen::Vector3d v1, v2;
+  Eigen::Matrix3d YY;
+
+  double b2m4ac = bp * bp - 4.0 * ap * cp;
+
+  if (b2m4ac > 0) {
+    double sq = std::sqrt(b2m4ac);
+
+    // first root
+    double tau = (bp > 0) ? (2.0 * cp) / (-bp - sq) : (2.0 * cp) / (-bp + sq);
+
+    if (tau > 0) {
+      lambda2 = std::sqrt(a23 / (tau * (tau - 2.0 * b23) + 1.0));
+      lambda3 = tau * lambda2;
+      lambda1 = w0p * lambda2 + w1p * lambda3;
+
+      if (lambda1 > 0) {
+        AbsolutePoseEstimator::RefineLambda(lambda1, lambda2, lambda3, a12, a13,
+                                            a23, b12, b13, b23);
+        v1 = lambda1 * x[0] - lambda2 * x[1];
+        v2 = lambda1 * x[0] - lambda3 * x[2];
+        YY << v1, v2, v1.cross(v2);
+        solution.block(0, 0, 3, 3) = YY * XX;
+        solution.block(0, 3, 3, 1) =
+            lambda1 * x[0] - solution.block(0, 0, 3, 3) * points[0];
+        output.push_back(solution);
+      }
+    }
+
+    // Second root
+    tau = cp / (ap * tau);
+
+    if (tau > 0) {
+      lambda2 = std::sqrt(a23 / (tau * (tau - 2.0 * b23) + 1.0));
+      lambda3 = tau * lambda2;
+      lambda1 = w0p * lambda2 + w1p * lambda3;
+
+      if (lambda1 > 0) {
+        AbsolutePoseEstimator::RefineLambda(lambda1, lambda2, lambda3, a12, a13,
+                                            a23, b12, b13, b23);
+        v1 = lambda1 * x[0] - lambda2 * x[1];
+        v2 = lambda1 * x[0] - lambda3 * x[2];
+        YY << v1, v2, v1.cross(v2);
+        solution.block(0, 0, 3, 3) = YY * XX;
+        solution.block(0, 3, 3, 1) =
+            lambda1 * x[0] - solution.block(0, 0, 3, 3) * points[0];
+        output.push_back(solution);
+      }
+    }
   }
 
-  return r0;
+  // Second pair of roots
+  b2m4ac = bn * bn - 4.0 * an * cn;
+
+  if (b2m4ac > 0) {
+    double sq = std::sqrt(b2m4ac);
+
+    // first root
+    double tau = (bn > 0) ? (2.0 * cn) / (-bn - sq) : (2.0 * cn) / (-bn + sq);
+
+    if (tau > 0) {
+      lambda2 = std::sqrt(a23 / (tau * (tau - 2.0 * b23) + 1.0));
+      lambda3 = tau * lambda2;
+      lambda1 = w0n * lambda2 + w1n * lambda3;
+
+      if (lambda1 > 0) {
+        AbsolutePoseEstimator::RefineLambda(lambda1, lambda2, lambda3, a12, a13,
+                                            a23, b12, b13, b23);
+        v1 = lambda1 * x[0] - lambda2 * x[1];
+        v2 = lambda1 * x[0] - lambda3 * x[2];
+        YY << v1, v2, v1.cross(v2);
+        solution.block(0, 0, 3, 3) = YY * XX;
+        solution.block(0, 3, 3, 1) =
+            lambda1 * x[0] - solution.block(0, 0, 3, 3) * points[0];
+        output.push_back(solution);
+      }
+    }
+
+    // Second root
+    tau = cn / (an * tau);
+
+    if (tau > 0) {
+      lambda2 = std::sqrt(a23 / (tau * (tau - 2.0 * b23) + 1.0));
+      lambda3 = tau * lambda2;
+      lambda1 = w0n * lambda2 + w1n * lambda3;
+
+      if (lambda1 > 0) {
+        AbsolutePoseEstimator::RefineLambda(lambda1, lambda2, lambda3, a12, a13,
+                                            a23, b12, b13, b23);
+        v1 = lambda1 * x[0] - lambda2 * x[1];
+        v2 = lambda1 * x[0] - lambda3 * x[2];
+        YY << v1, v2, v1.cross(v2);
+        solution.block(0, 0, 3, 3) = YY * XX;
+        solution.block(0, 3, 3, 1) =
+            lambda1 * x[0] - solution.block(0, 0, 3, 3) * points[0];
+        output.push_back(solution);
+      }
+    }
+  }
+
+  return output;
 }
 
-bool AbsolutePoseEstimator::Root2Real(double b, double c, double& r1,
-                                      double& r2) {
-  double v = b * b - 4.0 * c;
-  if (v < 0) {
-    r1 = r2 = 0.5 * b;
-    return false;
-  }
-
-  double y = std::sqrt(v);
-  if (b < 0) {
-    r1 = 0.5 * (-b + y);
-    r2 = 0.5 * (-b - y);
-  } else {
-    r1 = 2.0 * c / (-b + y);
-    r2 = 2.0 * c / (-b - y);
-  }
-  return true;
-}
-
-void AbsolutePoseEstimator::EigenWithKnownZero(Eigen::Matrix3d x,
-                                               Eigen::Matrix3d E,
-                                               Eigen::Vector3d L) {
-  double p1 = -x(0, 0) - x(1, 1) - x(2, 2);
-  double p0 = -x(0, 1) * x(0, 1) - x(0, 2) * x(0, 2) - x(1, 2) * x(1, 2) +
-              x(0, 0) * (x(1, 1) + x(2, 2)) + x(1, 1) * x(2, 2);
+void AbsolutePoseEstimator::EigenWithKnownZero(const Eigen::Matrix3d& M,
+                                               Eigen::Matrix3d& E, double& sig1,
+                                               double& sig2) {
+  // In the original paper there is a missing minus sign here (for M(0,0))
+  double p1 = -M(0, 0) - M(1, 1) - M(2, 2);
+  double p0 = -M(0, 1) * M(0, 1) - M(0, 2) * M(0, 2) - M(1, 2) * M(1, 2) +
+              M(0, 0) * (M(1, 1) + M(2, 2)) + M(1, 1) * M(2, 2);
 
   double disc = std::sqrt(p1 * p1 / 4.0 - p0);
   double tmp = -p1 / 2.0;
-  double sig1 = tmp + disc;
-  double sig2 = tmp - disc;
+  sig1 = tmp + disc;
+  sig2 = tmp - disc;
 
   if (std::abs(sig1) < std::abs(sig2)) std::swap(sig1, sig2);
-  L(0) = sig1;
-  L(1) = sig2;
-  L(2) = 0;
 
-  double c = sig1 * sig1 + x(0, 0) * x(1, 1) - sig1 * (x(0, 0) + x(1, 1)) -
-             x(0, 1) * x(0, 1);
-  double a1 = (sig1 * x(0, 2) + x(0, 1) * x(1, 2) - x(0, 2) * x(1, 1)) / c;
-  double a2 = (sig1 * x(1, 2) + x(0, 1) * x(0, 2) - x(0, 0) * x(1, 2)) / c;
+  double c = sig1 * sig1 + M(0, 0) * M(1, 1) - sig1 * (M(0, 0) + M(1, 1)) -
+             M(0, 1) * M(0, 1);
+  double a1 = (sig1 * M(0, 2) + M(0, 1) * M(1, 2) - M(0, 2) * M(1, 1)) / c;
+  double a2 = (sig1 * M(1, 2) + M(0, 1) * M(0, 2) - M(0, 0) * M(1, 2)) / c;
   double n = 1.0 / std::sqrt(1 + a1 * a1 + a2 * a2);
   E.col(0) << a1 * n, a2 * n, n;
 
-  c = sig2 * sig2 + x(0, 0) * x(1, 1) - sig2 * (x(0, 0) + x(1, 1)) -
-      x(0, 1) * x(0, 1);
-  a1 = (sig2 * x(0, 2) + x(0, 1) * x(1, 2) - x(0, 2) * x(1, 1)) / c;
-  a2 = (sig2 * x(1, 2) + x(0, 1) * x(0, 2) - x(0, 0) * x(1, 2)) / c;
+  c = sig2 * sig2 + M(0, 0) * M(1, 1) - sig2 * (M(0, 0) + M(1, 1)) -
+      M(0, 1) * M(0, 1);
+  a1 = (sig2 * M(0, 2) + M(0, 1) * M(1, 2) - M(0, 2) * M(1, 1)) / c;
+  a2 = (sig2 * M(1, 2) + M(0, 1) * M(0, 2) - M(0, 0) * M(1, 2)) / c;
   n = 1.0 / std::sqrt(1 + a1 * a1 + a2 * a2);
   E.col(1) << a1 * n, a2 * n, n;
 
-  E.col(2) = x.col(1).cross(x.col(2)).normalized();
+  E.col(2) = M.col(1).cross(M.col(2)).normalized();
 }
 
-void AbsolutePoseEstimator::GaussNewtonRefine(Eigen::Vector3d& L, double a12,
-                                              double a13, double a23,
-                                              double b12, double b13,
-                                              double b23, int iterations) {
-  for (int i = 0; i < iterations; ++i) {
-    double l1 = L(0);
-    double l2 = L(1);
-    double l3 = L(2);
-    double r1 = l1 * l1 + l2 * l2 + b12 * l1 * l2 - a12;
-    double r2 = l1 * l1 + l3 * l3 + b13 * l1 * l3 - a13;
-    double r3 = l2 * l2 + l3 * l3 + b23 * l2 * l3 - a23;
-
-    if (std::abs(r1) + std::abs(r2) + std::abs(r3) < 1e-10) break;
-
-    double dr1dl1 = (2.0) * l1 + b12 * l2;
-    double dr1dl2 = (2.0) * l2 + b12 * l1;
-    // T dr1dl3=0;
-
-    double dr2dl1 = (2.0) * l1 + b13 * l3;
-    // T dr2dl2=0;
-    double dr2dl3 = (2.0) * l3 + b13 * l1;
-
-    // T dr3dl1=0;
-    double dr3dl2 = (2.0) * l2 + b23 * l3;
-    double dr3dl3 = (2.0) * l3 + b23 * l2;
-
-    Eigen::Vector3d r(r1, r2, r3);
-
-    {
-      double v0 = dr1dl1;
-      double v1 = dr1dl2;
-      double v3 = dr2dl1;
-      double v5 = dr2dl3;
-      double v7 = dr3dl2;
-      double v8 = dr3dl3;
-      double det = (1.0) / (-v0 * v5 * v7 - v1 * v3 * v8);
-
-      Eigen::Matrix3d Ji;
-      Ji << -v5 * v7, -v1 * v8, v1 * v5, -v3 * v8, v0 * v8, -v0 * v5, v3 * v7,
-          -v0 * v7, -v1 * v3;
-      Eigen::Vector3d L1 = Eigen::Vector3d(L) - det * (Ji * r);
-
-      {
-        double l1 = L1(0);
-        double l2 = L1(1);
-        double l3 = L1(2);
-        double r11 = l1 * l1 + l2 * l2 + b12 * l1 * l2 - a12;
-        double r12 = l1 * l1 + l3 * l3 + b13 * l1 * l3 - a13;
-        double r13 = l2 * l2 + l3 * l3 + b23 * l2 * l3 - a23;
-        if (std::abs(r11) + std::abs(r12) + std::abs(r13) >
-            std::abs(r1) + std::abs(r2) + std::abs(r3)) {
-          break;
-        } else
-          L = L1;
-      }
-    }
+void AbsolutePoseEstimator::RefineLambda(double& lambda1, double& lambda2,
+                                         double& lambda3, const double a12,
+                                         const double a13, const double a23,
+                                         const double b12, const double b13,
+                                         const double b23) {
+  for (int iter = 0; iter < 5; ++iter) {
+    double r1 = (lambda1 * lambda1 - 2.0 * lambda1 * lambda2 * b12 +
+                 lambda2 * lambda2 - a12);
+    double r2 = (lambda1 * lambda1 - 2.0 * lambda1 * lambda3 * b13 +
+                 lambda3 * lambda3 - a13);
+    double r3 = (lambda2 * lambda2 - 2.0 * lambda2 * lambda3 * b23 +
+                 lambda3 * lambda3 - a23);
+    if (std::abs(r1) + std::abs(r2) + std::abs(r3) < 1e-10) return;
+    double x11 = lambda1 - lambda2 * b12;
+    double x12 = lambda2 - lambda1 * b12;
+    double x21 = lambda1 - lambda3 * b13;
+    double x23 = lambda3 - lambda1 * b13;
+    double x32 = lambda2 - lambda3 * b23;
+    double x33 = lambda3 - lambda2 * b23;
+    double detJ = 0.5 / (x11 * x23 * x32 +
+                         x12 * x21 * x33); // half minus inverse determinant
+    // This uses the closed form of the inverse for the jacobean.
+    // Due to the zero elements this actually becomes quite nice.
+    lambda1 += (-x23 * x32 * r1 - x12 * x33 * r2 + x12 * x23 * r3) * detJ;
+    lambda2 += (-x21 * x33 * r1 + x11 * x33 * r2 - x11 * x23 * r3) * detJ;
+    lambda3 += (x21 * x32 * r1 - x11 * x32 * r2 - x12 * x21 * r3) * detJ;
   }
 }
 } // namespace beam_cv
