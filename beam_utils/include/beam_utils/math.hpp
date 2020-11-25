@@ -11,10 +11,11 @@
 #ifndef BEAM_UTILS_MATH_HPP
 #define BEAM_UTILS_MATH_HPP
 
+#include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
-#include <cstdlib>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -119,7 +120,8 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
 }
 
 template <typename T>
-std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed) {
+std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
+  if (seed == -1) { seed = time(0); }
   srand(seed);
   std::vector<T> input_copy = input;
   // fill new point vectors with randomly sampled points from xs and xss

@@ -40,14 +40,16 @@ public:
    * @param xs corresponding pixels in image 1 (min 8)
    * @param xss corresponding pixels in image 2 (min 8)
    * @param method essential matrix estimator method
-   * @param seed to seed the random number generator, default: time(0)
+   * @param seed to seed the random number generator, default value of -1 will
+   * use time as seed
    */
   static opt<Eigen::Matrix4d>
       RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> camR,
                       std::shared_ptr<beam_calibration::CameraModel> camC,
                       std::vector<Eigen::Vector2i> pr_v,
                       std::vector<Eigen::Vector2i> pc_v, EstimatorMethod method,
-                      int max_iterations, double inlier_threshold, int seed);
+                      int max_iterations = 100, double inlier_threshold = 10.0,
+                      int seed = -1);
 
   /**
    * @brief Computes the transformation matrix given essential matrix
