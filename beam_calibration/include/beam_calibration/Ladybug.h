@@ -70,7 +70,7 @@ public:
    * @brief Method for setting which camera to use
    * @param id of the camera to use
    */
-  void SetCameraID(unsigned int id);
+  void SetCameraID(unsigned int id) override;
 
 protected:
   /**
@@ -80,8 +80,6 @@ protected:
 
   LadybugContext lb_context_;
   LadybugError lb_error_;
-
-  unsigned int cam_id_ = 0;
   const unsigned int LB_FULL_WIDTH_ = 2048;
   const unsigned int LB_FULL_HEIGHT_ = 2464;
 
