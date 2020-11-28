@@ -102,7 +102,7 @@ void IPBasic(cv::Mat& depth_image) {
   }
   cv::Mat dilated;
   cv::dilate(depth_image, dilated, beam::GetFullKernel(7));
-  for (int i = 0; i < empty_pixels.size(); i++) {
+  for (uint32_t i = 0; i < empty_pixels.size(); i++) {
     depth_image.at<float>(empty_pixels[i].x, empty_pixels[i].y) =
         dilated.at<float>(empty_pixels[i].x, empty_pixels[i].y);
   }
@@ -155,7 +155,7 @@ void IDWInterpolation(cv::Mat& depth_image, int window_size) {
       if (closest_points.size() >= 3) {
         float idw_numerator = 0.0;
         float idw_denominator = 0.0;
-        for (int i = 0; i < closest_points.size(); i++) {
+        for (uint32_t i = 0; i < closest_points.size(); i++) {
           std::tuple<float, float> pair = closest_points[i];
           float depth = std::get<1>(pair);
           float dist = std::get<0>(pair);

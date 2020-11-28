@@ -127,7 +127,7 @@ std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
   // fill new point vectors with randomly sampled points from xs and xss
   std::vector<T> sampled;
   int n = input_copy.size();
-  for (int i = 0; i < N; i++) {
+  for (uint32_t i = 0; i < N; i++) {
     int idx = rand() % n;
     sampled.push_back(input_copy[idx]);
     input_copy.erase(input_copy.begin() + idx);

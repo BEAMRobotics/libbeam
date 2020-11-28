@@ -68,7 +68,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     return {};
   }
   // determine sample vector size
-  int N = 0;
+  uint32_t N = 0;
   if (method == EstimatorMethod::EIGHTPOINT) {
     N = 8;
   } else if (method == EstimatorMethod::SEVENPOINT) {

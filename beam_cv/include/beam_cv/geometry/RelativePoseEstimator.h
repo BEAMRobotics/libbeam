@@ -37,8 +37,8 @@ public:
    * @brief Performs RANSAC on the given estimator
    * @param camR camera model for image 1
    * @param camC camera model for image 2
-   * @param xs corresponding pixels in image 1 (min 8)
-   * @param xss corresponding pixels in image 2 (min 8)
+   * @param xs corresponding pixels in image 1
+   * @param xss corresponding pixels in image 2
    * @param method essential matrix estimator method
    * @param seed to seed the random number generator, default value of -1 will
    * use time as seed
