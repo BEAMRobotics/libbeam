@@ -2,14 +2,14 @@ PROJECT(beam_cv)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
-    catkin::catkin
-    PCL::PCL
     beam::calibration
     beam::containers
     beam::utils
     beam::depth
     OpenCV::OpenCV
     Eigen3::Eigen
+    OpenCV::OpenCV
+    PCL::PCL
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
