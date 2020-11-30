@@ -1,10 +1,11 @@
 #include "beam_cv/geometry/AbsolutePoseEstimator.h"
-#include "beam_cv/geometry/Triangulation.h"
-#include "beam_utils/math.hpp"
 
 #include <Eigen/Geometry>
 
-#include <math.h>
+#include "beam_cv/geometry/Triangulation.h"
+#include <beam_cv/Utils.h>
+#include <beam_utils/math.hpp>
+#include <numeric>
 
 namespace beam_cv {
 std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
@@ -222,11 +223,10 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   return output;
 }
 
-Eigen::Matrix4d
-    RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> cam,
-                    std::vector<Eigen::Vector2i> pixels,
-                    std::vector<Eigen::Vector3d> points, int max_iterations,
-                    double inlier_threshold, int seed) {
+Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
+    std::shared_ptr<beam_calibration::CameraModel> cam,
+    std::vector<Eigen::Vector2i> pixels, std::vector<Eigen::Vector3d> points,
+    int max_iterations, double inlier_threshold, int seed) {
   // return nothing if input sizes do not match
   if (pixels.size() != points.size()) {
     BEAM_CRITICAL("Pixel/point vectors are not of the same size.");
@@ -243,28 +243,39 @@ Eigen::Matrix4d
   srand(seed);
 
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    // copy pixels/points for mutation and instantiate vectors for sampling
-    std::vector<Eigen::Vector2i> pixels_copy = pixels;
-    std::vector<Eigen::Vector2i> points_copy = points;
-    std::vector<Eigen::Vector2i> pixels_sample;
-    std::vector<Eigen::Vector2i> points_sample;
+    // // sample three random indices from pixels/points
+    // std::vector<int> range(pixels.size());
+    // std::iota(std::begin(range), std::end(range), 0);
+    // // vector of three indices to sample
+    // std::vector<int> samples = beam::RandomSample<int>(range, 3);
+    // // add the samples to sample vectors
+    // std::vector<Eigen::Vector2i> pixels_sample;
+    // std::vector<Eigen::Vector3d> points_sample;
+    // for (size_t i = 0; i < samples.size(); i++) {
+    //   pixels_sample.push_back(pixels[samples[i]]);
+    //   points_sample.push_back(points[samples[i]]);
+    // }
 
-    int n = pixels.size();
-    for (int i = 0; i < 3; i++) {
-      // pick rand index in pixels/points and sample without replacement
-      int idx = rand() % n;
-      pixels_sample.push_back(pr_copy[idx]);
-      points_sample.push_back(pc_copy[idx]);
-      pixels_copy.erase(pr_copy.begin() + idx);
-      points_copy.erase(pc_copy.begin() + idx);
-      n--;
-    }
+    // generate a temp_seed so that pixels and point both sample the same
+    // indices on a given epoch.
+    int temp_seed = rand();
+    std::vector<Eigen::Vector2i> pixels_sample =
+        beam::RandomSample<Eigen::Vector2i>(pixels, 3, temp_seed);
+    std::vector<Eigen::Vector3d> points_sample =
+        beam::RandomSample<Eigen::Vector3d>(points, 3, temp_seed);
 
-        int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
-                                        inlier_threshold);
-    if (inliers > current_inliers) {
-      current_inliers = inliers;
-      current_pose = pose;
+    // perform p3p on the three samples correspondences
+    std::vector<Eigen::Matrix4d> poses =
+        AbsolutePoseEstimator::P3PEstimator(cam, pixels_sample, points_sample);
+
+    // check if any of the p3p solution poses have the most inliers
+    for (size_t i = 0; i < poses.size(); i++) {
+      int inliers = beam_cv::CheckInliers(cam, points, pixels, poses[i],
+                                          inlier_threshold);
+      if (inliers > current_inliers) {
+        current_inliers = inliers;
+        current_pose = poses[i];
+      }
     }
   }
   return current_pose;

@@ -38,33 +38,17 @@ void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
   }
 }
 
-void ReadP3PMatches(std::string file, std::vector<Eigen::Vector2i>& pixels,
-                    std::vector<Eigen::Vector3d>& points) {
-  // declare variables
-  std::ifstream infile;
-  std::string line;
-  // open file
-  infile.open(file);
-  // extract contents
-  pixels.clear();
-  points.clear();
-  while (!infile.eof()) {
-    std::getline(infile, line, ',');
-    int px1 = std::stod(line);
-    std::getline(infile, line, ':');
-    int px2 = std::stod(line);
-
-    Eigen::Vector2i pixel{px1, px2};
+void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
+                        std::vector<Eigen::Vector2i>& pixels,
+                        std::vector<Eigen::Vector3d>& points, int n) {
+  for (int i = 0; i < n; i++) {
+    int x = rand() % cam->GetWidth();
+    int y = rand() % cam->GetHeight();
+    Eigen::Vector2i pixel(x, y);
+    Eigen::Vector3d point = cam->BackProject(pixel).value();
+    int scalar = rand() + 1;
+    point *= scalar;
     pixels.push_back(pixel);
-
-    std::getline(infile, line, ',');
-    double pt1 = std::stod(line);
-    std::getline(infile, line, ',');
-    double pt2 = std::stod(line);
-    std::getline(infile, line, '\n');
-    double pt3 = std::stod(line);
-
-    Eigen::Vector3d point{pt1, pt2, pt3};
     points.push_back(point);
   }
 }
@@ -124,7 +108,7 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   REQUIRE(pose.isApprox(P, 1e-4));
 }
 
-TEST_CASE("RANSAC Pose estimator.") {
+TEST_CASE("Test RANSAC Relative Pose estimator.") {
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
   cam_loc += "tests/test_data/K.json";
@@ -149,6 +133,8 @@ TEST_CASE("RANSAC Pose estimator.") {
 }
 
 TEST_CASE("Test P3P Absolute Pose Estimator") {
+  Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
+
   // make camera model
   std::string location = __FILE__;
   location.erase(location.end() - 24, location.end());
@@ -156,41 +142,51 @@ TEST_CASE("Test P3P Absolute Pose Estimator") {
   std::shared_ptr<beam_calibration::CameraModel> cam =
       beam_calibration::CameraModel::Create(intrinsics_loc);
 
-  // get corresponding points and pixels
+  // generate 3 correspondences
   std::vector<Eigen::Vector2i> pixels;
   std::vector<Eigen::Vector3d> points;
-  std::string matches_loc = location + "tests/test_data/p3p_matches.txt";
-  ReadP3PMatches(matches_loc, pixels, points);
+  GenerateP3PMatches(cam, pixels, points, 3);
 
-  // get solutions from samples of 3 point correspondences
-  std::vector<Eigen::Matrix4d> transformations;
-  std::vector<Eigen::Vector2i> pixels_sample;
-  std::vector<Eigen::Vector3d> points_sample;
-  std::vector<Eigen::Matrix4d> solution;
+  // find the pose
+  std::vector<Eigen::Matrix4d> poses =
+      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, pixels, points);
 
-  for (size_t i = 0; i + 2 < pixels.size(); i++) {
-    // grab 3 sequential pixels and points
-    pixels_sample = std::vector<Eigen::Vector2i>(pixels.begin() + i,
-                                                 pixels.begin() + i + 3);
-    points_sample = std::vector<Eigen::Vector3d>(points.begin() + i,
-                                                 points.begin() + i + 3);
-    // p3p
-    solution = beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, pixels_sample,
-                                                            points_sample);
-
-    // push solutions to collection of transformation matrices
-    for (size_t j = 0; j < solution.size(); j++) {
-      transformations.push_back(solution[j]);
-    };
+  // check if the solution was found
+  bool check = false;
+  for (size_t i = 0; i < poses.size(); i++) {
+    if (poses[i].isApprox(truth, 1e-3)) { check = true; }
   }
 
-  // print all transformation matrices
-  for (size_t i = 0; i < transformations.size(); i++) {
-    std::cout << "solution " << i << ": " << std::endl
-              << std::endl
-              << transformations[i] << std::endl
-              << std::endl;
-  };
+  REQUIRE(check);
+}
 
-  REQUIRE(1 == 1);
+TEST_CASE("Test RANSAC Absolute Pose estimator.") {
+  Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
+
+  // make camera model
+  std::string location = __FILE__;
+  location.erase(location.end() - 24, location.end());
+  std::string intrinsics_loc = location + "tests/test_data/K.json";
+  std::shared_ptr<beam_calibration::CameraModel> cam =
+      beam_calibration::CameraModel::Create(intrinsics_loc);
+
+  // generate correspondences
+  std::vector<Eigen::Vector2i> pixels;
+  std::vector<Eigen::Vector3d> points;
+  GenerateP3PMatches(cam, pixels, points, 30);
+
+  // add some noise
+  for (size_t i = 0; i < pixels.size(); i++) {
+    if (i % 2 == 0) {
+      points[i](0) += 1000;
+      points[i](1) -= 1000;
+      points[i](2) *= 1000;
+    }
+  }
+
+  int seed = rand();
+  Eigen::Matrix4d pose = beam_cv::AbsolutePoseEstimator::RANSACEstimator(
+      cam, pixels, points, 30, 5, seed);
+
+  REQUIRE(pose.isApprox(truth, 1e-3));
 }

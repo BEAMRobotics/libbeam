@@ -46,7 +46,8 @@ public:
                       double inlier_threshold, int seed);
 
   /**
-   * @brief Eigen decomp of a matrix which is known to have a 0 eigen value
+   * @brief P3P helper -- eigen decomp of a matrix which is known to have a 0
+   * eigen value.
    * @param M matrix
    * @param E eigenvectors
    * @param sig1 eigenvalue 1
@@ -56,7 +57,7 @@ public:
                                  double& sig1, double& sig2);
 
   /**
-   * @brief Gauss-Newton method (least squares by refinement).
+   * @brief P3P helper -- Gauss-Newton method (least squares by refinement).
    */
   static void RefineLambda(double& lambda1, double& lambda2, double& lambda3,
                            const double a12, const double a13, const double a23,
