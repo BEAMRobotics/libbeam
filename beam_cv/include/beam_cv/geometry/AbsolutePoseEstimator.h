@@ -19,13 +19,11 @@ namespace beam_cv {
 class AbsolutePoseEstimator {
 public:
   /**
-   * @brief Computes up to 4 possible absolute poses of camera from the
-   * projection of 3 points in the image plane.
+   * @brief Computes up to 4 possible absolute poses of camera from 3
+   * pixel/point correspondences.
    * @param cam camera model for image
    * @param pixels projected pixel locations of 3 feature points in cam
    * @param points 3d locations of 3 features
-   * @param cubic_iterations # iterations passed to solve cubic.
-   * @param refinement_iterations # iterations passed to refinement.
    * @returns Up to 4 transformation matrices
    */
   static std::vector<Eigen::Matrix4d>
@@ -34,17 +32,31 @@ public:
                    std::vector<Eigen::Vector3d> points);
 
   /**
+   * @brief RANSAC wrapper for P3PEstimator.  Finds the camera pose with the
+   * most inliers of many random samples of 3 correspondences.
+   * @param cam camera model for image
+   * @param pixels projected pixel locations of feature points in cam
+   * @param points 3d locations of features
+   * @returns Transformation matrix
+   */
+  static Eigen::Matrix4d
+      RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> cam,
+                      std::vector<Eigen::Vector2i> pixels,
+                      std::vector<Eigen::Vector3d> points, int max_iterations,
+                      double inlier_threshold, int seed);
+
+  /**
    * @brief Eigen decomp of a matrix which is known to have a 0 eigen value
-   * @param x matrix
+   * @param M matrix
    * @param E eigenvectors
-   * @param L eigenvalues
+   * @param sig1 eigenvalue 1
+   * @param sig2 eigenvalue 2
    */
   static void EigenWithKnownZero(const Eigen::Matrix3d& M, Eigen::Matrix3d& E,
                                  double& sig1, double& sig2);
 
   /**
-   * @brief Gauss-Newton method (least squares by refinement) to find L.  L
-   * is a vector of signed distances from the camera center to each 3d point.
+   * @brief Gauss-Newton method (least squares by refinement).
    */
   static void RefineLambda(double& lambda1, double& lambda2, double& lambda3,
                            const double a12, const double a13, const double a23,

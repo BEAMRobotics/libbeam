@@ -222,6 +222,54 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   return output;
 }
 
+Eigen::Matrix4d
+    RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> cam,
+                    std::vector<Eigen::Vector2i> pixels,
+                    std::vector<Eigen::Vector3d> points, int max_iterations,
+                    double inlier_threshold, int seed) {
+  // return nothing if input sizes do not match
+  if (pixels.size() != points.size()) {
+    BEAM_CRITICAL("Pixel/point vectors are not of the same size.");
+    return {};
+  } // return nothing if not enough points
+  else if (points.size() < 3) {
+    BEAM_CRITICAL(
+        "At least 3 pixel/point correspondences are required for p3p.");
+    return {};
+  }
+
+  Eigen::Matrix4d current_pose;
+  int current_inliers = 0;
+  srand(seed);
+
+  for (int epoch = 0; epoch < max_iterations; epoch++) {
+    // copy pixels/points for mutation and instantiate vectors for sampling
+    std::vector<Eigen::Vector2i> pixels_copy = pixels;
+    std::vector<Eigen::Vector2i> points_copy = points;
+    std::vector<Eigen::Vector2i> pixels_sample;
+    std::vector<Eigen::Vector2i> points_sample;
+
+    int n = pixels.size();
+    for (int i = 0; i < 3; i++) {
+      // pick rand index in pixels/points and sample without replacement
+      int idx = rand() % n;
+      pixels_sample.push_back(pr_copy[idx]);
+      points_sample.push_back(pc_copy[idx]);
+      pixels_copy.erase(pr_copy.begin() + idx);
+      points_copy.erase(pc_copy.begin() + idx);
+      n--;
+    }
+
+    int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
+                                        inlier_threshold);
+    if (inliers > current_inliers) {
+      current_inliers = inliers;
+      current_pose = pose;
+    }
+  }
+  return current_pose;
+};
+
 void AbsolutePoseEstimator::EigenWithKnownZero(const Eigen::Matrix3d& M,
                                                Eigen::Matrix3d& E, double& sig1,
                                                double& sig2) {
