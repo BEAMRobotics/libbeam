@@ -1,5 +1,8 @@
 #include <beam_calibration/CameraModels.h>
 
+#include <chrono>
+#include <ctime>
+
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
@@ -90,15 +93,15 @@ CameraType CameraModel::GetType() const {
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > image_width_ - 1 ||
-      pixel[1] > image_height_ - 1)
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > int(image_width_ - 1) ||
+      pixel[1] > int(image_height_ - 1))
     return false;
   return true;
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > image_width_ - 1 ||
-      pixel[1] > image_height_ - 1)
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > double(image_width_ - 1) ||
+      pixel[1] > double(image_height_ - 1))
     return false;
   return true;
 }
@@ -146,6 +149,37 @@ void CameraModel::LoadJSON(const std::string& file_location) {
                   intrinsics_.size(), intrinsics_size_[type_]);
     throw std::invalid_argument{"Invalid number of instrinsics read."};
   }
+}
+
+void CameraModel::WriteJSON(const std::string& file_location) {
+  BEAM_INFO("Writing to file: {}", file_location);
+
+  std::time_t date =
+      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  std::string cur_date = std::string(std::ctime(&date));
+  // load file
+  json J;
+  J["date"] = cur_date;
+  J["method"] = std::string("beam");
+  // get string repr of class type
+  std::string class_type;
+  for (std::map<std::string, CameraType>::iterator it =
+           intrinsics_types_.begin();
+       it != intrinsics_types_.end(); it++) {
+    if (intrinsics_types_[it->first] == type_) { class_type = it->first; }
+  }
+  J["camera_type"] = class_type;
+  J["image_width"] = this->GetWidth();
+  J["image_height"] = this->GetHeight();
+  J["frame_id"] = this->GetFrameID();
+  Eigen::VectorXd intrinsics_eigen = this->GetIntrinsics();
+  std::vector<double> intrinsics_vec(&intrinsics_eigen[0],
+                                     intrinsics_eigen.data() +
+                                         intrinsics_eigen.cols() *
+                                             intrinsics_eigen.rows());
+  J["intrinsics"] = intrinsics_vec;
+  std::ofstream out(file_location);
+  out << std::setw(4) << J << std::endl;
 }
 
 void CameraModel::OutputCameraTypes() {

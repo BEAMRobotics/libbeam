@@ -11,7 +11,9 @@
 #ifndef BEAM_UTILS_MATH_HPP
 #define BEAM_UTILS_MATH_HPP
 
+#include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 
@@ -115,6 +117,23 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
     dist += (lhs.data[i] - rhs[i]) * (lhs.data[i] - rhs[i]);
   }
   return sqrt(dist);
+}
+
+template <typename T>
+std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
+  if (seed == -1) { seed = time(0); }
+  srand(seed);
+  std::vector<T> input_copy = input;
+  // fill new point vectors with randomly sampled points from xs and xss
+  std::vector<T> sampled;
+  int n = input_copy.size();
+  for (uint32_t i = 0; i < N; i++) {
+    int idx = rand() % n;
+    sampled.push_back(input_copy[idx]);
+    input_copy.erase(input_copy.begin() + idx);
+    n--;
+  }
+  return sampled;
 }
 
 /** Computes greatest common divisor**/

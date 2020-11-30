@@ -183,7 +183,7 @@ void DepthMap::Subsample(const float percentage_keep) {
 
         int step = 1 / percentage_keep;
         int count = 0;
-        for (int i = 0; i < window_depths.size(); i += step) {
+        for (uint32_t i = 0; i < window_depths.size(); i += step) {
           if (i % step != 0) {
             cv::Point2i p = std::get<1>(window_depths[i]);
             depth_image_->at<float>(p.x, p.y) = 0;

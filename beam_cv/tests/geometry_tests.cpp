@@ -140,12 +140,12 @@ TEST_CASE("RANSAC Pose estimator.") {
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam, cam, frame1_matches, frame2_matches,
-      beam_cv::EstimatorMethod::EIGHTPOINT, 100, 5, 123);
+      beam_cv::EstimatorMethod::EIGHTPOINT, 200, 5, 123);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
-                                          frame2_matches, Pr, pose.value(), 5);
+                                          frame2_matches, Pr, pose.value(), 10);
   INFO(num_inliers);
-  REQUIRE(num_inliers == 19);
+  REQUIRE(num_inliers == 31);
 }
 
 TEST_CASE("Test P3P Absolute Pose Estimator") {

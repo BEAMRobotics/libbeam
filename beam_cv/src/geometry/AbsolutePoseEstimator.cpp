@@ -260,7 +260,7 @@ Eigen::Matrix4d
       n--;
     }
 
-    int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
+        int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
                                         inlier_threshold);
     if (inliers > current_inliers) {
       current_inliers = inliers;
