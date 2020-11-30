@@ -243,19 +243,6 @@ Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
   srand(seed);
 
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    // // sample three random indices from pixels/points
-    // std::vector<int> range(pixels.size());
-    // std::iota(std::begin(range), std::end(range), 0);
-    // // vector of three indices to sample
-    // std::vector<int> samples = beam::RandomSample<int>(range, 3);
-    // // add the samples to sample vectors
-    // std::vector<Eigen::Vector2i> pixels_sample;
-    // std::vector<Eigen::Vector3d> points_sample;
-    // for (size_t i = 0; i < samples.size(); i++) {
-    //   pixels_sample.push_back(pixels[samples[i]]);
-    //   points_sample.push_back(points[samples[i]]);
-    // }
-
     // generate a temp_seed so that pixels and point both sample the same
     // indices on a given epoch.
     int temp_seed = rand();
