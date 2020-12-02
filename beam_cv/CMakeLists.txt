@@ -10,6 +10,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::depth
     OpenCV::OpenCV
     Eigen3::Eigen
+    ${TORCH_LIBRARIES}
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
@@ -20,10 +21,13 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/descriptors/BRISKDescriptor.cpp
     src/descriptors/ORBDescriptor.cpp
     src/descriptors/SIFTDescriptor.cpp
+    src/descriptors/SuperPointDescriptor.cpp
     src/detectors/ORBDetector.cpp
     src/detectors/FASTDetector.cpp
     src/detectors/SIFTDetector.cpp
+    src/detectors/SuperPointDetector.cpp
     src/matchers/FLANNMatcher.cpp
+    src/models/SuperPointModel.cpp
 )
 
 ############# Test files #############
@@ -51,6 +55,20 @@ target_include_directories(${PROJECT_NAME}_geometry_tests
 target_link_libraries(${PROJECT_NAME}_geometry_tests
   ${PROJECT_NAME}
   Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_superpoint_tests
+  tests/superpoint_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_superpoint_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_superpoint_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+  ${TORCH_LIBRARIES}
 )
 
 add_executable(${PROJECT_NAME}_debug
