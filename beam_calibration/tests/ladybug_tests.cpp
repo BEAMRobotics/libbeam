@@ -42,22 +42,27 @@ TEST_CASE("Test projection and back project with random points") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
-  for (Eigen::Vector3d point : points) {
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    if (!pixel.has_value()) { continue; }
-    opt<Eigen::Vector3d> back_projected_ray =
-        camera_model_->BackProject(pixel.value());
-    REQUIRE(back_projected_ray.has_value());
-    if (back_projected_ray.has_value()) {
-      Eigen::Vector3d back_projected_point =
-          point.norm() * back_projected_ray.value();
-      opt<Eigen::Vector2i> back_projected_pixel =
-          camera_model_->ProjectPoint(back_projected_point);
-      REQUIRE(back_projected_pixel.has_value());
-      REQUIRE(std::abs(pixel.value()[0] - back_projected_pixel.value()[0]) < 2);
-      REQUIRE(std::abs(pixel.value()[1] - back_projected_pixel.value()[1]) < 2);
+  for (uint8_t id = 0; id < 6; id++) {
+    camera_model_->SetCameraID(id);
+    
+    for (Eigen::Vector3d point : points) {
+      opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
+      if (!pixel.has_value()) { continue; }
+      opt<Eigen::Vector3d> back_projected_ray =
+          camera_model_->BackProject(pixel.value());
+      REQUIRE(back_projected_ray.has_value());
+      if (back_projected_ray.has_value()) {
+        Eigen::Vector3d back_projected_point =
+            point.norm() * back_projected_ray.value();
+        opt<Eigen::Vector2i> back_projected_pixel =
+            camera_model_->ProjectPoint(back_projected_point);
+        REQUIRE(back_projected_pixel.has_value());
+        REQUIRE(std::abs(pixel.value()[0] - back_projected_pixel.value()[0]) < 2);
+        REQUIRE(std::abs(pixel.value()[1] - back_projected_pixel.value()[1]) < 2);
+      }
     }
   }
+
 }
 
 TEST_CASE("Test projection and back project with random pixels") {

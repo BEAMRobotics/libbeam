@@ -39,6 +39,10 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
   return camera_model;
 }
 
+void CameraModel::SetCameraID(const unsigned int id) {
+  cam_id_ = id;
+}
+
 void CameraModel::SetFrameID(const std::string& id) {
   frame_id_ = id;
 }
