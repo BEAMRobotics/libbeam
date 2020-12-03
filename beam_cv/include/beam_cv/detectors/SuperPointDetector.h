@@ -22,8 +22,6 @@ public:
    * @param model pointer to the superpoint model
    * @param threshold Lower the threshold, more features are extracted. SP-SLAM
    * uses between 7 and 20
-   * @param border_width width (in pixels) around the border to not extract
-   * features in.
    * @param nms Non-Maximum Suppression. This helps ensure images are evenly
    * distributed in the image.
    */
