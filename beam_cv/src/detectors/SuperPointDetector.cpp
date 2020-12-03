@@ -3,20 +3,16 @@
 namespace beam_cv {
 
 SuperPointDetector::SuperPointDetector(
-    const std::shared_ptr<SuperPointModel>& model, float threshold, int border_width, bool nms)
-    : model_(model), threshold_(threshold), border_width_(border_width), nms_(nms) {}
+    const std::shared_ptr<SuperPointModel>& model, float threshold, bool nms,
+    bool use_cuda)
+    : model_(model), threshold_(threshold), nms_(nms), use_cuda_(use_cuda) {}
 
 std::vector<cv::KeyPoint>
     SuperPointDetector::DetectFeatures(const cv::Mat& image) {
-  // calculate start and end pixel coordinates
-  int iniX = border_width_;
-  int iniY = border_width_;
-  int maxX = image.cols - border_width_;
-  int maxY = image.rows - border_width_;
+  model_->Detect(image, use_cuda_);
 
   std::vector<cv::KeyPoint> keypoints;
-  model_->GetKeyPoints(threshold_, iniX, maxX,
-                       iniY, maxY, keypoints, nms_);
+  model_->GetKeyPoints(threshold_, keypoints, nms_);
   return keypoints;
 }
 

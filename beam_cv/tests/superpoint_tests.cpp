@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <catch2/catch.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <torch/torch.h>
 
@@ -15,6 +16,7 @@ cv::Mat image_right_;
 std::vector<Eigen::Vector2i> image_left_gt_matches_;
 std::vector<Eigen::Vector2i> image_right_gt_matches_;
 std::string model_file_path_;
+bool show_results_{false};
 
 void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
                  std::vector<Eigen::Vector2i>& matches2) {
@@ -53,7 +55,10 @@ void Setup() {
               image_right_gt_matches_);
 
   image_left_ = imread(data_path + "kronan1.jpg", cv::IMREAD_COLOR);
+  cv::cvtColor(image_left_, image_left_, CV_BGR2GRAY);
+
   image_right_ = imread(data_path + "kronan2.jpg", cv::IMREAD_COLOR);
+  cv::cvtColor(image_right_, image_right_, CV_BGR2GRAY);
 
   model_file_path_ = __FILE__;
   std::string path_from_module = "tests/superpoint_tests.cpp";
@@ -68,14 +73,17 @@ TEST_CASE("Test feature extraction.") {
   // extract features and descriptors
   std::shared_ptr<beam_cv::SuperPointModel> model =
       std::make_shared<beam_cv::SuperPointModel>(model_file_path_);
-  beam_cv::SuperPointDetector detector(model, 5, 5, true);
+
+  beam_cv::SuperPointDetector detector(model, 0.2, true, false);
   beam_cv::SuperPointDescriptor descriptor(model);
+
   std::vector<cv::KeyPoint> keypoints_left =
       detector.DetectFeatures(image_left_);
-  std::vector<cv::KeyPoint> keypoints_right =
-      detector.DetectFeatures(image_right_);
   cv::Mat descriptors_left =
       descriptor.ExtractDescriptors(image_left_, keypoints_left);
+
+  std::vector<cv::KeyPoint> keypoints_right =
+      detector.DetectFeatures(image_right_);
   cv::Mat descriptors_right =
       descriptor.ExtractDescriptors(image_right_, keypoints_right);
 
@@ -83,7 +91,13 @@ TEST_CASE("Test feature extraction.") {
   beam_cv::FLANNMatcher matcher;
   std::vector<cv::DMatch> matches = matcher.MatchDescriptors(
       descriptors_left, descriptors_right, keypoints_left, keypoints_right);
+  
+  REQUIRE(keypoints_left.size() > 500);
+  REQUIRE(keypoints_right.size() > 500);
+  REQUIRE(matches.size() > 100);
 
+  // Draw keypoints and matches
+  if (!show_results_) { return; }
   cv::Mat image_matches;
   cv::drawMatches(image_left_, keypoints_left, image_right_, keypoints_right,
                   matches, image_matches, cv::Scalar::all(-1),
@@ -91,10 +105,10 @@ TEST_CASE("Test feature extraction.") {
                   cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
   cv::Mat image_left_w_keypoints;
-  cv::Mat image_right_w_keypoints;
   cv::drawKeypoints(image_left_, keypoints_left, image_left_w_keypoints,
                     cv::Scalar::all(-1),
                     cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+  cv::Mat image_right_w_keypoints;
   cv::drawKeypoints(image_right_, keypoints_right, image_right_w_keypoints,
                     cv::Scalar::all(-1),
                     cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);

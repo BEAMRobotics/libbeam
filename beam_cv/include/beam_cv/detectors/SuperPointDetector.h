@@ -28,8 +28,8 @@ public:
    * distributed in the image.
    */
   SuperPointDetector(const std::shared_ptr<SuperPointModel>& model,
-                     float threshold = 5, int border_width = 0,
-                     bool nms = true);
+                     float threshold = 0.1, bool nms = true,
+                     bool use_cuda = true);
 
   /**
    * @brief Default destructor
@@ -46,7 +46,7 @@ public:
 private:
   std::shared_ptr<SuperPointModel> model_;
   float threshold_;
-  int border_width_;
   bool nms_;
+  bool use_cuda_;
 };
 } // namespace beam_cv

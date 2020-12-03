@@ -1,25 +1,33 @@
 #include <beam_cv/models/SuperPointModel.h>
+#include <beam_utils/log.hpp>
 
 namespace beam_cv {
 
+const int c1 = 64;
+const int c2 = 64;
+const int c3 = 128;
+const int c4 = 128;
+const int c5 = 256;
+const int d1 = 256;
+
 SuperPoint::SuperPoint()
-    : conv1a(torch::nn::Conv2dOptions(1, c1_, 3).stride(1).padding(1)),
-      conv1b(torch::nn::Conv2dOptions(c1_, c1_, 3).stride(1).padding(1)),
+      : conv1a(torch::nn::Conv2dOptions( 1, c1, 3).stride(1).padding(1)),
+        conv1b(torch::nn::Conv2dOptions(c1, c1, 3).stride(1).padding(1)),
 
-      conv2a(torch::nn::Conv2dOptions(c1_, c2_, 3).stride(1).padding(1)),
-      conv2b(torch::nn::Conv2dOptions(c2_, c2_, 3).stride(1).padding(1)),
+        conv2a(torch::nn::Conv2dOptions(c1, c2, 3).stride(1).padding(1)),
+        conv2b(torch::nn::Conv2dOptions(c2, c2, 3).stride(1).padding(1)),
 
-      conv3a(torch::nn::Conv2dOptions(c2_, c3_, 3).stride(1).padding(1)),
-      conv3b(torch::nn::Conv2dOptions(c3_, c3_, 3).stride(1).padding(1)),
+        conv3a(torch::nn::Conv2dOptions(c2, c3, 3).stride(1).padding(1)),
+        conv3b(torch::nn::Conv2dOptions(c3, c3, 3).stride(1).padding(1)),
 
-      conv4a(torch::nn::Conv2dOptions(c3_, c4_, 3).stride(1).padding(1)),
-      conv4b(torch::nn::Conv2dOptions(c4_, c4_, 3).stride(1).padding(1)),
+        conv4a(torch::nn::Conv2dOptions(c3, c4, 3).stride(1).padding(1)),
+        conv4b(torch::nn::Conv2dOptions(c4, c4, 3).stride(1).padding(1)),
 
-      convPa(torch::nn::Conv2dOptions(c4_, c5_, 3).stride(1).padding(1)),
-      convPb(torch::nn::Conv2dOptions(c5_, 65, 1).stride(1).padding(0)),
+        convPa(torch::nn::Conv2dOptions(c4, c5, 3).stride(1).padding(1)),
+        convPb(torch::nn::Conv2dOptions(c5, 65, 1).stride(1).padding(0)),
 
-      convDa(torch::nn::Conv2dOptions(c4_, c5_, 3).stride(1).padding(1)),
-      convDb(torch::nn::Conv2dOptions(c5_, d1_, 1).stride(1).padding(0))
+        convDa(torch::nn::Conv2dOptions(c4, c5, 3).stride(1).padding(1)),
+        convDb(torch::nn::Conv2dOptions(c5, d1, 1).stride(1).padding(0))
 
 {
   register_module("conv1a", conv1a);
@@ -84,8 +92,10 @@ std::vector<torch::Tensor> SuperPoint::forward(torch::Tensor x) {
 }
 
 SuperPointModel::SuperPointModel(const std::string& model_file) {
+  BEAM_INFO("Loading model: {}", model_file);
   model_ = std::make_shared<SuperPoint>();
   torch::load(model_, model_file);
+  BEAM_INFO("Model loaded successfully.");
 }
 
 void SuperPointModel::Detect(const cv::Mat& img, bool cuda) {
@@ -110,17 +120,14 @@ void SuperPointModel::Detect(const cv::Mat& img, bool cuda) {
   has_been_initialized = true;
 }
 
-void SuperPointModel::GetKeyPoints(float threshold, int iniX, int maxX,
-                                   int iniY, int maxY,
+void SuperPointModel::GetKeyPoints(float threshold,
                                    std::vector<cv::KeyPoint>& keypoints,
                                    bool nms) {
-  auto prob = mProb_.slice(0, iniY, maxY).slice(1, iniX, maxX); // [h, w]
-  auto kpts = (prob > threshold);
+  auto kpts = (mProb_ > threshold);
   kpts = torch::nonzero(kpts); // [n_keypoints, 2]  (y, x)
-
   std::vector<cv::KeyPoint> keypoints_no_nms;
   for (int i = 0; i < kpts.size(0); i++) {
-    float response = prob[kpts[i][0]][kpts[i][1]].item<float>();
+    float response = mProb_[kpts[i][0]][kpts[i][1]].item<float>();
     keypoints_no_nms.push_back(cv::KeyPoint(
         kpts[i][1].item<float>(), kpts[i][0].item<float>(), 8, -1, response));
   }
@@ -130,16 +137,13 @@ void SuperPointModel::GetKeyPoints(float threshold, int iniX, int maxX,
     for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
       int x = keypoints_no_nms[i].pt.x;
       int y = keypoints_no_nms[i].pt.y;
-      conf.at<float>(i, 0) = prob[y][x].item<float>();
+      conf.at<float>(i, 0) = mProb_[y][x].item<float>();
     }
-
-    // cv::Mat descriptors;
 
     int border = 0;
     int dist_thresh = 4;
-    int height = maxY - iniY;
-    int width = maxX - iniX;
-
+    int height = mProb_.size(0);
+    int width = mProb_.size(1);
     NMS(keypoints_no_nms, conf, keypoints, border, dist_thresh, width, height);
   } else {
     keypoints = keypoints_no_nms;
