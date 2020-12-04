@@ -1,5 +1,7 @@
 #include <beam_cv/geometry/RelativePoseEstimator.h>
 
+#include <chrono>
+
 #include <Eigen/Geometry>
 
 #include <beam_cv/Utils.h>
@@ -81,14 +83,21 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     BEAM_CRITICAL("Not enough point correspondences, expecting at least {}", N);
     return {};
   }
+  int temp_seed;
+  if (seed == -1) {
+    temp_seed = time(0);
+  } else {
+    srand(seed);
+    temp_seed = rand();
+  }
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
   for (int epoch = 0; epoch < max_iterations; epoch++) {
     // fill new point vectors with randomly sampled points from xs and xss
     std::vector<Eigen::Vector2i> sampled_pr =
-        beam::RandomSample<Eigen::Vector2i>(pr_v, N, seed);
+        beam::RandomSample<Eigen::Vector2i>(pr_v, N, temp_seed);
     std::vector<Eigen::Vector2i> sampled_pc =
-        beam::RandomSample<Eigen::Vector2i>(pc_v, N, seed);
+        beam::RandomSample<Eigen::Vector2i>(pc_v, N, temp_seed);
     // perform pose estimation of the given method
     opt<Eigen::Matrix3d> E;
     if (method == EstimatorMethod::EIGHTPOINT) {

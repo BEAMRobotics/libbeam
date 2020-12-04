@@ -153,7 +153,7 @@ public:
   bool PixelInImage(const Eigen::Vector2d& pixel);
 
   /**
-   * @brief Method for loading calibration information from a json.
+   * @brief Method for writing camera model to a json file
    * @param file_path full path to json
    */
   void WriteJSON(const std::string& file_path);

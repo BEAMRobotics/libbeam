@@ -120,8 +120,7 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
 }
 
 template <typename T>
-std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
-  if (seed == -1) { seed = time(0); }
+std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed) {
   srand(seed);
   std::vector<T> input_copy = input;
   // fill new point vectors with randomly sampled points from xs and xss
@@ -138,14 +137,6 @@ std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
 
 /** Computes greatest common divisor**/
 int gcd(int a, int b);
-/** Returns cross kernel */
-cv::Mat GetCrossKernel(int size);
-
-/** Returns cross kernel */
-cv::Mat GetFullKernel(int size);
-
-/** Returns cross kernel */
-cv::Mat GetEllipseKernel(int size);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
