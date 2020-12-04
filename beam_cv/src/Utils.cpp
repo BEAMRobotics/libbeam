@@ -259,4 +259,29 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
   return inliers;
 }
 
+void DetectComputeAndMatch(
+    cv::Mat imL, cv::Mat imR,
+    const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+    const std::shared_ptr<beam_cv::Detector>& detector,
+    const std::shared_ptr<beam_cv::Matcher>& matcher,
+    std::vector<Eigen::Vector2i>& pL_v, std::vector<Eigen::Vector2i>& pR_v) {
+  std::vector<cv::KeyPoint> kpL = detector->DetectFeatures(imL);
+  cv::Mat descL = descriptor->ExtractDescriptors(imL, kpL);
+
+  std::vector<cv::KeyPoint> kpR = detector->DetectFeatures(imR);
+  cv::Mat descR = descriptor->ExtractDescriptors(imR, kpR);
+
+  std::vector<cv::DMatch> matches =
+      matcher->MatchDescriptors(descL, descR, kpL, kpR);
+
+  for (auto& match : matches) {
+    cv::KeyPoint imL_p = kpL[match.queryIdx];
+    cv::KeyPoint imR_p = kpR[match.trainIdx];
+    Eigen::Vector2i pL = beam_cv::ConvertKeypoint(imL_p).cast<int>();
+    Eigen::Vector2i pR = beam_cv::ConvertKeypoint(imR_p).cast<int>();
+    pL_v.push_back(pL);
+    pR_v.push_back(pR);
+  }
+}
+
 } // namespace beam_cv

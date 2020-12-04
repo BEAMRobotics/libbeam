@@ -129,7 +129,7 @@ TEST_CASE("Test RANSAC Relative Pose estimator.") {
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
                                           frame2_matches, Pr, pose.value(), 10);
   INFO(num_inliers);
-  REQUIRE(num_inliers == 31);
+  REQUIRE(num_inliers == 60);
 }
 
 TEST_CASE("Test P3P Absolute Pose Estimator") {

@@ -8,6 +8,9 @@
 #include <cstdlib>
 
 #include <beam_calibration/CameraModel.h>
+#include <beam_cv/descriptors/Descriptor.h>
+#include <beam_cv/detectors/Detector.h>
+#include <beam_cv/matchers/Matcher.h>
 #include <beam_utils/math.hpp>
 
 namespace beam_cv {
@@ -126,6 +129,23 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
                  std::vector<Eigen::Vector3d> points,
                  std::vector<Eigen::Vector2i> pixels,
                  Eigen::Matrix4d T_cam_world, double inlier_threshold);
+
+/**
+ * @brief performs entire matching pipeline
+ * @param imL left image
+ * @param imR right image
+ * @param descriptor ref to descriptor to use
+ * @param detector ref to detector to use
+ * @param matcher ref to matcher to use
+ * @param pL_v vector to fill matches with in left image
+ * @param pR_v vector to fill matches with in right image
+ */
+void DetectComputeAndMatch(
+    cv::Mat imL, cv::Mat imR,
+    const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+    const std::shared_ptr<beam_cv::Detector>& detector,
+    const std::shared_ptr<beam_cv::Matcher>& matcher,
+    std::vector<Eigen::Vector2i>& pL_v, std::vector<Eigen::Vector2i>& pR_v);
 
 /**
  * @brief This class provides a simple yet efficient Union-Find data structure
