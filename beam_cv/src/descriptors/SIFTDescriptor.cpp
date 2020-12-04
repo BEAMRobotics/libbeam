@@ -3,21 +3,22 @@
 namespace beam_cv {
 
 // Default constructor. Struct may be default or user defined.
-SIFTDescriptor::SIFTDescriptor(const int nfeatures, const int nOctaveLayers,
-                               const double contrastThreshold,
-                               const double edgeThreshold, const double sigma) {
-  this->nfeatures_ = nfeatures;
-  this->nOctaveLayers_ = nOctaveLayers;
-  this->contrastThreshold_ = contrastThreshold;
-  this->edgeThreshold_ = edgeThreshold;
+SIFTDescriptor::SIFTDescriptor(const int num_features,
+                               const int num_octave_layers,
+                               const double contrast_threshold,
+                               const double edge_threshold,
+                               const double sigma) {
+  this->num_features_ = num_features;
+  this->num_octave_layers_ = num_octave_layers;
+  this->contrast_threshold_ = contrast_threshold;
+  this->edge_threshold_ = edge_threshold;
   this->sigma_ = sigma;
   // Ensure parameters are valid
   this->CheckConfig();
 
-  // Create cv::SIFT object with the desired parameters
   this->sift_descriptor_ = cv::xfeatures2d::SIFT::create(
-      this->nfeatures_, this->nOctaveLayers_, this->contrastThreshold_,
-      this->edgeThreshold_, this->sigma_);
+      this->num_features_, this->num_octave_layers_, this->contrast_threshold_,
+      this->edge_threshold_, this->sigma_);
 }
 
 void SIFTDescriptor::CheckConfig() {
