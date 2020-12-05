@@ -14,6 +14,11 @@
 
 #include <fstream>
 
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/range/iterator_range.hpp>
+#include <boost/regex.hpp>
+
 using namespace std;
 using namespace beam_calibration;
 
@@ -109,6 +114,18 @@ public:
    * @param id to search for
    */
   Eigen::Matrix4d T_Sensor_Baselink(size_t id) {}
+
+  /**
+   * @brief Loads the intrinsic (cameras_) camera models and extrinstic models for the calibration container
+   * @param path_to_CalibrationMMDDYYY folder that contains the calibration json files
+   */
+  void LoadCalibrations(const string& path_to_CalibrationMMDDYYY) {}
+
+  /**
+   * @brief Gets transform from base frame to sensor frame, by id
+   * @param path_to_CalibrationMMDDYYY folder where the calibration json files will be saved
+   */
+  void SaveCalibrations(const string& path_to_CalibrationMMDDYYY) {}
 
 private:
   // current value of the uuid used for sensor maps
