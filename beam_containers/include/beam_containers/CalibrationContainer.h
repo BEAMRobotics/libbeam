@@ -122,7 +122,7 @@ public:
   void LoadCalibrations(const string& path_to_CalibrationMMDDYYY) {}
 
   /**
-   * @brief Saves the intrinsic (cameras_) camera models and extrinstic models to the calibration container
+   * @brief Gets transform from base frame to sensor frame, by id
    * @param path_to_CalibrationMMDDYYY folder where the calibration json files will be saved
    */
   void SaveCalibrations(const string& path_to_CalibrationMMDDYYY) {}
