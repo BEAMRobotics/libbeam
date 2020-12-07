@@ -66,7 +66,7 @@ public:
    * @param R vector of possible rotations
    * @param t vector of possible translations
    */
-  static Eigen::Matrix4d RecoverPose(
+  static opt<Eigen::Matrix4d> RecoverPose(
       std::shared_ptr<beam_calibration::CameraModel> camR,
       std::shared_ptr<beam_calibration::CameraModel> camC,
       std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,

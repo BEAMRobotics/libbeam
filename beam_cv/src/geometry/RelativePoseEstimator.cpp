@@ -92,6 +92,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   }
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
+  bool found_valid = false;
   for (int epoch = 0; epoch < max_iterations; epoch++) {
     std::vector<Eigen::Vector2i> pr_copy = pr_v;
     std::vector<Eigen::Vector2i> pc_copy = pc_v;
@@ -124,18 +125,25 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::vector<Eigen::Matrix3d> R;
     std::vector<Eigen::Vector3d> t;
     RelativePoseEstimator::RtFromE(E.value(), R, t);
-    Eigen::Matrix4d pose = RelativePoseEstimator::RecoverPose(
+    opt<Eigen::Matrix4d> pose = RelativePoseEstimator::RecoverPose(
         camR, camC, sampled_pr, sampled_pc, R, t);
-    Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
-    // check number of inliers and update current best estimate
-    int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
-                                        inlier_threshold);
-    if (inliers > current_inliers) {
-      current_inliers = inliers;
-      current_pose = pose;
+    if (pose.has_value()) {
+      found_valid = true;
+      Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
+      // check number of inliers and update current best estimate
+      int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr,
+                                          pose.value(), inlier_threshold);
+      if (inliers > current_inliers) {
+        current_inliers = inliers;
+        current_pose = pose.value();
+      }
     }
   }
-  return current_pose;
+  if (found_valid) {
+    return current_pose;
+  } else {
+    return {};
+  }
 }
 
 void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
@@ -161,7 +169,7 @@ void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
   if (R[1].determinant() < 0) { R[1] = -R[1].eval(); }
 }
 
-Eigen::Matrix4d RelativePoseEstimator::RecoverPose(
+opt<Eigen::Matrix4d> RelativePoseEstimator::RecoverPose(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
@@ -193,6 +201,7 @@ Eigen::Matrix4d RelativePoseEstimator::RecoverPose(
       if (count == size) { return pose; }
     }
   }
+  return {};
 }
 
 } // namespace beam_cv
