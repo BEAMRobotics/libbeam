@@ -240,16 +240,29 @@ Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
 
   Eigen::Matrix4d current_pose;
   int current_inliers = 0;
-  srand(seed);
+  int temp_seed;
+  if (seed == -1) {
+    temp_seed = time(0);
+  } else {
+    srand(seed);
+    temp_seed = rand();
+  }
 
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    // generate a temp_seed so that pixels and point both sample the same
-    // indices on a given epoch.
-    int temp_seed = rand();
-    std::vector<Eigen::Vector2i> pixels_sample =
-        beam::RandomSample<Eigen::Vector2i>(pixels, 3, temp_seed);
-    std::vector<Eigen::Vector3d> points_sample =
-        beam::RandomSample<Eigen::Vector3d>(points, 3, temp_seed);
+    std::vector<Eigen::Vector2i> pixels_copy = pixels;
+    std::vector<Eigen::Vector3d> points_copy = points;
+    std::vector<Eigen::Vector2i> pixels_sample;
+    std::vector<Eigen::Vector3d> points_sample;
+    // fill new point vectors with randomly sampled points from inputs
+    int n = pixels_copy.size();
+    for (uint32_t i = 0; i < 3; i++) {
+      int idx = rand() % n;
+      pixels_sample.push_back(pixels_copy[idx]);
+      points_sample.push_back(points_copy[idx]);
+      pixels_copy.erase(pixels_copy.begin() + idx);
+      points_copy.erase(points_copy.begin() + idx);
+      n--;
+    }
 
     // perform p3p on the three samples correspondences
     std::vector<Eigen::Matrix4d> poses =
@@ -266,7 +279,7 @@ Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
     }
   }
   return current_pose;
-};
+}
 
 void AbsolutePoseEstimator::EigenWithKnownZero(const Eigen::Matrix3d& M,
                                                Eigen::Matrix3d& E, double& sig1,

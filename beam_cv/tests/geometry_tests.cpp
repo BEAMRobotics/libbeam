@@ -102,10 +102,10 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   std::vector<Eigen::Matrix3d> R;
   std::vector<Eigen::Vector3d> t;
   beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
-  Eigen::Matrix4d pose = beam_cv::RelativePoseEstimator::RecoverPose(
+  opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RecoverPose(
       cam, cam, frame1_matches, frame2_matches, R, t);
 
-  REQUIRE(pose.isApprox(P, 1e-4));
+  REQUIRE(pose.value().isApprox(P, 1e-4));
 }
 
 TEST_CASE("Test RANSAC Relative Pose estimator.") {
