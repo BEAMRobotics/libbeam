@@ -70,7 +70,7 @@ private:
    *  to reduce the number.
    */
   double sigma_ = 1.6;
-/** The pointer to the wrapped cv::SIFT object. */
+  /** The pointer to the wrapped cv::SIFT object. */
   cv::Ptr<cv::xfeatures2d::SIFT> sift_detector_;
 
   /** Checks whether the desired configuration is valid.

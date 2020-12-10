@@ -13,7 +13,9 @@
 namespace beam_cv {
 
 /**
- * Add description
+ * Wrapper around SuperPointModel which allows the user to only extract
+ * discriptors. For information on how it works and a description of all
+ * parameter descriptions, see SuperPointModel.h
  */
 class SuperPointDescriptor : public Descriptor {
 public:
@@ -30,7 +32,17 @@ public:
 
   /**
    * @brief Extracts descriptors from the keypoints in an image, using the
-   * SuperPoint descriptor extractor.
+   * SuperPoint descriptor extractor. If first checks that the model has been
+   * initialized, and if it hasn't, it'll initialize it. It then calls
+   * SuperPointModel::ComputeDescriptors.
+   * Note: It is expected that SuperPointDetector::DetectFeatures was first
+   * called on the underlying model (this initalizes the model by calling
+   * SuperPointModel::Detect), but if it hasn't, then this function will be
+   * initalize the model by calling SuperPointModel::Detect itself. In our
+   * traditional pipeline, the detector is always called first, however this is
+   * not necessary for SuperPoint. The only issue with not calling
+   * SuperPointDetector is that you cannot set the keypoint extraction
+   * parameters from SuperPointDescriptor.
    * @param image the image to detect features in.
    * @param keypoints the keypoints from the detected image
    * @return an array containing the computed descriptors.

@@ -13,21 +13,25 @@
 namespace beam_cv {
 
 /**
- * Add descriptions
+ * Wrapper around SuperPointModel which allows the user to only extract
+ * keypoints. For information on how it works and a description of all
+ * parameter descriptions, see SuperPointModel.h
  */
 class SuperPointDetector : public Detector {
 public:
   /**
    * @brief Constructor
    * @param model pointer to the superpoint model
-   * @param threshold Lower the threshold, more features are extracted. SP-SLAM
-   * uses between 7 and 20
-   * @param nms Non-Maximum Suppression. This helps ensure images are evenly
-   * distributed in the image.
+   * @param conf_threshold see SuperPointModel.h
+   * @param border see SuperPointModel.h
+   * @param nms_dist_threshold see SuperPointModel.h
+   * @param grid_size see SuperPointModel.h
+   * @param use_cuda see SuperPointModel.h
    */
   SuperPointDetector(const std::shared_ptr<SuperPointModel>& model,
-                     float threshold = 0.1, bool nms = true,
-                     bool use_cuda = true);
+                     float conf_threshold = 0.1, int border = 0,
+                     int nms_dist_threshold = 0, int max_features = 0,
+                     int grid_size = 0, bool use_cuda = false);
 
   /**
    * @brief Default destructor
@@ -35,16 +39,21 @@ public:
   ~SuperPointDetector() override = default;
 
   /**
-   * @brief Detects features in an image.
+   * @brief Detects features in an image. This first calls
+   * SuperPointModel::Detect, then SuperPointModel::GetKeypoints
    * @param image the image to detect features in.
-   * @return a vector containing all of the keypoints found within the image.
+   * @return a vector containing all of the keypoints found within the image,
+   * after filtering.
    */
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
   std::shared_ptr<SuperPointModel> model_;
-  float threshold_;
-  bool nms_;
+  float conf_threshold_;
+  int border_;
+  int nms_dist_threshold_;
+  int max_features_;
+  int grid_size_;
   bool use_cuda_;
 };
 } // namespace beam_cv

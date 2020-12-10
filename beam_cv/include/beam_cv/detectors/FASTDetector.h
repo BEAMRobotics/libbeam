@@ -18,12 +18,12 @@ namespace beam_cv {
  */
 class FASTDetector : public Detector {
 public:
-
   /**
    * @brief Constructor
    */
   FASTDetector(const int threshold = 10, const bool nonmax_suppression = true,
-               const int type = cv::FastFeatureDetector::TYPE_9_16, const int num_features = 0);
+               const int type = cv::FastFeatureDetector::TYPE_9_16,
+               const int num_features = 0);
 
   /**
    * @brief Default destructor

@@ -11,23 +11,23 @@ const int c5 = 256;
 const int d1 = 256;
 
 SuperPoint::SuperPoint()
-      : conv1a(torch::nn::Conv2dOptions( 1, c1, 3).stride(1).padding(1)),
-        conv1b(torch::nn::Conv2dOptions(c1, c1, 3).stride(1).padding(1)),
+    : conv1a(torch::nn::Conv2dOptions(1, c1, 3).stride(1).padding(1)),
+      conv1b(torch::nn::Conv2dOptions(c1, c1, 3).stride(1).padding(1)),
 
-        conv2a(torch::nn::Conv2dOptions(c1, c2, 3).stride(1).padding(1)),
-        conv2b(torch::nn::Conv2dOptions(c2, c2, 3).stride(1).padding(1)),
+      conv2a(torch::nn::Conv2dOptions(c1, c2, 3).stride(1).padding(1)),
+      conv2b(torch::nn::Conv2dOptions(c2, c2, 3).stride(1).padding(1)),
 
-        conv3a(torch::nn::Conv2dOptions(c2, c3, 3).stride(1).padding(1)),
-        conv3b(torch::nn::Conv2dOptions(c3, c3, 3).stride(1).padding(1)),
+      conv3a(torch::nn::Conv2dOptions(c2, c3, 3).stride(1).padding(1)),
+      conv3b(torch::nn::Conv2dOptions(c3, c3, 3).stride(1).padding(1)),
 
-        conv4a(torch::nn::Conv2dOptions(c3, c4, 3).stride(1).padding(1)),
-        conv4b(torch::nn::Conv2dOptions(c4, c4, 3).stride(1).padding(1)),
+      conv4a(torch::nn::Conv2dOptions(c3, c4, 3).stride(1).padding(1)),
+      conv4b(torch::nn::Conv2dOptions(c4, c4, 3).stride(1).padding(1)),
 
-        convPa(torch::nn::Conv2dOptions(c4, c5, 3).stride(1).padding(1)),
-        convPb(torch::nn::Conv2dOptions(c5, 65, 1).stride(1).padding(0)),
+      convPa(torch::nn::Conv2dOptions(c4, c5, 3).stride(1).padding(1)),
+      convPb(torch::nn::Conv2dOptions(c5, 65, 1).stride(1).padding(0)),
 
-        convDa(torch::nn::Conv2dOptions(c4, c5, 3).stride(1).padding(1)),
-        convDb(torch::nn::Conv2dOptions(c5, d1, 1).stride(1).padding(0))
+      convDa(torch::nn::Conv2dOptions(c4, c5, 3).stride(1).padding(1)),
+      convDb(torch::nn::Conv2dOptions(c5, d1, 1).stride(1).padding(0))
 
 {
   register_module("conv1a", conv1a);
@@ -120,10 +120,11 @@ void SuperPointModel::Detect(const cv::Mat& img, bool cuda) {
   has_been_initialized = true;
 }
 
-void SuperPointModel::GetKeyPoints(float threshold,
-                                   std::vector<cv::KeyPoint>& keypoints,
-                                   bool nms) {
-  auto kpts = (mProb_ > threshold);
+void SuperPointModel::GetKeyPoints(std::vector<cv::KeyPoint>& keypoints,
+                                   float conf_threshold, int border,
+                                   int nms_dist_threshold, int max_features,
+                                   int grid_size) {
+  auto kpts = (mProb_ > conf_threshold);
   kpts = torch::nonzero(kpts); // [n_keypoints, 2]  (y, x)
   std::vector<cv::KeyPoint> keypoints_no_nms;
   for (int i = 0; i < kpts.size(0); i++) {
@@ -132,21 +133,20 @@ void SuperPointModel::GetKeyPoints(float threshold,
         kpts[i][1].item<float>(), kpts[i][0].item<float>(), 8, -1, response));
   }
 
-  if (nms) {
-    cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
-    for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
-      int x = keypoints_no_nms[i].pt.x;
-      int y = keypoints_no_nms[i].pt.y;
-      conf.at<float>(i, 0) = mProb_[y][x].item<float>();
-    }
+  cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
+  for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
+    int x = keypoints_no_nms[i].pt.x;
+    int y = keypoints_no_nms[i].pt.y;
+    conf.at<float>(i, 0) = mProb_[y][x].item<float>();
+  }
 
-    int border = 0;
-    int dist_thresh = 4;
-    int height = mProb_.size(0);
-    int width = mProb_.size(1);
-    NMS(keypoints_no_nms, conf, keypoints, border, dist_thresh, width, height);
-  } else {
-    keypoints = keypoints_no_nms;
+  int height = mProb_.size(0);
+  int width = mProb_.size(1);
+  NMS(keypoints_no_nms, conf, keypoints, border, nms_dist_threshold, width,
+      height);
+
+  if (!max_features == 0) {
+    SelectKBestFromGrid(keypoints, keypoints, max_features, grid_size, border);
   }
 }
 
@@ -258,6 +258,62 @@ void SuperPointModel::NMS(const std::vector<cv::KeyPoint>& det,
       }
     }
   }
+}
+
+bool GridKeypointSortDecreasing(const std::pair<float, cv::KeyPoint>& i,
+                                const std::pair<float, cv::KeyPoint>& j) {
+  return (i.first > j.first);
+}
+
+void SuperPointModel::SelectKBestFromGrid(
+    const std::vector<cv::KeyPoint>& keypoints_in,
+    std::vector<cv::KeyPoint>& keypoints_out, int max_features, int grid_size,
+    int border) {
+      
+  int features_per_grid;
+  if (grid_size == 0) {
+    features_per_grid = max_features;
+    grid_size = std::max(mProb_.size(0), mProb_.size(1));
+  } else {
+    int num_grids_x =
+        static_cast<int>(std::ceil((mProb_.size(1) - 2 * border) / grid_size));
+    int num_grids_y =
+        static_cast<int>(std::ceil((mProb_.size(0) - 2 * border) / grid_size));
+    features_per_grid = static_cast<int>(
+        std::floor(max_features / (num_grids_x * num_grids_y)));
+  }
+
+  if (features_per_grid == 0) {
+    BEAM_WARN(
+        "Cannot select top features. Grid too fine for number of features.");
+    keypoints_out = keypoints_in;
+    return;
+  }
+
+  std::vector<cv::KeyPoint> keypoints_new = std::vector<cv::KeyPoint>{};
+  for (int y = border; y < mProb_.size(0) - border; y += grid_size) {
+    for (int x = border; x < mProb_.size(1) - border; x += grid_size) {
+      // find all points in grid
+      std::vector<std::pair<float, cv::KeyPoint>> grid_keypoints;
+      for (cv::KeyPoint k : keypoints_in) {
+        if (k.pt.x >= x && k.pt.x <= x + grid_size && k.pt.y >= y &&
+            k.pt.y <= y + grid_size) {
+          float conf = mProb_[k.pt.y][k.pt.x].item<float>();
+          grid_keypoints.push_back(std::make_pair(conf, k));
+        }
+      }
+
+      // sort from highest to lowest and take top
+      std::sort(grid_keypoints.begin(), grid_keypoints.end(),
+                GridKeypointSortDecreasing);
+      int stop =
+          std::min(static_cast<int>(grid_keypoints.size()), features_per_grid);
+      for (int i = 0; i < stop; i++) {
+        keypoints_new.push_back(grid_keypoints[i].second);
+      }
+    }
+  }
+  keypoints_out = keypoints_new;
 }
 
 } // namespace beam_cv

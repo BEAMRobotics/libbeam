@@ -74,7 +74,9 @@ TEST_CASE("Test feature extraction.") {
   std::shared_ptr<beam_cv::SuperPointModel> model =
       std::make_shared<beam_cv::SuperPointModel>(model_file_path_);
 
-  beam_cv::SuperPointDetector detector(model, 0.2, true, false);
+  int grid_size = image_left_.rows / 5;
+  beam_cv::SuperPointDetector detector(model, 0.3, 100, 40, 300, grid_size,
+                                       false);
   beam_cv::SuperPointDescriptor descriptor(model);
 
   std::vector<cv::KeyPoint> keypoints_left =
@@ -91,31 +93,35 @@ TEST_CASE("Test feature extraction.") {
   beam_cv::FLANNMatcher matcher;
   std::vector<cv::DMatch> matches = matcher.MatchDescriptors(
       descriptors_left, descriptors_right, keypoints_left, keypoints_right);
-  
-  REQUIRE(keypoints_left.size() > 500);
-  REQUIRE(keypoints_right.size() > 500);
-  REQUIRE(matches.size() > 100);
 
   // Draw keypoints and matches
-  if (!show_results_) { return; }
-  cv::Mat image_matches;
-  cv::drawMatches(image_left_, keypoints_left, image_right_, keypoints_right,
-                  matches, image_matches, cv::Scalar::all(-1),
-                  cv::Scalar::all(-1), std::vector<char>(),
-                  cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+  if (show_results_) {
+    cv::Mat image_matches;
+    cv::drawMatches(image_left_, keypoints_left, image_right_, keypoints_right,
+                    matches, image_matches, cv::Scalar::all(-1),
+                    cv::Scalar::all(-1), std::vector<char>(),
+                    cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-  cv::Mat image_left_w_keypoints;
-  cv::drawKeypoints(image_left_, keypoints_left, image_left_w_keypoints,
-                    cv::Scalar::all(-1),
-                    cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-  cv::Mat image_right_w_keypoints;
-  cv::drawKeypoints(image_right_, keypoints_right, image_right_w_keypoints,
-                    cv::Scalar::all(-1),
-                    cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    cv::Mat image_left_w_keypoints;
+    cv::drawKeypoints(image_left_, keypoints_left, image_left_w_keypoints,
+                      cv::Scalar::all(-1),
+                      cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    cv::Mat image_right_w_keypoints;
+    cv::drawKeypoints(image_right_, keypoints_right, image_right_w_keypoints,
+                      cv::Scalar::all(-1),
+                      cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-  cv::imshow("Matches", image_matches);
-  cv::imshow("Image Keypoints Left", image_left_w_keypoints);
-  cv::imshow("Image Keypoints Right", image_right_w_keypoints);
+    cv::imshow("Matches", image_matches);
+    cv::imshow("Image Keypoints Left", image_left_w_keypoints);
+    cv::imshow("Image Keypoints Right", image_right_w_keypoints);
 
-  cv::waitKey();
+    cv::waitKey();
+  }
+
+  REQUIRE(keypoints_left.size() > 200);
+  REQUIRE(keypoints_right.size() > 200);
+  REQUIRE(matches.size() > 50);
 }
+
+// TODO: creat test for pose estimating using these detectors/features. See:
+// https://github.com/BEAMRobotics/libbeam/blob/add_geometry_methods/beam_cv/tests/feature_tests.cpp
