@@ -2,14 +2,14 @@ PROJECT(beam_cv)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
-    catkin::catkin
-    PCL::PCL
     beam::calibration
     beam::containers
     beam::utils
     beam::depth
     OpenCV::OpenCV
     Eigen3::Eigen
+    OpenCV::OpenCV
+    PCL::PCL
     ${TORCH_LIBRARIES}
   SOURCES
     src/Utils.cpp
@@ -65,10 +65,25 @@ target_include_directories(${PROJECT_NAME}_superpoint_tests
   PUBLIC
     include
 )
+
 target_link_libraries(${PROJECT_NAME}_superpoint_tests
   ${PROJECT_NAME}
   Catch2::Catch2
   ${TORCH_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_feature_tests
+  tests/feature_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_feature_tests
+  PUBLIC
+    include
+)
+
+target_link_libraries(${PROJECT_NAME}_feature_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
 )
 
 add_executable(${PROJECT_NAME}_debug

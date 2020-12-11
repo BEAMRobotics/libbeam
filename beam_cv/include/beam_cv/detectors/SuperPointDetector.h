@@ -48,12 +48,17 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  std::shared_ptr<SuperPointModel> model_;
   float conf_threshold_;
   int border_;
   int nms_dist_threshold_;
   int max_features_;
   int grid_size_;
   bool use_cuda_;
+
+  /**
+   * Shared pointer to the SuperPointModel. This should be shared with the
+   * associated SuperPointDetector
+   */
+  std::shared_ptr<SuperPointModel> model_;
 };
 } // namespace beam_cv

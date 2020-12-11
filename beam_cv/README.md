@@ -5,8 +5,31 @@ This module contains functions and classes commonly used in image processing/com
 ## geometry
 
 Common 3D computer vision geometric algorithms are implemented here to work with our camera models:
-1. PoseEstimator (8 and 7 point algorithms for estimation essential matrix)
-2. Triangulation (linear triangulation between two cameras)
-3. P3P
+1. RelativePoseEstimator: Estimates the relative pose between two cameras
+2. Triangulation: linear triangulation between two cameras
+3. AbsolutePoseEstimator: Estimates absolute pose of camera given 3d points and corresponding pixels
 
-## features
+## descriptors
+
+Class structure for image descriptor extractors, descriptors implemented:
+1. ORB
+2. BRISK
+3. SIFT
+
+
+## detectors
+
+Class structure for image detectors, detectors implemented:
+1. ORB
+2. FAST
+3. SIFT
+
+
+## matchers
+
+Class structure for feature matchers, implemented macthers:
+1. FLANN
+
+## tracker
+
+Object to provide a track of features given a set of images

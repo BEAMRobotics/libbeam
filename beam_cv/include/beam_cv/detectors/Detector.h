@@ -23,10 +23,11 @@ public:
    */
   virtual ~Detector() = default;
 
-  /** Detects features in an image. Calls a different detector depending on
-   *  the derived class.
-   *  @param image the image to detect features in.
-   *  @return a vector of the detected keypoints.
+  /**
+   * @brief Detects features in an image. Calls a different detector depending
+   * on the derived class.
+   * @param image the image to detect features in.
+   * @return a vector of the detected keypoints.
    */
   virtual std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image) = 0;
 };

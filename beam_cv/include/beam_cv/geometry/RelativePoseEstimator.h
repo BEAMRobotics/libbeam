@@ -37,19 +37,18 @@ public:
    * @brief Performs RANSAC on the given estimator
    * @param camR camera model for image 1
    * @param camC camera model for image 2
-   * @param xs corresponding pixels in image 1 (min 8)
-   * @param xss corresponding pixels in image 2 (min 8)
+   * @param xs corresponding pixels in image 1
+   * @param xss corresponding pixels in image 2
    * @param method essential matrix estimator method
    * @param seed to seed the random number generator, default value of -1 will
    * use time as seed
    */
-  static opt<Eigen::Matrix4d>
-      RANSACEstimator(std::shared_ptr<beam_calibration::CameraModel> camR,
-                      std::shared_ptr<beam_calibration::CameraModel> camC,
-                      std::vector<Eigen::Vector2i> pr_v,
-                      std::vector<Eigen::Vector2i> pc_v, EstimatorMethod method,
-                      int max_iterations = 100, double inlier_threshold = 10.0,
-                      int seed = -1);
+  static opt<Eigen::Matrix4d> RANSACEstimator(
+      std::shared_ptr<beam_calibration::CameraModel> camR,
+      std::shared_ptr<beam_calibration::CameraModel> camC,
+      std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
+      EstimatorMethod method = EstimatorMethod::EIGHTPOINT,
+      int max_iterations = 100, double inlier_threshold = 5.0, int seed = -1);
 
   /**
    * @brief Computes the transformation matrix given essential matrix
@@ -67,7 +66,7 @@ public:
    * @param R vector of possible rotations
    * @param t vector of possible translations
    */
-  static Eigen::Matrix4d RecoverPose(
+  static opt<Eigen::Matrix4d> RecoverPose(
       std::shared_ptr<beam_calibration::CameraModel> camR,
       std::shared_ptr<beam_calibration::CameraModel> camC,
       std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,

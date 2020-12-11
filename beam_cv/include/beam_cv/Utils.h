@@ -8,6 +8,9 @@
 #include <cstdlib>
 
 #include <beam_calibration/CameraModel.h>
+#include <beam_cv/descriptors/Descriptor.h>
+#include <beam_cv/detectors/Detector.h>
+#include <beam_cv/matchers/Matcher.h>
 #include <beam_utils/math.hpp>
 
 namespace beam_cv {
@@ -126,5 +129,72 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
                  std::vector<Eigen::Vector3d> points,
                  std::vector<Eigen::Vector2i> pixels,
                  Eigen::Matrix4d T_cam_world, double inlier_threshold);
+
+/**
+ * @brief performs entire matching pipeline
+ * @param imL left image
+ * @param imR right image
+ * @param descriptor ref to descriptor to use
+ * @param detector ref to detector to use
+ * @param matcher ref to matcher to use
+ * @param pL_v vector to fill matches with in left image
+ * @param pR_v vector to fill matches with in right image
+ */
+void DetectComputeAndMatch(
+    cv::Mat imL, cv::Mat imR,
+    const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+    const std::shared_ptr<beam_cv::Detector>& detector,
+    const std::shared_ptr<beam_cv::Matcher>& matcher,
+    std::vector<Eigen::Vector2i>& pL_v, std::vector<Eigen::Vector2i>& pR_v);
+
+/**
+ * @brief This class provides a simple yet efficient Union-Find data structure
+ * which is helpful in finding disjoint sets in various datasets:
+ * https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+ * Used in finding connected components in single channel images since opencv's
+ * connected components algorithm is only implemented for binary images
+ */
+class UnionFind {
+public:
+  /**
+   * @brief Creates UnionFind structure with n items
+   */
+  void Initialize(int n) {
+    for (int i = 0; i < n; i++) {
+      id_.push_back(i);
+      rank_.push_back(0);
+    }
+  }
+
+  /**
+   * @brief Returns parent of set containing p
+   */
+  int FindSet(int p) {
+    if (p != id_[p]) { id_[p] = this->FindSet(id_[p]); }
+    return id_[p];
+  }
+
+  /**
+   * @brief Performs set union on sets containing p and q
+   */
+  void UnionSets(int p, int q) {
+    int i = this->FindSet(p);
+    int j = this->FindSet(q);
+    if (i != j) {
+      if (rank_[i] < rank_[j]) {
+        id_[i] = j;
+      } else if (rank_[i] > rank_[j]) {
+        id_[j] = i;
+      } else {
+        id_[j] = i;
+        rank_[i] += 1;
+      }
+    }
+  }
+
+protected:
+  std::vector<int> id_;
+  std::vector<int> rank_;
+};
 
 } // namespace beam_cv

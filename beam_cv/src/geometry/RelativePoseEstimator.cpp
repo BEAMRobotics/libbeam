@@ -1,5 +1,7 @@
 #include <beam_cv/geometry/RelativePoseEstimator.h>
 
+#include <chrono>
+
 #include <Eigen/Geometry>
 
 #include <beam_cv/Utils.h>
@@ -68,7 +70,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     return {};
   }
   // determine sample vector size
-  int N = 0;
+  uint32_t N = 0;
   if (method == EstimatorMethod::EIGHTPOINT) {
     N = 8;
   } else if (method == EstimatorMethod::SEVENPOINT) {
@@ -81,14 +83,31 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     BEAM_CRITICAL("Not enough point correspondences, expecting at least {}", N);
     return {};
   }
+  int temp_seed;
+  if (seed == -1) {
+    temp_seed = time(0);
+  } else {
+    srand(seed);
+    temp_seed = rand();
+  }
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
+  bool found_valid = false;
   for (int epoch = 0; epoch < max_iterations; epoch++) {
+    std::vector<Eigen::Vector2i> pr_copy = pr_v;
+    std::vector<Eigen::Vector2i> pc_copy = pc_v;
+    std::vector<Eigen::Vector2i> sampled_pr;
+    std::vector<Eigen::Vector2i> sampled_pc;
     // fill new point vectors with randomly sampled points from xs and xss
-    std::vector<Eigen::Vector2i> sampled_pr =
-        beam::RandomSample<Eigen::Vector2i>(pr_v, N, seed);
-    std::vector<Eigen::Vector2i> sampled_pc =
-        beam::RandomSample<Eigen::Vector2i>(pc_v, N, seed);
+    int n = pr_copy.size();
+    for (uint32_t i = 0; i < N; i++) {
+      int idx = rand() % n;
+      sampled_pr.push_back(pr_copy[idx]);
+      sampled_pc.push_back(pc_copy[idx]);
+      pr_copy.erase(pr_copy.begin() + idx);
+      pc_copy.erase(pc_copy.begin() + idx);
+      n--;
+    }
     // perform pose estimation of the given method
     opt<Eigen::Matrix3d> E;
     if (method == EstimatorMethod::EIGHTPOINT) {
@@ -106,18 +125,25 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::vector<Eigen::Matrix3d> R;
     std::vector<Eigen::Vector3d> t;
     RelativePoseEstimator::RtFromE(E.value(), R, t);
-    Eigen::Matrix4d pose = RelativePoseEstimator::RecoverPose(
+    opt<Eigen::Matrix4d> pose = RelativePoseEstimator::RecoverPose(
         camR, camC, sampled_pr, sampled_pc, R, t);
-    Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
-    // check number of inliers and update current best estimate
-    int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr, pose,
-                                        inlier_threshold);
-    if (inliers > current_inliers) {
-      current_inliers = inliers;
-      current_pose = pose;
+    if (pose.has_value()) {
+      found_valid = true;
+      Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
+      // check number of inliers and update current best estimate
+      int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr,
+                                          pose.value(), inlier_threshold);
+      if (inliers > current_inliers) {
+        current_inliers = inliers;
+        current_pose = pose.value();
+      }
     }
   }
-  return current_pose;
+  if (found_valid) {
+    return current_pose;
+  } else {
+    return {};
+  }
 }
 
 void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
@@ -143,7 +169,7 @@ void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
   if (R[1].determinant() < 0) { R[1] = -R[1].eval(); }
 }
 
-Eigen::Matrix4d RelativePoseEstimator::RecoverPose(
+opt<Eigen::Matrix4d> RelativePoseEstimator::RecoverPose(
     std::shared_ptr<beam_calibration::CameraModel> camR,
     std::shared_ptr<beam_calibration::CameraModel> camC,
     std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
@@ -175,6 +201,7 @@ Eigen::Matrix4d RelativePoseEstimator::RecoverPose(
       if (count == size) { return pose; }
     }
   }
+  return {};
 }
 
 } // namespace beam_cv

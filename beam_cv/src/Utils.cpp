@@ -49,7 +49,7 @@ cv::Mat KMeans(const cv::Mat& input, int K) {
   image.convertTo(image, CV_8UC1);
   cv::Mat grey;
   cv::cvtColor(image, grey, CV_BGR2GRAY);
-  cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, beam::GetFullKernel(5));
+  cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, cv::Mat::ones(5, 5, CV_8U));
   cv::resize(grey, grey, og);
   return grey;
 }
@@ -132,13 +132,13 @@ std::vector<cv::Mat> SegmentComponents(const cv::Mat& image) {
 std::map<int, std::vector<cv::Point2i>>
     ConnectedComponents(const cv::Mat& image) {
   auto UnionCoords = [](cv::Mat image, int x, int y, int x2, int y2,
-                        beam::UnionFind& uf) {
+                        beam_cv::UnionFind& uf) {
     if (y2 < image.cols && x2 < image.rows &&
         image.at<uchar>(x, y) == image.at<uchar>(x2, y2)) {
       uf.UnionSets(x * image.cols + y, x2 * image.cols + y2);
     }
   };
-  beam::UnionFind uf;
+  beam_cv::UnionFind uf;
   uf.Initialize(image.rows * image.cols);
   for (int x = 0; x < image.rows; x++) {
     for (int y = 0; y < image.cols; y++) {
@@ -158,63 +158,6 @@ std::map<int, std::vector<cv::Point2i>>
     }
   }
   return sets;
-}
-
-std::vector<cv::Mat> SegmentMultiscale(const cv::Mat& depth_image) {
-  float min_depth_ = 1000, max_depth_ = 0;
-  depth_image.forEach<float>([&](float& distance, const int* position) -> void {
-    (void)position;
-    if (distance != 0.0) {
-      if (distance > max_depth_) { max_depth_ = distance; }
-      if (distance < min_depth_) { min_depth_ = distance; }
-    }
-  });
-
-  float channel_width = (max_depth_ - min_depth_) / 4;
-  cv::Mat empty =
-      cv::Mat::zeros(cv::Size(depth_image.cols, depth_image.rows), CV_32FC1);
-  cv::Mat channel1 = empty.clone(), channel2 = empty.clone(),
-          channel3 = empty.clone(), channel4 = empty.clone();
-  depth_image.forEach<float>([&](float& distance, const int* position) {
-    if (distance >= min_depth_ && distance < min_depth_ + channel_width) {
-      channel1.at<float>(position[0], position[1]) = distance;
-    } else if (distance >= min_depth_ + channel_width &&
-               distance < min_depth_ + 2 * channel_width) {
-      channel2.at<float>(position[0], position[1]) = distance;
-    } else if (distance >= min_depth_ + 2 * channel_width &&
-               distance < min_depth_ + 3 * channel_width) {
-      channel3.at<float>(position[0], position[1]) = distance;
-    } else if (distance >= min_depth_ + 3 * channel_width &&
-               distance < min_depth_ + 4 * channel_width) {
-      channel4.at<float>(position[0], position[1]) = distance;
-    }
-  });
-  std::vector<cv::Mat> segments = {channel1, channel2, channel3, channel4};
-  return segments;
-}
-
-void SaveDepthImageBW(const cv::Mat& depth_image, const std::string& path) {
-  cv::Mat depth_bw =
-      cv::Mat::zeros(cv::Size(depth_image.cols, depth_image.rows), CV_8UC1);
-
-  float min_depth = 1000, max_depth = 0;
-  depth_image.forEach<float>([&](float& distance, const int* position) -> void {
-    (void)position;
-    if (distance != 0.0) {
-      if (distance > max_depth) { max_depth = distance; }
-      if (distance < min_depth) { min_depth = distance; }
-    }
-  });
-
-  int scale = 255 / max_depth;
-
-  depth_image.forEach<float>([&](float& distance, const int* position) -> void {
-    if (distance != 0) {
-      uint8_t pixel_value = (scale * distance);
-      depth_bw.at<uchar>(position[0], position[1]) = 255 - pixel_value;
-    }
-  });
-  cv::imwrite(path, depth_bw);
 }
 
 Eigen::Vector2d ConvertKeypoint(const cv::KeyPoint& keypoint) {
@@ -314,6 +257,31 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
     if (dist < inlier_threshold) { inliers++; }
   }
   return inliers;
+}
+
+void DetectComputeAndMatch(
+    cv::Mat imL, cv::Mat imR,
+    const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+    const std::shared_ptr<beam_cv::Detector>& detector,
+    const std::shared_ptr<beam_cv::Matcher>& matcher,
+    std::vector<Eigen::Vector2i>& pL_v, std::vector<Eigen::Vector2i>& pR_v) {
+  std::vector<cv::KeyPoint> kpL = detector->DetectFeatures(imL);
+  cv::Mat descL = descriptor->ExtractDescriptors(imL, kpL);
+
+  std::vector<cv::KeyPoint> kpR = detector->DetectFeatures(imR);
+  cv::Mat descR = descriptor->ExtractDescriptors(imR, kpR);
+
+  std::vector<cv::DMatch> matches =
+      matcher->MatchDescriptors(descL, descR, kpL, kpR);
+
+  for (auto& match : matches) {
+    cv::KeyPoint imL_p = kpL[match.queryIdx];
+    cv::KeyPoint imR_p = kpR[match.trainIdx];
+    Eigen::Vector2i pL = beam_cv::ConvertKeypoint(imL_p).cast<int>();
+    Eigen::Vector2i pR = beam_cv::ConvertKeypoint(imR_p).cast<int>();
+    pL_v.push_back(pL);
+    pR_v.push_back(pR);
+  }
 }
 
 } // namespace beam_cv

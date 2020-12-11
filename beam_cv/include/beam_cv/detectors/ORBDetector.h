@@ -11,7 +11,8 @@
 
 namespace beam_cv {
 
-/** Representation of a keypoint detector using the ORB algorithm.
+/**
+ * Representation of a keypoint detector using the ORB algorithm.
  * Internally, this class is wrapping OpenCV's ORB descriptor module. More info
  * can be found here: http://docs.opencv.org/trunk/db/d95/classcv_1_1ORB.html
  */
@@ -33,9 +34,10 @@ public:
    */
   ~ORBDetector() override = default;
 
-  /** Detects features in an image.
-   *  @param image the image to detect features in.
-   *  @return a vector containing all of the keypoints found within the image.
+  /**
+   * @brief Detects features in an image.
+   * @param image the image to detect features in.
+   * @return a vector containing all of the keypoints found within the image.
    */
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
@@ -46,10 +48,14 @@ private:
   int edge_threshold_ = 31;
   int score_type_ = cv::ORB::HARRIS_SCORE;
   int fast_threshold_ = 20;
-  /** The pointer to the wrapped cv::ORB object. */
+
+  /**
+   * The pointer to the wrapped cv::ORB object.
+   */
   cv::Ptr<cv::ORB> orb_detector_;
 
-  /** Checks whether the desired configuration is valid.
+  /**
+   * @brief Checks whether the desired configuration is valid.
    */
   void CheckConfig();
 };

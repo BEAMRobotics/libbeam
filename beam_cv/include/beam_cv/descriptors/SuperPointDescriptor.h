@@ -51,6 +51,10 @@ public:
                              std::vector<cv::KeyPoint>& keypoints);
 
 private:
+  /**
+   * Shared pointer to the SuperPointModel. This should be shared with the
+   * associated SuperPointDetector
+   */
   std::shared_ptr<SuperPointModel> model_;
 };
 } // namespace beam_cv
