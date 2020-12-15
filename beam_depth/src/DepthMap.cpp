@@ -97,6 +97,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
         Eigen::Vector2i pixel(col, row);
         opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
         if (direction.has_value()) {
+          direction.value().normalize();
           Eigen::Vector3d coords = distance * direction.value();
           pcl::PointXYZ point(coords[0], coords[1], coords[2]);
           dense_cloud->points.push_back(point);
@@ -182,7 +183,7 @@ void DepthMap::Subsample(const float percentage_keep) {
 
         int step = 1 / percentage_keep;
         int count = 0;
-        for (int i = 0; i < window_depths.size(); i += step) {
+        for (uint32_t i = 0; i < window_depths.size(); i += step) {
           if (i % step != 0) {
             cv::Point2i p = std::get<1>(window_depths[i]);
             depth_image_->at<float>(p.x, p.y) = 0;

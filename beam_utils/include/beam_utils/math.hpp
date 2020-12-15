@@ -11,7 +11,9 @@
 #ifndef BEAM_UTILS_MATH_HPP
 #define BEAM_UTILS_MATH_HPP
 
+#include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 
@@ -117,22 +119,36 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
   return sqrt(dist);
 }
 
+template <typename T>
+std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed) {
+  srand(seed);
+  std::vector<T> input_copy = input;
+  // fill new point vectors with randomly sampled points from xs and xss
+  std::vector<T> sampled;
+  int n = input_copy.size();
+  for (uint32_t i = 0; i < N; i++) {
+    int idx = rand() % n;
+    sampled.push_back(input_copy[idx]);
+    input_copy.erase(input_copy.begin() + idx);
+    n--;
+  }
+  return sampled;
+}
+
 /** Computes greatest common divisor**/
 int gcd(int a, int b);
-/** Returns cross kernel */
-cv::Mat GetCrossKernel(int size);
-
-/** Returns cross kernel */
-cv::Mat GetFullKernel(int size);
-
-/** Returns cross kernel */
-cv::Mat GetEllipseKernel(int size);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
 
 /** Reshapes a matrix to a vector*/
 void mat2vec(MatX A, std::vector<double>& x);
+
+/** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
+void vec2mat(VecX x, int rows, int cols, MatX& y);
+
+/** Reshapes a matrix to a vector*/
+void mat2vec(MatX A, VecX& x);
 
 /** Convert euler angle to rotation matrix **/
 int euler2rot(Vec3 euler, int euler_seq, Mat3& R);
@@ -182,6 +198,14 @@ bool IsTransformationMatrix(Eigen::Matrix4d T);
  * @param R rotation matrix
  **/
 bool IsRotationMatrix(Eigen::Matrix3d R);
+
+/**
+ * @brief Computes kronecker product in brute force manner
+ * @param A n x m input matrix
+ * @param B p x q input matrix
+ * @return pm x qn matrix
+ **/
+Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B);
 
 /**
  * @brief Convert from rotation matrix to its associated Lie Algebra
