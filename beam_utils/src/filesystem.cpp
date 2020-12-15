@@ -28,20 +28,17 @@ std::vector<std::string> GetFiles(const std::string& directory,
       if(p.path().extension().string().empty()){
         continue;
       }
-      if (extension.empty() && !p.path().extension().string().empty()) {
+      if (extension.empty() || p.path().extension() == extension) {
         paths.push_back(p.path().string());
-      } else if (p.path().extension() == extension)
-        paths.push_back(p.path().string());
-    }
+      }
   } else {
     for (auto& p : boost::filesystem::directory_iterator(directory)) {
       if(p.path().extension().string().empty()){
         continue;
       }
-      if (extension.empty()) {
+      if (extension.empty() || p.path().extension() == extension) {
         paths.push_back(p.path().string());
-      } else if (p.path().extension() == extension)
-        paths.push_back(p.path().string());
+      } 
     }
   }
   return paths;

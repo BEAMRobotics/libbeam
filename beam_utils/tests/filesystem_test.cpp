@@ -18,7 +18,6 @@ bool AreListsEqual(std::vector<std::string>& paths1,
                    std::vector<std::string>& paths2) {
   bool lists_equal = true;
 
-  // check lists are the same size
   if (paths1.size() != paths2.size()) { lists_equal = false; }
 
   for (std::string path : paths1) {
