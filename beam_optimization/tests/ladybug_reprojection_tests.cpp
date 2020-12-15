@@ -14,7 +14,7 @@
 #include "visualizer.hpp"
 #include <beam_calibration/CameraModel.h>
 #include <cmath>
-#include <math.h>
+//#include <math.h>
 #include "CamPoseReprojectionCost.hpp"
 #include <stdio.h>
 #include <stdlib.h>

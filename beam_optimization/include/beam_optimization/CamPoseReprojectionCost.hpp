@@ -1,15 +1,21 @@
-#ifndef CAMCAD_CCCF_HPP
-#define CAMCAD_CCCF_HPP
+#pragma once
 
 #include <ceres/numeric_diff_cost_function.h>
 #include <ceres/autodiff_cost_function.h>
 #include <ceres/rotation.h>
 #include <ceres/cost_function_to_functor.h>
 #include <optional>
-#include <stdio.h>
+#include <cstdio>
 
 #include <beam_calibration/CameraModel.h>
 
+/**
+ * @brief Ceres cost functor for camera projection
+ * performs projection of 3D point into camera frame
+ * if the projection is outside of the image frame, the projected 
+ * pixel is set to the nearest edge point to its corresponding 
+ * detected pixel in the image
+ */
 struct CameraProjectionFunctor {
   CameraProjectionFunctor(
       const std::shared_ptr<beam_calibration::CameraModel>& camera_model, 
@@ -36,11 +42,11 @@ struct CameraProjectionFunctor {
       int near_v = (height - pixel_detected_[1]) < pixel_detected_[1] ? height : 0; 
       int dist_v = (height - pixel_detected_[1]) < pixel_detected_[1] ? (height - pixel_detected_[1]) : pixel_detected_[1]; 
       if (dist_u <= dist_v) {
-        pixel[0] = near_u; 
+        pixel[0] = near_u;
         pixel[1] = pixel_detected_[1];
       }
       else {
-        pixel[0] = pixel_detected_[0]; 
+        pixel[0] = pixel_detected_[0];
         pixel[1] = near_v;
       }
     }
@@ -52,6 +58,15 @@ struct CameraProjectionFunctor {
   Eigen::Vector2d pixel_detected_;
 };
 
+/**
+ * @brief Ceres reprojection cost function
+ * sets the residual for the projection of a 3D point as determined by the 
+ * preceding functor and its corresponding detected pixel 
+ * if the projection of the 3D point is outside the domain of the camera model,
+ * the cost function will return false
+ * this will fail the ceres solution immediately on the first iteration or
+ * after two consecutive false returns at any other point during the solution
+ */
 struct CeresReprojectionCostFunction {
   CeresReprojectionCostFunction(
       Eigen::Vector2d pixel_detected, Eigen::Vector3d P_STRUCT,
@@ -80,32 +95,35 @@ struct CeresReprojectionCostFunction {
     P_CAMERA[2] += T_CR[6];
 
     const T* P_CAMERA_const = &(P_CAMERA[0]);
-
-    T pixel_projected[2];
-    (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
-
-    residuals[0] = pixel_detected_.cast<T>()[0] - pixel_projected[0];
-    residuals[1] = pixel_detected_.cast<T>()[1] - pixel_projected[1];
-
-    //check if projection is outside the domain of the camera model
+    
     void* P_CAMERA_temp_x = &(P_CAMERA[0]);
     void* P_CAMERA_temp_y = &(P_CAMERA[1]);
     void* P_CAMERA_temp_z = &(P_CAMERA[2]);
     double* P_CAMERA_check_x{ static_cast<double*>(P_CAMERA_temp_x) };
     double* P_CAMERA_check_y{ static_cast<double*>(P_CAMERA_temp_y) };
     double* P_CAMERA_check_z{ static_cast<double*>(P_CAMERA_temp_z) };
+
+    T pixel_projected[2];
+    (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
+
+
+    residuals[0] = pixel_detected_.cast<T>()[0] - pixel_projected[0];
+    residuals[1] = pixel_detected_.cast<T>()[1] - pixel_projected[1];
+
+    // check if projection is outside the domain of the camera model
     Eigen::Vector3d P_CAMERA_eig_check{*P_CAMERA_check_x, *P_CAMERA_check_y, *P_CAMERA_check_z};
     bool outside_domain = false; 
     std::optional<Eigen::Vector2d> pixel_projected_check =
         camera_model_->ProjectPointPrecise(P_CAMERA_eig_check, outside_domain); 
 
-    //need to handle outside domain failure differently for ladybug camera model 
-    //since all points projecting out of frame provoke this failure
+
+    //  need to handle outside domain failure differently for ladybug camera model 
+    // since all points projecting out of frame provoke this failure
     if (camera_model_->GetType() == beam_calibration::CameraType::LADYBUG) 
       return true; // returning outside_domain here would crash many viable solutions, error checking must be done in calling code
     else 
       return !outside_domain; // all other camera models have valid out-of-domain conditions that should be avoided
-    
+
   }
 
   // Factory to hide the construction of the CostFunction object from
@@ -135,4 +153,3 @@ struct CeresReprojectionCostFunction {
 
 };
 
-#endif

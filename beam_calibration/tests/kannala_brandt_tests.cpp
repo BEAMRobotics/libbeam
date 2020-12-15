@@ -58,7 +58,7 @@ TEST_CASE("Test projection and back project with random points") {
 
   bool outside_domain = false;
 
-  for (Eigen::Vector3d point : points) {
+  for (const Eigen::Vector3d point : points) {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
     opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
     if (!pixel.has_value() || !pixel_b.has_value()) { continue; }

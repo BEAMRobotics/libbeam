@@ -1,7 +1,4 @@
-// Class to display clouds and 2D point maps 
-
-#ifndef CAMCAD_VISUALIZER_HPP
-#define CAMCAD_VISUALIZER_HPP
+#pragma once
 
 #include <cstdint>
 #include <pcl/point_cloud.h>
@@ -13,7 +10,6 @@
 #include <pcl/console/parse.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/registration/correspondence_estimation.h>
-#include <nlohmann/json.hpp>
 #include <fstream>
 #include <string>
 #include <math.h>
@@ -71,5 +67,3 @@ private:
 
 
 }
-
-#endif

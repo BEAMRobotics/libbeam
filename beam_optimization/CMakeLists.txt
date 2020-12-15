@@ -8,14 +8,13 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Catch2::Catch2
     catkin::catkin
     Eigen3::Eigen
-    nlohmann_json::nlohmann_json
     PCL::PCL
   SOURCES
 )
 
 ################ test libraries ##############
 
-add_library(util STATIC tests/util.cpp)
+add_library(test_utils STATIC tests/util.cpp)
   
 add_library(visualizer STATIC tests/visualizer.cpp)
 
@@ -25,57 +24,63 @@ target_link_libraries(visualizer
   ${PCl_LIBRARIES}
 )
 
-target_link_libraries(util
+target_include_directories(visualizer
+  PUBLIC
+    include/beam_optimization
+    ${PCl_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_utils
   beam::calibration
 )
 
-
-
-include_directories(
-  include/beam_optimization
-  ${catkin_INCLUDE_DIRS}
-  ${PCl_INCLUDE_DIRS}
-)
-
-
-link_directories(${PROJECT_NAME}
-  include
-  ${PCL_LIBRARY_DIRS}
+target_include_directories(test_utils
+  PUBLIC
+    include/beam_optimization
+    ${PCl_INCLUDE_DIRS}
 )
 
 add_definitions(${PCL_DEFINITIONS})
 
 ################ tests ##################
 
-add_executable(${PROJECT_NAME}_ceres_lb_tests
+add_executable(${PROJECT_NAME}_ceres_ladybug_tests
   tests/ladybug_reprojection_tests.cpp
 )
 
-target_include_directories(${PROJECT_NAME}_ceres_lb_tests
+target_include_directories(${PROJECT_NAME}_ceres_ladybug_tests
   PUBLIC
-    include
+    include/beam_optimization
+    ${catkin_INCLUDE_DIRS}
+    ${PCl_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME}_ceres_lb_tests
+
+target_link_libraries(${PROJECT_NAME}_ceres_ladybug_tests
   ${PROJECT_NAME}
   Catch2::Catch2
   ${CERES_LIBRARIES}
-  util
+  ${PCL_LIBRARY_DIRS}
+  test_utils
   visualizer
 )
 
-add_executable(${PROJECT_NAME}_ceres_rt_tests
+add_executable(${PROJECT_NAME}_ceres_radtan_tests
   tests/radtan_reprojection_tests.cpp
 )
 
-target_include_directories(${PROJECT_NAME}_ceres_rt_tests
+target_include_directories(${PROJECT_NAME}_ceres_radtan_tests
   PUBLIC
     include
+    ${catkin_INCLUDE_DIRS}
+    ${PCl_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME}_ceres_rt_tests
+
+target_link_libraries(${PROJECT_NAME}_ceres_radtan_tests
   ${PROJECT_NAME}
   Catch2::Catch2
   ${CERES_LIBRARIES}
-  util
+  ${PCL_LIBRARY_DIRS}
+  test_utils
   visualizer
 )
 
