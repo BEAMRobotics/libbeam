@@ -74,7 +74,7 @@ public:
   /**
    * @brief Method back projecting
    * @return Returns an unnormalized bearing vector where z = 1 to a pixel in
-   * the image, and camera center = [0,0,0]
+   * the image, from camera center = [0,0,0]
    * @param point [u = col, v = row]
    */
   virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;

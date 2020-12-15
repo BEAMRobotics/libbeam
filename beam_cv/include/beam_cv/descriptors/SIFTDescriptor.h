@@ -25,20 +25,20 @@ public:
    * @brief Constructor
    * @param num_features The number of best features to retain
    * @param num_octave_layers The number of layers in each octave
-   * @param contrast_threshold The contrast threshold used to filter out weak features in semi-uniform
-   *  (low-contrast) regions. The larger the threshold, the less features are
-   *  produced by the detector.
-   * @param edge_threshold The threshold used to filter out edge-like features. Note that the its
-   *  meaning is different from the contrastThreshold, i.e. the larger the
-   *  edgeThreshold, the less features are filtered out (more features are
-   *  retained).
-   * @param sigma The sigma of the Gaussian applied to the input image at the octave #0. If
-   *  your image is captured with a weak camera with soft lenses, you might want
-   *  to reduce the number.
+   * @param contrast_threshold The contrast threshold used to filter out weak
+   * features in semi-uniform (low-contrast) regions. The larger the threshold,
+   * the less features are produced by the detector.
+   * @param edge_threshold The threshold used to filter out edge-like features.
+   * Note that the its meaning is different from the contrastThreshold, i.e. the
+   * larger the edgeThreshold, the less features are filtered out (more features
+   * are retained).
+   * @param sigma The sigma of the Gaussian applied to the input image at the
+   * octave #0. If your image is captured with a weak camera with soft lenses,
+   * you might want to reduce the number.
    */
-  SIFTDescriptor(const int num_features = 0, const int n_octave_layers = 3,
-                 const double contrast_threshold = 0.04,
-                 const double edge_threshold = 10, const double sigma = 1.6);
+  SIFTDescriptor(int num_features = 0, int n_octave_layers = 3,
+                 double contrast_threshold = 0.04, double edge_threshold = 10,
+                 double sigma = 1.6);
 
   /**
    * @brief Default destructor

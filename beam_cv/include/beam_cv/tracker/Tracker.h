@@ -30,7 +30,10 @@ public:
    * @param detector detector object (FAST, ORB, etc...)
    * @param descriptor descriptor object (BRISK, ORB, etc...)
    * @param matcher matcher object (BruteForceMatcher, FLANN)
-   * @param window_size to keep for online use
+   * @param window_size For online, sliding window tracker operation. Maintains
+   * memory by clearing out values from the measurement container that are
+   * outside of this time window. If set to zero (default), all measurements are
+   * kept for offline use.
    */
   Tracker(std::shared_ptr<beam_cv::Detector> detector,
           std::shared_ptr<beam_cv::Descriptor> descriptor,
@@ -75,11 +78,8 @@ public:
   std::vector<std::vector<FeatureTrack>>
       OfflineTracker(const std::vector<cv::Mat>& image_sequence);
 
-  /** The templated FeatureDetector */
   std::shared_ptr<beam_cv::Detector> detector;
-  /** The templated DescriptorExtractor */
   std::shared_ptr<beam_cv::Descriptor> descriptor;
-  /** The templated DescriptorMatcher */
   std::shared_ptr<beam_cv::Matcher> matcher;
 
   /** The size of the LandmarkContainer */

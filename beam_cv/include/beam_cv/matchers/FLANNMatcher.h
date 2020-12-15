@@ -42,11 +42,9 @@ public:
    * @param distance_threshold Specifies the distance threshold for good
    * matches.
    */
-  FLANNMatcher(const int flann_method = FLANN::KDTree,
-               const double ratio_threshold = 0.8,
-               const bool auto_remove_outliers = true,
-               const bool use_knn = true, const int fm_method = cv::FM_RANSAC,
-               const int distance_threshold = 5);
+  FLANNMatcher(int flann_method = FLANN::KDTree, double ratio_threshold = 0.8,
+               bool auto_remove_outliers = true, bool use_knn = true,
+               int fm_method = cv::FM_RANSAC, int distance_threshold = 5);
 
   /**
    * @brief Default destructor

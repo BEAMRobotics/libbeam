@@ -23,7 +23,9 @@ public:
    * pixel/point correspondences, in no specific order, a 4th point
    * correspondence can be used to remove the ambiguity. Explanation of the
    * generic P3P problem can be found here:
-   * https://www-users.cs.umn.edu/~hspark/CSci5980/Lec15_PnP.pdf
+   * https://www-users.cs.umn.edu/~hspark/CSci5980/Lec15_PnP.pdf The algorithm
+   * used here however is found here:
+   * https://openaccess.thecvf.com/content_ECCV_2018/papers/Mikael_Persson_Lambda_Twist_An_ECCV_2018_paper.pdf
    * @param cam camera model for image
    * @param pixels projected pixel locations of 3 feature points in cam
    * @param points 3d locations of 3 features
@@ -66,6 +68,7 @@ public:
 
   /**
    * @brief P3P helper -- Gauss-Newton method (least squares by refinement).
+   *
    */
   static void RefineLambda(double& lambda1, double& lambda2, double& lambda3,
                            const double a12, const double a13, const double a23,

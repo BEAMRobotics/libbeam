@@ -2,8 +2,8 @@
 
 namespace beam_cv {
 
-FASTDetector::FASTDetector(const int num_features, const int threshold,
-                           const bool nonmax_suppression, const int type) {
+FASTDetector::FASTDetector(int num_features, int threshold,
+                           bool nonmax_suppression, int type) {
   this->threshold_ = threshold;
   this->nonmax_suppression_ = nonmax_suppression;
   this->type_ = type;

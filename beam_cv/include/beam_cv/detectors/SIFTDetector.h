@@ -39,9 +39,9 @@ public:
    * octave #0. If your image is captured with a weak camera with soft lenses,
    * you might want to reduce the number.
    */
-  SIFTDetector(const int num_features = 0, const int n_octave_layers = 3,
-               const double contrast_threshold = 0.04,
-               const double edge_threshold = 10, const double sigma = 1.6);
+  SIFTDetector(int num_features = 0, int n_octave_layers = 3,
+               double contrast_threshold = 0.04, double edge_threshold = 10,
+               double sigma = 1.6);
 
   /**
    * @brief Default destructor

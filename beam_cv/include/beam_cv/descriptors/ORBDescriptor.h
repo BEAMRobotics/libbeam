@@ -32,7 +32,7 @@ public:
    * sampling to construct the descriptor. This patch is smoothed using an
    * integral image. Default: 31 (31 x 31 pixels). Must be greater than 0.
    */
-  ORBDescriptor(const int tuple_size = 2, const int patch_size = 31);
+  ORBDescriptor(int tuple_size = 2, int patch_size = 31);
 
   /**
    * @brief Default destructor

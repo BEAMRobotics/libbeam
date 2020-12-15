@@ -4,8 +4,8 @@ namespace beam_cv {
 
 // Default constructor. Struct may be default or user defined.
 BRISKDescriptor::BRISKDescriptor(const std::vector<float>& rlist,
-                                 const std::vector<int>& nlist,
-                                 const float d_max, const float d_min) {
+                                 const std::vector<int>& nlist, float d_max,
+                                 float d_min) {
   this->radius_list_ = rlist;
   this->number_list_ = nlist;
   this->d_max_ = d_max;

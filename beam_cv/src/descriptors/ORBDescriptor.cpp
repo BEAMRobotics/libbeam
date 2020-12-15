@@ -3,7 +3,7 @@
 namespace beam_cv {
 
 // Default constructor. Struct may be default or user defined.
-ORBDescriptor::ORBDescriptor(const int tuple_size, const int patch_size) {
+ORBDescriptor::ORBDescriptor(int tuple_size, int patch_size) {
   this->tuple_size_ = tuple_size;
   this->patch_size_ = patch_size;
   // Ensure parameters are valid

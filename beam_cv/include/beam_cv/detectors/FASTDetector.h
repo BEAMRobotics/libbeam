@@ -21,18 +21,18 @@ public:
   /**
    * @brief Constructor
    * @param num_features number of features to retain, 0 will keep all.
-   * @param threshold Threshold on difference between intensity of the central pixel, and
-   *  pixels in a circle (Bresenham radius 3) around this pixel.
+   * @param threshold Threshold on difference between intensity of the central
+   * pixel, and pixels in a circle (Bresenham radius 3) around this pixel.
    *  Recommended: 10. Must be greater than zero.
    * @param nonmax_suppression Removes keypoints in adjacent locations.
    *  Recommended: true
-   * @param type Threshold on difference between intensity of the central pixel, and
-   *  pixels in a circle (Bresenham radius 3) around this pixel.
+   * @param type Threshold on difference between intensity of the central pixel,
+   * and pixels in a circle (Bresenham radius 3) around this pixel.
    *  Recommended: 10. Must be greater than zero.
    */
-  FASTDetector(const int num_features = 0, const int threshold = 10,
-               const bool nonmax_suppression = true,
-               const int type = cv::FastFeatureDetector::TYPE_9_16);
+  FASTDetector(int num_features = 0, int threshold = 10,
+               bool nonmax_suppression = true,
+               int type = cv::FastFeatureDetector::TYPE_9_16);
 
   /**
    * @brief Default destructor

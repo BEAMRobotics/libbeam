@@ -2,9 +2,9 @@
 
 namespace beam_cv {
 
-FLANNMatcher::FLANNMatcher(const int flann_method, const double ratio_threshold,
-                           const bool auto_remove_outliers, const bool use_knn,
-                           const int fm_method, const int distance_threshold) {
+FLANNMatcher::FLANNMatcher(int flann_method, double ratio_threshold,
+                           bool auto_remove_outliers, bool use_knn,
+                           int fm_method, int distance_threshold) {
   this->flann_method_ = flann_method;
   this->use_knn_ = use_knn;
   this->ratio_threshold_ = ratio_threshold;

@@ -23,10 +23,9 @@ public:
    * @param patch_size The size of the square patch used in the random point
    * sampling to construct the descriptor
    */
-  ORBDetector(const int num_features = 500, const float scale_factor = 1.2f,
-              const int num_levels = 8, const int edge_threshold = 31,
-              const int score_type = cv::ORB::HARRIS_SCORE,
-              const int fast_threshold = 20);
+  ORBDetector(int num_features = 500, float scale_factor = 1.2,
+              int num_levels = 8, int edge_threshold = 31,
+              int score_type = cv::ORB::HARRIS_SCORE, int fast_threshold = 20);
 
   /**
    * @brief Default destructor
