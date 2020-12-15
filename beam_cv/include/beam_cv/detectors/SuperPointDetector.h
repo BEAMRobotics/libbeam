@@ -29,8 +29,8 @@ public:
    * @param use_cuda see SuperPointModel.h
    */
   SuperPointDetector(const std::shared_ptr<SuperPointModel>& model,
-                     float conf_threshold = 0.1, int border = 0,
-                     int nms_dist_threshold = 0, int max_features = 0,
+                     int max_features = 0, float conf_threshold = 0.1,
+                     int border = 0, int nms_dist_threshold = 0,
                      int grid_size = 0, bool use_cuda = false);
 
   /**
