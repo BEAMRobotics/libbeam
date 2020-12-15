@@ -3,8 +3,9 @@
 namespace beam_cv {
 
 SuperPointDetector::SuperPointDetector(
-    const std::shared_ptr<SuperPointModel>& model, float conf_threshold,
-    int border, int nms_dist_threshold, int max_features, int grid_size, bool use_cuda)
+    const std::shared_ptr<SuperPointModel>& model, int max_features,
+    float conf_threshold, int border, int nms_dist_threshold, int grid_size,
+    bool use_cuda)
     : conf_threshold_(conf_threshold),
       border_(border),
       nms_dist_threshold_(nms_dist_threshold),

@@ -47,6 +47,7 @@ private:
   int edge_threshold_;
   int score_type_;
   int fast_threshold_;
+  
   /** The pointer to the wrapped cv::ORB object. */
   cv::Ptr<cv::ORB> orb_detector_;
 

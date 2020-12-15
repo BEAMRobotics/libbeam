@@ -1,8 +1,17 @@
+/** @file
+ * @ingroup utils
+ *
+ * Angle utils such as conversions, wrapping, etc.
+ * 
+ */
+
 #pragma once
 
 #include <cmath>
 
 namespace beam {
+/** @addtogroup utils
+ *  @{ */
 
 /**
  * @Brief Wraps input angle to the interval [-PI, PI).
@@ -51,4 +60,5 @@ double wrapTo180(double euler_angle);
 /** Wraps `euler_angle` to 360 degrees **/
 double wrapTo360(double euler_angle);
 
+/** @} group utils */
 } // namespace beam

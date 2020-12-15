@@ -75,7 +75,7 @@ TEST_CASE("Test feature extraction.") {
       std::make_shared<beam_cv::SuperPointModel>(model_file_path_);
 
   int grid_size = image_left_.rows / 5;
-  beam_cv::SuperPointDetector detector(model, 0.3, 100, 40, 300, grid_size,
+  beam_cv::SuperPointDetector detector(model, 300, 0.3, 100, 40, grid_size,
                                        false);
   beam_cv::SuperPointDescriptor descriptor(model);
 
