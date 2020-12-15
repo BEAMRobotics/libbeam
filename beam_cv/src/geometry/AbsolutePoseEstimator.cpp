@@ -240,14 +240,11 @@ Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
 
   Eigen::Matrix4d current_pose;
   int current_inliers = 0;
-  int temp_seed;
   if (seed == -1) {
-    temp_seed = time(0);
+    srand(time(0));
   } else {
     srand(seed);
-    temp_seed = rand();
   }
-
   for (int epoch = 0; epoch < max_iterations; epoch++) {
     std::vector<Eigen::Vector2i> pixels_copy = pixels;
     std::vector<Eigen::Vector3d> points_copy = points;

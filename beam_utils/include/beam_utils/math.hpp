@@ -8,8 +8,7 @@
  * slam code development will be using double precision floating points.
  */
 
-#ifndef BEAM_UTILS_MATH_HPP
-#define BEAM_UTILS_MATH_HPP
+#pragma once
 
 #include <chrono>
 #include <cmath>
@@ -266,4 +265,3 @@ beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
 /** @} group utils */
 } // namespace beam
 
-#endif // BEAM_UTILS_MATH_HPP

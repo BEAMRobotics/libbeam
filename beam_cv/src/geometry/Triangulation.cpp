@@ -5,27 +5,27 @@
 namespace beam_cv {
 
 opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
-    Eigen::Vector2i pr, Eigen::Vector2i pc) {
+      const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+      const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+      const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
+      const Eigen::Vector2i& p1, const Eigen::Vector2i& p2) {
   // we triangulate back projected points to be camera model invariant
-  opt<Eigen::Vector3d> mr = camR->BackProject(pr);
-  opt<Eigen::Vector3d> mc = camC->BackProject(pc);
-  if (!mr.has_value() || !mc.has_value()) { return {}; }
-  double mxr = mr.value()[0], myr = mr.value()[1], mzr = mr.value()[2];
-  double mxc = mc.value()[0], myc = mc.value()[1], mzc = mc.value()[2];
+  opt<Eigen::Vector3d> m1 = cam1->BackProject(p1);
+  opt<Eigen::Vector3d> m2 = cam2->BackProject(p2);
+  if (!m1.has_value() || !m2.has_value()) { return {}; }
+  double mx1 = m1.value()[0], my1 = m1.value()[1], mz1 = m1.value()[2];
+  double mx2 = m2.value()[0], my2 = m2.value()[1], mz2 = m2.value()[2];
   /* building the linear system for triangulation from here:
   https://www.mdpi.com/1424-8220/19/20/4494/htm */
-  Eigen::Vector4d Pr1 = T_camR_world.row(0), Pr2 = T_camR_world.row(1),
-                  Pr3 = T_camR_world.row(2);
-  Eigen::Vector4d Pc1 = T_camC_world.row(0), Pc2 = T_camC_world.row(1),
-                  Pc3 = T_camC_world.row(2);
+  Eigen::Vector4d Pr1 = T_cam1_world.row(0), Pr2 = T_cam1_world.row(1),
+                  Pr3 = T_cam1_world.row(2);
+  Eigen::Vector4d Pl1 = T_cam2_world.row(0), Pl2 = T_cam2_world.row(1),
+                  Pl3 = T_cam2_world.row(2);
   Eigen::Matrix4d A;
-  A.row(0) = (mxr * Pr3) - (mzr * Pr1);
-  A.row(1) = (myr * Pr3) - (mzr * Pr2);
-  A.row(2) = (mxc * Pc3) - (mzc * Pc1);
-  A.row(3) = (myc * Pc3) - (mzc * Pc2);
+  A.row(0) = (mx1 * Pr3) - (mz1 * Pr1);
+  A.row(1) = (my1 * Pr3) - (mz1 * Pr2);
+  A.row(2) = (mx2 * Pl3) - (mz2 * Pl1);
+  A.row(3) = (my2 * Pl3) - (mz2 * Pl2);
   /* Solve the system by finding the right nullspace of A using the SVD
   decomposition*/
   Eigen::Vector4d x;
@@ -37,9 +37,9 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
 }
 
 opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
-    std::vector<std::shared_ptr<beam_calibration::CameraModel>> cams,
-    std::vector<Eigen::Matrix4d> T_cam_world,
-    std::vector<Eigen::Vector2i> pixels) {
+    const std::vector<std::shared_ptr<beam_calibration::CameraModel>>& cams,
+    const std::vector<Eigen::Matrix4d>& T_cam_world,
+    const std::vector<Eigen::Vector2i>& pixels) {
   if (cams.size() != T_cam_world.size() || cams.size() != pixels.size()) {
     return {};
   }
@@ -64,15 +64,16 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
 }
 
 std::vector<opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
+    const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+    const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+    const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
+    const std::vector<Eigen::Vector2i>& p1_v,
+    const std::vector<Eigen::Vector2i>& p2_v) {
   // loop through point vector and perform single point triangulation
   std::vector<opt<Eigen::Vector3d>> result_pts3d;
-  for (uint32_t i = 0; i < pr_v.size(); i++) {
+  for (uint32_t i = 0; i < p1_v.size(); i++) {
     opt<Eigen::Vector3d> pt3d = Triangulation::TriangulatePoint(
-        camR, camC, T_camR_world, T_camC_world, pr_v[i], pc_v[i]);
+        cam1, cam2, T_cam1_world, T_cam2_world, p1_v[i], p2_v[i]);
     result_pts3d.push_back(pt3d);
   }
   return result_pts3d;

@@ -11,20 +11,21 @@
 namespace beam_cv {
 
 opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v) {
-  if (pc_v.size() < 8 || pr_v.size() < 8 || pr_v.size() != pc_v.size()) {
+    const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+    const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+    const std::vector<Eigen::Vector2i>& p1_v,
+    const std::vector<Eigen::Vector2i>& p2_v) {
+  if (p2_v.size() < 8 || p1_v.size() < 8 || p1_v.size() != p2_v.size()) {
     BEAM_CRITICAL("Invalid number of input point matches.");
     return {};
   }
-  int N = pc_v.size();
+  int N = p2_v.size();
   // normalize input points via back projection
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
   for (int i = 0; i < N; i++) {
-    opt<Eigen::Vector3d> xpr = camR->BackProject(pr_v[i]);
-    opt<Eigen::Vector3d> xpc = camC->BackProject(pc_v[i]);
+    opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
+    opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
     if (xpc.has_value() && xpr.has_value()) {
       X_r.push_back(xpr.value());
       X_c.push_back(xpc.value());
@@ -60,12 +61,12 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
 }
 
 opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
-    EstimatorMethod method, int max_iterations, double inlier_threshold,
-    int seed) {
-  if (pc_v.size() != pr_v.size()) {
+    const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+    const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+    const std::vector<Eigen::Vector2i>& p1_v,
+    const std::vector<Eigen::Vector2i>& p2_v, EstimatorMethod method,
+    int max_iterations, double inlier_threshold, int seed) {
+  if (p2_v.size() != p1_v.size()) {
     BEAM_CRITICAL("Point match vectors are not of the same size.");
     return {};
   }
@@ -78,24 +79,22 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   } else if (method == EstimatorMethod::FIVEPOINT) {
     N = 5;
   }
-  // retur nothing if not enough points
-  if (pr_v.size() < N) {
+  // return nothing if not enough points
+  if (p1_v.size() < N) {
     BEAM_CRITICAL("Not enough point correspondences, expecting at least {}", N);
     return {};
   }
-  int temp_seed;
   if (seed == -1) {
-    temp_seed = time(0);
+    srand(time(0));
   } else {
     srand(seed);
-    temp_seed = rand();
   }
   int current_inliers = 0;
   Eigen::Matrix4d current_pose;
   bool found_valid = false;
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    std::vector<Eigen::Vector2i> pr_copy = pr_v;
-    std::vector<Eigen::Vector2i> pc_copy = pc_v;
+    std::vector<Eigen::Vector2i> pr_copy = p1_v;
+    std::vector<Eigen::Vector2i> pc_copy = p2_v;
     std::vector<Eigen::Vector2i> sampled_pr;
     std::vector<Eigen::Vector2i> sampled_pc;
     // fill new point vectors with randomly sampled points from xs and xss
@@ -111,7 +110,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     // perform pose estimation of the given method
     opt<Eigen::Matrix3d> E;
     if (method == EstimatorMethod::EIGHTPOINT) {
-      E = RelativePoseEstimator::EssentialMatrix8Point(camR, camC, sampled_pr,
+      E = RelativePoseEstimator::EssentialMatrix8Point(cam1, cam2, sampled_pr,
                                                        sampled_pc);
     } else if (method == EstimatorMethod::SEVENPOINT) {
       BEAM_CRITICAL("Seven point algorithm not yet implemented.");
@@ -126,12 +125,12 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     std::vector<Eigen::Vector3d> t;
     RelativePoseEstimator::RtFromE(E.value(), R, t);
     opt<Eigen::Matrix4d> pose = RelativePoseEstimator::RecoverPose(
-        camR, camC, sampled_pr, sampled_pc, R, t);
+        cam1, cam2, sampled_pr, sampled_pc, R, t);
     if (pose.has_value()) {
       found_valid = true;
       Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
       // check number of inliers and update current best estimate
-      int inliers = beam_cv::CheckInliers(camR, camC, pr_v, pc_v, Pr,
+      int inliers = beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, Pr,
                                           pose.value(), inlier_threshold);
       if (inliers > current_inliers) {
         current_inliers = inliers;
@@ -146,7 +145,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   }
 }
 
-void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
+void RelativePoseEstimator::RtFromE(const Eigen::Matrix3d& E,
                                     std::vector<Eigen::Matrix3d>& R,
                                     std::vector<Eigen::Vector3d>& t) {
   Eigen::JacobiSVD<Eigen::Matrix3d> E_svd(E, Eigen::ComputeFullU |
@@ -170,10 +169,12 @@ void RelativePoseEstimator::RtFromE(Eigen::Matrix3d E,
 }
 
 opt<Eigen::Matrix4d> RelativePoseEstimator::RecoverPose(
-    std::shared_ptr<beam_calibration::CameraModel> camR,
-    std::shared_ptr<beam_calibration::CameraModel> camC,
-    std::vector<Eigen::Vector2i> pr_v, std::vector<Eigen::Vector2i> pc_v,
-    std::vector<Eigen::Matrix3d>& R, std::vector<Eigen::Vector3d>& t) {
+    const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+    const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+    const std::vector<Eigen::Vector2i>& p1_v,
+    const std::vector<Eigen::Vector2i>& p2_v,
+    const std::vector<Eigen::Matrix3d>& R,
+    const std::vector<Eigen::Vector3d>& t) {
   Eigen::Matrix4d pose;
   // iterate through each possibility
   for (int i = 0; i < 2; i++) {
@@ -185,7 +186,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RecoverPose(
       Eigen::Matrix4d I = Eigen::Matrix4d::Identity();
       // triangulate correspondences
       std::vector<opt<Eigen::Vector3d>> points =
-          Triangulation::TriangulatePoints(camR, camC, I, pose, pr_v, pc_v);
+          Triangulation::TriangulatePoints(cam1, cam2, I, pose, p1_v, p2_v);
       int size = points.size();
       int count = 0;
       // check if each point is in front of both cameras

@@ -2,9 +2,9 @@
 
 namespace beam_cv {
 
-ORBDetector::ORBDetector(const int num_features, const float scale_factor,
-                         const int num_levels, const int edge_threshold,
-                         const int score_type, const int fast_threshold) {
+ORBDetector::ORBDetector(int num_features, float scale_factor, int num_levels,
+                         int edge_threshold, int score_type,
+                         int fast_threshold) {
   this->num_features_ = num_features;
   this->scale_factor_ = scale_factor;
   this->num_levels_ = num_levels;

@@ -73,7 +73,8 @@ public:
 
   /**
    * @brief Method back projecting
-   * @return Returns bearing vector
+   * @return Returns an unnormalized bearing vector where z = 1 to a pixel in
+   * the image, from camera center = [0,0,0]
    * @param point [u = col, v = row]
    */
   virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
@@ -162,7 +163,8 @@ public:
    * @brief Method for writing camera model to a json file
    * @param file_path full path to json
    */
-  void WriteJSON(const std::string& file_path);
+  void WriteJSON(const std::string& file_path,
+                 const std::string& method = std::string());
 
 protected:
   /**

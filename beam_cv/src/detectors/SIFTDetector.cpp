@@ -2,9 +2,9 @@
 
 namespace beam_cv {
 
-SIFTDetector::SIFTDetector(const int num_features, const int num_octave_layers,
-                           const double contrast_threshold,
-                           const double edge_threshold, const double sigma) {
+SIFTDetector::SIFTDetector(int num_features, int num_octave_layers,
+                           double contrast_threshold, double edge_threshold,
+                           double sigma) {
   this->num_features_ = num_features;
   this->num_octave_layers_ = num_octave_layers;
   this->contrast_threshold_ = contrast_threshold;
