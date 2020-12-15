@@ -121,7 +121,7 @@ private:
     return id++;
   }
 
-  /** @brief Detects features and computes descriptors using the templated
+  /** @brief Detects features and computes descriptors using the
    * detector and descriptor.
    * @param image
    * @param keypoints

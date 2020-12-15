@@ -5,8 +5,8 @@ This module contains functions and classes commonly used in image processing/com
 ## geometry
 
 Common 3D computer vision geometric algorithms are implemented here to work with our camera models:
-1. RelativePoseEstimator: Estimates the relative pose between two cameras
-2. Triangulation: linear triangulation between two cameras
+1. RelativePoseEstimator: Estimates the relative pose between two frames
+2. Triangulation: linear triangulation of pixels between two frames
 3. AbsolutePoseEstimator: Estimates absolute pose of camera given 3d points and corresponding pixels
 
 ## descriptors

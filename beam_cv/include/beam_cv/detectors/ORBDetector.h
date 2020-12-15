@@ -40,12 +40,12 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  int num_features_ = 500;
-  float scale_factor_ = 1.2;
-  int num_levels_ = 8;
-  int edge_threshold_ = 31;
-  int score_type_ = cv::ORB::HARRIS_SCORE;
-  int fast_threshold_ = 20;
+  int num_features_;
+  float scale_factor_;
+  int num_levels_;
+  int edge_threshold_;
+  int score_type_;
+  int fast_threshold_;
   /** The pointer to the wrapped cv::ORB object. */
   cv::Ptr<cv::ORB> orb_detector_;
 
