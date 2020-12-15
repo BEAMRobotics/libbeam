@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include <beam_cv/geometry/Triangulation.h>
-#include <beam_utils/uf.hpp>
 
 namespace beam_cv {
 

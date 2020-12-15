@@ -11,8 +11,7 @@
  * ```
  */
 
-#ifndef BEAM_UTILS_LOG_HPP
-#define BEAM_UTILS_LOG_HPP
+#pragma once
 
 #ifndef NDEBUG
   #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
@@ -56,4 +55,3 @@ inline void OutputPercentComplete(int current_, int total_,
 /** @} group utils */
 }  // namespace beam
 
-#endif  // BEAM_UTILS_LOGGING_HPP

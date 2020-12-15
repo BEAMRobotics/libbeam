@@ -25,20 +25,17 @@ std::vector<std::string> GetFiles(const std::string& directory,
   std::vector<std::string> paths{};
   if (recursive) {
     for (auto& p : boost::filesystem::recursive_directory_iterator(directory)) {
-      if(p.path().extension().string().empty()){
-        continue;
-      }
+      if (p.path().extension().string().empty()) { continue; }
       if (extension.empty() || p.path().extension() == extension) {
         paths.push_back(p.path().string());
       }
+    }
   } else {
     for (auto& p : boost::filesystem::directory_iterator(directory)) {
-      if(p.path().extension().string().empty()){
-        continue;
-      }
+      if (p.path().extension().string().empty()) { continue; }
       if (extension.empty() || p.path().extension() == extension) {
         paths.push_back(p.path().string());
-      } 
+      }
     }
   }
   return paths;

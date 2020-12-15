@@ -5,8 +5,7 @@
  * executed, etc.
  */
 
-#ifndef BEAM_UTILS_TIME_HPP
-#define BEAM_UTILS_TIME_HPP
+#pragma once
 
 #include <beam_utils/log.hpp>
 #include <chrono>
@@ -148,4 +147,3 @@ double time_now(void);
 /** @} group utils */
 } // namespace beam
 
-#endif // BEAM_UTILS_TIME_HPP

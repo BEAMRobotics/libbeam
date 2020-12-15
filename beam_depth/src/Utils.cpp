@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#include <beam_utils/uf.hpp>
-
 namespace beam_depth {
 
 cv::Mat VisualizeDepthImage(const cv::Mat& input) {
