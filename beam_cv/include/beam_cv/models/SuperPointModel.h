@@ -93,7 +93,7 @@ public:
    * @param keypoints keypoint locations to extract
    * @param descriptors reference to the descriptors mat that will be filled in
    */
-  void ComputeDescriptors(const std::vector<cv::KeyPoint>& keypoints,
+  void ComputeDescriptors(const cv::Mat& img, bool cuda, const std::vector<cv::KeyPoint>& keypoints,
                           cv::Mat& descriptors);
 
   /**
@@ -121,13 +121,14 @@ public:
    * features in each grid. If set to zero, then it will not break the image
    * into grids before extracting top features.
    */
-  void GetKeyPoints(std::vector<cv::KeyPoint>& keypoints,
+  void GetKeyPoints(const cv::Mat& img, bool cuda,
+                    std::vector<cv::KeyPoint>& keypoints,
                     float conf_threshold = 0.1, int border = 0,
                     int nms_dist_threshold = 0, int max_features = 0,
                     int grid_size = 0);
 
   // This is set to true once Detect has been called
-  bool has_been_initialized{false};
+  // bool has_been_initialized{false};
 
 private:
   void NMS(const std::vector<cv::KeyPoint>& det, const cv::Mat& conf,
@@ -136,11 +137,13 @@ private:
 
   void SelectKBestFromGrid(const std::vector<cv::KeyPoint>& keypoints_in,
                            std::vector<cv::KeyPoint>& keypoints_out,
-                           int max_features, int grid_size, int border);
+                           int max_features, int grid_size, int border,
+                           const torch::Tensor& mProb_);
 
-  std::shared_ptr<SuperPoint> model_;
-  torch::Tensor mProb_;
-  torch::Tensor mDesc_;
+  // std::shared_ptr<SuperPoint> model_;
+  // torch::Tensor mProb_;
+  // torch::Tensor mDesc_;
+  std::string model_file_;
 };
 
 } // namespace beam_cv

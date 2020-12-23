@@ -92,13 +92,52 @@ std::vector<torch::Tensor> SuperPoint::forward(torch::Tensor x) {
 }
 
 SuperPointModel::SuperPointModel(const std::string& model_file) {
-  BEAM_INFO("Loading model: {}", model_file);
-  model_ = std::make_shared<SuperPoint>();
-  torch::load(model_, model_file);
-  BEAM_INFO("Model loaded successfully.");
+  model_file_ = model_file;
+  // BEAM_INFO("Loading model: {}", model_file);
+  // model_ = std::make_shared<SuperPoint>();
+  // torch::load(model_, model_file);
+  // BEAM_INFO("Model loaded successfully.");
 }
 
 void SuperPointModel::Detect(const cv::Mat& img, bool cuda) {
+  // mProb_ = torch::Tensor();
+  // mDesc_ = torch::Tensor();
+  // model_ = std::make_shared<SuperPoint>();
+  // torch::load(model_, model_file_);
+
+  // auto x = torch::from_blob(img.clone().data, {1, 1, img.rows, img.cols},
+  //                           torch::kByte);
+  // x = x.to(torch::kFloat) / 255;
+
+  // bool use_cuda = cuda && torch::cuda::is_available();
+  // torch::DeviceType device_type;
+  // if (use_cuda)
+  //   device_type = torch::kCUDA;
+  // else
+  //   device_type = torch::kCPU;
+  // torch::Device device(device_type);
+
+  // model_->to(device);
+  // x = x.set_requires_grad(false);
+  // auto out = model_->forward(x.to(device));
+
+  // mProb_ = out[0].squeeze(0); // [H, W]
+  // mDesc_ = out[1];            // [1, 256, H/8, W/8]
+  // has_been_initialized = true;
+}
+
+void SuperPointModel::GetKeyPoints(const cv::Mat& img, bool cuda,
+                                   std::vector<cv::KeyPoint>& keypoints,
+                                   float conf_threshold, int border,
+                                   int nms_dist_threshold, int max_features,
+                                   int grid_size) {
+  std::shared_ptr<SuperPoint> model_;
+  torch::Tensor mProb_;
+  torch::Tensor mDesc_;
+
+  model_ = std::make_shared<SuperPoint>();
+  torch::load(model_, model_file_);
+
   auto x = torch::from_blob(img.clone().data, {1, 1, img.rows, img.cols},
                             torch::kByte);
   x = x.to(torch::kFloat) / 255;
@@ -117,13 +156,9 @@ void SuperPointModel::Detect(const cv::Mat& img, bool cuda) {
 
   mProb_ = out[0].squeeze(0); // [H, W]
   mDesc_ = out[1];            // [1, 256, H/8, W/8]
-  has_been_initialized = true;
-}
 
-void SuperPointModel::GetKeyPoints(std::vector<cv::KeyPoint>& keypoints,
-                                   float conf_threshold, int border,
-                                   int nms_dist_threshold, int max_features,
-                                   int grid_size) {
+  ///////////////////////////
+
   auto kpts = (mProb_ > conf_threshold);
   kpts = torch::nonzero(kpts); // [n_keypoints, 2]  (y, x)
   std::vector<cv::KeyPoint> keypoints_no_nms;
@@ -146,12 +181,42 @@ void SuperPointModel::GetKeyPoints(std::vector<cv::KeyPoint>& keypoints,
       height);
 
   if (!max_features == 0) {
-    SelectKBestFromGrid(keypoints, keypoints, max_features, grid_size, border);
+    SelectKBestFromGrid(keypoints, keypoints, max_features, grid_size, border,
+                        mProb_);
   }
 }
 
 void SuperPointModel::ComputeDescriptors(
-    const std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
+    const cv::Mat& img, bool cuda, const std::vector<cv::KeyPoint>& keypoints,
+    cv::Mat& descriptors) {
+  std::shared_ptr<SuperPoint> model_;
+  torch::Tensor mProb_;
+  torch::Tensor mDesc_;
+
+  model_ = std::make_shared<SuperPoint>();
+  torch::load(model_, model_file_);
+
+  auto x = torch::from_blob(img.clone().data, {1, 1, img.rows, img.cols},
+                            torch::kByte);
+  x = x.to(torch::kFloat) / 255;
+
+  bool use_cuda = cuda && torch::cuda::is_available();
+  torch::DeviceType device_type;
+  if (use_cuda)
+    device_type = torch::kCUDA;
+  else
+    device_type = torch::kCPU;
+  torch::Device device(device_type);
+
+  model_->to(device);
+  x = x.set_requires_grad(false);
+  auto out = model_->forward(x.to(device));
+
+  mProb_ = out[0].squeeze(0); // [H, W]
+  mDesc_ = out[1];            // [1, 256, H/8, W/8]
+
+  ////////////////////////////
+
   cv::Mat kpt_mat(keypoints.size(), 2, CV_32F); // [n_keypoints, 2]  (y, x)
 
   for (size_t i = 0; i < keypoints.size(); i++) {
@@ -170,7 +235,7 @@ void SuperPointModel::ComputeDescriptors(
       2.0 * fkpts.slice(1, 0, 1) / mProb_.size(0) - 1; // y
 
   auto desc =
-      torch::grid_sampler(mDesc_, grid, 0, 0); // [1, 256, 1, n_keypoints]
+      torch::grid_sampler(mDesc_, grid, 0, 0, false); // [1, 256, 1, n_keypoints]
   desc = desc.squeeze(0).squeeze(1);           // [256, n_keypoints]
 
   // normalize to 1
@@ -181,7 +246,7 @@ void SuperPointModel::ComputeDescriptors(
   desc = desc.to(torch::kCPU);
 
   cv::Mat desc_mat(cv::Size(desc.size(1), desc.size(0)), CV_32FC1,
-                   desc.data<float>());
+                   desc.data_ptr<float>());
 
   descriptors = desc_mat.clone();
 }
@@ -260,16 +325,15 @@ void SuperPointModel::NMS(const std::vector<cv::KeyPoint>& det,
   }
 }
 
-bool GridKeypointSortDecreasing(const std::pair<float, cv::KeyPoint>& i,
-                                const std::pair<float, cv::KeyPoint>& j) {
+bool GridKeypointSortDecreasing2(const std::pair<float, cv::KeyPoint>& i,
+                                 const std::pair<float, cv::KeyPoint>& j) {
   return (i.first > j.first);
 }
 
 void SuperPointModel::SelectKBestFromGrid(
     const std::vector<cv::KeyPoint>& keypoints_in,
     std::vector<cv::KeyPoint>& keypoints_out, int max_features, int grid_size,
-    int border) {
-      
+    int border, const torch::Tensor& mProb_) {
   int features_per_grid;
   if (grid_size == 0) {
     features_per_grid = max_features;
@@ -305,7 +369,7 @@ void SuperPointModel::SelectKBestFromGrid(
 
       // sort from highest to lowest and take top
       std::sort(grid_keypoints.begin(), grid_keypoints.end(),
-                GridKeypointSortDecreasing);
+                GridKeypointSortDecreasing2);
       int stop =
           std::min(static_cast<int>(grid_keypoints.size()), features_per_grid);
       for (int i = 0; i < stop; i++) {
