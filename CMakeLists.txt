@@ -46,9 +46,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(Ladybug)
-
-#SET(Torch_DIR /home/nick/software/libtorch/share/cmake/Torch )
-SET(Torch_DIR /home/nick/software/pytorch/torch/lib/tmp_install/share/cmake/Torch )
 FIND_PACKAGE(Torch REQUIRED)
 
 # Where dependencies do not provide IMPORTED targets, define them

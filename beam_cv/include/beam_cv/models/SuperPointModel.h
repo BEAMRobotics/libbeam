@@ -86,7 +86,7 @@ public:
    * version of libtorch installed. If cuda is unavailable and this bool is set
    * to true, it will not attempt to run on cuda.
    */
-  void Detect(const cv::Mat& img, bool cuda);
+  void Detect(cv::Mat img, bool cuda);
 
   /**
    * @brief Compute the descriptors given a set of keypoints.

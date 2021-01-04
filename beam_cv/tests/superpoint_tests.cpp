@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+#include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -17,6 +18,8 @@ std::vector<Eigen::Vector2i> image_left_gt_matches_;
 std::vector<Eigen::Vector2i> image_right_gt_matches_;
 std::string model_file_path_;
 bool show_results_{false};
+bool save_results_{true};
+std::string save_path_ = "/tmp/superpoint_tests/";
 
 void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
                  std::vector<Eigen::Vector2i>& matches2) {
@@ -75,17 +78,27 @@ TEST_CASE("Test feature extraction.") {
       std::make_shared<beam_cv::SuperPointModel>(model_file_path_);
 
   int grid_size = image_left_.rows / 5;
-  beam_cv::SuperPointDetector detector(model, 300, 0.3, 100, 40, grid_size,
-                                       false);
+  bool use_cuda = false;
+  // beam_cv::SuperPointDetector detector(model, 300, 0.3, 100, 40, grid_size,
+  //                                      false);
+  beam_cv::SuperPointDetector::Params params{.max_features = 1000,
+                                             .conf_threshold = 0.1,
+                                             .border = 10,
+                                             .nms_dist_threshold = 40,
+                                             .grid_size = grid_size,
+                                             .use_cuda = use_cuda};
+  beam_cv::SuperPointDetector detector(model, params);
   beam_cv::SuperPointDescriptor descriptor(model);
 
   std::vector<cv::KeyPoint> keypoints_left =
       detector.DetectFeatures(image_left_);
+
   cv::Mat descriptors_left =
       descriptor.ExtractDescriptors(image_left_, keypoints_left);
 
   std::vector<cv::KeyPoint> keypoints_right =
       detector.DetectFeatures(image_right_);
+
   cv::Mat descriptors_right =
       descriptor.ExtractDescriptors(image_right_, keypoints_right);
 
@@ -95,7 +108,7 @@ TEST_CASE("Test feature extraction.") {
       descriptors_left, descriptors_right, keypoints_left, keypoints_right);
 
   // Draw keypoints and matches
-  if (show_results_) {
+  if (show_results_ || save_results_) {
     cv::Mat image_matches;
     cv::drawMatches(image_left_, keypoints_left, image_right_, keypoints_right,
                     matches, image_matches, cv::Scalar::all(-1),
@@ -111,11 +124,24 @@ TEST_CASE("Test feature extraction.") {
                       cv::Scalar::all(-1),
                       cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-    cv::imshow("Matches", image_matches);
-    cv::imshow("Image Keypoints Left", image_left_w_keypoints);
-    cv::imshow("Image Keypoints Right", image_right_w_keypoints);
-
-    cv::waitKey();
+    if (show_results_) {
+      cv::imshow("Matches", image_matches);
+      cv::imshow("Image Keypoints Left", image_left_w_keypoints);
+      cv::imshow("Image Keypoints Right", image_right_w_keypoints);
+      cv::waitKey();
+    }
+    if (save_results_) {
+      if (!boost::filesystem::exists(save_path_)) {
+        boost::filesystem::create_directory(
+            boost::filesystem::path(save_path_));
+      }
+      std::cout << "Saving results to " << save_path_ << "\n";
+      cv::imwrite(save_path_ + "image_matches.jpg", image_matches);
+      cv::imwrite(save_path_ + "image_left_w_keypoints.jpg",
+                  image_left_w_keypoints);
+      cv::imwrite(save_path_ + "image_right_w_keypoints.jpg",
+                  image_right_w_keypoints);
+    }
   }
 
   REQUIRE(keypoints_left.size() > 200);
@@ -123,5 +149,5 @@ TEST_CASE("Test feature extraction.") {
   REQUIRE(matches.size() > 50);
 }
 
-// TODO: creat test for pose estimating using these detectors/features. See:
+// TODO: create test for pose estimating using these detectors/features. See:
 // https://github.com/BEAMRobotics/libbeam/blob/add_geometry_methods/beam_cv/tests/feature_tests.cpp

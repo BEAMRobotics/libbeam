@@ -98,8 +98,8 @@ SuperPointModel::SuperPointModel(const std::string& model_file) {
   BEAM_INFO("Model loaded successfully.");
 }
 
-void SuperPointModel::Detect(const cv::Mat& img, bool cuda) {
-  auto x = torch::from_blob(img.clone().data, {1, 1, img.rows, img.cols},
+void SuperPointModel::Detect(cv::Mat img, bool cuda) {
+  auto x = torch::from_blob(img.data, {1, 1, img.rows, img.cols},
                             torch::kByte);
   x = x.to(torch::kFloat) / 255;
 
@@ -124,15 +124,20 @@ void SuperPointModel::GetKeyPoints(std::vector<cv::KeyPoint>& keypoints,
                                    float conf_threshold, int border,
                                    int nms_dist_threshold, int max_features,
                                    int grid_size) {
+  
   auto kpts = (mProb_ > conf_threshold);
+  
   kpts = torch::nonzero(kpts); // [n_keypoints, 2]  (y, x)
+  
   std::vector<cv::KeyPoint> keypoints_no_nms;
+  
   for (int i = 0; i < kpts.size(0); i++) {
     float response = mProb_[kpts[i][0]][kpts[i][1]].item<float>();
     keypoints_no_nms.push_back(cv::KeyPoint(
         kpts[i][1].item<float>(), kpts[i][0].item<float>(), 8, -1, response));
   }
 
+  
   cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
   for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
     int x = keypoints_no_nms[i].pt.x;
@@ -140,11 +145,12 @@ void SuperPointModel::GetKeyPoints(std::vector<cv::KeyPoint>& keypoints,
     conf.at<float>(i, 0) = mProb_[y][x].item<float>();
   }
 
+  
   int height = mProb_.size(0);
   int width = mProb_.size(1);
   NMS(keypoints_no_nms, conf, keypoints, border, nms_dist_threshold, width,
       height);
-
+  
   if (!max_features == 0) {
     SelectKBestFromGrid(keypoints, keypoints, max_features, grid_size, border);
   }
@@ -170,7 +176,7 @@ void SuperPointModel::ComputeDescriptors(
       2.0 * fkpts.slice(1, 0, 1) / mProb_.size(0) - 1; // y
 
   auto desc =
-      torch::grid_sampler(mDesc_, grid, 0, 0); // [1, 256, 1, n_keypoints]
+      torch::grid_sampler(mDesc_, grid, 0, 0, false); // [1, 256, 1, n_keypoints]
   desc = desc.squeeze(0).squeeze(1);           // [256, n_keypoints]
 
   // normalize to 1
@@ -181,7 +187,7 @@ void SuperPointModel::ComputeDescriptors(
   desc = desc.to(torch::kCPU);
 
   cv::Mat desc_mat(cv::Size(desc.size(1), desc.size(0)), CV_32FC1,
-                   desc.data<float>());
+                   desc.data_ptr<float>());
 
   descriptors = desc_mat.clone();
 }
@@ -190,6 +196,7 @@ void SuperPointModel::NMS(const std::vector<cv::KeyPoint>& det,
                           const cv::Mat& conf, std::vector<cv::KeyPoint>& pts,
                           int border, int dist_thresh, int img_width,
                           int img_height) {
+
   std::vector<cv::Point2f> pts_raw;
 
   for (uint32_t i = 0; i < det.size(); i++) {
@@ -258,6 +265,7 @@ void SuperPointModel::NMS(const std::vector<cv::KeyPoint>& det,
       }
     }
   }
+
 }
 
 bool GridKeypointSortDecreasing(const std::pair<float, cv::KeyPoint>& i,

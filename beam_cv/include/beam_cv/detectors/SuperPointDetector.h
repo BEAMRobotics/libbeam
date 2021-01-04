@@ -19,6 +19,24 @@ namespace beam_cv {
  */
 class SuperPointDetector : public Detector {
 public:
+  struct Params {
+    int max_features{0};
+    float conf_threshold{0.01};
+    int border{0};
+    int nms_dist_threshold{5};
+    int grid_size{0};
+    bool use_cuda{false};
+
+    void Print() {
+      std::cout << "max_features: " << max_features << "\n"
+                << "conf_threshold: " << conf_threshold << "\n"
+                << "border: " << border << "\n"
+                << "nms_dist_threshold: " << nms_dist_threshold << "\n"
+                << "grid_size: " << grid_size << "\n"
+                << "use_cuda: " << use_cuda << "\n";
+    }
+  };
+
   /**
    * @brief Constructor
    * @param model pointer to the superpoint model
@@ -29,9 +47,17 @@ public:
    * @param use_cuda see SuperPointModel.h
    */
   SuperPointDetector(const std::shared_ptr<SuperPointModel>& model,
-                     int max_features = 0, float conf_threshold = 0.1,
-                     int border = 0, int nms_dist_threshold = 0,
+                     int max_features = 0, float conf_threshold = 0.01,
+                     int border = 0, int nms_dist_threshold = 5,
                      int grid_size = 0, bool use_cuda = false);
+
+  /**
+   * @brief Constructor
+   * @param model pointer to the superpoint model
+   * @param params
+   */
+  SuperPointDetector(const std::shared_ptr<SuperPointModel>& model,
+                     const SuperPointDetector::Params& params);
 
   /**
    * @brief Default destructor
@@ -48,12 +74,7 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  float conf_threshold_;
-  int border_;
-  int nms_dist_threshold_;
-  int max_features_;
-  int grid_size_;
-  bool use_cuda_;
+  Params params_;
 
   /**
    * Shared pointer to the SuperPointModel. This should be shared with the
