@@ -211,14 +211,14 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     // perform pose estimation of the given method
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
-      Eigen::Matrix3d E = RelativePoseEstimator::EssentialMatrix8Point(
-                              cam1, cam2, sampled_pr, sampled_pc)
-                              .value();
-      Evec.push_back(E);
+      opt<Eigen::Matrix3d> E = RelativePoseEstimator::EssentialMatrix8Point(
+          cam1, cam2, sampled_pr, sampled_pc);
+      if (E.has_value()) { Evec.push_back(E.value()); }
     } else if (method == EstimatorMethod::SEVENPOINT) {
-      Evec = RelativePoseEstimator::EssentialMatrix7Point(
-                 cam1, cam2, sampled_pr, sampled_pc)
-                 .value();
+      opt<std::vector<Eigen::Matrix3d>> E =
+          RelativePoseEstimator::EssentialMatrix7Point(cam1, cam2, sampled_pr,
+                                                       sampled_pc);
+      if (E.has_value()) { Evec = E.value(); }
     } else if (method == EstimatorMethod::FIVEPOINT) {
       BEAM_CRITICAL("Five point algorithm not yet implemented.");
       return {};

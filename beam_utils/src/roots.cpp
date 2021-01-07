@@ -149,7 +149,6 @@ bool JenkinsTraubSolver::ExtractRoots() {
   return SolveClosedFormPolynomial();
 }
 
-// Stage 1: Generate K-polynomials with no shifts (i.e. zero-shifts).
 void JenkinsTraubSolver::ApplyZeroShiftToKPolynomial(const int num_iterations) {
   // K0 is the first order derivative of polynomial.
   k_polynomial_ = DifferentiatePolynomial(polynomial_) / polynomial_.size();

@@ -108,7 +108,31 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   REQUIRE(pose.value().isApprox(P, 1e-4));
 }
 
-TEST_CASE("Test RANSAC Relative Pose estimator.") {
+TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
+  std::string cam_loc = __FILE__;
+  cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
+  cam_loc += "tests/test_data/K.json";
+  std::shared_ptr<beam_calibration::CameraModel> cam =
+      beam_calibration::CameraModel::Create(cam_loc);
+  std::string matches_loc = __FILE__;
+  matches_loc.erase(matches_loc.end() - 24, matches_loc.end());
+  matches_loc += "tests/test_data/matches.txt";
+
+  // extract poses
+  std::vector<Eigen::Vector2i> frame1_matches;
+  std::vector<Eigen::Vector2i> frame2_matches;
+  ReadMatches(matches_loc, frame1_matches, frame2_matches);
+  opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
+      cam, cam, frame1_matches, frame2_matches,
+      beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
+  Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
+  int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
+                                          frame2_matches, Pr, pose.value(), 5);
+  INFO(num_inliers);
+  REQUIRE(num_inliers == 100);
+}
+
+TEST_CASE("Test RANSAC Relative Pose estimator - 8 Point") {
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
   cam_loc += "tests/test_data/K.json";

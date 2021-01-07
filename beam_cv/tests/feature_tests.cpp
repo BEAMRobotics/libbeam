@@ -65,7 +65,7 @@ TEST_CASE("Test feature matching: ORB") {
                                  pR_v);
 
   opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::EIGHTPOINT, 400, 5.0,
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 300, 5.0,
       12);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
@@ -96,7 +96,7 @@ TEST_CASE("Test feature matching: SIFT") {
                                  pR_v);
 
   opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::EIGHTPOINT, 300, 5.0,
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 300, 5.0,
       1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
@@ -127,7 +127,7 @@ TEST_CASE("Test feature matching: BRISK") {
                                  pR_v);
 
   opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::EIGHTPOINT, 300, 5.0,
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 300, 5.0,
       1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
