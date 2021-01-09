@@ -4,6 +4,8 @@
 
 #include <catch2/catch.hpp>
 
+#include <beam_utils/time.hpp>
+
 #include <beam_cv/Utils.h>
 #include <beam_cv/geometry/AbsolutePoseEstimator.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
@@ -109,6 +111,8 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
 }
 
 TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
+  struct timespec t;
+
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
   cam_loc += "tests/test_data/K.json";
@@ -122,9 +126,13 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
   std::vector<Eigen::Vector2i> frame1_matches;
   std::vector<Eigen::Vector2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
+  BEAM_INFO("Starting 7 Point RANSAC");
+  beam::tic(&t);
   opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam, cam, frame1_matches, frame2_matches,
       beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
+  float elapsed = beam::toc(&t);
+  BEAM_INFO("7 Point RANSAC elapsed time: {}", elapsed);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
                                           frame2_matches, Pr, pose.value(), 5);

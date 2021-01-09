@@ -14,8 +14,8 @@
 #include <beam_calibration/Radtan.h>
 
 std::shared_ptr<beam_cv::Matcher> matcher =
-    std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, false,
-                                            true, cv::FM_RANSAC, 5);
+    std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,
+                                            true, cv::FM_RANSAC, 1);
 
 std::shared_ptr<beam_calibration::CameraModel> LoadCam0() {
   std::string cam_loc = __FILE__;
@@ -65,15 +65,19 @@ TEST_CASE("Test feature matching: ORB") {
                                  pR_v);
 
   opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 300, 5.0,
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
       12);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
   double theta_rad = 2 * acos(abs(q.dot(identity)));
   double theta_deg = beam::Rad2Deg(theta_rad);
-  std::cout << "Angle error: " << theta_deg << std::endl;
-  std::cout << T.value() << std::endl;
+  if (T.has_value()) {
+    std::stringstream ss;
+    ss << T.value();
+    BEAM_INFO("Angle error: {}", theta_deg);
+    BEAM_INFO("Estimated pose:\n {}", ss.str());
+  }
 
   REQUIRE(theta_deg < 10.0);
 }
@@ -96,16 +100,18 @@ TEST_CASE("Test feature matching: SIFT") {
                                  pR_v);
 
   opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 300, 5.0,
-      1);
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0, 1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
   double theta_rad = 2 * acos(abs(q.dot(identity)));
   double theta_deg = beam::Rad2Deg(theta_rad);
-  std::cout << "Angle error: " << theta_deg << std::endl;
-  std::cout << T.value() << std::endl;
-
+  if (T.has_value()) {
+    std::stringstream ss;
+    ss << T.value();
+    BEAM_INFO("Angle error: {}", theta_deg);
+    BEAM_INFO("Estimated pose:\n {}", ss.str());
+  }
   REQUIRE(theta_deg < 10.0);
 }
 
@@ -127,15 +133,18 @@ TEST_CASE("Test feature matching: BRISK") {
                                  pR_v);
 
   opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 300, 5.0,
-      1);
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0, 1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
   double theta_rad = 2 * acos(abs(q.dot(identity)));
   double theta_deg = beam::Rad2Deg(theta_rad);
-  std::cout << "Angle error: " << theta_deg << std::endl;
-  std::cout << T.value() << std::endl;
+  if (T.has_value()) {
+    std::stringstream ss;
+    ss << T.value();
+    BEAM_INFO("Angle error: {}", theta_deg);
+    BEAM_INFO("Estimated pose:\n {}", ss.str());
+  }
 
   REQUIRE(theta_deg < 10.0);
 }

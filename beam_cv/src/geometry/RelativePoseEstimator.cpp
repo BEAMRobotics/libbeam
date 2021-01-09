@@ -209,6 +209,8 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       n--;
     }
     // perform pose estimation of the given method
+    struct timespec t1;
+    beam::tic(&t1);
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
       opt<Eigen::Matrix3d> E = RelativePoseEstimator::EssentialMatrix8Point(
@@ -223,25 +225,28 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       BEAM_CRITICAL("Five point algorithm not yet implemented.");
       return {};
     }
+    float elapsed1 = beam::toc(&t1);
+    BEAM_DEBUG("Epoch: {}. Pose estimation time {}", epoch, elapsed1);
     // recover pose from estimated essential matrix
+    struct timespec t2;
+    beam::tic(&t2);
     for (auto& E : Evec) {
       std::vector<Eigen::Matrix3d> R;
       std::vector<Eigen::Vector3d> t;
       RelativePoseEstimator::RtFromE(E, R, t);
-      opt<Eigen::Matrix4d> pose = RelativePoseEstimator::RecoverPose(
-          cam1, cam2, sampled_pr, sampled_pc, R, t);
+      opt<Eigen::Matrix4d> pose;
+      int inliers = RelativePoseEstimator::RecoverPose(cam1, cam2, sampled_pr,
+                                                       sampled_pc, R, t, pose);
       if (pose.has_value()) {
         found_valid = true;
-        Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
-        // check number of inliers and update current best estimate
-        int inliers = beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, Pr,
-                                            pose.value(), inlier_threshold);
         if (inliers > current_inliers) {
           current_inliers = inliers;
           current_pose = pose.value();
         }
       }
     }
+    float elapsed2 = beam::toc(&t2);
+    BEAM_DEBUG("Epoch: {}. Inlier verification time {}", epoch, elapsed2);
   }
   if (found_valid) {
     return current_pose;
@@ -273,25 +278,47 @@ void RelativePoseEstimator::RtFromE(const Eigen::Matrix3d& E,
   if (R[1].determinant() < 0) { R[1] = -R[1].eval(); }
 }
 
-opt<Eigen::Matrix4d> RelativePoseEstimator::RecoverPose(
+int RelativePoseEstimator::RecoverPose(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const std::vector<Eigen::Vector2i>& p1_v,
     const std::vector<Eigen::Vector2i>& p2_v,
     const std::vector<Eigen::Matrix3d>& R,
-    const std::vector<Eigen::Vector3d>& t) {
-  Eigen::Matrix4d pose;
+    const std::vector<Eigen::Vector3d>& t, opt<Eigen::Matrix4d>& pose) {
+  Eigen::Matrix4d T_cam2_world;
   // iterate through each possibility
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
-      pose.block<3, 3>(0, 0) = R[i];
-      pose.block<3, 1>(0, 3) = t[i].transpose();
+      int inliers = 0;
+      T_cam2_world.block<3, 3>(0, 0) = R[i];
+      T_cam2_world.block<3, 1>(0, 3) = t[j].transpose();
       Eigen::Vector4d v{0, 0, 0, 1};
-      pose.row(3) = v;
+      T_cam2_world.row(3) = v;
       Eigen::Matrix4d I = Eigen::Matrix4d::Identity();
       // triangulate correspondences
       std::vector<opt<Eigen::Vector3d>> points =
-          Triangulation::TriangulatePoints(cam1, cam2, I, pose, p1_v, p2_v);
+          Triangulation::TriangulatePoints(cam1, cam2, I, T_cam2_world, p1_v,
+                                           p2_v);
+      // count inliers
+      for (size_t i = 0; i < points.size(); i++) {
+        // transform point into camC coordinates
+        Eigen::Vector4d pt_h;
+        pt_h << points[i].value()[0], points[i].value()[1],
+            points[i].value()[2], 1;
+        pt_h = T_cam2_world * pt_h;
+        Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
+
+        opt<Eigen::Vector2d> pr_rep =
+            cam1->ProjectPointPrecise(points[i].value());
+        opt<Eigen::Vector2d> pc_rep = cam2->ProjectPointPrecise(ptc);
+        if (!pr_rep.has_value() || !pc_rep.has_value()) { continue; }
+        Eigen::Vector2d pr_d{p1_v[i][0], p1_v[i][1]};
+        Eigen::Vector2d pc_d{p2_v[i][0], p2_v[i][1]};
+        double dist_c = beam::distance(pc_rep.value(), pc_d);
+        double dist_r = beam::distance(pr_rep.value(), pr_d);
+        if (dist_c < 5 && dist_r < 5) { inliers++; }
+      }
+
       int size = points.size();
       int count = 0;
       // check if each point is in front of both cameras
@@ -299,15 +326,19 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RecoverPose(
         Eigen::Vector4d pt_h;
         pt_h << points[point_idx].value()[0], points[point_idx].value()[1],
             points[point_idx].value()[2], 1;
-        pt_h = pose * pt_h;
+        pt_h = T_cam2_world * pt_h;
         Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
         if (points[point_idx].value()[2] > 0 && ptc[2] > 0) { count++; }
       }
       // if all points are in front of both, return the pose
-      if (count == size) { return pose; }
+      if (count == size) {
+        pose = T_cam2_world;
+        return inliers;
+      }
     }
   }
-  return {};
+  pose = {};
+  return 0;
 }
 
 } // namespace beam_cv

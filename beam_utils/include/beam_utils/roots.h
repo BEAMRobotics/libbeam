@@ -240,6 +240,7 @@ private:
   // shift to be failed.
   static constexpr double kRootPairTolerance = 0.01;
 
+  // Machine precision constants.
   static constexpr double mult_eps = std::numeric_limits<double>::epsilon();
   static constexpr double sum_eps = std::numeric_limits<double>::epsilon();
   static constexpr double kAbsoluteTolerance = 1e-14;

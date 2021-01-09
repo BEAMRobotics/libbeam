@@ -86,13 +86,14 @@ public:
    * @param t vector of possible translations (size = 2)
    * @return Transformation matrix in cam1 reference frame
    */
-  static opt<Eigen::Matrix4d>
+  static int
       RecoverPose(const std::shared_ptr<beam_calibration::CameraModel>& cam1,
                   const std::shared_ptr<beam_calibration::CameraModel>& cam2,
                   const std::vector<Eigen::Vector2i>& p1_v,
                   const std::vector<Eigen::Vector2i>& p2_v,
                   const std::vector<Eigen::Matrix3d>& R,
-                  const std::vector<Eigen::Vector3d>& t);
+                  const std::vector<Eigen::Vector3d>& t,
+                  opt<Eigen::Matrix4d>& pose);
 };
 
 } // namespace beam_cv
