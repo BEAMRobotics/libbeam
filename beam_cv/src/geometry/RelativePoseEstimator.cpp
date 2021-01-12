@@ -290,6 +290,7 @@ int RelativePoseEstimator::RecoverPose(
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       int inliers = 0;
+      // build relative pose possibility
       T_cam2_world.block<3, 3>(0, 0) = R[i];
       T_cam2_world.block<3, 1>(0, 3) = t[j].transpose();
       Eigen::Vector4d v{0, 0, 0, 1};
@@ -301,22 +302,22 @@ int RelativePoseEstimator::RecoverPose(
                                            p2_v);
       // count inliers
       for (size_t i = 0; i < points.size(); i++) {
-        // transform point into camC coordinates
+        // transform point into cam2 coordinates
         Eigen::Vector4d pt_h;
         pt_h << points[i].value()[0], points[i].value()[1],
             points[i].value()[2], 1;
         pt_h = T_cam2_world * pt_h;
         Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
 
-        opt<Eigen::Vector2d> pr_rep =
+        opt<Eigen::Vector2d> p1_rep =
             cam1->ProjectPointPrecise(points[i].value());
-        opt<Eigen::Vector2d> pc_rep = cam2->ProjectPointPrecise(ptc);
-        if (!pr_rep.has_value() || !pc_rep.has_value()) { continue; }
-        Eigen::Vector2d pr_d{p1_v[i][0], p1_v[i][1]};
-        Eigen::Vector2d pc_d{p2_v[i][0], p2_v[i][1]};
-        double dist_c = beam::distance(pc_rep.value(), pc_d);
-        double dist_r = beam::distance(pr_rep.value(), pr_d);
-        if (dist_c < 5 && dist_r < 5) { inliers++; }
+        opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(ptc);
+        if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
+        Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
+        Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
+        double dist_1 = beam::distance(p1_rep.value(), p1_d);
+        double dist_2 = beam::distance(p2_rep.value(), p2_d);
+        if (dist_1 < 5 && dist_2 < 5) { inliers++; }
       }
 
       int size = points.size();
@@ -338,7 +339,7 @@ int RelativePoseEstimator::RecoverPose(
     }
   }
   pose = {};
-  return 0;
+  return -1;
 }
 
 } // namespace beam_cv

@@ -37,8 +37,8 @@ public:
    * @brief Computes the essential matrix for 2 cameras given associated pixels
    * @param cam1 camera model for image 1
    * @param cam2 camera model for image 2
-   * @param p1_v corresponding pixels in image 1 (min 8)
-   * @param p2_v corresponding pixels in image 2 (min 8)
+   * @param p1_v corresponding pixels in image 1 (min 7)
+   * @param p2_v corresponding pixels in image 2 (min 7)
    */
   static opt<std::vector<Eigen::Matrix3d>> EssentialMatrix7Point(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
@@ -84,7 +84,8 @@ public:
    * @param cam2 camera model for image 2
    * @param R vector of possible rotations (size = 2)
    * @param t vector of possible translations (size = 2)
-   * @return Transformation matrix in cam1 reference frame
+   * @param pose to return (if it exists)
+   * @return Number of inliers (threshold = 5)
    */
   static int
       RecoverPose(const std::shared_ptr<beam_calibration::CameraModel>& cam1,

@@ -104,18 +104,19 @@ std::vector<cv::Point2f>
 
 /**
  * @brief computes number of inliers projections
- * @param camR camera model for image 1
- * @param camC camera model for image 2
- * @param xs corresponding pixels in image 1
- * @param xss corresponding pixels in image 2
- * @param T_camR_world transform to camera R
- * @param T_camC_world transform to camera C
+ * @param cam1 camera model for image 1
+ * @param cam2 camera model for image 2
+ * @param p1_v corresponding pixels in image 1
+ * @param p2_v corresponding pixels in image 2
+ * @param T_cam1_world transform to camera 1
+ * @param T_cam2_world transform to camera 2
+ * @param inlier_threshold
  */
-int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
-                 std::shared_ptr<beam_calibration::CameraModel> camC,
-                 std::vector<Eigen::Vector2i> pr_v,
-                 std::vector<Eigen::Vector2i> pc_v,
-                 Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
                  double inlier_threshold);
 
 /**
