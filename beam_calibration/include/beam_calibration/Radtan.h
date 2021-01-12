@@ -85,13 +85,6 @@ protected:
   Eigen::Vector2d DistortPixel(const Eigen::Vector2d& pixel);
 
   /**
-   * @brief Method to undistort point
-   * @return Vec2 undistorted point
-   * @param pixel to undistort
-   */
-  Eigen::Vector2d UndistortPixel(const Eigen::Vector2d& pixel);
-
-  /**
    * @brief Method to compute jacobian of the distortion function
    * @return Jacobian
    * @param pixel to compute jacobian around

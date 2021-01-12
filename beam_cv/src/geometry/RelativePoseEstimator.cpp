@@ -209,8 +209,6 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       n--;
     }
     // perform pose estimation of the given method
-    struct timespec t1;
-    beam::tic(&t1);
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
       opt<Eigen::Matrix3d> E = RelativePoseEstimator::EssentialMatrix8Point(
@@ -225,11 +223,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       BEAM_CRITICAL("Five point algorithm not yet implemented.");
       return {};
     }
-    float elapsed1 = beam::toc(&t1);
-    BEAM_DEBUG("Epoch: {}. Pose estimation time {}", epoch, elapsed1);
-    // recover pose from estimated essential matrix
-    struct timespec t2;
-    beam::tic(&t2);
+
     for (auto& E : Evec) {
       std::vector<Eigen::Matrix3d> R;
       std::vector<Eigen::Vector3d> t;
@@ -245,8 +239,6 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
         }
       }
     }
-    float elapsed2 = beam::toc(&t2);
-    BEAM_DEBUG("Epoch: {}. Inlier verification time {}", epoch, elapsed2);
   }
   if (found_valid) {
     return current_pose;
