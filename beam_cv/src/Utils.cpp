@@ -199,36 +199,52 @@ std::vector<cv::Point2f>
   return cv_keypoints;
 }
 
-int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
-                 std::shared_ptr<beam_calibration::CameraModel> camC,
-                 std::vector<Eigen::Vector2i> pr_v,
-                 std::vector<Eigen::Vector2i> pc_v,
-                 Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
                  double inlier_threshold) {
-  if (pc_v.size() != pr_v.size()) {
+  if (p1_v.size() != p2_v.size()) {
+    BEAM_WARN("Invalid input, number of pixels must match.");
+    return -1;
+  }
+  std::vector<opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
+      cam1, cam2, T_cam1_world, T_cam2_world, p1_v, p2_v);
+  return CheckInliers(cam1, cam2, p1_v, p2_v, points, T_cam1_world,
+                      T_cam2_world, inlier_threshold);
+}
+
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 std::vector<opt<Eigen::Vector3d>> points,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
+                 double inlier_threshold) {
+  if (p1_v.size() != p2_v.size()) {
     BEAM_WARN("Invalid input, number of pixels must match.");
     return -1;
   }
   int inliers = 0;
-  // triangulate correspondences
-  std::vector<opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
-      camR, camC, T_camR_world, T_camC_world, pr_v, pc_v);
   // reproject triangulated points and find their error
   for (size_t i = 0; i < points.size(); i++) {
-    // transform point into camC coordinates
+    // transform points into each camera frame
     Eigen::Vector4d pt_h;
     pt_h << points[i].value()[0], points[i].value()[1], points[i].value()[2], 1;
-    pt_h = T_camC_world * pt_h;
-    Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
-
-    opt<Eigen::Vector2d> pr_rep = camR->ProjectPointPrecise(points[i].value());
-    opt<Eigen::Vector2d> pc_rep = camC->ProjectPointPrecise(ptc);
-    if (!pr_rep.has_value() || !pc_rep.has_value()) { continue; }
-    Eigen::Vector2d pr_d{pr_v[i][0], pr_v[i][1]};
-    Eigen::Vector2d pc_d{pc_v[i][0], pc_v[i][1]};
-    double dist_c = beam::distance(pc_rep.value(), pc_d);
-    double dist_r = beam::distance(pr_rep.value(), pr_d);
-    if (dist_c < inlier_threshold && dist_r < inlier_threshold) { inliers++; }
+    Eigen::Vector4d pt_h_1 = T_cam1_world * pt_h, pt_h_2 = T_cam2_world * pt_h;
+    Eigen::Vector3d pt1 = pt_h_1.head(3) / pt_h_1(3);
+    Eigen::Vector3d pt2 = pt_h_2.head(3) / pt_h_2(3);
+    // reproject triangulated points into each frame
+    opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
+    opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
+    if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
+    // compute distance to actual pixel
+    Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
+    Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
+    double dist_1 = beam::distance(p1_rep.value(), p1_d);
+    double dist_2 = beam::distance(p2_rep.value(), p2_d);
+    if (dist_1 < inlier_threshold && dist_2 < inlier_threshold) { inliers++; }
   }
   return inliers;
 }

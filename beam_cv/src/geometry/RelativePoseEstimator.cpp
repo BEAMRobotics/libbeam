@@ -274,7 +274,6 @@ int RelativePoseEstimator::RecoverPose(
   // iterate through each possibility
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
-      int inliers = 0;
       // build relative pose possibility
       T_cam2_world.block<3, 3>(0, 0) = R[i];
       T_cam2_world.block<3, 1>(0, 3) = t[j].transpose();
@@ -285,26 +284,8 @@ int RelativePoseEstimator::RecoverPose(
       std::vector<opt<Eigen::Vector3d>> points =
           Triangulation::TriangulatePoints(cam1, cam2, I, T_cam2_world, p1_v,
                                            p2_v);
-      // count inliers
-      for (size_t i = 0; i < points.size(); i++) {
-        // transform point into cam2 coordinates
-        Eigen::Vector4d pt_h;
-        pt_h << points[i].value()[0], points[i].value()[1],
-            points[i].value()[2], 1;
-        pt_h = T_cam2_world * pt_h;
-        Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
-
-        opt<Eigen::Vector2d> p1_rep =
-            cam1->ProjectPointPrecise(points[i].value());
-        opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(ptc);
-        if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
-        Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
-        Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
-        double dist_1 = beam::distance(p1_rep.value(), p1_d);
-        double dist_2 = beam::distance(p2_rep.value(), p2_d);
-        if (dist_1 < 5 && dist_2 < 5) { inliers++; }
-      }
-
+      int inliers = beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, points, I,
+                                          T_cam2_world, 5.0);
       int size = points.size();
       int count = 0;
       // check if each point is in front of both cameras
