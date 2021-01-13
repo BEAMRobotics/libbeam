@@ -72,6 +72,7 @@ install_routine()
     #install_libwave
     install_json
     install_ladybug_sdk
+    install_dbow3
 
     if [[ $1 = 'robot' ]]; then
         echo 'Installing drivers for robot'

@@ -13,6 +13,9 @@
 #include <beam_cv/matchers/Matcher.h>
 #include <beam_utils/math.hpp>
 
+template <class T>
+using opt = std::optional<T>;
+
 namespace beam_cv {
 
 /**
@@ -104,18 +107,45 @@ std::vector<cv::Point2f>
 
 /**
  * @brief computes number of inliers projections
- * @param camR camera model for image 1
- * @param camC camera model for image 2
- * @param xs corresponding pixels in image 1
- * @param xss corresponding pixels in image 2
- * @param T_camR_world transform to camera R
- * @param T_camC_world transform to camera C
+ *
+ * Note: Using this for relative poses, assume T_cam1_world is identity, and
+ * T_cam2_world is the transform from cam1 to cam2
+ * @param cam1 camera model for image 1
+ * @param cam2 camera model for image 2
+ * @param p1_v corresponding pixels in image 1
+ * @param p2_v corresponding pixels in image 2
+ * @param T_cam1_world transform to camera 1
+ * @param T_cam2_world transform to camera 2
+ * @param inlier_threshold
  */
-int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> camR,
-                 std::shared_ptr<beam_calibration::CameraModel> camC,
-                 std::vector<Eigen::Vector2i> pr_v,
-                 std::vector<Eigen::Vector2i> pc_v,
-                 Eigen::Matrix4d T_camR_world, Eigen::Matrix4d T_camC_world,
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
+                 double inlier_threshold);
+
+/**
+ * @brief computes number of inliers projections
+ *
+ * Note: Using this for relative poses, assume T_cam1_world is identity, and
+ * T_cam2_world is the transform from cam1 to cam2. In this case points will be
+ * in cam1's frame of reference
+ * @param cam1 camera model for image 1
+ * @param cam2 camera model for image 2
+ * @param p1_v corresponding pixels in image 1
+ * @param p2_v corresponding pixels in image 2
+ * @param points triangulated pixels in world frame
+ * @param T_cam1_world transform to camera 1
+ * @param T_cam2_world transform to camera 2
+ * @param inlier_threshold
+ */
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 std::vector<opt<Eigen::Vector3d>> points,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
                  double inlier_threshold);
 
 /**

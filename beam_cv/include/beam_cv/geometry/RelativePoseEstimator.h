@@ -34,6 +34,19 @@ public:
       const std::vector<Eigen::Vector2i>& p2_v);
 
   /**
+   * @brief Computes the essential matrix for 2 cameras given associated pixels
+   * @param cam1 camera model for image 1
+   * @param cam2 camera model for image 2
+   * @param p1_v corresponding pixels in image 1 (min 7)
+   * @param p2_v corresponding pixels in image 2 (min 7)
+   */
+  static opt<std::vector<Eigen::Matrix3d>> EssentialMatrix7Point(
+      const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+      const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+      const std::vector<Eigen::Vector2i>& p1_v,
+      const std::vector<Eigen::Vector2i>& p2_v);
+
+  /**
    * @brief Performs RANSAC on the given estimator
    * @param cam1 camera model for image 1
    * @param cam2 camera model for image 2
@@ -44,7 +57,7 @@ public:
    * use time as seed
    * @param max_iterations number of ransac iterations to perform
    * @param inlier_threshold pixel distance to count an inlier as
-   * @return transformation matrix in cam1 reference frame
+   * @return transformation matrix from cam1 to cam2
    */
   static opt<Eigen::Matrix4d> RANSACEstimator(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
@@ -71,15 +84,17 @@ public:
    * @param cam2 camera model for image 2
    * @param R vector of possible rotations (size = 2)
    * @param t vector of possible translations (size = 2)
-   * @return Transformation matrix in cam1 reference frame
+   * @param pose to return (if it exists)
+   * @return Number of inliers (threshold = 5)
    */
-  static opt<Eigen::Matrix4d>
+  static int
       RecoverPose(const std::shared_ptr<beam_calibration::CameraModel>& cam1,
                   const std::shared_ptr<beam_calibration::CameraModel>& cam2,
                   const std::vector<Eigen::Vector2i>& p1_v,
                   const std::vector<Eigen::Vector2i>& p2_v,
                   const std::vector<Eigen::Matrix3d>& R,
-                  const std::vector<Eigen::Vector3d>& t);
+                  const std::vector<Eigen::Vector3d>& t,
+                  opt<Eigen::Matrix4d>& pose);
 };
 
 } // namespace beam_cv

@@ -15,6 +15,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/angles.cpp
     src/gflags.cpp
     src/filesystem.cpp
+    src/roots.cpp
+    src/polynomial.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests
