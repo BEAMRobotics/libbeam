@@ -57,7 +57,7 @@ public:
    * use time as seed
    * @param max_iterations number of ransac iterations to perform
    * @param inlier_threshold pixel distance to count an inlier as
-   * @return transformation matrix in cam1 reference frame
+   * @return transformation matrix from cam1 to cam2
    */
   static opt<Eigen::Matrix4d> RANSACEstimator(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,

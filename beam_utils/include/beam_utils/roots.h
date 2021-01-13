@@ -2,6 +2,7 @@
  * @ingroup utils
  *
  * Utility for solving roots for polynomials
+ * All code is directly from https://github.com/sweeneychris/RpolyPlusPlus
  */
 
 #pragma once
@@ -18,6 +19,13 @@ enum ConvergenceType {
 
 class JenkinsTraubSolver {
 public:
+
+  /**
+   * @brief Removes any zero roots and divides polynomial by z
+   * @param coeffs of polynomial to find roots for
+   * @param real_roots real valued roots
+   * @param complex_roots complex valued roots
+   */
   JenkinsTraubSolver(const Eigen::VectorXd& coeffs, Eigen::VectorXd* real_roots,
                      Eigen::VectorXd* complex_roots)
       : polynomial_(coeffs),
@@ -48,6 +56,7 @@ private:
   /**
    * @brief Stage 1 of the Jenkins-Traub method. This stage is not technically
    * necessary, but helps separate roots that are close to zero.
+   * @param num_iterations number of iterations to perform (default 20)
    */
   void ApplyZeroShiftToKPolynomial(const int num_iterations);
 
@@ -73,6 +82,8 @@ private:
    * roots. Based on the convergence of the K-polynomial, we apply a
    * variable-shift linear or quadratic iteration to determine a real root or
    * complex conjugate pair of roots respectively.
+   * @param root root to test
+   * @param max_iterations max number of shift iterations
    */
   ConvergenceType ApplyFixedShiftToKPolynomial(const std::complex<double>& root,
                                                const int max_iterations);
@@ -80,6 +91,8 @@ private:
   /**
    * @brief Applies one of the variable shifts to the K-Polynomial. Returns
    * true upon successful convergence to a good root, and false otherwise.
+   * @param fixed_shift_convergence convergence qualifier to use
+   * @param root root to test
    */
   bool ApplyVariableShiftToKPolynomial(
       const ConvergenceType& fixed_shift_convergence,
@@ -89,6 +102,8 @@ private:
    * @brief Applies a quadratic shift to the K-polynomial to determine a pair
    * of roots that are complex conjugates. Return true if a root was
    * successfully found.
+   * @param root root to test
+   * @param max_iterations max number of shift iterations
    */
   bool ApplyQuadraticShiftToKPolynomial(const std::complex<double>& root,
                                         const int max_iterations);
@@ -96,12 +111,16 @@ private:
   /**
    * @brief Applies a linear shift to the K-polynomial to determine a single
    * real root. Return true if a root was successfully found.
+   * @param root root to test
+   * @param max_iterations max number of shift iterations
    */
   bool ApplyLinearShiftToKPolynomial(const std::complex<double>& root,
                                      const int max_iterations);
 
   /**
    * @brief Adds the root to the output variables.
+   * @param real valued root to add to current roots
+   * @param imag complex valued root to add to current roots
    */
   void AddRootToOutput(const double real, const double imag);
 
@@ -114,6 +133,8 @@ private:
    * @brief Determines if the root has converged by measuring the relative and
    * absolute change in the root value. This stopping criterion is a simple
    * measurement that proves to work well.
+   * @param roots vector of roots to determine if they have converged
+   * @return true/false
    */
   template <typename T>
   bool HasRootConverged(const std::vector<T>& roots) {
@@ -137,6 +158,8 @@ private:
   /**
    * @brief Determines whether the iteration has converged by examining the
    * three most recent values for convergence.
+   * @param sequence of 3 values to determine if they have converged
+   * @return true/false
    */
   template <typename T>
   bool HasConverged(const T& sequence) {
@@ -168,12 +191,20 @@ private:
 
   /**
    * @brief Solves for the root of the equation ax + b = 0.
+   * @param a coefficient in quadratic polynomial
+   * @param b coefficient in quadratic polynomial
+   * @return root
    */
   double FindLinearPolynomialRoots(const double a, const double b);
 
   /**
    * @brief Stable quadratic roots according to BKP Horn.
    * http://people.csail.mit.edu/bkph/articles/Quadratics.pdf
+   * ax^2 + bx + x = 0
+   * @param a coefficient in quadratic polynomial
+   * @param b coefficient in quadratic polynomial
+   * @param c coefficient in quadratic polynomial
+   * @param roots to return
    */
   void FindQuadraticPolynomialRoots(const double a, const double b,
                                     const double c,

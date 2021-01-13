@@ -85,11 +85,9 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
       return {};
     }
   }
-
   // need vector of just normalized pixels (remove 3rd dim)
   // turn into a 2 x N matrix
   Eigen::MatrixXd matx1(2, N), matx2(2, N);
-
   // construct A matrix
   Eigen::MatrixXd A(N, 9);
   for (int i = 0; i < N; i++) {
@@ -110,8 +108,7 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
       fvec1(2), fvec1(5), fvec1(8);
   Fmat[1] << fvec2(0), fvec2(3), fvec2(6), fvec2(1), fvec2(4), fvec2(7),
       fvec2(2), fvec2(5), fvec2(8);
-
-  // find F that meets the singularity constraint: det(a * F1 + (1 - a) * F2) =
+  // find E that meets the singularity constraint: det(a * F1 + (1 - a) * F2) =
   // 0
   double D[2][2][2];
   for (int i1 = 0; i1 < 2; ++i1) {
@@ -125,8 +122,7 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
       }
     }
   }
-
-  // solving cubic equation and getting 1 or 3 solutions for F
+  // solving cubic equation and getting 1 or 3 solutions for E
   Eigen::VectorXd coefficients(4);
   coefficients(0) = -D[1][0][0] + D[0][1][1] + D[0][0][0] + D[1][1][0] +
                     D[1][0][1] - D[0][1][0] - D[0][0][1] - D[1][1][1];
@@ -134,19 +130,16 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
                     2 * D[1][1][0] + D[0][1][0] + 3 * D[1][1][1];
   coefficients(2) = D[1][1][0] + D[0][1][1] + D[1][0][1] - 3 * D[1][1][1];
   coefficients(3) = D[1][1][1];
-
   // solve for roots of polynomial
   Eigen::VectorXd roots;
   beam::JenkinsTraubSolver solver(coefficients, &roots, NULL);
   solver.ExtractRoots();
-
   std::vector<Eigen::Matrix3d> E;
   // check sign consistency
   for (int i = 0; i < roots.size(); ++i) {
     Eigen::Matrix3d Ftmp = roots(i) * Fmat[0] + (1 - roots(i)) * Fmat[1];
     Eigen::JacobiSVD<Eigen::Matrix3d> fmatrix_svd(Ftmp.transpose(),
                                                   Eigen::ComputeFullV);
-
     Eigen::Vector3d e1 = fmatrix_svd.matrixV().col(2);
     // lines connecting of x1 and e1
     Eigen::Matrix<double, 3, Eigen::Dynamic> l1_ex =
