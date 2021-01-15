@@ -7,17 +7,23 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     yaml-cpp
     PCL::PCL
     OpenCV::OpenCV
+    gflags
+    Boost::boost
   SOURCES
     src/math.cpp
     src/time.cpp
     src/angles.cpp
-    src/uf.cpp
+    src/gflags.cpp
+    src/filesystem.cpp
+    src/roots.cpp
+    src/polynomial.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests
   tests/angles_test.cpp
   tests/time_test.cpp
   tests/math_test.cpp
+  tests/filesystem_test.cpp
   tests/utils_tests_main.cpp
 )
 target_include_directories(${PROJECT_NAME}_unit_tests
@@ -27,4 +33,8 @@ target_include_directories(${PROJECT_NAME}_unit_tests
 target_link_libraries(${PROJECT_NAME}_unit_tests
   Catch2::Catch2
   ${PROJECT_NAME}
+)
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )

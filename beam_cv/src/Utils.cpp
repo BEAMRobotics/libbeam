@@ -1,28 +1,10 @@
-// beam
-#include "beam_cv/Utils.h"
-#include "beam_utils/math.hpp"
-#include "beam_utils/uf.hpp"
-// std
+#include <beam_cv/Utils.h>
+
 #include <algorithm>
 
-namespace beam_cv {
+#include <beam_cv/geometry/Triangulation.h>
 
-cv::Mat VisualizeDepthImage(const cv::Mat& input) {
-  cv::Mat image = input.clone();
-  float max_depth = 0;
-  image.forEach<float>([&](float& distance, const int* position) -> void {
-    (void)position;
-    if (distance > max_depth) { max_depth = distance; }
-  });
-  cv::Mat gs_depth = cv::Mat(image.rows, image.cols, CV_8UC1);
-  image.forEach<float>([&](float& distance, const int* position) -> void {
-    int scale = 255 / max_depth;
-    uint8_t pixel_value = (scale * distance);
-    gs_depth.at<uchar>(position[0], position[1]) = pixel_value;
-  });
-  applyColorMap(gs_depth, gs_depth, cv::COLORMAP_JET);
-  return gs_depth;
-}
+namespace beam_cv {
 
 cv::Mat AdaptiveHistogram(const cv::Mat& input) {
   cv::Mat lab_image;
@@ -66,7 +48,7 @@ cv::Mat KMeans(const cv::Mat& input, int K) {
   image.convertTo(image, CV_8UC1);
   cv::Mat grey;
   cv::cvtColor(image, grey, CV_BGR2GRAY);
-  cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, beam::GetFullKernel(5));
+  cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, cv::Mat::ones(5, 5, CV_8U));
   cv::resize(grey, grey, og);
   return grey;
 }
@@ -149,13 +131,13 @@ std::vector<cv::Mat> SegmentComponents(const cv::Mat& image) {
 std::map<int, std::vector<cv::Point2i>>
     ConnectedComponents(const cv::Mat& image) {
   auto UnionCoords = [](cv::Mat image, int x, int y, int x2, int y2,
-                        beam::UF& uf) {
+                        beam_cv::UnionFind& uf) {
     if (y2 < image.cols && x2 < image.rows &&
         image.at<uchar>(x, y) == image.at<uchar>(x2, y2)) {
       uf.UnionSets(x * image.cols + y, x2 * image.cols + y2);
     }
   };
-  beam::UF uf;
+  beam_cv::UnionFind uf;
   uf.Initialize(image.rows * image.cols);
   for (int x = 0; x < image.rows; x++) {
     for (int y = 0; y < image.cols; y++) {
@@ -177,27 +159,144 @@ std::map<int, std::vector<cv::Point2i>>
   return sets;
 }
 
-double PixelDistance(cv::Point2i p1, cv::Point2i p2) {
-  double distance =
-      sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
-  return distance;
+Eigen::Vector2d ConvertKeypoint(const cv::KeyPoint& keypoint) {
+  Eigen::Vector2d vec_keypoint(keypoint.pt.x, keypoint.pt.y);
+  return vec_keypoint;
 }
 
-beam::Vec2 FindClosest(beam::Vec2 search_pixel, cv::Mat depth_image) {
-  cv::Point2i sp(search_pixel[0], search_pixel[1]);
-  std::vector<double> distances;
-  std::vector<cv::Point2i> pixels;
-  depth_image.forEach<uchar>([&](uchar& pixel, const int* position) -> void {
-    if (pixel > 0) {
-      cv::Point2i p(position[0], position[1]);
-      double d = PixelDistance(sp, p);
-      distances.push_back(d);
-      pixels.push_back(p);
-    }
-  });
-  int min_index =
-      std::min_element(distances.begin(), distances.end()) - distances.begin();
-  beam::Vec2 output(pixels[min_index].x, pixels[min_index].y);
-  return output;
+Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint) {
+  Eigen::Vector2d vec_keypoint(keypoint.x, keypoint.y);
+  return vec_keypoint;
 }
+
+cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint) {
+  cv::Point2f cv_keypoint((float)keypoint(0), (float)keypoint(1));
+  return cv_keypoint;
+}
+
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::KeyPoint>& keypoints) {
+  std::vector<Eigen::Vector2d> vec_keypoints;
+  for (const auto& k : keypoints) {
+    vec_keypoints.emplace_back(k.pt.x, k.pt.y);
+  }
+  return vec_keypoints;
+}
+
+std::vector<Eigen::Vector2d>
+    ConvertKeypoints(const std::vector<cv::Point2f>& keypoints) {
+  std::vector<Eigen::Vector2d> vec_keypoints;
+  for (const auto& k : keypoints) { vec_keypoints.emplace_back(k.x, k.y); }
+  return vec_keypoints;
+}
+
+std::vector<cv::Point2f>
+    ConvertKeypoints(const std::vector<Eigen::Vector2d>& keypoints) {
+  std::vector<cv::Point2f> cv_keypoints;
+  for (const auto& k : keypoints) {
+    cv_keypoints.emplace_back((float)k(0), (float)k(1));
+  }
+  return cv_keypoints;
+}
+
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
+                 double inlier_threshold) {
+  if (p1_v.size() != p2_v.size()) {
+    BEAM_WARN("Invalid input, number of pixels must match.");
+    return -1;
+  }
+  std::vector<opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
+      cam1, cam2, T_cam1_world, T_cam2_world, p1_v, p2_v);
+  return CheckInliers(cam1, cam2, p1_v, p2_v, points, T_cam1_world,
+                      T_cam2_world, inlier_threshold);
+}
+
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
+                 std::shared_ptr<beam_calibration::CameraModel> cam2,
+                 std::vector<Eigen::Vector2i> p1_v,
+                 std::vector<Eigen::Vector2i> p2_v,
+                 std::vector<opt<Eigen::Vector3d>> points,
+                 Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
+                 double inlier_threshold) {
+  if (p1_v.size() != p2_v.size()) {
+    BEAM_WARN("Invalid input, number of pixels must match.");
+    return -1;
+  }
+  int inliers = 0;
+  // reproject triangulated points and find their error
+  for (size_t i = 0; i < points.size(); i++) {
+    // transform points into each camera frame
+    Eigen::Vector4d pt_h;
+    pt_h << points[i].value()[0], points[i].value()[1], points[i].value()[2], 1;
+    Eigen::Vector4d pt_h_1 = T_cam1_world * pt_h, pt_h_2 = T_cam2_world * pt_h;
+    Eigen::Vector3d pt1 = pt_h_1.head(3) / pt_h_1(3);
+    Eigen::Vector3d pt2 = pt_h_2.head(3) / pt_h_2(3);
+    // reproject triangulated points into each frame
+    opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
+    opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
+    if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
+    // compute distance to actual pixel
+    Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
+    Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
+    double dist_1 = beam::distance(p1_rep.value(), p1_d);
+    double dist_2 = beam::distance(p2_rep.value(), p2_d);
+    if (dist_1 < inlier_threshold && dist_2 < inlier_threshold) { inliers++; }
+  }
+  return inliers;
+}
+
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
+                 std::vector<Eigen::Vector3d> points,
+                 std::vector<Eigen::Vector2i> pixels,
+                 Eigen::Matrix4d T_cam_world, double inlier_threshold) {
+  if (points.size() != pixels.size()) {
+    BEAM_WARN("Invalid input, number of points and pixels must match.");
+    return -1;
+  }
+  int inliers = 0;
+  // reproject points and find their error
+  for (size_t i = 0; i < points.size(); i++) {
+    Eigen::Vector4d pt_h;
+    pt_h << points[i][0], points[i][1], points[i][2], 1;
+    pt_h = T_cam_world * pt_h;
+    Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
+
+    opt<Eigen::Vector2d> p = cam->ProjectPointPrecise(ptc);
+    if (!p.has_value()) { continue; }
+    Eigen::Vector2d pd{pixels[i][0], pixels[i][1]};
+    double dist = beam::distance(p.value(), pd);
+    if (dist < inlier_threshold) { inliers++; }
+  }
+  return inliers;
+}
+
+void DetectComputeAndMatch(
+    cv::Mat imL, cv::Mat imR,
+    const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+    const std::shared_ptr<beam_cv::Detector>& detector,
+    const std::shared_ptr<beam_cv::Matcher>& matcher,
+    std::vector<Eigen::Vector2i>& pL_v, std::vector<Eigen::Vector2i>& pR_v) {
+  std::vector<cv::KeyPoint> kpL = detector->DetectFeatures(imL);
+  cv::Mat descL = descriptor->ExtractDescriptors(imL, kpL);
+
+  std::vector<cv::KeyPoint> kpR = detector->DetectFeatures(imR);
+  cv::Mat descR = descriptor->ExtractDescriptors(imR, kpR);
+
+  std::vector<cv::DMatch> matches =
+      matcher->MatchDescriptors(descL, descR, kpL, kpR);
+
+  for (auto& match : matches) {
+    cv::KeyPoint imL_p = kpL[match.queryIdx];
+    cv::KeyPoint imR_p = kpR[match.trainIdx];
+    Eigen::Vector2i pL = beam_cv::ConvertKeypoint(imL_p).cast<int>();
+    Eigen::Vector2i pR = beam_cv::ConvertKeypoint(imR_p).cast<int>();
+    pL_v.push_back(pL);
+    pR_v.push_back(pR);
+  }
+}
+
 } // namespace beam_cv

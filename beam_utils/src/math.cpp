@@ -45,23 +45,6 @@ int gcd(int a, int b) {
   return gcd(b, a % b);
 }
 
-cv::Mat GetCrossKernel(int size) {
-  const cv::Mat kernel =
-      cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));
-  return kernel;
-}
-
-cv::Mat GetFullKernel(int size) {
-  cv::Mat kernel = cv::Mat::ones(size, size, CV_8U);
-  return kernel;
-}
-
-cv::Mat GetEllipseKernel(int size) {
-  const cv::Mat kernel =
-      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(size, size));
-  return kernel;
-}
-
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   int idx;
 
@@ -80,8 +63,29 @@ void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
 
 void mat2vec(MatX A, std::vector<double>& x) {
   for (int i = 0; i < A.cols(); i++) {
-    for (int j = 0; j < A.rows(); j++) { x.push_back(A(j, i)); }
+    for (int j = 0; j < A.rows(); j++) { x.push_back(A(i, j)); }
   }
+}
+
+void vec2mat(VecX x, int rows, int cols, MatX& y) {
+  int idx;
+  // setup
+  idx = 0;
+  y.resize(rows, cols);
+
+  // load matrix
+  for (int i = 0; i < cols; i++) {
+    for (int j = 0; j < rows; j++) {
+      y(i, j) = x[idx];
+      idx++;
+    }
+  }
+}
+
+void mat2vec(MatX A, VecX& x) {
+  std::vector<double> x_p;
+  beam::mat2vec(A, x_p);
+  x = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(x_p.data(), x_p.size());
 }
 
 int euler2rot(Vec3 euler, int euler_seq, Mat3& R) {
@@ -346,6 +350,16 @@ bool IsRotationMatrix(Eigen::Matrix3d R) {
   } else {
     return 0;
   }
+}
+
+Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B) {
+  const int m = A.rows(), n = A.cols();
+  const int p = B.rows(), q = B.cols();
+  Eigen::MatrixXd C(p * m, q * n);
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) { C.block(i * p, j * q, p, q) = A(i, j) * B; }
+  }
+  return C;
 }
 
 Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d R) {

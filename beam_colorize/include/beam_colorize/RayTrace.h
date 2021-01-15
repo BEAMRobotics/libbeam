@@ -3,15 +3,12 @@
  */
 
 #pragma once
-#include "beam_colorize/Colorizer.h"
 
-// PCL
-#include <pcl/point_cloud.h>
-
-// Standard lib
 #include <mutex>
 #include <thread>
 #include <tuple>
+#include <pcl/point_cloud.h>
+#include <beam_colorize/Colorizer.h>
 
 namespace beam_colorize {
 
@@ -52,7 +49,6 @@ private:
                   std::shared_ptr<beam_calibration::CameraModel>) const;
 
 protected:
-  uint16_t dilation_ = 3, max_ray_ = 20;
   double hit_threshold_ = 0.01;
 };
 

@@ -4,53 +4,37 @@ This module contains the multiple different camera models and distortion models 
 
 ## Supported Camera Models
 
-1. **Pinhole** Intrinsics: [fx, fy, cx, cy]
-    * Supported Distortion Models
-        * Radial-tangential: [k1, k2, k3, r1, r2]
-        * Equidistant: [k1, k2, k3, k4]
-3. ~~**Extended Unified**~~ Intrinsics: [fx, fy, cx, cy, alpha, beta]
-    * Supported Distortion Models
-        * Radial-tangential: [k1, k2, k3, r1, r2]
-4. **Ladybug** 
-    * Intrinsics: [fx, fy, cy, cx]
+1. **Radtan** Intrinsics: [fx, fy, cx, cy, k1, k2, p1, p2]
+2. **Double Sphere** Intrinsics: [fx, fy, cx, cy, eps, alpha]
+3. **Kannala Brandt** Intrinsics: [fx, fy, cx, cy, k1, k2, k3, k4]
+4. **Ladybug** Intrinsics: [fx, fy, cy, cx]
     * This camera model is a special case using the Ladybug SDK. It cannot be instantiated by our JSON calibration file and must be instantiated on its own using the standard .conf file
 
 ### Info
-The pinhole model with radial-tangential distoriton is equivalent to OpenCV's model, and with equidistant distortion is equivalent to OpenCV's fisheye model.
+The radtan model is equivalent to OpenCV's normal camera model, and Kannala Brandt is equivalent to OpenCV's fisheye model.
 
 ### Example JSON calibration file
 
 ```
 {
-  "camera_type": "pinhole",
-  "date": "2018_12_20",
-  "method": "matlab",
-  "calibration": [
-    {
-      "cam_id": 0,
-      "image_width": 2048,
-      "image_height": 1536,
-      "frame_id": "F1_link",
-      "distortion_model": "radtan",
-      "intrinsics": [
-        2338.485520924695,
-        2333.0927287230647,
-        1002.8381839138167,
-        784.1498440053573
-      ],
-      "distortion_coefficients": [
-        -0.2294924671994032,
-        0.18008566892263364,
-        0,
-        -0.0005326294604360527,
-        -0.0004378797791316729
-      ]
-    }
+  "date": "2019-05-29",
+  "method": "opencv",
+  "camera_type": "KANNALABRANDT",
+  "image_width": 2048,
+  "image_height": 1536,
+  "frame_id": "F1_link",
+  "intrinsics": [
+    783.44463219576687,
+    783.68479107567089,
+    996.34300258081578,
+    815.47561902246832,
+    0.0052822823133193853,
+    0.0069435221311202099,
+    -0.0025332897347625323,
+    -0.0013896892385779631
   ]
 }
 ```
-## Class Diagram
-![alt text](https://github.com/BEAMRobotics/libbeam/blob/add_calibrator_script/beam_calibration/ClassDiagram.png)
 
 
 ## Calibrate.py Usage

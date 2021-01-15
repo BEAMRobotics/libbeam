@@ -1,124 +1,86 @@
 #define CATCH_CONFIG_MAIN
-#include <pcl/common/transforms.h>
-#include <pcl/io/pcd_io.h>
-
-#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <typeinfo>
 
+#include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
 
-#include "beam_calibration/CameraModel.h"
-#include "beam_calibration/TfTree.h"
-#include "beam_colorize/Projection.h"
-#include "beam_colorize/RayTrace.h"
-#include "beam_utils/math.hpp"
+#include <beam_calibration/Radtan.h>
+#include <beam_colorize/Projection.h>
+#include <beam_colorize/RayTrace.h>
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr GetPCD() {
-  std::string pcd_name = "map18crop.pcd";
-  std::string pcd_location = __FILE__;
-  pcd_location.erase(pcd_location.end() - 17, pcd_location.end());
-  pcd_location += "test_data/" + pcd_name;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud) == -1) {
-    BEAM_INFO("Couldn't read pcd file:  {}\n", pcd_location);
-  } else {
-    BEAM_INFO("Opened file: {}", pcd_location);
-  }
-  return cloud;
+std::unique_ptr<beam_colorize::Colorizer> colorizer_;
+std::shared_ptr<beam_calibration::CameraModel> camera_model_;
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_(new pcl::PointCloud<pcl::PointXYZ>);
+cv::Mat image_;
+
+void LoadColorizer(beam_colorize::ColorizerType type) {
+  std::string current_file_path = "colorize_test.cpp";
+  std::string cur_dir = __FILE__;
+  cur_dir.erase(cur_dir.end() - current_file_path.length(), cur_dir.end());
+  colorizer_ = beam_colorize::Colorizer::Create(type);
+  // load camera model
+  std::string intrinsics_location = cur_dir + "test_data/camera0.json";
+  camera_model_ =
+      std::make_shared<beam_calibration::Radtan>(intrinsics_location);
+  // load point cloud
+  std::string cloud_location = cur_dir + "test_data/259_map.pcd";
+  pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_location, *cloud_);
+  // load image
+  std::string image_location = cur_dir + "test_data/259_mask.jpg";
+  image_ = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+  // init variables
+  bool image_distorted = true;
+  colorizer_->SetPointCloud(cloud_);
+  colorizer_->SetImage(image_);
+  colorizer_->SetIntrinsics(camera_model_);
+  colorizer_->SetDistortion(image_distorted);
 }
 
-cv::Mat GetImage() {
-  std::string image_name = "test_img.jpg";
-  std::string image_location = __FILE__;
-  image_location.erase(image_location.end() - 17, image_location.end());
-  image_location += "test_data/" + image_name;
-  cv::Mat image;
-  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
-  if (!image.data) {
-    std::cout << "Could not open or find the image" << std::endl;
-  } else {
-    BEAM_INFO("Opened file: {}", image_location);
-  }
-  return image;
-}
-
-std::shared_ptr<beam_calibration::CameraModel> GetIntrinsics() {
-  // load intrinsics
-  std::string intrinsics_name = "F1.json";
-  std::string intrinsics_location = __FILE__;
-  intrinsics_location.erase(intrinsics_location.end() - 17,
-                            intrinsics_location.end());
-  intrinsics_location += "test_data/" + intrinsics_name;
-  std::shared_ptr<beam_calibration::CameraModel> F1 =
-      beam_calibration::CameraModel::LoadJSON(intrinsics_location);
-  return F1;
-}
-
-TEST_CASE("Test correct projection colorization and exceptions") {
-  // load intrinsics
-  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
-  // load Image
-  cv::Mat image = GetImage();
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = GetPCD();
+TEST_CASE("Test correct projection colorization") {
+  LoadColorizer(beam_colorize::ColorizerType::PROJECTION);
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr empty_cloud(
-      new pcl::PointCloud<pcl::PointXYZ>);
+  cloud_colored = colorizer_->ColorizePointCloud();
 
-  auto colorizer = beam_colorize::Colorizer::Create(
-      beam_colorize::ColorizerType::PROJECTION);
-  bool image_distorted = true;
-
-  colorizer->SetPointCloud(empty_cloud);
-  REQUIRE_THROWS(colorizer->ColorizePointCloud());
-  colorizer->SetImage(image);
-  REQUIRE_THROWS(colorizer->ColorizePointCloud());
-  colorizer->SetIntrinsics(F1);
-  REQUIRE_THROWS(colorizer->ColorizePointCloud());
-  colorizer->SetDistortion(image_distorted);
-  colorizer->SetPointCloud(cloud);
-  REQUIRE_NOTHROW(colorizer->ColorizePointCloud());
-  cloud_colored = colorizer->ColorizePointCloud();
-
-  nlohmann::json J;
-  std::string data_location = __FILE__;
-  data_location.erase(data_location.end() - 17, data_location.end());
-  data_location += "/test_data/test_points.json";
-  std::ifstream file(data_location);
-  file >> J;
-
-  auto red_points = J["projection"]["red_points"];
-  auto blue_points = J["projection"]["blue_points"];
-
-  // compute number of points that are correctly colored red
-  uint32_t correct_red = 0;
-  for (uint32_t i = 0; i < red_points.size(); i++) {
-    int idx = red_points[i];
-    int r = (int)cloud_colored->points[idx].r,
-        g = (int)cloud_colored->points[idx].g,
-        b = (int)cloud_colored->points[idx].b;
-    if (r == 254 && g == 0 && b == 0) { correct_red++; }
+  int non_red = 0;
+  for (int i = 0; i < cloud_colored->points.size(); i++) {
+    int r = cloud_colored->points[i].r;
+    int g = cloud_colored->points[i].g;
+    int b = cloud_colored->points[i].b;
+    if (r != 0 && g != 0 && b != 0) {
+      if (r != 254) { non_red++; }
+    }
   }
-  float percent_red = (float)correct_red / (float)red_points.size();
-  // compute number of points correctly colored blue
-  uint32_t correct_blue = 0;
-  for (uint32_t i = 0; i < blue_points.size(); i++) {
-    int idx = blue_points[i];
-    int r = (int)cloud_colored->points[idx].r,
-        g = (int)cloud_colored->points[idx].g,
-        b = (int)cloud_colored->points[idx].b;
-    if (r == 0 && g == 0 && b == 254) { correct_blue++; }
-  }
-  float percent_blue = (float)correct_blue / (float)blue_points.size();
+  REQUIRE(non_red < 300);
+  INFO(non_red);
+}
 
-  REQUIRE(percent_red > 0.95);
-  REQUIRE(percent_blue > 0.95);
+TEST_CASE("Test correct raytrace colorization") {
+  LoadColorizer(beam_colorize::ColorizerType::RAY_TRACE);
+
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
+      new pcl::PointCloud<pcl::PointXYZRGB>);
+
+  cloud_colored = colorizer_->ColorizePointCloud();
+
+  int non_red = 0;
+  for (int i = 0; i < cloud_colored->points.size(); i++) {
+    int r = cloud_colored->points[i].r;
+    int g = cloud_colored->points[i].g;
+    int b = cloud_colored->points[i].b;
+    if (r != 0 && g != 0 && b != 0) {
+      if (r != 254) { non_red++; }
+    }
+  }
+  REQUIRE(non_red < 300);
+  INFO(non_red);
 }
 
 TEST_CASE("Test factory method") {
@@ -138,90 +100,40 @@ TEST_CASE("Test factory method") {
 }
 
 TEST_CASE("Test setter functions") {
-  // load intrinsics
-  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
+  std::string cur_dir = __FILE__;
+  cur_dir.erase(cur_dir.end() - 23, cur_dir.end());
+  cur_dir += "tests/test_data/";
+  // load camera intrinsics
+  std::string intrinsics_loc = cur_dir + "camera0.json";
+  std::shared_ptr<beam_calibration::CameraModel> model =
+      std::make_shared<beam_calibration::Radtan>(intrinsics_loc);
+  // load pcd file
+  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+  std::string cloud_loc = cur_dir + "259_map.pcd";
+  pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_loc, *XYZ_cloud);
   // load Image
-  cv::Mat image = GetImage();
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr XYZ_cloud = GetPCD();
+  std::string image_location = cur_dir + "259_mask.jpg";
+  cv::Mat image;
+  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::copyPointCloud(*XYZ_cloud, *XYZRGB_cloud);
-
-  beam_colorize::Projection projection;
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_NOTHROW(projection.SetImage(image));
-  REQUIRE_NOTHROW(projection.SetIntrinsics(F1));
-
-  beam_colorize::RayTrace raytrace;
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_NOTHROW(raytrace.SetImage(image));
-  REQUIRE_NOTHROW(raytrace.SetIntrinsics(F1));
-}
-
-TEST_CASE("Test correct raytrace colorization and exceptions") {
-  // load intrinsics
-  std::shared_ptr<beam_calibration::CameraModel> F1 = GetIntrinsics();
-  // load Image
-  cv::Mat image = GetImage();
-  // load pcd
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = GetPCD();
-
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
-      new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr empty_cloud(
       new pcl::PointCloud<pcl::PointXYZ>);
 
-  auto colorizer =
-      beam_colorize::Colorizer::Create(beam_colorize::ColorizerType::RAY_TRACE);
-  bool image_distorted = true;
+  beam_colorize::Projection projection;
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_THROWS(projection.ColorizePointCloud());
+  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(projection.SetImage(image));
+  REQUIRE_NOTHROW(projection.SetIntrinsics(model));
 
-  colorizer->SetPointCloud(empty_cloud);
-  REQUIRE_THROWS(colorizer->ColorizePointCloud());
-  colorizer->SetImage(image);
-  REQUIRE_THROWS(colorizer->ColorizePointCloud());
-  colorizer->SetIntrinsics(F1);
-  REQUIRE_THROWS(colorizer->ColorizePointCloud());
-  colorizer->SetDistortion(image_distorted);
-  colorizer->SetPointCloud(cloud);
-  REQUIRE_NOTHROW(colorizer->ColorizePointCloud());
-  cloud_colored = colorizer->ColorizePointCloud();
-
-  nlohmann::json J;
-  std::string data_location = __FILE__;
-  data_location.erase(data_location.end() - 17, data_location.end());
-  data_location += "/test_data/test_points.json";
-  std::ifstream file(data_location);
-  file >> J;
-
-  auto red_points = J["projection"]["red_points"];
-  auto blue_points = J["projection"]["blue_points"];
-
-  // compute number of points that are correctly colored red
-  uint32_t correct_red = 0;
-  for (uint32_t i = 0; i < red_points.size(); i++) {
-    int idx = red_points[i];
-    int r = (int)cloud_colored->points[idx].r,
-        g = (int)cloud_colored->points[idx].g,
-        b = (int)cloud_colored->points[idx].b;
-    if (r == 254 && g == 0 && b == 0) { correct_red++; }
-  }
-  float percent_red = (float)correct_red / (float)red_points.size();
-  // compute number of points correctly colored blue
-  uint32_t correct_blue = 0;
-  for (uint32_t i = 0; i < blue_points.size(); i++) {
-    int idx = blue_points[i];
-    int r = (int)cloud_colored->points[idx].r,
-        g = (int)cloud_colored->points[idx].g,
-        b = (int)cloud_colored->points[idx].b;
-    if (r == 0 && g == 0 && b == 254) { correct_blue++; }
-  }
-  float percent_blue = (float)correct_blue / (float)blue_points.size();
-
-  // require that it correclty colors over 20% of the points projection colors
-  // 20% occurs when dilation is 1, and increases as dilation does
-  REQUIRE(percent_red > 0.20);
-  REQUIRE(percent_blue > 0.20);
+  beam_colorize::RayTrace raytrace;
+  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
+  REQUIRE_THROWS(raytrace.ColorizePointCloud());
+  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
+  REQUIRE_NOTHROW(raytrace.SetImage(image));
+  REQUIRE_NOTHROW(raytrace.SetIntrinsics(model));
 }

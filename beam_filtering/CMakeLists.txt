@@ -12,6 +12,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/DROR.cpp
     src/CropBox.cpp
+    src/VoxelDownsample.cpp
 )
 
 ################ tests ##################
@@ -40,4 +41,21 @@ target_include_directories(${PROJECT_NAME}_cropbox_tests
 target_link_libraries(${PROJECT_NAME}_cropbox_tests
   ${PROJECT_NAME}
   Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_voxeldownsample_tests
+  tests/VoxelDownsampleTest.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_voxeldownsample_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_voxeldownsample_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+file(COPY tests/run_all_tests.bash
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )

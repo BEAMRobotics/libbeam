@@ -83,11 +83,11 @@ TEST_CASE("Test PLY read and write functionality") {
   poses_read.LoadFromPLY(pose_file_path);
   double time_2 = 1563850853.876633 + 0.403459;
   ros::Time time1(1563850853.876633), time2(time_2);
-  REQUIRE(Approx(poses_read.poses[0](0,3)).epsilon(0.00001) == 0.004724);
-  REQUIRE(Approx(poses_read.poses[0](2,3)).epsilon(0.00001) == 0.007737);
+  REQUIRE(Approx(poses_read.poses[0](0, 3)).epsilon(0.00001) == 0.004724);
+  REQUIRE(Approx(poses_read.poses[0](2, 3)).epsilon(0.00001) == 0.007737);
   REQUIRE(poses_read.time_stamps[0] == time1);
-  REQUIRE(Approx(poses_read.poses[4](0,3)).epsilon(0.00001) == 0.007888);
-  REQUIRE(Approx(poses_read.poses[4](2,3)).epsilon(0.00001) == 0.004562);
+  REQUIRE(Approx(poses_read.poses[4](0, 3)).epsilon(0.00001) == 0.007888);
+  REQUIRE(Approx(poses_read.poses[4](2, 3)).epsilon(0.00001) == 0.004562);
   REQUIRE(poses_read.time_stamps[4] == time2);
 
   // Now output to new file, and repeat with new file. This should test the
@@ -101,8 +101,39 @@ TEST_CASE("Test PLY read and write functionality") {
   beam_mapping::Poses poses_written;
   poses_written.LoadFromPLY(pose_file_path2);
   REQUIRE(poses_written.GetPoseFileDate() == "Mon Jul 22 23:00:53 2019 EDT");
-  REQUIRE(poses_written.GetPoses()[0](0,3) == poses_read.poses[0](0,3));
-  REQUIRE(poses_written.GetPoses()[4](0,3) == poses_read.poses[4](0,3));
+  REQUIRE(poses_written.GetPoses()[0](0, 3) == poses_read.poses[0](0, 3));
+  REQUIRE(poses_written.GetPoses()[4](0, 3) == poses_read.poses[4](0, 3));
+  REQUIRE(time1 == poses_written.GetTimeStamps()[0]);
+  REQUIRE(time2 == poses_written.GetTimeStamps()[4]);
+  boost::filesystem::remove(pose_file_path2);
+}
+
+TEST_CASE("Test TXT read and write functionality") {
+  std::string current_file_rel = "/tests/PosesTest.cpp";
+  std::string pose_file_rel = "/tests/test_data/PosesTests/PosesTest.txt";
+  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
+  beam_mapping::Poses poses_read;
+  INFO(pose_file_path);
+  poses_read.LoadFromTXT(pose_file_path);
+  ros::Time time1(100342.790712000), time2(100343.191518010);
+  REQUIRE(Approx(poses_read.poses[0](0, 3)).epsilon(0.00001) == 0.432895);
+  REQUIRE(Approx(poses_read.poses[0](2, 3)).epsilon(0.00001) == 0.003007);
+  REQUIRE(poses_read.time_stamps[0] == time1);
+  REQUIRE(Approx(poses_read.poses[4](0, 3)).epsilon(0.00001) == 0.619671);
+  REQUIRE(Approx(poses_read.poses[4](2, 3)).epsilon(0.00001) == 0.013218);
+  REQUIRE(poses_read.time_stamps[4] == time2);
+  // Now output to new file, and repeat with new file. This should test the
+  // write method
+  std::string pose_output_path_rel, pose_output_path, pose_file_path2;
+  pose_output_path_rel = "/tests/test_data/PosesTests/";
+  pose_output_path = GetFullFile(current_file_rel, pose_output_path_rel);
+  pose_file_path2 = pose_output_path + "_poses.txt";
+
+  poses_read.WriteToTXT(pose_output_path);
+  beam_mapping::Poses poses_written;
+  poses_written.LoadFromTXT(pose_file_path2);
+  REQUIRE(poses_written.GetPoses()[0](0, 3) == poses_read.poses[0](0, 3));
+  REQUIRE(poses_written.GetPoses()[4](0, 3) == poses_read.poses[4](0, 3));
   REQUIRE(time1 == poses_written.GetTimeStamps()[0]);
   REQUIRE(time2 == poses_written.GetTimeStamps()[4]);
   boost::filesystem::remove(pose_file_path2);

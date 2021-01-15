@@ -135,6 +135,21 @@ public:
   void LoadFromJSON(const std::string input_pose_file_path);
 
   /**
+   * @brief writes the pose file to the specified directory as TXT type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.txt. If a full filename is given (i.e.
+   * /path/filename.txt) it will keep that name.
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteToTXT(const std::string output_dir);
+
+  /**
+   * @brief loads the pose file in txt format
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromTXT(const std::string input_pose_file_path);
+
+  /**
    * @brief writes the pose file to the specified directory as PLY type. If a
    * directory is given (i.e. ending in /) the file will be named:
    * "poses_file_date"_poses.ply. If a full filename is given (i.e.

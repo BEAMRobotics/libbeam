@@ -41,7 +41,12 @@ install_routine()
     if [ -z "$ARG_NO_MENU" ] && [ -z "$CONTINUOUS_INTEGRATION" ]; then
         menu
     fi
-
+  
+    # Import functions to install required dependencies
+    source $INSTALL_SCRIPTS/beam_dependencies_install.bash
+    install_gcc7
+    install_gflags
+    
     # source catkin setup script
     source $INSTALL_SCRIPTS/catkin_setup.bash
     
@@ -53,10 +58,6 @@ install_routine()
 
     link_routine
     bash $INSTALL_SCRIPTS/rosdeps_install.bash
-
-    # Import functions to install required dependencies
-    source $INSTALL_SCRIPTS/beam_dependencies_install.bash
-
 
     # Ensure wget is available
     sudo apt-get install -qq wget  > /dev/null
@@ -71,6 +72,7 @@ install_routine()
     #install_libwave
     install_json
     install_ladybug_sdk
+    install_dbow3
 
     if [[ $1 = 'robot' ]]; then
         echo 'Installing drivers for robot'

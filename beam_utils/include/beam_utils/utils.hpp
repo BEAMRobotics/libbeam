@@ -6,11 +6,11 @@
  * Utility functions
  */
 
-#ifndef BEAM_UTILS_UTILS_HPP
-#define BEAM_UTILS_UTILS_HPP
+#pragma once
 
+#include "beam_utils/angles.hpp"
+#include "beam_utils/filesystem.hpp"
+#include "beam_utils/gflags.h"
+#include "beam_utils/log.hpp"
 #include "beam_utils/math.hpp"
 #include "beam_utils/time.hpp"
-#include "beam_utils/angles.hpp"
-
-#endif  // BEAM_UTILS_UTILS_HPP
