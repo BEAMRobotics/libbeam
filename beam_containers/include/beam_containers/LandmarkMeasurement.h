@@ -1,7 +1,7 @@
 #pragma once
 
 #include <beam_utils/math.hpp>
-#include <chrono>
+#include <beam_utils/time.hpp>
 
 namespace beam_containers {
 /** @addtogroup containers
@@ -9,7 +9,7 @@ namespace beam_containers {
 
 /** The integral type used to track a landmark across multiple measurements
  */
-using TimePoint = std::chrono::steady_clock::time_point;
+using TimePoint = ros::Time;
 
 /** Storage type for a landmark measurement as a 2D position.
  *

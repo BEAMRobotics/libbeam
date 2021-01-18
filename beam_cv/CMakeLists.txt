@@ -66,6 +66,19 @@ target_link_libraries(${PROJECT_NAME}_feature_tests
   Catch2::Catch2
 )
 
+add_executable(${PROJECT_NAME}_tracker_tests
+  tests/tracker_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_tracker_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_tracker_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
 file(COPY tests/run_all_tests.bash
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )
