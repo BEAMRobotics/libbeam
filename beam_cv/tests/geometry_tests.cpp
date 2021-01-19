@@ -223,9 +223,14 @@ TEST_CASE("Test RANSAC Absolute Pose estimator.") {
     }
   }
 
+  struct timespec t;
+
   int seed = rand();
+  beam::tic(&t);
   Eigen::Matrix4d pose = beam_cv::AbsolutePoseEstimator::RANSACEstimator(
       cam, pixels, points, 30, 5, seed);
+  float elapsed = beam::toc(&t);
+  BEAM_INFO("RANSAC PnP (30 iterations): {}", elapsed);
 
   REQUIRE(pose.isApprox(truth, 1e-3));
 }

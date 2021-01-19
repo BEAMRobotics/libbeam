@@ -11,6 +11,8 @@
 #include <beam_cv/matchers/Matchers.h>
 #include <beam_utils/angles.hpp>
 
+#include <beam_utils/time.hpp>
+
 #include <beam_calibration/Radtan.h>
 
 std::shared_ptr<beam_cv::Matcher> matcher =

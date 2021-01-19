@@ -12,9 +12,10 @@
 #include <beam_cv/detectors/Detector.h>
 #include <beam_cv/matchers/Matcher.h>
 #include <beam_utils/math.hpp>
+#include <beam_utils/optional.h>
 
 template <class T>
-using opt = std::optional<T>;
+using opt = beam::optional<T>;
 
 namespace beam_cv {
 

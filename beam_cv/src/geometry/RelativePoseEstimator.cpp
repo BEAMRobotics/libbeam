@@ -57,7 +57,7 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   // determine algebraically best E (constrain to rank 2)
   Eigen::Vector3d D;
   D << s, s, 0;
-  Eigen::MatrixXd E = Ua * D.asDiagonal() * Va.transpose();
+  Eigen::Matrix3d E = Ua * D.asDiagonal() * Va.transpose();
   return E;
 }
 

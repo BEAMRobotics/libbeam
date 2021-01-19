@@ -46,7 +46,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
     RayTrace::ReduceCloud(
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-        std::shared_ptr<cv::Mat> image,
         std::shared_ptr<beam_calibration::CameraModel> intrinsics) const {
   // cloud to search on
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
@@ -61,7 +60,6 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
       BEAM_WARN("Cannot project point.");
       continue;
     }
-    uint16_t u = coords.value()(0, 0), v = coords.value()(1, 0);
     pcl::PointXYZRGB new_point;
     new_point.x = point(0, 0);
     new_point.y = point(1, 0);
