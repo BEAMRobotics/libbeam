@@ -8,10 +8,10 @@
 
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
-#include <optional>
+#include <beam_utils/optional.h>
 
 template <class T>
-using opt = std::optional<T>;
+using opt = beam::optional<T>;
 
 namespace beam_calibration {
 

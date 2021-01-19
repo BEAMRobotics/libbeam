@@ -49,16 +49,4 @@ TEST_CASE("Test adding images to tracker.") {
       feature_tracks;
   REQUIRE_THROWS(feature_tracks = tracker.GetTracks(11));
   REQUIRE_NOTHROW(feature_tracks = tracker.GetTracks(5));
-
-  std::vector<beam_containers::LandmarkMeasurement<int>> track =
-      feature_tracks[0];
-  beam_containers::LandmarkMeasurement<int> lm1 = track[0];
-  beam_containers::LandmarkMeasurement<int> lm2 = track[1];
-  beam_containers::LandmarkMeasurement<int> lm3 = track[2];
-  std::cout << "lm id: " << lm1.landmark_id << std::endl;
-  std::cout << "image #: " << lm1.image << std::endl;
-  std::cout << "lm id: " << lm2.landmark_id << std::endl;
-  std::cout << "image #: " << lm2.image << std::endl;
-  std::cout << "lm id: " << lm3.landmark_id << std::endl;
-  std::cout << "image #: " << lm3.image << std::endl;
 }

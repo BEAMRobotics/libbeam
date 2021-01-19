@@ -10,6 +10,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
     OpenCV::OpenCV
     PCL::PCL
+    Boost::boost
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp

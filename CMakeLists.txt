@@ -5,7 +5,7 @@ PROJECT(beam)
 SET(BEAM_PACKAGE_VERSION 0.1.0)
 
 # Compiler settings for all targets
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 14)
 ADD_COMPILE_OPTIONS(-Wall -Wextra -Wno-strict-overflow)
 
 # Default to Release build type, otherwise some modules will be slow
