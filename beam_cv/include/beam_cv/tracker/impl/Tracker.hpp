@@ -78,7 +78,7 @@ std::map<int, size_t>
           this->img_times_.size() - this->window_size_;
       // Need to remove all info at this particular image. Due to zero
       // indexing, subtract one for the requested image.
-      this->PurgeContainer(0);
+      this->PurgeContainer(this->cleared_img_threshold_);
     }
   }
   this->lmc_size = this->landmarks_.size();
