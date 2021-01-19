@@ -4,14 +4,11 @@
 
 #include <catch2/catch.hpp>
 
-#include <chrono>
-
 #include <beam_cv/Utils.h>
 #include <beam_cv/descriptors/Descriptors.h>
 #include <beam_cv/detectors/Detectors.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
 #include <beam_cv/matchers/Matchers.h>
-#include <beam_cv/tracker/Tracker.h>
 #include <beam_utils/angles.hpp>
 
 #include <beam_utils/time.hpp>
