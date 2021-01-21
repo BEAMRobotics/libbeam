@@ -11,7 +11,7 @@ using json = nlohmann::json;
 namespace beam_calibration {
 
 std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
-  BEAM_INFO("Loading file: {}", file_location);
+  //BEAM_INFO("Loading file: {}", file_location);
   std::shared_ptr<CameraModel> camera_model;
 
   std::string file_ext = boost::filesystem::extension(file_location);
@@ -40,6 +40,10 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
   }
 
   return camera_model;
+}
+
+void CameraModel::SetCameraID(const unsigned int id) {
+  cam_id_ = id;
 }
 
 void CameraModel::SetFrameID(const std::string& id) {
@@ -107,7 +111,7 @@ bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
 }
 
 void CameraModel::LoadJSON(const std::string& file_location) {
-  BEAM_INFO("Loading file: {}", file_location);
+  //BEAM_INFO("Loading file: {}", file_location);
 
   // load file
   json J;

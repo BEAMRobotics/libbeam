@@ -14,7 +14,9 @@ DoubleSphere::DoubleSphere(const std::string& file_path) {
 }
 
 opt<Eigen::Vector2d>
-    DoubleSphere::ProjectPointPrecise(const Eigen::Vector3d& point) {
+    DoubleSphere::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
+  outside_domain = false;
+
   double w1;
   if (alpha_ > 0.5) {
     w1 = (1 - alpha_) / alpha_;
@@ -26,7 +28,10 @@ opt<Eigen::Vector2d>
       sqrt(point[0] * point[0] + point[1] * point[1] + point[2] * point[2]);
 
   // check pixels are valid for projection
-  if (point[2] <= -w2 * d1) { return {}; }
+  if (point[2] <= -w2 * d1) { 
+    outside_domain = true;
+    return {}; 
+  }
   double d2 = sqrt(point[0] * point[0] + point[1] * point[1] +
                    (eps_ * d1 + point[2]) * (eps_ * d1 + point[2]));
   Eigen::Vector2d point_projected;
@@ -36,12 +41,13 @@ opt<Eigen::Vector2d>
   point_projected[1] =
       fy_ * point[1] / (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + point[2])) +
       cy_;
+
   if (PixelInImage(point_projected)) { return point_projected; }
   return {};
 }
 
-opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
+  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
   if (pixel.has_value()) {
     Eigen::Vector2i pixel_rounded;
     pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
@@ -50,7 +56,7 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point) {
   return {};
 }
 opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
-                                                Eigen::MatrixXd& J) {
+                                                Eigen::MatrixXd& J, bool& outside_domain) {
   double Px = point[0];
   double Py = point[1];
   double Pz = point[2];
@@ -84,7 +90,7 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
 
   J.block(0, 0, 1, 3) = fx_ * (dPxdP * H + Px * dHdP);
   J.block(1, 0, 1, 3) = fy_ * (dPydP * H + Py * dHdP);
-  return ProjectPoint(point);
+  return ProjectPoint(point, outside_domain);
 }
 
 opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {

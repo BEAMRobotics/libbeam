@@ -56,9 +56,14 @@ TEST_CASE("Test projection and back project with random points") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
-  for (Eigen::Vector3d point : points) {
+  bool outside_domain = false;
+
+  for (const Eigen::Vector3d point : points) {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    if (!pixel.has_value()) { continue; }
+    opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
+    if (!pixel.has_value() || !pixel_b.has_value()) { continue; }
+    REQUIRE((pixel.value()[0] - pixel_b.value()[0]) == 0);
+    REQUIRE((pixel.value()[1] - pixel_b.value()[1]) == 0);
     opt<Eigen::Vector3d> back_projected_ray =
         camera_model_->BackProject(pixel.value());
     REQUIRE(back_projected_ray.has_value());
@@ -136,7 +141,7 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     REQUIRE(!ray.has_value());
   }
 
-  // create random test points
+  // create random test points that result in projections out of frame
   int numRandomCases2 = 30;
   double min_x = -2;
   double max_x = 2;
@@ -152,7 +157,27 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
     REQUIRE(!pixel.has_value());
   }
+
+  bool outside_domain = false;
+
+  //create random test points that are outside projection domain
+  int numRandomCases3 = 5;
+  double min_x_b = -2;
+  double max_x_b = 2;
+  double min_y_b = -2;
+  double max_y_b = 2;
+  double z_b = 0;
+  for (int i = 0; i < numRandomCases3; i++) {
+    double x_b = fRand(min_x_b, max_x_b);
+    double y_b = fRand(min_y_b, max_y_b);
+    Eigen::Vector3d point_b(x_b, y_b, z_b);
+    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point_b, outside_domain);
+    REQUIRE(!pixel.has_value());
+    REQUIRE(outside_domain == true);
+  }
+
 }
+
 
 TEST_CASE("Test jacobian") {
   LoadCameraModel();
