@@ -60,6 +60,38 @@ void Visualizer::displayClouds
 
 }
 
+void Visualizer::displayClouds
+  (std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clouds_, 
+   std::vector<std::string> ids_) {
+  
+  // get mutex for visulalizer spinning in vis thread 
+  // and either create a new cloud or update the existing one
+  mtx.lock();
+
+  // if the visualizer does not already contain the point clouds, add it
+  if(!displayv_called) {
+    for (uint8_t i = 0; i < clouds_.size(); i ++) {
+      point_cloud_display->addPointCloud(clouds_[i], ids_[i],0);
+      point_cloud_display->setPointCloudRenderingProperties 
+        (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, ids_[i]);
+      point_cloud_display->resetCamera();   
+    }
+ 
+  }
+
+  // otherwise, update the existing clouds
+  else {
+    for (uint8_t i = 0; i < clouds_.size(); i ++) {
+       point_cloud_display->updatePointCloud(clouds_[i],ids_[i]);
+    }
+  }
+
+  mtx.unlock();
+
+  displayv_called = true;
+
+}
+
 void Visualizer::displayClouds(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1_,
                                 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2_,
                                 std::string id1_,

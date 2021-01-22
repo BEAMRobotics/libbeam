@@ -64,6 +64,15 @@ public:
     void displayClouds(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_, std::string id_);
 
     /**
+     * @brief Method to display n clouds, cloud and id vectors must be the same length, 
+     *        ids must be unique
+     * @param clouds_ point clouds to display
+     * @param ids_ unique cloud ids for display
+     */
+    void Visualizer::displayClouds(std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clouds_, 
+                                        std::vector<std::string> ids_)
+
+    /**
      * @brief Method to display two point clouds
      * @param cloud1_ point cloud to display
      * @param cloud2_ point cloud to display
@@ -153,7 +162,8 @@ private:
     std::string display_name;
 
     std::atomic_flag continueFlag = ATOMIC_FLAG_INIT;
-    bool display1_called, display2_called, display3_called, display4_called, display5_called, display6_called;
+    bool display1_called, display2_called, display3_called, display4_called, 
+        display5_called, display6_called, displayv_called;
 
     //vis thread method in which the visualizer spins
     void spin();
