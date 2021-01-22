@@ -102,10 +102,20 @@ opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {
 
   Eigen::Vector3d out_point;
   Eigen::Vector2d kp;
-  kp[0] = (pixel[0] - cx_) / fx_;
-  kp[1] = (pixel[1] - cy_) / fy_;
-  Eigen::Vector2d undistorted = UndistortPixel(kp);
-  out_point << undistorted[0], (undistorted[1]), 1;
+
+  cv::Point2f p(pixel[0], pixel[1]);
+  std::vector<cv::Point2f> src = {p};
+  std::vector<cv::Point2f> dst;
+
+  Eigen::Matrix3d camera_matrix;
+  camera_matrix << fx_, 0, cx_, 0, fy_, cy_, 0, 0, 1;
+  cv::Mat K(3, 3, CV_32F);
+  cv::eigen2cv(camera_matrix, K);
+
+  std::vector<double> dist_coeffs = {k1_, k2_, p1_, p2_};
+  cv::undistortPoints(src, dst, K, dist_coeffs);
+
+  out_point << dst[0].x, dst[0].y, 1;
   return out_point;
 }
 
@@ -141,25 +151,6 @@ Eigen::Vector2d Radtan::DistortPixel(const Eigen::Vector2d& pixel) {
   yy = y + (y * rad_dist_u + 2.0 * p2_ * mxy_u + p1_ * (rho2_u + 2.0 * my2_u));
   coords << xx, yy;
   return coords;
-}
-
-Eigen::Vector2d Radtan::UndistortPixel(const Eigen::Vector2d& pixel) {
-  constexpr int n = 200; // Max. number of iterations
-  Eigen::Vector2d y = pixel;
-  Eigen::Vector2d ybar = y;
-  Eigen::Matrix2d F;
-  Eigen::Vector2d y_tmp;
-  // Handle special case around image center.
-  if (y.squaredNorm() < 1e-6) return y; // Point remains unchanged.
-  for (int i = 0; i < n; ++i) {
-    y_tmp = DistortPixel(ybar);
-    F = ComputeDistortionJacobian(ybar);
-    Eigen::Vector2d e(y - y_tmp);
-    Eigen::Vector2d du = (F.transpose() * F).inverse() * F.transpose() * e;
-    ybar += du;
-  }
-  y = ybar;
-  return y;
 }
 
 Eigen::Matrix2d

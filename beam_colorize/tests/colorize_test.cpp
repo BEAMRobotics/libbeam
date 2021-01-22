@@ -50,7 +50,7 @@ TEST_CASE("Test correct projection colorization") {
   cloud_colored = colorizer_->ColorizePointCloud();
 
   int non_red = 0;
-  for (int i = 0; i < cloud_colored->points.size(); i++) {
+  for (uint32_t i = 0; i < cloud_colored->points.size(); i++) {
     int r = cloud_colored->points[i].r;
     int g = cloud_colored->points[i].g;
     int b = cloud_colored->points[i].b;
@@ -71,7 +71,7 @@ TEST_CASE("Test correct raytrace colorization") {
   cloud_colored = colorizer_->ColorizePointCloud();
 
   int non_red = 0;
-  for (int i = 0; i < cloud_colored->points.size(); i++) {
+  for (uint32_t i = 0; i < cloud_colored->points.size(); i++) {
     int r = cloud_colored->points[i].r;
     int g = cloud_colored->points[i].g;
     int b = cloud_colored->points[i].b;

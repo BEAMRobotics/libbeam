@@ -82,7 +82,8 @@ void IPBasic(cv::Mat& depth_image) {
   });
 
   // dilate
-  cv::Mat diamondKernel5 = beam::GetEllipseKernel(5);
+  cv::Mat diamondKernel5 =
+      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
   diamondKernel5.at<uchar>(1, 0) = 0;
   diamondKernel5.at<uchar>(1, 4) = 0;
   diamondKernel5.at<uchar>(3, 0) = 0;
@@ -91,7 +92,7 @@ void IPBasic(cv::Mat& depth_image) {
 
   // hole closing
   cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE,
-                   beam::GetFullKernel(5));
+                   cv::Mat::ones(5, 5, CV_8U));
   // fill empty spaces with dilated values
   std::vector<cv::Point2i> empty_pixels;
   for (int row = 0; row < depth_image.rows; row++) {
@@ -101,8 +102,8 @@ void IPBasic(cv::Mat& depth_image) {
     }
   }
   cv::Mat dilated;
-  cv::dilate(depth_image, dilated, beam::GetFullKernel(7));
-  for (int i = 0; i < empty_pixels.size(); i++) {
+  cv::dilate(depth_image, dilated, cv::Mat::ones(7, 7, CV_8U));
+  for (uint32_t i = 0; i < empty_pixels.size(); i++) {
     depth_image.at<float>(empty_pixels[i].x, empty_pixels[i].y) =
         dilated.at<float>(empty_pixels[i].x, empty_pixels[i].y);
   }
@@ -155,7 +156,7 @@ void IDWInterpolation(cv::Mat& depth_image, int window_size) {
       if (closest_points.size() >= 3) {
         float idw_numerator = 0.0;
         float idw_denominator = 0.0;
-        for (int i = 0; i < closest_points.size(); i++) {
+        for (uint32_t i = 0; i < closest_points.size(); i++) {
           std::tuple<float, float> pair = closest_points[i];
           float depth = std::get<1>(pair);
           float dist = std::get<0>(pair);
@@ -181,16 +182,18 @@ void MultiscaleInterpolation(cv::Mat& depth_image) {
     cv::Mat dst = channels[i];
     beam_depth::DepthInterpolation(21, 21, 5, channels[i]);
     beam_depth::DepthInterpolation(15, 15, 5, channels[i]);
-    cv::Mat diamondKernel5 = beam::GetEllipseKernel(5);
+    cv::Mat diamondKernel5 =
+        cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
     diamondKernel5.at<uchar>(1, 0) = 0;
     diamondKernel5.at<uchar>(1, 4) = 0;
     diamondKernel5.at<uchar>(3, 0) = 0;
     diamondKernel5.at<uchar>(3, 4) = 0;
     cv::dilate(channels[i], channels[i], diamondKernel5);
     cv::morphologyEx(channels[i], channels[i], cv::MORPH_CLOSE,
-                     beam::GetFullKernel(5));
-    cv::morphologyEx(channels[i], channels[i], cv::MORPH_CLOSE,
-                     beam::GetEllipseKernel(11));
+                     cv::Mat::ones(5, 5, CV_8U));
+    cv::morphologyEx(
+        channels[i], channels[i], cv::MORPH_CLOSE,
+        cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 11)));
   }
   // recombine
   cv::Mat combined_depth =
@@ -217,8 +220,9 @@ void MultiscaleInterpolation(cv::Mat& depth_image) {
     (void)position;
     if (distance > 0.1) { distance = max_depth - distance; }
   });
-  cv::morphologyEx(depth_image, depth_image, cv::MORPH_CLOSE,
-                   beam::GetEllipseKernel(21));
+  cv::morphologyEx(
+      depth_image, depth_image, cv::MORPH_CLOSE,
+      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(21, 21)));
   cv::medianBlur(depth_image, depth_image, 5);
   // invert back
   depth_image.forEach<float>([&](float& distance, const int* position) -> void {
