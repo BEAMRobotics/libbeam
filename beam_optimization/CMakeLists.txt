@@ -14,9 +14,9 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 
 ################ test libraries ##############
 
-add_library(test_utils STATIC tests/util.cpp)
+add_library(test_utils STATIC tests/src/test_util.cpp)
   
-add_library(visualizer STATIC tests/visualizer.cpp)
+add_library(visualizer STATIC tests/src/visualizer.cpp)
 
 target_link_libraries(visualizer 
   beam::matching
@@ -45,7 +45,7 @@ add_definitions(${PCL_DEFINITIONS})
 ################ tests ##################
 
 add_executable(${PROJECT_NAME}_ceres_ladybug_tests
-  tests/ladybug_reprojection_tests.cpp
+  tests/src/ladybug_reprojection_tests.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_ceres_ladybug_tests
@@ -65,7 +65,7 @@ target_link_libraries(${PROJECT_NAME}_ceres_ladybug_tests
 )
 
 add_executable(${PROJECT_NAME}_ceres_radtan_tests
-  tests/radtan_reprojection_tests.cpp
+  tests/src/radtan_reprojection_tests.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_ceres_radtan_tests

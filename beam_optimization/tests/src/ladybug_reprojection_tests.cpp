@@ -10,7 +10,7 @@
 #include <ceres/cost_function_to_functor.h>
 #include <ceres/solver.h>
 #include <ceres/types.h>
-#include "util.hpp"
+#include "test_util.hpp"
 #include "visualizer.hpp"
 #include <beam_calibration/CameraModel.h>
 #include <cmath>
