@@ -12,6 +12,8 @@
 #include <ceres/types.h>
 #include "test_util.hpp"
 #include <beam_utils/visualizer.hpp>
+#include <beam_utils/angles.hpp>
+#include <beam_utils/math.hpp>
 #include <beam_calibration/CameraModel.h>
 #include <cmath>
 //#include <math.h>
@@ -122,7 +124,7 @@ TEST_CASE("Test lb projection - no noise") {
   // create perturbed initial
   Eigen::VectorXd perturbation(6, 1);
   perturbation << 0.3, -0.3, 0.3, 0.5, -0.5, 0.3;
-  Eigen::Matrix4d T_CW_pert = util::PerturbTransformDegM(T_CW, perturbation);  
+  Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);  
 
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
@@ -140,7 +142,7 @@ TEST_CASE("Test lb projection - no noise") {
 
   //Visualization - create target, input_cloud_p, input_cloud_p_proj cloud 
   if (VISUALIZATION) {
-    target_cloud = util::MakePointCloud(pixels);
+    target_cloud = test_util::MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
@@ -157,8 +159,8 @@ TEST_CASE("Test lb projection - no noise") {
       }
     }
 
-    input_cloud_p = util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = test_util::MakePointCloud(perturbed_points);
+    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
 
   }
 
@@ -217,13 +219,13 @@ TEST_CASE("Test lb projection - no noise") {
   LOG_INFO("TESTING WITH PERFECT INITIALIZATION");
   SolveProblem(problem1, output_results_);
   Eigen::Matrix4d T_CW_opt1 =
-      util::QuaternionAndTranslationToTransformMatrix(
+      beam::QuaternionAndTranslationToTransformMatrix(
           results_perfect_init);
   
   LOG_INFO("TESTING WITH PERTURBED INITIALIZATION");
   SolveProblem(problem2, output_results_);
   Eigen::Matrix4d T_CW_opt2 =
-      util::QuaternionAndTranslationToTransformMatrix(
+      beam::QuaternionAndTranslationToTransformMatrix(
           results_perturbed_init);
 
   if (VISUALIZATION) {
@@ -242,7 +244,7 @@ TEST_CASE("Test lb projection - no noise") {
       }
     }
 
-    final_cloud_p_proj = util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
 
     test_vis.startVis(); 
     // white, red, green, blue
@@ -259,10 +261,10 @@ TEST_CASE("Test lb projection - no noise") {
 
   }
   
-  REQUIRE(util::RoundMatrix(T_CW, 5) ==
-          util::RoundMatrix(T_CW_opt1, 5));
-  REQUIRE(util::RoundMatrix(T_CW, 5) ==
-          util::RoundMatrix(T_CW_opt2, 5));
+  REQUIRE(beam::RoundMatrix(T_CW, 5) ==
+          beam::RoundMatrix(T_CW_opt1, 5));
+  REQUIRE(beam::RoundMatrix(T_CW, 5) ==
+          beam::RoundMatrix(T_CW_opt2, 5));
 }
 
 /******************************************************************************************************************/
@@ -307,7 +309,7 @@ TEST_CASE("Test lb projection - with noise") {
   // create perturbed initial (different from first test case)
   Eigen::VectorXd perturbation(6, 1);
   perturbation << 0.2, -0.4, 0.1, 0.7, -0.3, 0.4;
-  Eigen::Matrix4d T_CW_pert = util::PerturbTransformDegM(T_CW, perturbation);  
+  Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);  
 
   // create projected (detected) points - with noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
@@ -333,7 +335,7 @@ TEST_CASE("Test lb projection - with noise") {
 
   //Visualization - create target, input_cloud_p, input_cloud_p_proj cloud 
   if (VISUALIZATION) {
-    target_cloud = util::MakePointCloud(pixels);
+    target_cloud = test_util::MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
@@ -350,8 +352,8 @@ TEST_CASE("Test lb projection - with noise") {
       }
     }
 
-    input_cloud_p = util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = test_util::MakePointCloud(perturbed_points);
+    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
 
   }
 
@@ -409,13 +411,13 @@ TEST_CASE("Test lb projection - with noise") {
   LOG_INFO("TESTING WITH NOISY PERFECT INITIALIZATION");
   SolveProblem(problem1, output_results_);
   Eigen::Matrix4d T_CW_opt1 =
-      util::QuaternionAndTranslationToTransformMatrix(
+      beam::QuaternionAndTranslationToTransformMatrix(
           results_perfect_init);
   
   LOG_INFO("TESTING WITH NOISY PERTURBED INITIALIZATION");
   SolveProblem(problem2, output_results_);
   Eigen::Matrix4d T_CW_opt2 =
-      util::QuaternionAndTranslationToTransformMatrix(
+      beam::QuaternionAndTranslationToTransformMatrix(
           results_perturbed_init);
 
   if (VISUALIZATION) {
@@ -434,7 +436,7 @@ TEST_CASE("Test lb projection - with noise") {
       }
     }
 
-    final_cloud_p_proj = util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
 
     test2_vis.startVis(); 
     // white, red, green, blue
@@ -451,10 +453,10 @@ TEST_CASE("Test lb projection - with noise") {
   }
   
   // with noise, precision will be lower than perfect projection
-  REQUIRE(util::RoundMatrix(T_CW, 1) ==
-          util::RoundMatrix(T_CW_opt1, 1));
-  REQUIRE(util::RoundMatrix(T_CW, 1) ==
-          util::RoundMatrix(T_CW_opt2, 1));
+  REQUIRE(beam::RoundMatrix(T_CW, 1) ==
+          beam::RoundMatrix(T_CW_opt1, 1));
+  REQUIRE(beam::RoundMatrix(T_CW, 1) ==
+          beam::RoundMatrix(T_CW_opt2, 1));
 }
 
 /******************************************************************************************************************/
@@ -498,7 +500,7 @@ TEST_CASE("Test lb projection - with clipping") {
   // create perturbed initial (different from first test case)
   Eigen::VectorXd perturbation(6, 1);
   perturbation << 0, 0, 0, 0.7, -5, 0.4;
-  Eigen::Matrix4d T_CW_pert = util::PerturbTransformDegM(T_CW, perturbation);  
+  Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);  
 
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
@@ -516,7 +518,7 @@ TEST_CASE("Test lb projection - with clipping") {
 
   //Visualization - create target, input_cloud_p, input_cloud_p_proj cloud 
   if (VISUALIZATION) {
-    target_cloud = util::MakePointCloud(pixels);
+    target_cloud = test_util::MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
@@ -535,8 +537,8 @@ TEST_CASE("Test lb projection - with clipping") {
       }
     }
 
-    input_cloud_p = util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = test_util::MakePointCloud(perturbed_points);
+    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
 
   }
 
@@ -594,13 +596,13 @@ TEST_CASE("Test lb projection - with clipping") {
   LOG_INFO("TESTING WITH PERFECT INITIALIZATION");
   SolveProblem(problem1, output_results_);
   Eigen::Matrix4d T_CW_opt1 =
-      util::QuaternionAndTranslationToTransformMatrix(
+      beam::QuaternionAndTranslationToTransformMatrix(
           results_perfect_init);
   
   LOG_INFO("TESTING WITH CLIPPED PERTURBED INITIALIZATION");
   SolveProblem(problem2, output_results_);
   Eigen::Matrix4d T_CW_opt2 =
-      util::QuaternionAndTranslationToTransformMatrix(
+      beam::QuaternionAndTranslationToTransformMatrix(
           results_perturbed_init);
 
   if (VISUALIZATION) {
@@ -619,7 +621,7 @@ TEST_CASE("Test lb projection - with clipping") {
       }
     }
 
-    final_cloud_p_proj = util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
 
     test3_vis.startVis(); 
     // white, red, green, blue
@@ -636,10 +638,10 @@ TEST_CASE("Test lb projection - with clipping") {
   }
   
   // with noise, precision will be lower than perfect projection
-  REQUIRE(util::RoundMatrix(T_CW, 5) ==
-          util::RoundMatrix(T_CW_opt1, 5));
-  REQUIRE(util::RoundMatrix(T_CW, 5) ==
-          util::RoundMatrix(T_CW_opt2, 5));
+  REQUIRE(beam::RoundMatrix(T_CW, 5) ==
+          beam::RoundMatrix(T_CW_opt1, 5));
+  REQUIRE(beam::RoundMatrix(T_CW, 5) ==
+          beam::RoundMatrix(T_CW_opt2, 5));
 }
 
 } //namespace beam_optimization

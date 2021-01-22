@@ -19,6 +19,7 @@ add_library(test_utils STATIC tests/src/test_util.cpp)
 
 target_link_libraries(test_utils
   beam::calibration
+  beam::utils
 )
 
 target_include_directories(test_utils
