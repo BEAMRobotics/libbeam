@@ -109,7 +109,7 @@ TEST_CASE("Test lb projection - no noise") {
 
   // Create intrinsics
   std::string file_location = __FILE__;
-  file_location.erase(file_location.end() - 37, file_location.end());
+  file_location.erase(file_location.end() - 41, file_location.end());
   file_location += "/config/ladybug.conf";
   std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
@@ -294,7 +294,7 @@ TEST_CASE("Test lb projection - with noise") {
 
   // Create intrinsics
   std::string file_location = __FILE__;
-  file_location.erase(file_location.end() - 37, file_location.end());
+  file_location.erase(file_location.end() - 41, file_location.end());
   file_location += "/config/ladybug.conf";
   std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
@@ -485,7 +485,7 @@ TEST_CASE("Test lb projection - with clipping") {
 
   // Create intrinsics
   std::string file_location = __FILE__;
-  file_location.erase(file_location.end() - 37, file_location.end());
+  file_location.erase(file_location.end() - 41, file_location.end());
   file_location += "/config/ladybug.conf";
   std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =

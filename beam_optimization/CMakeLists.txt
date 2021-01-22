@@ -23,7 +23,7 @@ target_link_libraries(test_utils
 
 target_include_directories(test_utils
   PUBLIC
-    include/beam_optimization
+    tests/include
     ${PCl_INCLUDE_DIRS}
 )
 
@@ -57,7 +57,7 @@ add_executable(${PROJECT_NAME}_ceres_radtan_tests
 
 target_include_directories(${PROJECT_NAME}_ceres_radtan_tests
   PUBLIC
-    include
+    include/beam_optimization
     ${catkin_INCLUDE_DIRS}
     ${PCl_INCLUDE_DIRS}
 )

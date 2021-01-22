@@ -1,4 +1,4 @@
-#include "visualizer.hpp"
+#include "beam_utils/visualizer.hpp"
 #include <stdio.h>
 
 namespace beam {
