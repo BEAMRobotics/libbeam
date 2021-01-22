@@ -14,6 +14,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/angles.cpp
     src/uf.cpp
     src/gflags.cpp
+    src/visualizer.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests

@@ -11,7 +11,7 @@
 #include <ceres/solver.h>
 #include <ceres/types.h>
 #include "test_util.hpp"
-#include "visualizer.hpp"
+#include <beam_utils/visualizer.hpp>
 #include <beam_calibration/CameraModel.h>
 #include <cmath>
 #include <math.h>
@@ -93,7 +93,7 @@ TEST_CASE("Test rt projection - no noise") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_p_proj;     //input cloud perturbed projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr final_cloud_p_proj;     //final solved cloud projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud;           //target "detected" cloud
-  Visualizer test_vis("test_1_vis");
+  beam::Visualizer test_vis("test_1_vis");
 
   // create keypoints
   std::vector<Eigen::Vector4d, AlignVec4d> points;
@@ -277,7 +277,7 @@ TEST_CASE("Test rt projection - with noise") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_p_proj;     //input cloud perturbed projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr final_cloud_p_proj;     //final solved cloud projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud;           //target "detected" cloud
-  Visualizer test2_vis("test_2_vis");
+  beam::Visualizer test2_vis("test_2_vis");
 
   // create keypoints
   std::vector<Eigen::Vector4d, AlignVec4d> points;
@@ -468,7 +468,7 @@ TEST_CASE("Test rt projection - with clipping") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_p_proj;     //input cloud perturbed projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr final_cloud_p_proj;     //final solved cloud projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud;           //target "detected" cloud
-  Visualizer test3_vis("test_3_vis");
+  beam::Visualizer test3_vis("test_3_vis");
 
   // create keypoints (larger spread than other test cases so perturbation for clipping doesn't have to be too great)
   std::vector<Eigen::Vector4d, AlignVec4d> points;
@@ -650,7 +650,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
   pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud_p_proj;     //input cloud perturbed projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr final_cloud_p_proj;     //final solved cloud projected
   pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud;           //target "detected" cloud
-  Visualizer test3_vis("test_3_vis");
+  beam::Visualizer test3_vis("test_3_vis");
 
   // create keypoints (larger spread than other test cases so perturbation for clipping doesn't have to be too great)
   std::vector<Eigen::Vector4d, AlignVec4d> points;
