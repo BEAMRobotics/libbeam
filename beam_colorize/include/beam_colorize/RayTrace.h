@@ -45,7 +45,6 @@ private:
    */
   std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
       ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-                  std::shared_ptr<cv::Mat>,
                   std::shared_ptr<beam_calibration::CameraModel>) const;
 
 protected:

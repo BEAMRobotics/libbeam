@@ -59,10 +59,6 @@ public:
    */
   template <typename func>
   void Execute(float threshold, func behaviour) {
-    if (!(this->CheckValidFunction(behaviour))) {
-      BEAM_CRITICAL("Invalid lambda signature defined");
-      throw std::runtime_error{"Invalid lambda signature defined"};
-    }
     BEAM_INFO("Performing ray casting.");
     // create copied point cloud to use for kdtree
     pcl::PointCloud<pcl::PointXYZ>::Ptr template_cloud =
@@ -169,25 +165,5 @@ protected:
   typename pcl::PointCloud<PointType>::Ptr cloud_;
   std::shared_ptr<beam_calibration::CameraModel> model_;
   std::shared_ptr<cv::Mat> image_;
-
-  /**
-   * @brief Determiens if given function is valid
-   * @return bool
-   */
-  template <typename func>
-  bool CheckValidFunction(func behaviour) {
-    bool valid_func_xyz =
-        std::is_invocable_r_v<void, func, std::shared_ptr<cv::Mat>&,
-                              pcl::PointCloud<pcl::PointXYZ>::Ptr&, const int*,
-                              int>;
-    bool valid_func_xyzrgb =
-        std::is_invocable_r_v<void, func, std::shared_ptr<cv::Mat>&,
-                              pcl::PointCloud<pcl::PointXYZRGB>::Ptr&,
-                              const int*, int>;
-    bool valid_func_bridge = std::is_invocable_r_v<
-        void, func, std::shared_ptr<cv::Mat>&,
-        pcl::PointCloud<beam_containers::PointBridge>::Ptr&, const int*, int>;
-    return (valid_func_xyz || valid_func_xyzrgb || valid_func_bridge);
-  }
 };
 } // namespace beam_cv

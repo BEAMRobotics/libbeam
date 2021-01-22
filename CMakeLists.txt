@@ -5,7 +5,7 @@ PROJECT(beam)
 SET(BEAM_PACKAGE_VERSION 0.1.0)
 
 # Compiler settings for all targets
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 14)
 ADD_COMPILE_OPTIONS(-Wall -Wextra -Wno-strict-overflow)
 
 # Default to Release build type, otherwise some modules will be slow
@@ -36,12 +36,9 @@ FIND_PACKAGE(Boost 1.58.0 COMPONENTS system filesystem)
 FIND_PACKAGE(PCL 1.8 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
     surface segmentation)
-FIND_PACKAGE(kindr)
 FIND_PACKAGE(OpenCV 3.2.0 REQUIRED COMPONENTS)
 FIND_PACKAGE(yaml-cpp REQUIRED)
 FIND_PACKAGE(Ceres 1.11)
-FIND_PACKAGE(GTSAM)
-FIND_PACKAGE(GeographicLib 1.49)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
              roscpp std_msgs cv_bridge rosbag)
 FIND_PACKAGE(Catch2 REQUIRED)

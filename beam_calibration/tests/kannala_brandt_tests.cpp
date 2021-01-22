@@ -199,7 +199,7 @@ TEST_CASE("Test jacobian") {
     points.push_back(Eigen::Vector3d(x, y, z));
   }
 
-  double eps = std::sqrt(1e-10);
+  double eps = std::sqrt(1e-8);
   for (Eigen::Vector3d point : points) {
     // calculate analytical jacobian (from camera model)
     Eigen::MatrixXd J_analytical(2, 3);
@@ -218,6 +218,6 @@ TEST_CASE("Test jacobian") {
       J_numerical(0, i) = (pixel_pert.value()[0] - pixel.value()[0]) / eps;
       J_numerical(1, i) = (pixel_pert.value()[1] - pixel.value()[1]) / eps;
     }
-    REQUIRE(J_numerical.isApprox(J_analytical, 0.001));
+    REQUIRE(J_numerical.isApprox(J_analytical, 1e-4));
   }
 }
