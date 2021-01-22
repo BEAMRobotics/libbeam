@@ -69,8 +69,8 @@ public:
      * @param clouds_ point clouds to display
      * @param ids_ unique cloud ids for display
      */
-    void Visualizer::displayClouds(std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clouds_, 
-                                        std::vector<std::string> ids_)
+    void displayClouds(std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clouds_, 
+                            std::vector<std::string> ids_);
 
     /**
      * @brief Method to display two point clouds
