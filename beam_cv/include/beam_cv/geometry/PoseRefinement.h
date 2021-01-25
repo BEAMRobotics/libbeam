@@ -9,12 +9,6 @@
 
 #include <beam_calibration/CameraModel.h>
 
-template <class T>
-using opt = std::optional<T>;
-
-using AlignVec2d = Eigen::aligned_allocator<Eigen::Vector2d>;
-using AlignVec4d = Eigen::aligned_allocator<Eigen::Vector4d>;
-
 namespace beam_cv {
 /**
  * @brief static class implementing pose refinement.
@@ -22,8 +16,8 @@ namespace beam_cv {
 class PoseRefinement {
 public:
   /**
-   * @brief Refines an estimated transformation matrix to minimize reprojection
-   * error for a set of points/pixel correspondences.
+   * @brief Refines an estimated transformation matrix to minimize
+   * reprojection error for a set of points/pixel correspondences.
    * @param estimate Initial transformation matrix estimate
    * @param cam camera model for image
    * @param pixels projected pixel locations of feature points in cam
