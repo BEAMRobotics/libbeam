@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::containers
     beam::utils
     beam::depth
+    beam::optimization
     OpenCV::OpenCV
     Eigen3::Eigen
     OpenCV::OpenCV
@@ -17,6 +18,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
+    src/geometry/PoseRefinement.cpp
     src/descriptors/BRISKDescriptor.cpp
     src/descriptors/ORBDescriptor.cpp
     src/descriptors/SIFTDescriptor.cpp
@@ -50,6 +52,20 @@ target_include_directories(${PROJECT_NAME}_geometry_tests
 )
 target_link_libraries(${PROJECT_NAME}_geometry_tests
   ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_pose_refinement_tests
+  tests/pose_refinement_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_pose_refinement_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_pose_refinement_tests
+  ${PROJECT_NAME}
+  ${CERES_LIBRARIES}
   Catch2::Catch2
 )
 

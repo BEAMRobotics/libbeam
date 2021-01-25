@@ -38,6 +38,11 @@ void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
   }
 }
 
+double randomInRange(double a, double b) {
+  double r = (double)rand() / RAND_MAX;
+  return a + r * (b - a);
+}
+
 void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
                         std::vector<Eigen::Vector2i>& pixels,
                         std::vector<Eigen::Vector3d>& points, int n) {
@@ -46,7 +51,9 @@ void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
     int y = rand() % cam->GetHeight();
     Eigen::Vector2i pixel(x, y);
     Eigen::Vector3d point = cam->BackProject(pixel).value();
-    int scalar = rand() + 1;
+    double depth_min = 1;
+    double depth_max = 15;
+    double scalar = randomInRange(depth_min, depth_max);
     point *= scalar;
     pixels.push_back(pixel);
     points.push_back(point);
