@@ -8,8 +8,7 @@
  * slam code development will be using double precision floating points.
  */
 
-#ifndef BEAM_UTILS_MATH_HPP
-#define BEAM_UTILS_MATH_HPP
+#pragma once
 
 #include <chrono>
 #include <cmath>
@@ -24,6 +23,7 @@
 #include <opencv2/opencv.hpp>
 #include <pcl/point_types.h>
 #include <unsupported/Eigen/MatrixFunctions>
+#include <beam_utils/angles.hpp>
 
 namespace beam {
 /** @addtogroup utils
@@ -120,8 +120,7 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
 }
 
 template <typename T>
-std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
-  if (seed == -1) { seed = time(0); }
+std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed) {
   srand(seed);
   std::vector<T> input_copy = input;
   // fill new point vectors with randomly sampled points from xs and xss
@@ -138,14 +137,6 @@ std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed = -1) {
 
 /** Computes greatest common divisor**/
 int gcd(int a, int b);
-/** Returns cross kernel */
-cv::Mat GetCrossKernel(int size);
-
-/** Returns cross kernel */
-cv::Mat GetFullKernel(int size);
-
-/** Returns cross kernel */
-cv::Mat GetEllipseKernel(int size);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
 void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
@@ -272,7 +263,37 @@ std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
 beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
                           beam::Vec3 plane_normal, beam::Vec3 plane_point);
 
+/** Peturbs a transformation
+ * @param[in] T_in the original transformation matrix
+ * @param[in] perturbations [rx(rad), ry(rad), rz(rad), tx(m), ty(m),
+ * tx(m)]
+ * @return perturbed transformation
+ */
+Eigen::Matrix4d PerturbTransformRadM(const Eigen::Matrix4d& T_in,
+                                     const Eigen::VectorXd& perturbations);
+
+/** Peturbs a transformation
+ * @param[in] T_in the original transformation matrix
+ * @param[in] perturbations [rx(deg), ry(deg), rz(deg), tx(m), ty(m),
+ * tx(m)]
+ * @return perturbed transformation
+ */
+Eigen::Matrix4d PerturbTransformDegM(const Eigen::Matrix4d& T_in,
+                                     const Eigen::VectorXd& perturbations);
+
+Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
+                                        double yawInDeg, double tx, double ty,
+                                        double tz);
+
+Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T);
+
+Eigen::Matrix4d
+    QuaternionAndTranslationToTransformMatrix(const std::vector<double>& pose);
+
+// [qw qx qy qz tx ty tx]
+std::vector<double>
+    TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T);
+
 /** @} group utils */
 } // namespace beam
 
-#endif // BEAM_UTILS_MATH_HPP

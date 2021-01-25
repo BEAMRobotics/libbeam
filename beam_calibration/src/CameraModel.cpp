@@ -11,7 +11,6 @@ using json = nlohmann::json;
 namespace beam_calibration {
 
 std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
-  //BEAM_INFO("Loading file: {}", file_location);
   std::shared_ptr<CameraModel> camera_model;
 
   std::string file_ext = boost::filesystem::extension(file_location);
@@ -97,15 +96,17 @@ CameraType CameraModel::GetType() const {
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > int(image_width_ - 1) ||
-      pixel[1] > int(image_height_ - 1))
+  if (pixel[0] < 0 || pixel[1] < 0 ||
+      pixel[0] > static_cast<int>(image_width_ - 1) ||
+      pixel[1] > static_cast<int>(image_height_ - 1))
     return false;
   return true;
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > double(image_width_ - 1) ||
-      pixel[1] > double(image_height_ - 1))
+  if (pixel[0] < 0 || pixel[1] < 0 ||
+      pixel[0] > static_cast<double>(image_width_ - 1) ||
+      pixel[1] > static_cast<double>(image_height_ - 1))
     return false;
   return true;
 }
@@ -155,7 +156,8 @@ void CameraModel::LoadJSON(const std::string& file_location) {
   }
 }
 
-void CameraModel::WriteJSON(const std::string& file_location) {
+void CameraModel::WriteJSON(const std::string& file_location,
+                            const std::string& method) {
   BEAM_INFO("Writing to file: {}", file_location);
 
   std::time_t date =
@@ -164,7 +166,11 @@ void CameraModel::WriteJSON(const std::string& file_location) {
   // load file
   json J;
   J["date"] = cur_date;
-  J["method"] = std::string("beam");
+  if (method.empty()) {
+    J["method"] = std::string("unkown");
+  } else {
+    J["method"] = method;
+  }
   // get string repr of class type
   std::string class_type;
   for (std::map<std::string, CameraType>::iterator it =

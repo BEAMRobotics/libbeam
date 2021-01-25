@@ -10,8 +10,7 @@ void Tracker::DetectAndCompute(const cv::Mat& image,
   descriptor = this->descriptor->ExtractDescriptors(image, keypoints);
 }
 
-void Tracker::TimestampImage(
-    const std::chrono::steady_clock::time_point& current_time) {
+void Tracker::TimestampImage(const ros::Time& current_time) {
   auto img_count = this->img_times_.size();
   this->img_times_[img_count] = current_time;
 }
@@ -74,12 +73,12 @@ std::map<int, size_t>
 
   // If in online mode - sliding window
   if (this->window_size_ > 0) {
-    auto img_to_clear = (int)this->img_times_.size() - this->window_size_;
-    if (img_to_clear > 0) {
-      this->cleared_img_threshold_ = img_to_clear;
+    if (this->img_times_.size() > this->window_size_) {
+      this->cleared_img_threshold_ =
+          this->img_times_.size() - this->window_size_;
       // Need to remove all info at this particular image. Due to zero
       // indexing, subtract one for the requested image.
-      this->PurgeContainer(img_to_clear - 1);
+      this->PurgeContainer(this->cleared_img_threshold_);
     }
   }
   this->lmc_size = this->landmarks_.size();
@@ -99,16 +98,14 @@ std::vector<FeatureTrack> Tracker::GetTracks(const size_t img_num) const {
     throw std::out_of_range("Image requested is outside of maintained window!");
   } else if (img_num > 0) {
     // Find the time for this image
-    std::chrono::steady_clock::time_point img_time =
-        this->img_times_.at(img_num);
+    ros::Time img_time = this->img_times_.at(img_num);
     // Extract all of the IDs visible at this time
     auto landmark_ids =
         this->landmarks_.GetLandmarkIDsInWindow(img_time, img_time);
     // For each ID, get the track.
     for (const auto& l : landmark_ids) {
       // Looking for track from first image.
-      std::chrono::steady_clock::time_point start_time =
-          (this->img_times_.begin())->second;
+      ros::Time start_time = (this->img_times_.begin())->second;
       FeatureTrack tracks = this->landmarks_.GetTrackInWindow(
           this->sensor_id_, l, start_time, img_time);
       // Emplace new feature track back into vector
@@ -118,9 +115,7 @@ std::vector<FeatureTrack> Tracker::GetTracks(const size_t img_num) const {
   return feature_tracks;
 }
 
-void Tracker::AddImage(
-    const cv::Mat& image,
-    const std::chrono::steady_clock::time_point& current_time) {
+void Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
   // Register the time this image
   this->TimestampImage(current_time);
   // Check if this is the first image being tracked.
@@ -153,13 +148,12 @@ std::vector<std::vector<FeatureTrack>>
   // FeatureTracks from current image, and all FeatureTracks
   std::vector<FeatureTrack> curr_track;
   std::vector<std::vector<FeatureTrack>> feature_tracks;
-  std::chrono::steady_clock clock;
   size_t num_images = 0;
   if (!image_sequence.empty()) {
     for (auto img_it = image_sequence.begin(); img_it != image_sequence.end();
          ++img_it) {
       // Add image to tracker
-      this->AddImage(*img_it, clock.now());
+      this->AddImage(*img_it, ros::Time::now());
       // Get tracks from this image (first should return a null track)
       curr_track = this->GetTracks(num_images);
       // Add current image tracks to the list of feature tracks

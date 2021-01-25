@@ -25,14 +25,26 @@ enum { KDTree = 1, KMeans = 2, Composite = 3, LSH = 4 };
  */
 class FLANNMatcher : public Matcher {
 public:
-  /** @brief Default constructor. The user can also specify their own struct
-   * with desired values. If no struct is provided, default values are used.
+  /** @brief Custom constructor. The user can also specify their own params or
+   * use default.
+   * @param flann_method The FLANN method to use (described in the FLANN
+   * namespace). As a note, currently selecting a method will set up the FLANN
+   * matcher with default parameters.  Recommended: FLANN::KDTree
+   * @param ratio_threshold Specifies heuristic for the ratio test, illustrated
+   * by Dr. David G. Lowe in his paper _Distinctive Image Features from
+   * Scale-Invariant Keypoints_ (2004). The test takes the ratio of the closest
+   * keypoint distance to that of the second closest neighbour. If the ratio is
+   * less than the heuristic, it is discarded. Reccomended: 0.8
+   * @param auto_remove_outliers Determines whether to automatically remove
+   * outliers using the method described in fm_method.
+   * @param use_knn
+   * @param fm_method Method to find the fundamental matrix and remove outliers.
+   * @param distance_threshold Specifies the distance threshold for good
+   * matches.
    */
-  FLANNMatcher(const int flann_method = FLANN::KDTree,
-               const double ratio_threshold = 0.8,
-               const bool auto_remove_outliers = true,
-               const bool use_knn = true, const int fm_method = cv::FM_RANSAC,
-               const int distance_threshold = 5);
+  FLANNMatcher(int flann_method = FLANN::KDTree, double ratio_threshold = 0.8,
+               bool auto_remove_outliers = true, bool use_knn = true,
+               int fm_method = cv::FM_RANSAC, int distance_threshold = 5);
 
   /**
    * @brief Default destructor
@@ -76,113 +88,35 @@ public:
                        cv::InputArray mask = cv::noArray()) override;
 
 private:
+  int flann_method_ = FLANN::KDTree;
+  bool use_knn_ = true;
+  double ratio_threshold_ = 0.8;
+  int distance_threshold_ = 5;
+  bool auto_remove_outliers_ = true;
+  int fm_method_ = cv::FM_RANSAC;
   /** The pointer to the wrapped cv::FlannBasedMatcher object */
   cv::Ptr<cv::FlannBasedMatcher> flann_matcher_;
 
-  /** Checks whether the desired configuration is valid
-   *
+  /** @brief Checks whether the desired configuration is valid
    *  @param check_config containing the desired configuration values.
    */
   void CheckConfig();
 
-  /** Remove outliers between matches. Uses a heuristic based approach as a
-   *  first pass to determine good matches.
-   *
+  /** @brief Remove outliers between matches. Uses a heuristic based approach as
+   * a first pass to determine good matches.
    *  @param matches the unfiltered matches computed from two images.
-   *
    *  @return the filtered matches.
    */
   std::vector<cv::DMatch>
       FilterMatches(const std::vector<cv::DMatch>& matches) const override;
 
-  /** First pass to filter bad matches. Takes in a vector of matches and uses
-   *  the ratio test to filter the matches.
-   *
+  /** @brief First pass to filter bad matches. Takes in a vector of matches and
+   * uses the ratio test to filter the matches.
    *  @param matches the unfiltered matches computed from two images.
-   *
    *  @return the filtered matches.
    */
   std::vector<cv::DMatch> FilterMatches(
       const std::vector<std::vector<cv::DMatch>>& matches) const override;
-
-  /** The FLANN method to use (described in the FLANN namespace). As a note,
-   *  currently selecting a method will set up the FLANN matcher with
-   *  default parameters.
-   *
-   *  Options:
-   *  FLANN::KDTree: kd-tree separation
-   *  FLANN::KMeans: k-means clustering.
-   *  FLANN::Composite: Combines the above methods.
-   *  FLANN::LSH: Locality-sensitive hash table separation.
-   *
-   *  Recommended: FLANN::KDTree
-   */
-  int flann_method_ = FLANN::KDTree;
-
-  /** Determines whether to use a k-nearest-neighbours match.
-   *
-   *  Matcher can conduct a knn match with the best 2 matches for each
-   *  descriptor. This uses the ratio test (@param ratio_threshold)
-   *  to discard outliers.
-   *
-   *  If false, the matcher uses a distance heuristic
-   *  (@param distance_threshold) to discard poor matches. This also
-   *  incorporates cross checking between matches.
-   *
-   *  Recommended: true.
-   */
-  bool use_knn_ = true;
-
-  /** Specifies heuristic for the ratio test, illustrated by Dr. David G. Lowe
-   *  in his paper _Distinctive Image Features from Scale-Invariant Keypoints_
-   *  (2004). The test takes the ratio of the closest keypoint distance
-   *  to that of the second closest neighbour. If the ratio is less than
-   *  the heuristic, it is discarded.
-   *
-   *  A value of 0.8 was shown by Dr. Lowe to reject 90% of the false matches,
-   *  and discard only 5% of the correct matches.
-   *
-   *  Recommended: 0.8. Must be between 0 and 1.
-   */
-  double ratio_threshold_ = 0.8;
-
-  /** Specifies the distance threshold for good matches.
-   *
-   *  Matches will only be kept if the descriptor distance is less than or
-   *  equal to the product of the distance threshold and the _minimum_ of all
-   *  descriptor distances. The greater the value, the more matches will
-   *  be kept.
-   *
-   *  Recommended: 5. Must be greater than or equal to zero.
-   */
-  int distance_threshold_ = 5;
-
-  /** Determines whether to automatically remove outliers using the method
-   *  described in fm_method.
-   *
-   *  If true, the wave::BruteForceMatcher::matchDescriptors method will
-   *  automatically call the wave::BruteForceMatcher::removeOutliers method,
-   *  which uses the method in wave::BFMatcherParams::fm_method to remove
-   *  matched outliers.
-   *
-   *  If false, the matches returned will only have been passed through the
-   *  distance threshold or ratio tests described above.
-   *
-   *  Recommended: True
-   */
-  bool auto_remove_outliers_ = true;
-
-  /** Method to find the fundamental matrix and remove outliers.
-   *
-   *  Options:
-   *  cv::FM_7POINT: 7-point algorithm
-   *  cv::FM_8POINT: 8-point algorithm
-   *  cv::FM_LMEDS : least-median algorithm
-   *  cv::FM_RANSAC: RANSAC algorithm
-   *
-   *  Recommended: cv::FM_RANSAC.
-   */
-  int fm_method_ = cv::FM_RANSAC;
 };
 
 } // namespace beam_cv

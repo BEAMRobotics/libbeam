@@ -30,7 +30,10 @@ public:
    * @param detector detector object (FAST, ORB, etc...)
    * @param descriptor descriptor object (BRISK, ORB, etc...)
    * @param matcher matcher object (BruteForceMatcher, FLANN)
-   * @param window_size to keep for online use
+   * @param window_size For online, sliding window tracker operation. Maintains
+   * memory by clearing out values from the measurement container that are
+   * outside of this time window. If set to zero (default), all measurements are
+   * kept for offline use.
    */
   Tracker(std::shared_ptr<beam_cv::Detector> detector,
           std::shared_ptr<beam_cv::Descriptor> descriptor,
@@ -58,7 +61,7 @@ public:
    * @param current_time the time at which the image was captured
    */
   void AddImage(const cv::Mat& image,
-                const std::chrono::steady_clock::time_point& current_time);
+                const ros::Time& current_time);
 
   /** @brief Draw tracks for the requested image.
    * @param img_num the number of the image within the sequence
@@ -75,11 +78,8 @@ public:
   std::vector<std::vector<FeatureTrack>>
       OfflineTracker(const std::vector<cv::Mat>& image_sequence);
 
-  /** The templated FeatureDetector */
   std::shared_ptr<beam_cv::Detector> detector;
-  /** The templated DescriptorExtractor */
   std::shared_ptr<beam_cv::Descriptor> descriptor;
-  /** The templated DescriptorMatcher */
   std::shared_ptr<beam_cv::Matcher> matcher;
 
   /** The size of the LandmarkContainer */
@@ -104,7 +104,7 @@ private:
 
   // Correspondence maps
   std::map<int, size_t> prev_ids_;
-  std::map<size_t, std::chrono::steady_clock::time_point> img_times_;
+  std::map<size_t, ros::Time> img_times_;
 
   // Measurement container variables
   beam_containers::LandmarkContainer<beam_containers::LandmarkMeasurement<int>>
@@ -121,7 +121,7 @@ private:
     return id++;
   }
 
-  /** @brief Detects features and computes descriptors using the templated
+  /** @brief Detects features and computes descriptors using the
    * detector and descriptor.
    * @param image
    * @param keypoints
@@ -135,7 +135,7 @@ private:
    * @param current_time the time at which this image was received
    */
   void
-      TimestampImage(const std::chrono::steady_clock::time_point& current_time);
+      TimestampImage(const ros::Time& current_time);
 
   /** @brief Cleans out the LandmarkMeasurementContainer for images outside the
    *  requested window_size.

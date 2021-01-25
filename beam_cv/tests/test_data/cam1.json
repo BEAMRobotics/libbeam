@@ -1,0 +1,18 @@
+{
+  "date": "2020_08_20",
+  "method": "manual",
+  "camera_type": "RADTAN",
+  "image_width": 2772,
+  "image_height": 1980,
+  "frame_id": "K_link",
+  "intrinsics": [
+    4412.147,
+    4412.147,
+    1406.974,
+    994.694,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

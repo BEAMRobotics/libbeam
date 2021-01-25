@@ -1,7 +1,7 @@
 #pragma once
 
 #include <beam_utils/math.hpp>
-#include <chrono>
+#include <beam_utils/time.hpp>
 
 namespace beam_containers {
 /** @addtogroup containers
@@ -9,7 +9,7 @@ namespace beam_containers {
 
 /** The integral type used to track a landmark across multiple measurements
  */
-using TimePoint = std::chrono::steady_clock::time_point;
+using TimePoint = ros::Time;
 
 /** Storage type for a landmark measurement as a 2D position.
  *
@@ -17,9 +17,8 @@ using TimePoint = std::chrono::steady_clock::time_point;
  * but it is now a separate entity with no record of which camera image it came
  * from.
  *
- * This class template is similar to `Measurement`, with an additional member:
- * `landmark_id`, which represents a unique ID used for tracking a single
- * landmark across multiple images.
+ * This class represents a visual landmark, and assigns a unique id to each so
+ * it can be tracked across various frames
  *
  * The measurement value is 2D vector, representing the pixel position of the
  * landmark (u, v).

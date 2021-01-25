@@ -11,6 +11,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Eigen3::Eigen
     OpenCV::OpenCV
     PCL::PCL
+    Boost::boost
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
@@ -69,15 +70,30 @@ target_link_libraries(${PROJECT_NAME}_pose_refinement_tests
   Catch2::Catch2
 )
 
-add_executable(${PROJECT_NAME}_debug
-  tests/debug.cpp
+add_executable(${PROJECT_NAME}_feature_tests
+  tests/feature_tests.cpp
 )
-target_include_directories(${PROJECT_NAME}_debug
+
+target_include_directories(${PROJECT_NAME}_feature_tests
   PUBLIC
     include
 )
-target_link_libraries(${PROJECT_NAME}_debug
+target_link_libraries(${PROJECT_NAME}_feature_tests
   ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_tracker_tests
+  tests/tracker_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_tracker_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_tracker_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
 )
 
 file(COPY tests/run_all_tests.bash

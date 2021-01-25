@@ -14,29 +14,17 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 
 ################ test libraries ##############
 
-add_library(test_utils STATIC tests/util.cpp)
-  
-add_library(visualizer STATIC tests/visualizer.cpp)
+add_library(test_utils STATIC tests/src/test_util.cpp)
 
-target_link_libraries(visualizer 
-  beam::matching
-  beam::filtering
-  ${PCl_LIBRARIES}
-)
-
-target_include_directories(visualizer
-  PUBLIC
-    include/beam_optimization
-    ${PCl_INCLUDE_DIRS}
-)
 
 target_link_libraries(test_utils
   beam::calibration
+  beam::utils
 )
 
 target_include_directories(test_utils
   PUBLIC
-    include/beam_optimization
+    tests/include
     ${PCl_INCLUDE_DIRS}
 )
 
@@ -45,7 +33,7 @@ add_definitions(${PCL_DEFINITIONS})
 ################ tests ##################
 
 add_executable(${PROJECT_NAME}_ceres_ladybug_tests
-  tests/ladybug_reprojection_tests.cpp
+  tests/src/ladybug_reprojection_tests.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_ceres_ladybug_tests
@@ -61,16 +49,16 @@ target_link_libraries(${PROJECT_NAME}_ceres_ladybug_tests
   ${CERES_LIBRARIES}
   ${PCL_LIBRARY_DIRS}
   test_utils
-  visualizer
+  beam::utils
 )
 
 add_executable(${PROJECT_NAME}_ceres_radtan_tests
-  tests/radtan_reprojection_tests.cpp
+  tests/src/radtan_reprojection_tests.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_ceres_radtan_tests
   PUBLIC
-    include
+    include/beam_optimization
     ${catkin_INCLUDE_DIRS}
     ${PCl_INCLUDE_DIRS}
 )
@@ -81,7 +69,7 @@ target_link_libraries(${PROJECT_NAME}_ceres_radtan_tests
   ${CERES_LIBRARIES}
   ${PCL_LIBRARY_DIRS}
   test_utils
-  visualizer
+  beam::utils
 )
 
 file(COPY tests/run_all_tests.bash

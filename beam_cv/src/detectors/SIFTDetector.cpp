@@ -2,20 +2,20 @@
 
 namespace beam_cv {
 
-SIFTDetector::SIFTDetector(const int nfeatures, const int nOctaveLayers,
-                           const double contrastThreshold,
-                           const double edgeThreshold, const double sigma) {
-  this->nfeatures_ = nfeatures;
-  this->nOctaveLayers_ = nOctaveLayers;
-  this->contrastThreshold_ = contrastThreshold;
-  this->edgeThreshold_ = edgeThreshold;
+SIFTDetector::SIFTDetector(int num_features, int num_octave_layers,
+                           double contrast_threshold, double edge_threshold,
+                           double sigma) {
+  this->num_features_ = num_features;
+  this->num_octave_layers_ = num_octave_layers;
+  this->contrast_threshold_ = contrast_threshold;
+  this->edge_threshold_ = edge_threshold;
   this->sigma_ = sigma;
   // Ensure parameters are valid
   this->CheckConfig();
 
   this->sift_detector_ = cv::xfeatures2d::SIFT::create(
-      this->nfeatures_, this->nOctaveLayers_, this->contrastThreshold_,
-      this->edgeThreshold_, this->sigma_);
+      this->num_features_, this->num_octave_layers_, this->contrast_threshold_,
+      this->edge_threshold_, this->sigma_);
 }
 
 std::vector<cv::KeyPoint> SIFTDetector::DetectFeatures(const cv::Mat& image) {

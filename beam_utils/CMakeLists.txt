@@ -8,18 +8,24 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     PCL::PCL
     OpenCV::OpenCV
     gflags
+    Boost::boost
   SOURCES
     src/math.cpp
     src/time.cpp
     src/angles.cpp
-    src/uf.cpp
     src/gflags.cpp
+    src/visualizer.cpp
+    src/filesystem.cpp
+    src/roots.cpp
+    src/polynomial.cpp
+    src/optional.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests
   tests/angles_test.cpp
   tests/time_test.cpp
   tests/math_test.cpp
+  tests/filesystem_test.cpp
   tests/utils_tests_main.cpp
 )
 target_include_directories(${PROJECT_NAME}_unit_tests

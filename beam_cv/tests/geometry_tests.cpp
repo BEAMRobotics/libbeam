@@ -4,6 +4,8 @@
 
 #include <catch2/catch.hpp>
 
+#include <beam_utils/time.hpp>
+
 #include <beam_cv/Utils.h>
 #include <beam_cv/geometry/AbsolutePoseEstimator.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
@@ -109,13 +111,16 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   std::vector<Eigen::Matrix3d> R;
   std::vector<Eigen::Vector3d> t;
   beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
-  Eigen::Matrix4d pose = beam_cv::RelativePoseEstimator::RecoverPose(
-      cam, cam, frame1_matches, frame2_matches, R, t);
+  opt<Eigen::Matrix4d> pose;
+  beam_cv::RelativePoseEstimator::RecoverPose(cam, cam, frame1_matches,
+                                              frame2_matches, R, t, pose);
 
-  REQUIRE(pose.isApprox(P, 1e-4));
+  REQUIRE(pose.value().isApprox(P, 1e-4));
 }
 
-TEST_CASE("Test RANSAC Relative Pose estimator.") {
+TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
+  struct timespec t;
+
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
   cam_loc += "tests/test_data/K.json";
@@ -129,14 +134,48 @@ TEST_CASE("Test RANSAC Relative Pose estimator.") {
   std::vector<Eigen::Vector2i> frame1_matches;
   std::vector<Eigen::Vector2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
+  BEAM_INFO("Starting 7 Point RANSAC");
+  beam::tic(&t);
+  opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
+      cam, cam, frame1_matches, frame2_matches,
+      beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
+  float elapsed = beam::toc(&t);
+  BEAM_INFO("7 Point RANSAC elapsed time (20 iterations): {}", elapsed);
+  Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
+  int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
+                                          frame2_matches, Pr, pose.value(), 5);
+  INFO(num_inliers);
+  REQUIRE(num_inliers == 100);
+}
+
+TEST_CASE("Test RANSAC Relative Pose estimator - 8 Point") {
+  struct timespec t;
+
+  std::string cam_loc = __FILE__;
+  cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
+  cam_loc += "tests/test_data/K.json";
+  std::shared_ptr<beam_calibration::CameraModel> cam =
+      beam_calibration::CameraModel::Create(cam_loc);
+  std::string matches_loc = __FILE__;
+  matches_loc.erase(matches_loc.end() - 24, matches_loc.end());
+  matches_loc += "tests/test_data/matches.txt";
+
+  // extract poses
+  std::vector<Eigen::Vector2i> frame1_matches;
+  std::vector<Eigen::Vector2i> frame2_matches;
+  ReadMatches(matches_loc, frame1_matches, frame2_matches);
+  BEAM_INFO("Starting 8 Point RANSAC");
+  beam::tic(&t);
   opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam, cam, frame1_matches, frame2_matches,
       beam_cv::EstimatorMethod::EIGHTPOINT, 200, 5, 123);
+  float elapsed = beam::toc(&t);
+  BEAM_INFO("8 Point RANSAC elapsed time (200 iterations): {}", elapsed);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
                                           frame2_matches, Pr, pose.value(), 10);
   INFO(num_inliers);
-  REQUIRE(num_inliers == 31);
+  REQUIRE(num_inliers == 32);
 }
 
 TEST_CASE("Test P3P Absolute Pose Estimator") {
@@ -191,9 +230,14 @@ TEST_CASE("Test RANSAC Absolute Pose estimator.") {
     }
   }
 
+  struct timespec t;
+
   int seed = rand();
+  beam::tic(&t);
   Eigen::Matrix4d pose = beam_cv::AbsolutePoseEstimator::RANSACEstimator(
       cam, pixels, points, 30, 5, seed);
+  float elapsed = beam::toc(&t);
+  BEAM_INFO("RANSAC PnP (30 iterations): {}", elapsed);
 
   REQUIRE(pose.isApprox(truth, 1e-3));
 }

@@ -2,8 +2,8 @@
 
 namespace beam_cv {
 
-FASTDetector::FASTDetector(const int threshold, const bool nonmax_suppression,
-                           const int type, const int num_features) {
+FASTDetector::FASTDetector(int num_features, int threshold,
+                           bool nonmax_suppression, int type) {
   this->threshold_ = threshold;
   this->nonmax_suppression_ = nonmax_suppression;
   this->type_ = type;
@@ -26,15 +26,15 @@ std::vector<cv::KeyPoint> FASTDetector::DetectFeatures(const cv::Mat& image) {
 }
 
 void FASTDetector::CheckConfig() {
-    // Check parameters. If invalid, throw an exception.
-    if (this->threshold_ <= 0) {
-        throw std::invalid_argument("threshold must be greater than 0!");
-    } else if (this->type_ < 0 || this->type_ > 3) {
-        throw std::invalid_argument("Invalid type for FASTDetector!");
-    } else if (this->num_features_ < 0) {
-        throw std::invalid_argument(
-          "num_features must be greater than/equal to 0!");
-    }
+  // Check parameters. If invalid, throw an exception.
+  if (this->threshold_ <= 0) {
+    throw std::invalid_argument("threshold must be greater than 0!");
+  } else if (this->type_ < 0 || this->type_ > 3) {
+    throw std::invalid_argument("Invalid type for FASTDetector!");
+  } else if (this->num_features_ < 0) {
+    throw std::invalid_argument(
+        "num_features must be greater than/equal to 0!");
+  }
 }
 
 } // namespace beam_cv
