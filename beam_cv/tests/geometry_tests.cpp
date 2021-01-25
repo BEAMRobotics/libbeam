@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <beam_utils/time.hpp>
+#include <beam_utils/time.h>
 
 #include <beam_cv/Utils.h>
 #include <beam_cv/geometry/AbsolutePoseEstimator.h>

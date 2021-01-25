@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_cloud.h>

@@ -18,7 +18,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <beam_utils/time.hpp>
+#include <beam_utils/time.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <pcl/point_types.h>

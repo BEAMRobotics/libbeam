@@ -9,9 +9,9 @@
 #include <beam_cv/detectors/Detectors.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
 #include <beam_cv/matchers/Matchers.h>
-#include <beam_utils/angles.hpp>
+#include <beam_utils/angles.h>
 
-#include <beam_utils/time.hpp>
+#include <beam_utils/time.h>
 
 #include <beam_calibration/Radtan.h>
 

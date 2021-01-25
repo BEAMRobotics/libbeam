@@ -3,7 +3,7 @@
 #include <beam_calibration/KannalaBrandt.h>
 
 #include <beam_calibration/CameraModel.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 #include <catch2/catch.hpp>
 
 std::unique_ptr<beam_calibration::CameraModel> camera_model_;

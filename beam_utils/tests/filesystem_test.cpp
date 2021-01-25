@@ -4,7 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 
-#include <beam_utils/filesystem.hpp>
+#include <beam_utils/filesystem.h>
 
 namespace fs = boost::filesystem;
 

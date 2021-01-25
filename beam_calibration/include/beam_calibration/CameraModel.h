@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <beam_utils/utils.hpp>
+#include <beam_utils/utils.h>
 
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>

@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "beam_mapping/Poses.h"
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 

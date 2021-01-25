@@ -5,7 +5,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 
 namespace beam_depth {
 

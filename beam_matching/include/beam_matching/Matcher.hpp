@@ -10,7 +10,7 @@
 #ifndef BEAM_MATCHING_MATCHER_HPP
 #define BEAM_MATCHING_MATCHER_HPP
 
-#include "beam_utils/utils.hpp"
+#include "beam_utils/utils.h"
 
 namespace beam_matching {
 /** @addtogroup matching

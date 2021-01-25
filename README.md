@@ -19,4 +19,4 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}_node
 
 Then you can include the headers in your .cpp and .hpp files, e.g.:
 
-`#include <beam_utils/math.hpp>`
+`#include <beam_utils/math.h>`

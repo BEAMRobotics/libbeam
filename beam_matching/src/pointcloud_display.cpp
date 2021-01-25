@@ -1,5 +1,5 @@
 #include "beam_matching/pointcloud_display.hpp"
-#include "beam_utils/log.hpp"
+#include "beam_utils/log.h"
 
 namespace beam_matching {
 

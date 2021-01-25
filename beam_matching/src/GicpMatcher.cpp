@@ -1,6 +1,6 @@
 #include "beam_matching/GicpMatcher.hpp"
 
-#include <beam_utils/log.hpp>
+#include <beam_utils/log.h>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>

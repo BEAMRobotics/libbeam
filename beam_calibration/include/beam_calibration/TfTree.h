@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nlohmann/json.hpp>
 #include <tf2/buffer_core.h>

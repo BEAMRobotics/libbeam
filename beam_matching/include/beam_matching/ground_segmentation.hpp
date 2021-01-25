@@ -21,7 +21,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/registration/transforms.h>
 #include <beam_matching/ground_segmentation_params.hpp>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 
 namespace beam_matching {
 /** @addtogroup matching

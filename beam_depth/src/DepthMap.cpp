@@ -5,7 +5,7 @@
 #include <beam_cv/Raycast.h>
 #include <beam_cv/Utils.h>
 #include <beam_depth/Utils.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 
 
 namespace beam_depth {
