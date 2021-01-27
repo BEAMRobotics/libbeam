@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "beam_filtering/DROR.h"
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 #include <catch2/catch.hpp>
 #include <boost/filesystem.hpp>
 #include <pcl/io/pcd_io.h>

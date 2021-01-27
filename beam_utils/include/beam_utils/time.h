@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <beam_utils/log.hpp>
+#include <beam_utils/log.h>
 #include <chrono>
 #include <ctime>
 #include <iostream>

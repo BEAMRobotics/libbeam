@@ -13,7 +13,7 @@ DoubleSphere::DoubleSphere(const std::string& file_path) {
   alpha_ = intrinsics_[5];
 }
 
-opt<Eigen::Vector2d>
+beam::opt<Eigen::Vector2d>
     DoubleSphere::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;
 
@@ -46,8 +46,8 @@ opt<Eigen::Vector2d>
   return {};
 }
 
-opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
+beam::opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
+  beam::opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
   if (pixel.has_value()) {
     Eigen::Vector2i pixel_rounded;
     pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
@@ -55,7 +55,7 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point, bo
   }
   return {};
 }
-opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
+beam::opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
                                                 Eigen::MatrixXd& J, bool& outside_domain) {
   double Px = point[0];
   double Py = point[1];
@@ -93,7 +93,7 @@ opt<Eigen::Vector2i> DoubleSphere::ProjectPoint(const Eigen::Vector3d& point,
   return ProjectPoint(point, outside_domain);
 }
 
-opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
+beam::opt<Eigen::Vector3d> DoubleSphere::BackProject(const Eigen::Vector2i& pixel) {
   double mx = (pixel[0] - cx_) / fx_;
   double my = (pixel[1] - cy_) / fy_;
   double r2 = mx * mx + my * my;

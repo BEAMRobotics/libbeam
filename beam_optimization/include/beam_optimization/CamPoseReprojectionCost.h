@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdio>
+
 #include <ceres/numeric_diff_cost_function.h>
 #include <ceres/autodiff_cost_function.h>
 #include <ceres/rotation.h>
 #include <ceres/cost_function_to_functor.h>
-#include <optional>
-#include <cstdio>
 
+#include <beam_utils/optional.h>
 #include <beam_calibration/CameraModel.h>
 
 /**
@@ -24,7 +25,7 @@ struct CameraProjectionFunctor {
 
   bool operator()(const double* P, double* pixel) const {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
-    std::optional<Eigen::Vector2d> pixel_projected =
+    beam::opt<Eigen::Vector2d> pixel_projected =
         camera_model_->ProjectPointPrecise(P_CAMERA_eig);
 
     // get image dims in case projection fails
@@ -121,7 +122,7 @@ struct CeresReprojectionCostFunction {
     Eigen::Vector3d P_CAMERA_eig_check{*P_CAMERA_check_x, 
       *P_CAMERA_check_y, *P_CAMERA_check_z};
     bool outside_domain = false; 
-    std::optional<Eigen::Vector2d> pixel_projected_check =
+    beam::opt<Eigen::Vector2d> pixel_projected_check =
         camera_model_->ProjectPointPrecise(P_CAMERA_eig_check, outside_domain); 
 
 
@@ -156,7 +157,7 @@ struct CeresReprojectionCostFunction {
   bool checkDomain (const double* P) { 
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
     bool outside_domain = false; 
-    std::optional<Eigen::Vector2d> pixel_projected =
+    beam::opt<Eigen::Vector2d> pixel_projected =
         camera_model_->ProjectPointPrecise(P_CAMERA_eig, outside_domain);
     return outside_domain;
   }

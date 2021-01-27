@@ -6,12 +6,12 @@
 
 #include <beam_cv/Utils.h>
 #include <beam_cv/geometry/Triangulation.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 #include <beam_utils/roots.h>
 
 namespace beam_cv {
 
-opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
+beam::opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const std::vector<Eigen::Vector2i>& p1_v,
@@ -25,8 +25,8 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
   for (int i = 0; i < N; i++) {
-    opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
-    opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
+    beam::opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
+    beam::opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
     if (xpc.has_value() && xpr.has_value()) {
       X_r.push_back(xpr.value());
       X_c.push_back(xpc.value());
@@ -61,7 +61,7 @@ opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   return E;
 }
 
-opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
+beam::opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const std::vector<Eigen::Vector2i>& p1_v,
@@ -75,8 +75,8 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
   for (int i = 0; i < N; i++) {
-    opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
-    opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
+    beam::opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
+    beam::opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
     if (xpc.has_value() && xpr.has_value()) {
       X_r.push_back(xpr.value());
       X_c.push_back(xpc.value());
@@ -143,7 +143,7 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
     Eigen::Vector3d e1 = fmatrix_svd.matrixV().col(2);
     // lines connecting of x1 and e1
     Eigen::Matrix<double, 3, Eigen::Dynamic> l1_ex =
-        beam::skewTransform(e1) * matx1.colwise().homogeneous();
+        beam::SkewTransform(e1) * matx1.colwise().homogeneous();
     // lines determined by F and x2
     Eigen::Matrix<double, 3, Eigen::Dynamic> l1_Fx =
         Ftmp * matx2.colwise().homogeneous();
@@ -154,7 +154,7 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
   return E;
 }
 
-opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
+beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const std::vector<Eigen::Vector2i>& p1_v,
@@ -204,11 +204,11 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     // perform pose estimation of the given method
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
-      opt<Eigen::Matrix3d> E = RelativePoseEstimator::EssentialMatrix8Point(
+      beam::opt<Eigen::Matrix3d> E = RelativePoseEstimator::EssentialMatrix8Point(
           cam1, cam2, sampled_pr, sampled_pc);
       if (E.has_value()) { Evec.push_back(E.value()); }
     } else if (method == EstimatorMethod::SEVENPOINT) {
-      opt<std::vector<Eigen::Matrix3d>> E =
+      beam::opt<std::vector<Eigen::Matrix3d>> E =
           RelativePoseEstimator::EssentialMatrix7Point(cam1, cam2, sampled_pr,
                                                        sampled_pc);
       if (E.has_value()) { Evec = E.value(); }
@@ -221,7 +221,7 @@ opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       std::vector<Eigen::Matrix3d> R;
       std::vector<Eigen::Vector3d> t;
       RelativePoseEstimator::RtFromE(E, R, t);
-      opt<Eigen::Matrix4d> pose;
+      beam::opt<Eigen::Matrix4d> pose;
       int inliers = RelativePoseEstimator::RecoverPose(cam1, cam2, sampled_pr,
                                                        sampled_pc, R, t, pose);
       if (pose.has_value()) {
@@ -269,7 +269,7 @@ int RelativePoseEstimator::RecoverPose(
     const std::vector<Eigen::Vector2i>& p1_v,
     const std::vector<Eigen::Vector2i>& p2_v,
     const std::vector<Eigen::Matrix3d>& R,
-    const std::vector<Eigen::Vector3d>& t, opt<Eigen::Matrix4d>& pose) {
+    const std::vector<Eigen::Vector3d>& t, beam::opt<Eigen::Matrix4d>& pose) {
   Eigen::Matrix4d T_cam2_world;
   // iterate through each possibility
   for (int i = 0; i < 2; i++) {
@@ -281,7 +281,7 @@ int RelativePoseEstimator::RecoverPose(
       T_cam2_world.row(3) = v;
       Eigen::Matrix4d I = Eigen::Matrix4d::Identity();
       // triangulate correspondences
-      std::vector<opt<Eigen::Vector3d>> points =
+      std::vector<beam::opt<Eigen::Vector3d>> points =
           Triangulation::TriangulatePoints(cam1, cam2, I, T_cam2_world, p1_v,
                                            p2_v);
       int inliers = beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, points, I,

@@ -1,4 +1,4 @@
-#include <beam_utils/log.hpp>
+#include <beam_utils/log.h>
 
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>

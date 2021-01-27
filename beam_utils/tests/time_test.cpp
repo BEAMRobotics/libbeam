@@ -1,8 +1,8 @@
-#include "beam_utils/time.hpp"
+#include "beam_utils/time.h"
 #include <catch2/catch.hpp>
 #include <iostream>
 
-TEST_CASE("ros and chrono conversions", "[Time.hpp]") {
+TEST_CASE("ros and chrono conversions", "[Time.h]") {
   uint32_t seconds = 987;
   uint32_t nanoseconds = 654321012;
   uint32_t full_time = 987654321012;

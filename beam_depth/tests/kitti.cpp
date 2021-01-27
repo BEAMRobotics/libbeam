@@ -2,7 +2,7 @@
 
 #include "beam_depth/DepthCompletion.h"
 #include "beam_depth/DepthMap.h"
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 
 #include <dirent.h>
 

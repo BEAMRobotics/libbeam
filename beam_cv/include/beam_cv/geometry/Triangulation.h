@@ -11,9 +11,6 @@
 #include <beam_calibration/CameraModel.h>
 #include <beam_utils/optional.h>
 
-template <class T>
-using opt = beam::optional<T>;
-
 namespace beam_cv {
 
 /**
@@ -31,7 +28,7 @@ public:
    * @param p1 pixel in image 1 to triangulate
    * @param p2 pixel in image 2 to triangulate
    */
-  static opt<Eigen::Vector3d> TriangulatePoint(
+  static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
@@ -44,7 +41,7 @@ public:
    * @param T_cam_world list of transforms form world to camera
    * @param pixels list of pixel locations in each camera image
    */
-  static opt<Eigen::Vector3d> TriangulatePoint(
+  static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::vector<std::shared_ptr<beam_calibration::CameraModel>>& cams,
       const std::vector<Eigen::Matrix4d>& T_cam_world,
       const std::vector<Eigen::Vector2i>& pixels);
@@ -59,7 +56,7 @@ public:
    * @param p1_v list of correspondences to triangulate (image 1)
    * @param p2_v list of correspondences to triangulate (image 2)
    */
-  static std::vector<opt<Eigen::Vector3d>> TriangulatePoints(
+  static std::vector<beam::opt<Eigen::Vector3d>> TriangulatePoints(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,

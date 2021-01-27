@@ -1,25 +1,22 @@
 #define CATCH_CONFIG_MAIN
+#include <cmath>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <Eigen/Geometry>
 #include <catch2/catch.hpp>
 #include <ceres/ceres.h>
 #include <ceres/loss_function.h>
-#include <ceres/numeric_diff_cost_function.h>
-#include <ceres/autodiff_cost_function.h>
-#include <ceres/rotation.h>
-#include <ceres/cost_function_to_functor.h>
 #include <ceres/solver.h>
 #include <ceres/types.h>
-#include "test_util.hpp"
-#include <beam_utils/visualizer.hpp>
-#include <beam_utils/angles.hpp>
-#include <beam_utils/math.hpp>
-#include <beam_calibration/CameraModel.h>
-#include <cmath>
-#include <math.h>
-#include "CamPoseReprojectionCost.hpp"
-#include <stdio.h>
-#include <stdlib.h>
+
+#include <test_util.h>
+#include <beam_utils/visualizer.h>
+#include <beam_utils/angles.h>
+#include <beam_utils/math.h>
+#include <CamPoseReprojectionCost.h>
+
 
 namespace beam_optimization {
 
@@ -128,9 +125,9 @@ TEST_CASE("Test rt projection - no noise") {
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
+    beam::opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
     if (pixel.has_value()) {
       pixels_valid[i] = true;
       pixels[i] = pixel.value();
@@ -148,7 +145,7 @@ TEST_CASE("Test rt projection - no noise") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
       if (perturbed_pixel.has_value()) {
         perturbed_pixels[i] = perturbed_pixel.value();
       }
@@ -183,7 +180,7 @@ TEST_CASE("Test rt projection - no noise") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -203,7 +200,7 @@ TEST_CASE("Test rt projection - no noise") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct:
-      opt<Eigen::Vector2d> pixel_projected =
+      beam::opt<Eigen::Vector2d> pixel_projected =
           camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized()); 
       REQUIRE(pixel_projected.value().isApprox(pixels[i], 1e-5));
     }
@@ -232,7 +229,7 @@ TEST_CASE("Test rt projection - no noise") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
       if (final_pixel.has_value()) {
         final_pixels[i] = final_pixel.value();
       }
@@ -312,9 +309,9 @@ TEST_CASE("Test rt projection - with noise") {
   // create projected (detected) points - with noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
+    beam::opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
     if (pixel.has_value()) {
       //generate noise in the projected pixel (+/- 2 pixels)
       auto rng_x = std::mt19937(std::random_device{}());
@@ -340,7 +337,7 @@ TEST_CASE("Test rt projection - with noise") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
       if (perturbed_pixel.has_value()) {
         perturbed_pixels[i] = perturbed_pixel.value();
       }
@@ -375,7 +372,7 @@ TEST_CASE("Test rt projection - with noise") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -395,7 +392,7 @@ TEST_CASE("Test rt projection - with noise") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct (within the noise level):
-      opt<Eigen::Vector2d> pixel_projected =
+      beam::opt<Eigen::Vector2d> pixel_projected =
           camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized()); 
       REQUIRE(pixel_projected.value().isApprox(pixels[i], 2.1));
     }
@@ -424,7 +421,7 @@ TEST_CASE("Test rt projection - with noise") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
       if (final_pixel.has_value()) {
         final_pixels[i] = final_pixel.value();
       }
@@ -503,9 +500,9 @@ TEST_CASE("Test rt projection - with clipping") {
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
+    beam::opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
     if (pixel.has_value()) {
       pixels_valid[i] = true;
       pixels[i] = pixel.value();
@@ -523,7 +520,7 @@ TEST_CASE("Test rt projection - with clipping") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
       if (perturbed_pixel.has_value()) {
         perturbed_pixels[i] = perturbed_pixel.value();
       }
@@ -558,7 +555,7 @@ TEST_CASE("Test rt projection - with clipping") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -578,7 +575,7 @@ TEST_CASE("Test rt projection - with clipping") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct (within the noise level):
-      opt<Eigen::Vector2d> pixel_projected =
+      beam::opt<Eigen::Vector2d> pixel_projected =
           camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized()); 
       REQUIRE(pixel_projected.value().isApprox(pixels[i], 1e-5));
     }
@@ -607,7 +604,7 @@ TEST_CASE("Test rt projection - with clipping") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
       if (final_pixel.has_value()) {
         final_pixels[i] = final_pixel.value();
       }
@@ -685,9 +682,9 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
+    beam::opt<Eigen::Vector2d> pixel = camera_model->ProjectPointPrecise(point_transformed.hnormalized());
     if (pixel.has_value()) {
       pixels_valid[i] = true;
       pixels[i] = pixel.value();
@@ -705,7 +702,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> perturbed_pixel = camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
       if (perturbed_pixel.has_value()) {
         perturbed_pixels[i] = perturbed_pixel.value();
       }
@@ -741,7 +738,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -761,7 +758,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct (within the noise level):
-      opt<Eigen::Vector2d> pixel_projected =
+      beam::opt<Eigen::Vector2d> pixel_projected =
           camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized()); 
       REQUIRE(pixel_projected.value().isApprox(pixels[i], 1e-5));
     }
@@ -790,7 +787,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
 
     for (uint16_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
+      beam::opt<Eigen::Vector2d> final_pixel = camera_model->ProjectPointPrecise(final_points[i].hnormalized());
       if (final_pixel.has_value()) {
         final_pixels[i] = final_pixel.value();
       }

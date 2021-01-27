@@ -4,14 +4,14 @@
 
 namespace beam_cv {
 
-opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
+beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
       const Eigen::Vector2i& p1, const Eigen::Vector2i& p2) {
   // we triangulate back projected points to be camera model invariant
-  opt<Eigen::Vector3d> m1 = cam1->BackProject(p1);
-  opt<Eigen::Vector3d> m2 = cam2->BackProject(p2);
+  beam::opt<Eigen::Vector3d> m1 = cam1->BackProject(p1);
+  beam::opt<Eigen::Vector3d> m2 = cam2->BackProject(p2);
   if (!m1.has_value() || !m2.has_value()) { return {}; }
   double mx1 = m1.value()[0], my1 = m1.value()[1], mz1 = m1.value()[2];
   double mx2 = m2.value()[0], my2 = m2.value()[1], mz2 = m2.value()[2];
@@ -36,7 +36,7 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   return xp;
 }
 
-opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
+beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     const std::vector<std::shared_ptr<beam_calibration::CameraModel>>& cams,
     const std::vector<Eigen::Matrix4d>& T_cam_world,
     const std::vector<Eigen::Vector2i>& pixels) {
@@ -45,7 +45,7 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   }
   int rows = cams.size() * 2;
   Eigen::MatrixXd A(rows, 4);
-  for (int i = 0; i < cams.size(); i++) {
+  for (uint32_t i = 0; i < cams.size(); i++) {
     Eigen::Vector3d m = cams[i]->BackProject(pixels[i]).value();
     double mx = m[0], my = m[1], mz = m[2];
     Eigen::Matrix4d T = T_cam_world[i];
@@ -63,16 +63,16 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   return xp;
 }
 
-std::vector<opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
+std::vector<beam::opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
     const std::vector<Eigen::Vector2i>& p1_v,
     const std::vector<Eigen::Vector2i>& p2_v) {
   // loop through point vector and perform single point triangulation
-  std::vector<opt<Eigen::Vector3d>> result_pts3d;
+  std::vector<beam::opt<Eigen::Vector3d>> result_pts3d;
   for (uint32_t i = 0; i < p1_v.size(); i++) {
-    opt<Eigen::Vector3d> pt3d = Triangulation::TriangulatePoint(
+    beam::opt<Eigen::Vector3d> pt3d = Triangulation::TriangulatePoint(
         cam1, cam2, T_cam1_world, T_cam2_world, p1_v[i], p2_v[i]);
     result_pts3d.push_back(pt3d);
   }

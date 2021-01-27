@@ -15,7 +15,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <beam_utils/time.hpp>
+#include <beam_utils/time.h>
 
 namespace beam_containers {
 /** @addtogroup containers

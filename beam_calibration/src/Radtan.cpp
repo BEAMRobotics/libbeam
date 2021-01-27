@@ -31,7 +31,7 @@ Radtan::Radtan(uint32_t image_height, uint32_t image_width,
   p2_ = intrinsics_[7];
 }
 
-opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
+beam::opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;
   
   // check if point is behind image plane
@@ -55,8 +55,8 @@ opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point, b
   return {};
 }
 
-opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
+beam::opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
+  beam::opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
   if (pixel.has_value()) {
     Eigen::Vector2i pixel_rounded;
     pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
@@ -65,7 +65,7 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point, bool& ou
   return {};
 }
 
-opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
+beam::opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
                                           Eigen::MatrixXd& J, bool& outside_domain) {
   Eigen::Vector2d tmp;
   const double x = point[0], y = point[1], z = point[2];
@@ -97,7 +97,7 @@ opt<Eigen::Vector2i> Radtan::ProjectPoint(const Eigen::Vector3d& point,
   return ProjectPoint(point, outside_domain);
 }
 
-opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {
+beam::opt<Eigen::Vector3d> Radtan::BackProject(const Eigen::Vector2i& pixel) {
   if (!PixelInImage(pixel)) { return {}; }
 
   Eigen::Vector3d out_point;

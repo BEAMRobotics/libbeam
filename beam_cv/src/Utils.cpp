@@ -209,7 +209,7 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
     BEAM_WARN("Invalid input, number of pixels must match.");
     return -1;
   }
-  std::vector<opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
+  std::vector<beam::opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
       cam1, cam2, T_cam1_world, T_cam2_world, p1_v, p2_v);
   return CheckInliers(cam1, cam2, p1_v, p2_v, points, T_cam1_world,
                       T_cam2_world, inlier_threshold);
@@ -219,7 +219,7 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
                  std::shared_ptr<beam_calibration::CameraModel> cam2,
                  std::vector<Eigen::Vector2i> p1_v,
                  std::vector<Eigen::Vector2i> p2_v,
-                 std::vector<opt<Eigen::Vector3d>> points,
+                 std::vector<beam::opt<Eigen::Vector3d>> points,
                  Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
                  double inlier_threshold) {
   if (p1_v.size() != p2_v.size()) {
@@ -236,8 +236,8 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
     Eigen::Vector3d pt1 = pt_h_1.head(3) / pt_h_1(3);
     Eigen::Vector3d pt2 = pt_h_2.head(3) / pt_h_2(3);
     // reproject triangulated points into each frame
-    opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
-    opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
+    beam::opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
+    beam::opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
     if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
     // compute distance to actual pixel
     Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
@@ -265,7 +265,7 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
     pt_h = T_cam_world * pt_h;
     Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
 
-    opt<Eigen::Vector2d> p = cam->ProjectPointPrecise(ptc);
+    beam::opt<Eigen::Vector2d> p = cam->ProjectPointPrecise(ptc);
     if (!p.has_value()) { continue; }
     Eigen::Vector2d pd{pixels[i][0], pixels[i][1]};
     double dist = beam::distance(p.value(), pd);

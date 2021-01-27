@@ -1,7 +1,7 @@
 #include "beam_defects/Defect.h"
 #include "beam_defects/defect_functions.h"
 
-#include <beam_utils/log.hpp>
+#include <beam_utils/log.h>
 
 #include <pcl/common/common.h>
 #include <pcl/common/distances.h>

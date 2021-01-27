@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "beam_calibration/CameraModel.h"
+#include <beam_calibration/CameraModel.h>
 
 namespace beam_calibration {
 
@@ -40,7 +40,7 @@ public:
    * @param outside_domain optional parameter, set if point is outside camera model domain
    * point has been projected into the image plane [u,v]^T
    */
-  opt<Eigen::Vector2d> ProjectPointPrecise(
+  beam::opt<Eigen::Vector2d> ProjectPointPrecise(
       const Eigen::Vector3d& point,
       bool& outside_domain = outside_domain_default_) override;
 
@@ -50,7 +50,7 @@ public:
    * @param point 3d point to be projected [x,y,z]^T
    * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  opt<Eigen::Vector2i>
+  beam::opt<Eigen::Vector2i>
       ProjectPoint(const Eigen::Vector3d& point,
                    bool& outside_domain = outside_domain_default_) override;
 
@@ -64,7 +64,7 @@ public:
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
-  opt<Eigen::Vector2i>
+  beam::opt<Eigen::Vector2i>
       ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
                    bool& outside_domain = outside_domain_default_) override;
 
@@ -73,7 +73,7 @@ public:
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
+  beam::opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion

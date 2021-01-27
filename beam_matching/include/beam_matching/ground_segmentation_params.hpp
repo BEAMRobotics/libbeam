@@ -2,7 +2,7 @@
 #define BEAM_GROUNDSEGMENTATIONPARAMS_H
 
 #include "beam_utils/config.hpp"
-#include "beam_utils/log.hpp"
+#include "beam_utils/log.h"
 
 namespace beam_matching {
 

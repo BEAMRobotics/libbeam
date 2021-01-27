@@ -4,7 +4,7 @@
 
 #include "beam_cv/geometry/Triangulation.h"
 #include <beam_cv/Utils.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 #include <numeric>
 
 namespace beam_cv {

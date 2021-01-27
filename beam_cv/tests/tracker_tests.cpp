@@ -6,8 +6,8 @@
 #include <beam_cv/matchers/Matchers.h>
 #include <beam_cv/tracker/Tracker.h>
 
-#include <beam_utils/filesystem.hpp>
-#include <beam_utils/time.hpp>
+#include <beam_utils/filesystem.h>
+#include <beam_utils/time.h>
 
 std::shared_ptr<beam_cv::Matcher> matcher =
     std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,

@@ -15,7 +15,7 @@ KannalaBrandt::KannalaBrandt(const std::string& file_path) {
   k4_ = intrinsics_[7];
 }
 
-opt<Eigen::Vector2d>
+beam::opt<Eigen::Vector2d>
     KannalaBrandt::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;
 
@@ -44,8 +44,8 @@ opt<Eigen::Vector2d>
   return {};
 }
 
-opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
+beam::opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
+  beam::opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
   if (pixel.has_value()) {
     Eigen::Vector2i pixel_rounded;
     pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
@@ -54,7 +54,7 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point, b
   return {};
 }
 
-opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
+beam::opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
                                                  Eigen::MatrixXd& J, bool& outside_domain) {
   double x = point[0], y = point[1], z = point[2];
   double x2 = x * x;
@@ -119,7 +119,7 @@ opt<Eigen::Vector2i> KannalaBrandt::ProjectPoint(const Eigen::Vector3d& point,
   return ProjectPoint(point, outside_domain);
 }
 
-opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
+beam::opt<Eigen::Vector3d> KannalaBrandt::BackProject(const Eigen::Vector2i& pixel) {
   if (!PixelInImage(pixel)) { return {}; }
 
   Eigen::Vector3d out_ray;
