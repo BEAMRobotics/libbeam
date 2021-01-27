@@ -143,7 +143,7 @@ opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
     Eigen::Vector3d e1 = fmatrix_svd.matrixV().col(2);
     // lines connecting of x1 and e1
     Eigen::Matrix<double, 3, Eigen::Dynamic> l1_ex =
-        beam::skewTransform(e1) * matx1.colwise().homogeneous();
+        beam::SkewTransform(e1) * matx1.colwise().homogeneous();
     // lines determined by F and x2
     Eigen::Matrix<double, 3, Eigen::Dynamic> l1_Fx =
         Ftmp * matx2.colwise().homogeneous();

@@ -45,7 +45,7 @@ opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   }
   int rows = cams.size() * 2;
   Eigen::MatrixXd A(rows, 4);
-  for (int i = 0; i < cams.size(); i++) {
+  for (uint32_t i = 0; i < cams.size(); i++) {
     Eigen::Vector3d m = cams[i]->BackProject(pixels[i]).value();
     double mx = m[0], my = m[1], mz = m[2];
     Eigen::Matrix4d T = T_cam_world[i];

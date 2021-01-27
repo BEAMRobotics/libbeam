@@ -11,18 +11,19 @@
 #include <pcl/point_types.h>
 #include <sensor_msgs/PointCloud2.h>
 
-namespace beam {
-/** @addtogroup utils
- *  @{ */
-
 #ifndef BEAM_PCL_TYPEDEF
 #  define BEAM_PCL_TYPEDEF
+
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 typedef PointCloud::Ptr PointCloudPtr;
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudCol;
 typedef PointCloudCol::Ptr PointCloudColPtr;
 
 #endif // BEAM_PCL_TYPEDEF
+
+namespace beam {
+/** @addtogroup utils
+ *  @{ */
 
 static ros::Time time_tmp = ros::Time(0);
 static std::string string_tmp = "";
