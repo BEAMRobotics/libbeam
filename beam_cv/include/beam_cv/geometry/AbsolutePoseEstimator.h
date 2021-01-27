@@ -9,9 +9,6 @@
 #include <beam_calibration/CameraModel.h>
 #include <beam_utils/optional.h>
 
-template <class T>
-using opt = beam::optional<T>;
-
 namespace beam_cv {
 /**
  * @brief static class implementing various pose estimation algorithm.

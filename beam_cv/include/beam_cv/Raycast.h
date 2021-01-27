@@ -74,7 +74,7 @@ public:
       Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
                             cloud_->points[i].z);
 
-      opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
+      beam::opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
       if (!coords.has_value()) { continue; }
       uint16_t col = coords.value()(0, 0);
       uint16_t row = coords.value()(1, 0);
@@ -90,7 +90,7 @@ public:
           Eigen::Vector3d ray(0, 0, 0);
           // get direction vector
           Eigen::Vector2i input_point(col, row);
-          opt<Eigen::Vector3d> point = model_->BackProject(input_point);
+          beam::opt<Eigen::Vector3d> point = model_->BackProject(input_point);
           if (!point.has_value()) { return; }
           // while loop to ray trace
           uint16_t raypt = 0;

@@ -18,11 +18,13 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <beam_utils/time.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <pcl/point_types.h>
 #include <unsupported/Eigen/MatrixFunctions>
+
+#include <beam_utils/angles.h>
+#include <beam_utils/time.h>
 
 namespace beam {
 /** @addtogroup utils
@@ -249,7 +251,8 @@ beam::Vec3 InvSkewTransform(const beam::Mat3 M);
 beam::Mat3 SkewTransform(const beam::Vec3 V);
 
 /**
- * @brief Inverts a 4x4 Transformation matrix by taking into account that R^(-1)=R^T
+ * @brief Inverts a 4x4 Transformation matrix by taking into account that
+ *R^(-1)=R^T
  * @param T Transform matrix to be inverted
  * @return 4x4 inverted transformation matrix
  **/
@@ -269,6 +272,34 @@ std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
 beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
                           beam::Vec3 plane_normal, beam::Vec3 plane_point);
 
+/** Peturbs a transformation
+ * @param[in] T_in the original transformation matrix
+ * @param[in] perturbations [rx(rad), ry(rad), rz(rad), tx(m), ty(m),
+ * tx(m)]
+ * @return perturbed transformation
+ */
+Eigen::Matrix4d PerturbTransformRadM(const Eigen::Matrix4d& T_in,
+                                     const Eigen::VectorXd& perturbations);
+
+/** Peturbs a transformation
+ * @param[in] T_in the original transformation matrix
+ * @param[in] perturbations [rx(deg), ry(deg), rz(deg), tx(m), ty(m),
+ * tx(m)]
+ * @return perturbed transformation
+ */
+Eigen::Matrix4d PerturbTransformDegM(const Eigen::Matrix4d& T_in,
+                                     const Eigen::VectorXd& perturbations);
+
+Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
+                                        double yawInDeg, double tx, double ty,
+                                        double tz);
+
+Eigen::Matrix4d
+    QuaternionAndTranslationToTransformMatrix(const std::vector<double>& pose);
+
+// [qw qx qy qz tx ty tx]
+std::vector<double>
+    TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T);
+
 /** @} group utils */
 } // namespace beam
-

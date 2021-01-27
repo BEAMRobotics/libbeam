@@ -29,10 +29,15 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
-opt<Eigen::Vector2d>
-    Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point) {
+beam::opt<Eigen::Vector2d>
+    Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
+  outside_domain = false;
+
   // check if point is behind image plane
-  if (point[2] < 0) { return {}; }
+  if (point[2] < 0) { 
+    outside_domain = true;
+    return {}; 
+  }
 
   double x = point[0];
   double y = point[1];
@@ -48,12 +53,17 @@ opt<Eigen::Vector2d>
                                     point_projected[1], &pixel_rectified[0],
                                     &pixel_rectified[1]);
 
+  //unrectify function returns (-1,-1) if point projects outside of field of view
+  if ((int)pixel_rectified[0] == -1 && (int)pixel_rectified[1] == -1) {
+    outside_domain = true; 
+  }
+
   if (PixelInImage(pixel_rectified)) { return pixel_rectified; }
   return {};
 }
 
-opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
-  opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point);
+beam::opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
+  beam::opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
   if (pixel.has_value()) {
     Eigen::Vector2i pixel_rounded;
     pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
@@ -62,14 +72,14 @@ opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point) {
   return {};
 }
 
-opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
-                                           Eigen::MatrixXd& J) {
+beam::opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
+                                           Eigen::MatrixXd& J, bool& outside_domain) {
   BEAM_WARN(
       "Ladybug canot be re-calibrated, no effect on Jacobian matrix passed");
-  return ProjectPoint(point);
+  return ProjectPoint(point, outside_domain);
 }
 
-opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
+beam::opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
   Eigen::Vector2d pixel_out = {0, 0};
   Eigen::Vector3d out_point;
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel[0], pixel[1],

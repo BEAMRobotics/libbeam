@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "beam_calibration/CameraModel.h"
+#include <beam_calibration/CameraModel.h>
 
 namespace beam_calibration {
 
@@ -37,37 +37,43 @@ public:
   /**
    * @brief Method for projecting a point into an image plane (continous)
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
+   * @param outside_domain optional parameter, set if point is outside camera model domain
    * point has been projected into the image plane [u,v]^T
    */
-  opt<Eigen::Vector2d>
-      ProjectPointPrecise(const Eigen::Vector3d& point) override;
+  beam::opt<Eigen::Vector2d> ProjectPointPrecise(
+      const Eigen::Vector3d& point,
+      bool& outside_domain = outside_domain_default_) override;
 
   /**
    * @brief Method for projecting a point into an image plane
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
+   * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) override;
+  beam::opt<Eigen::Vector2i>
+      ProjectPoint(const Eigen::Vector3d& point,
+                   bool& outside_domain = outside_domain_default_) override;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
    * @param J 2 x 3 projection jacobian.
+   * @param outside_domain optional parameter, set if point is outside camera model domain
    * For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
    */
-  opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point,
-                                    Eigen::MatrixXd& J) override;
+  beam::opt<Eigen::Vector2i>
+      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
+                   bool& outside_domain = outside_domain_default_) override;
 
   /**
    * @brief Method back projecting
    * @return Returns bearing vector
    * @param point [u,v]
    */
-  opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
+  beam::opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) override;
 
   /**
    * @brief Method for undistorting an image based on camera's distortion

@@ -31,4 +31,7 @@ public:
   }
 };
 
+template<class T>
+using opt = optional<T>;
+
 } // namespace beam

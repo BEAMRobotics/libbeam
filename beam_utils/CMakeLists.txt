@@ -14,6 +14,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/time.cpp
     src/angles.cpp
     src/gflags.cpp
+    src/visualizer.cpp
     src/filesystem.cpp
     src/roots.cpp
     src/polynomial.cpp

@@ -55,7 +55,7 @@ int DepthMap::ExtractDepthMapProjection(float thresh) {
     Eigen::Vector3d origin(0, 0, 0);
     Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
                           cloud_->points[i].z);
-    opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
+    beam::opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
     // if successful projeciton calculate distance and fill depth image
     uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
@@ -95,7 +95,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
       float distance = depth_image_->at<float>(row, col);
       if (distance > 0) {
         Eigen::Vector2i pixel(col, row);
-        opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
+        beam::opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
         if (direction.has_value()) {
           direction.value().normalize();
           Eigen::Vector3d coords = distance * direction.value();
@@ -127,7 +127,7 @@ Eigen::Vector3d DepthMap::GetXYZ(const Eigen::Vector2i& pixel) {
     Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
-  opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
+  beam::opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
   if (direction.has_value()) {
     Eigen::Vector3d coords = distance * direction.value();
     return coords;
@@ -150,8 +150,8 @@ float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   Eigen::Vector2i left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
-  opt<Eigen::Vector3d> dir_left = model_->BackProject(left);
-  opt<Eigen::Vector3d> dir_right = model_->BackProject(right);
+  beam::opt<Eigen::Vector3d> dir_left = model_->BackProject(left);
+  beam::opt<Eigen::Vector3d> dir_right = model_->BackProject(right);
   if (!dir_left.has_value() || !dir_right.has_value()) {
     BEAM_ERROR("Cannot get pixel scale. Pixel invalid, cannot back project.");
     return 0;

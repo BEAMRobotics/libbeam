@@ -9,9 +9,6 @@
 #include <beam_calibration/CameraModel.h>
 #include <beam_utils/optional.h>
 
-template <class T>
-using opt = beam::optional<T>;
-
 namespace beam_cv {
 
 enum class EstimatorMethod { EIGHTPOINT = 0, SEVENPOINT, FIVEPOINT };
@@ -28,7 +25,7 @@ public:
    * @param p1_v corresponding pixels in image 1 (min 8)
    * @param p2_v corresponding pixels in image 2 (min 8)
    */
-  static opt<Eigen::Matrix3d> EssentialMatrix8Point(
+  static beam::opt<Eigen::Matrix3d> EssentialMatrix8Point(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const std::vector<Eigen::Vector2i>& p1_v,
@@ -41,7 +38,7 @@ public:
    * @param p1_v corresponding pixels in image 1 (min 7)
    * @param p2_v corresponding pixels in image 2 (min 7)
    */
-  static opt<std::vector<Eigen::Matrix3d>> EssentialMatrix7Point(
+  static beam::opt<std::vector<Eigen::Matrix3d>> EssentialMatrix7Point(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const std::vector<Eigen::Vector2i>& p1_v,
@@ -60,7 +57,7 @@ public:
    * @param inlier_threshold pixel distance to count an inlier as
    * @return transformation matrix from cam1 to cam2
    */
-  static opt<Eigen::Matrix4d> RANSACEstimator(
+  static beam::opt<Eigen::Matrix4d> RANSACEstimator(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const std::vector<Eigen::Vector2i>& p1_v,
@@ -95,7 +92,7 @@ public:
                   const std::vector<Eigen::Vector2i>& p2_v,
                   const std::vector<Eigen::Matrix3d>& R,
                   const std::vector<Eigen::Vector3d>& t,
-                  opt<Eigen::Matrix4d>& pose);
+                  beam::opt<Eigen::Matrix4d>& pose);
 };
 
 } // namespace beam_cv

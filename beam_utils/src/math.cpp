@@ -454,4 +454,60 @@ beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
   return ray_point - ray_vector * prod3;
 }
 
+Eigen::Matrix4d PerturbTransformRadM(const Eigen::Matrix4d& T_in,
+                                     const Eigen::VectorXd& perturbations) {
+  Eigen::Vector3d r_perturb = perturbations.block(0, 0, 3, 1);
+  Eigen::Vector3d t_perturb = perturbations.block(3, 0, 3, 1);
+  Eigen::Matrix3d R_in = T_in.block(0, 0, 3, 3);
+  Eigen::Matrix3d R_out = LieAlgebraToR(r_perturb) * R_in;
+  Eigen::Matrix4d T_out;
+  T_out.setIdentity();
+  T_out.block(0, 3, 3, 1) = T_in.block(0, 3, 3, 1) + t_perturb;
+  T_out.block(0, 0, 3, 3) = R_out;
+  return T_out;
+}
+
+Eigen::Matrix4d PerturbTransformDegM(const Eigen::Matrix4d& T_in,
+                                     const Eigen::VectorXd& perturbations) {
+  Eigen::VectorXd perturbations_rad(perturbations);
+  perturbations_rad[0] = beam::Deg2Rad(perturbations_rad[0]);
+  perturbations_rad[1] = beam::Deg2Rad(perturbations_rad[1]);
+  perturbations_rad[2] = beam::Deg2Rad(perturbations_rad[2]);
+  return PerturbTransformRadM(T_in, perturbations_rad);
+}
+
+Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
+                                        double yawInDeg, double tx, double ty,
+                                        double tz) {
+  Eigen::Vector3d t(tx, ty, tz);
+  Eigen::Matrix3d R;
+  R = Eigen::AngleAxisd(beam::Deg2Rad(rollInDeg), Eigen::Vector3d::UnitX()) *
+      Eigen::AngleAxisd(beam::Deg2Rad(pitchInDeg), Eigen::Vector3d::UnitY()) *
+      Eigen::AngleAxisd(beam::Deg2Rad(yawInDeg), Eigen::Vector3d::UnitZ());
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T.block(0, 0, 3, 3) = R;
+  T.block(0, 3, 3, 1) = t;
+  return T;
+}
+
+Eigen::Matrix4d
+    QuaternionAndTranslationToTransformMatrix(const std::vector<double>& pose) {
+  Eigen::Quaternion<double> quaternion{pose[0], pose[1], pose[2], pose[3]};
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T.block(0, 0, 3, 3) = quaternion.toRotationMatrix();
+  T(0, 3) = pose[4];
+  T(1, 3) = pose[5];
+  T(2, 3) = pose[6];
+  return T;
+}
+
+std::vector<double>
+    TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T) {
+  Eigen::Matrix3d R = T.block(0, 0, 3, 3);
+  Eigen::Quaternion<double> q = Eigen::Quaternion<double>(R);
+  std::vector<double> pose{q.w(),   q.x(),   q.y(),  q.z(),
+                           T(0, 3), T(1, 3), T(2, 3)};
+  return pose;
+}
+
 } // namespace beam

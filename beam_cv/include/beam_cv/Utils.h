@@ -14,9 +14,6 @@
 #include <beam_utils/math.h>
 #include <beam_utils/optional.h>
 
-template <class T>
-using opt = beam::optional<T>;
-
 namespace beam_cv {
 
 /**
@@ -145,7 +142,7 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
                  std::shared_ptr<beam_calibration::CameraModel> cam2,
                  std::vector<Eigen::Vector2i> p1_v,
                  std::vector<Eigen::Vector2i> p2_v,
-                 std::vector<opt<Eigen::Vector3d>> points,
+                 std::vector<beam::opt<Eigen::Vector3d>> points,
                  Eigen::Matrix4d T_cam1_world, Eigen::Matrix4d T_cam2_world,
                  double inlier_threshold);
 

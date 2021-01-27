@@ -10,8 +10,7 @@
 #include <opencv2/opencv.hpp>
 #include <beam_utils/optional.h>
 
-template <class T>
-using opt = beam::optional<T>;
+static bool outside_domain_default_{false};
 
 namespace beam_calibration {
 
@@ -43,33 +42,33 @@ public:
   /**
    * @brief Method for projecting a point into an image plane (continous)
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
-   * point has been projected into the image plane [u,v]^T
+   * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  virtual opt<Eigen::Vector2d>
-      ProjectPointPrecise(const Eigen::Vector3d& point) = 0;
+  virtual beam::opt<Eigen::Vector2d>
+      ProjectPointPrecise(const Eigen::Vector3d& point,
+                          bool& outside_domain = outside_domain_default_) = 0;
 
   /**
    * @brief Method for projecting a point into an image plane
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
-   * point has been projected into the image plane [u,v]^T
-   * [u = col, v = row]
+   * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  virtual opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point) = 0;
+  virtual beam::opt<Eigen::Vector2i>
+      ProjectPoint(const Eigen::Vector3d& point,
+                   bool& outside_domain = outside_domain_default_) = 0;
 
   /**
    * @brief Overload projection function for computing jacobian of projection
    * @param point 3d point to be projected [x,y,z]^T
-   * @param pixel reference to an optional vector with image coordinates after
-   * point has been projected into the image plane [u,v]^T
    * @param J 2 x 3 projection jacobian.
    * For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T
    *                   J = | dP1/dx , dP1/dy, dP1/dz |
    *                       | dP2/dx , dP2/dy, dP2/dz |
+   * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  virtual opt<Eigen::Vector2i> ProjectPoint(const Eigen::Vector3d& point,
-                                            Eigen::MatrixXd& J) = 0;
+  virtual beam::opt<Eigen::Vector2i>
+      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
+                   bool& outside_domain = outside_domain_default_) = 0;
 
   /**
    * @brief Method back projecting
@@ -77,7 +76,7 @@ public:
    * the image, from camera center = [0,0,0]
    * @param point [u = col, v = row]
    */
-  virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
+  virtual beam::opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
 
   /**
    * @brief Method for setting the LadyBug camera ID 
@@ -184,7 +183,11 @@ protected:
   uint32_t image_height_{0};
   uint32_t image_width_{0};
   Eigen::VectorXd intrinsics_;
+
+  // static bool outside_domain_default_ = false;
+
   unsigned int cam_id_ = 0;
+  
   // Map for keeping required number of values in distortion vector
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
                                                 {CameraType::RADTAN, 8},

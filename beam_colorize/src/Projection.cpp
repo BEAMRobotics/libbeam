@@ -27,7 +27,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
       continue; // make sure points aren't behind image plane
     }
 
-    opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
+    beam::opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
     uint16_t col = coords.value()(0, 0);
     uint16_t row = coords.value()(1, 0);
@@ -72,7 +72,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
       continue; // make sure points aren't behind image plane
     }
 
-    opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
+    beam::opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
     if (!coords.has_value()) { continue; }
 
     uint16_t col = coords.value()(0, 0);

@@ -98,13 +98,13 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   std::vector<Eigen::Vector2i> frame1_matches;
   std::vector<Eigen::Vector2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
-  opt<Eigen::Matrix3d> E =
+  beam::opt<Eigen::Matrix3d> E =
       beam_cv::RelativePoseEstimator::EssentialMatrix8Point(
           cam, cam, frame1_matches, frame2_matches);
   std::vector<Eigen::Matrix3d> R;
   std::vector<Eigen::Vector3d> t;
   beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
-  opt<Eigen::Matrix4d> pose;
+  beam::opt<Eigen::Matrix4d> pose;
   beam_cv::RelativePoseEstimator::RecoverPose(cam, cam, frame1_matches,
                                               frame2_matches, R, t, pose);
 
@@ -129,7 +129,7 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   BEAM_INFO("Starting 7 Point RANSAC");
   beam::tic(&t);
-  opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
+  beam::opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam, cam, frame1_matches, frame2_matches,
       beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
   float elapsed = beam::toc(&t);
@@ -159,7 +159,7 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 8 Point") {
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   BEAM_INFO("Starting 8 Point RANSAC");
   beam::tic(&t);
-  opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
+  beam::opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam, cam, frame1_matches, frame2_matches,
       beam_cv::EstimatorMethod::EIGHTPOINT, 200, 5, 123);
   float elapsed = beam::toc(&t);
