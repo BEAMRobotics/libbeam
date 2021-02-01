@@ -4,8 +4,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
-#include <beam_utils/utils.hpp>
-#include <beam_utils/log.hpp>
+#include <beam_utils/utils.h>
+#include <beam_utils/log.h>
 
 using json = nlohmann::json;
 

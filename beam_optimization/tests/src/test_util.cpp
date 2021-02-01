@@ -1,4 +1,5 @@
-#include "test_util.hpp"
+#include <test_util.h>
+
 #include <X11/Xlib.h>
 #include <unsupported/Eigen/MatrixFunctions>
 

@@ -18,12 +18,13 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <beam_utils/time.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <pcl/point_types.h>
 #include <unsupported/Eigen/MatrixFunctions>
-#include <beam_utils/angles.hpp>
+
+#include <beam_utils/angles.h>
+#include <beam_utils/time.h>
 
 namespace beam {
 /** @addtogroup utils
@@ -240,14 +241,22 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
  * @param M 3x3 skew symmetric matrix
  * @return 3x1 vector
  **/
-beam::Vec3 invSkewTransform(const beam::Mat3 M);
+beam::Vec3 InvSkewTransform(const beam::Mat3 M);
 
 /**
  * @brief Perform skew symmetric transform
  * @param V 3x1 vector
  * @return 3x3 skew symmetric matrix
  **/
-beam::Mat3 skewTransform(const beam::Vec3 V);
+beam::Mat3 SkewTransform(const beam::Vec3 V);
+
+/**
+ * @brief Inverts a 4x4 Transformation matrix by taking into account that
+ *R^(-1)=R^T
+ * @param T Transform matrix to be inverted
+ * @return 4x4 inverted transformation matrix
+ **/
+Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T);
 
 /**
  * @brief Fits plane to set of points
@@ -285,8 +294,6 @@ Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
                                         double yawInDeg, double tx, double ty,
                                         double tz);
 
-Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T);
-
 Eigen::Matrix4d
     QuaternionAndTranslationToTransformMatrix(const std::vector<double>& pose);
 
@@ -296,4 +303,3 @@ std::vector<double>
 
 /** @} group utils */
 } // namespace beam
-

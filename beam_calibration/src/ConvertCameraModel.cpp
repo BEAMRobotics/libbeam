@@ -91,7 +91,7 @@ void ConvertCameraModel::CreatePixelMap(
   int v_start = (output_model->GetHeight() - out_height_) / 2;
   for (int i = 0; i < out_height_; i++) {
     for (int j = 0; j < out_width_; j++) {
-      opt<Eigen::Vector3d> point_back_projected =
+      beam::opt<Eigen::Vector3d> point_back_projected =
           output_model->BackProject(Eigen::Vector2i(j + u_start, i + v_start));
       if (!point_back_projected.has_value()) {
         pixel_map_.at<cv::Vec2i>(i, j).val[0] = -1;
@@ -99,7 +99,7 @@ void ConvertCameraModel::CreatePixelMap(
         continue;
       }
 
-      opt<Eigen::Vector2i> point_projected =
+      beam::opt<Eigen::Vector2i> point_projected =
           source_model->ProjectPoint(point_back_projected.value());
       if (!point_projected.has_value()) {
         pixel_map_.at<cv::Vec2i>(i, j).val[0] = -1;

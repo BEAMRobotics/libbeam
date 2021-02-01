@@ -1,6 +1,6 @@
 #include "beam_calibration/TfTree.h"
 
-#include <beam_utils/log.hpp>
+#include <beam_utils/log.h>
 #include <fstream>
 #include <iostream>
 #include <tf2_eigen/tf2_eigen.h>

@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include <beam_calibration/DoubleSphere.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 #include <catch2/catch.hpp>
 
 std::unique_ptr<beam_calibration::CameraModel> camera_model_;
@@ -57,18 +57,18 @@ TEST_CASE("Test projection and back project with random points") {
   bool outside_domain = false;
 
   for (const Eigen::Vector3d point : points) {
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-    opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
+    beam::opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
+    beam::opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
     if (!pixel.has_value() || !pixel_b.has_value()) { continue; }
     REQUIRE((pixel.value()[0] - pixel_b.value()[0]) == 0);
     REQUIRE((pixel.value()[1] - pixel_b.value()[1]) == 0);
-    opt<Eigen::Vector3d> back_projected_ray =
+    beam::opt<Eigen::Vector3d> back_projected_ray =
         camera_model_->BackProject(pixel.value());
     REQUIRE(back_projected_ray.has_value());
     if (back_projected_ray.has_value()) {
       Eigen::Vector3d back_projected_point =
           point.norm() * back_projected_ray.value();
-      opt<Eigen::Vector2i> back_projected_pixel =
+      beam::opt<Eigen::Vector2i> back_projected_pixel =
           camera_model_->ProjectPoint(back_projected_point);
       REQUIRE(back_projected_pixel.has_value());
       REQUIRE(std::abs(pixel.value()[0] - back_projected_pixel.value()[0]) < 2);
@@ -101,11 +101,11 @@ TEST_CASE("Test projection and back project with random pixels") {
   double min_d = 1;
   double max_d = 10;
   for (Eigen::Vector2i pixel : pixels) {
-    opt<Eigen::Vector3d> ray = camera_model_->BackProject(pixel);
+    beam::opt<Eigen::Vector3d> ray = camera_model_->BackProject(pixel);
     REQUIRE(ray.has_value());
     if (!ray.has_value()) { continue; }
     Eigen::Vector3d point = ray.value() * fRand(min_d, max_d);
-    opt<Eigen::Vector2i> projected_pixel = camera_model_->ProjectPoint(point);
+    beam::opt<Eigen::Vector2i> projected_pixel = camera_model_->ProjectPoint(point);
     REQUIRE(projected_pixel.has_value());
     if (!projected_pixel.has_value()) { continue; }
     REQUIRE(std::abs(pixel[0] - projected_pixel.value()[0]) < 2);
@@ -136,7 +136,7 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
   }
 
   for (Eigen::Vector2i pixel : pixels) {
-    opt<Eigen::Vector3d> ray = camera_model_->BackProject(pixel);
+    beam::opt<Eigen::Vector3d> ray = camera_model_->BackProject(pixel);
     REQUIRE(!ray.has_value());
   }
 
@@ -173,7 +173,7 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     double y = fRand(min_y, max_y);
     double z = fRand(min_z, max_z);
     Eigen::Vector3d point(x, y, z);
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
+    beam::opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
     REQUIRE(!pixel.has_value());
     if (point[2] > -w2*sqrt(pow(point[0],2) + pow(point[1],2) + pow(point[2],2))){
       REQUIRE(outside_domain == false);
@@ -193,7 +193,7 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
     double y = fRand(min_y_b,max_y_b);
     double z = -sqrt(pow(w2,2) * (pow(x,2) + pow(y,2)) / (1-pow(w2,2))) - fRand(min_z_off_b, max_z_off_b);
     Eigen::Vector3d point(x, y, z);
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
+    beam::opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
     REQUIRE(!pixel.has_value());
     REQUIRE(outside_domain == true);
   }
@@ -224,7 +224,7 @@ TEST_CASE("Test jacobian") {
   for (Eigen::Vector3d point : points) {
     // calculate analytical jacobian (from camera model)
     Eigen::MatrixXd J_analytical(2, 3);
-    opt<Eigen::Vector2i> tmp = camera_model_->ProjectPoint(point, J_analytical);
+    beam::opt<Eigen::Vector2i> tmp = camera_model_->ProjectPoint(point, J_analytical);
     REQUIRE(tmp.has_value());
 
     // calculate numerical jacobian
@@ -234,9 +234,9 @@ TEST_CASE("Test jacobian") {
       perturbation[i] = eps;
       Eigen::Vector3d point_left_pert = point - perturbation;
       Eigen::Vector3d point_right_pert = point + perturbation;
-      opt<Eigen::Vector2d> pixel_left_pert =
+      beam::opt<Eigen::Vector2d> pixel_left_pert =
           camera_model_->ProjectPointPrecise(point_left_pert);
-      opt<Eigen::Vector2d> pixel_right_pert =
+      beam::opt<Eigen::Vector2d> pixel_right_pert =
           camera_model_->ProjectPointPrecise(point_right_pert);
       J_numerical(0, i) =
           (pixel_right_pert.value()[0] - pixel_left_pert.value()[0]) /

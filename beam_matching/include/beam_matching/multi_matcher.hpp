@@ -13,7 +13,7 @@
 #include <condition_variable>
 #include <queue>
 #include <tuple>
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 #include "beam_matching/pcl_common.hpp"
 #include "beam_matching/matcher.hpp"
 

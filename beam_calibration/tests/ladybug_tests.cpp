@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include <beam_calibration/Ladybug.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 #include <catch2/catch.hpp>
 
 std::unique_ptr<beam_calibration::CameraModel> camera_model_;
@@ -48,18 +48,18 @@ TEST_CASE("Test projection and back project with random points") {
   camera_model_->SetCameraID(id);
 
     for (const Eigen::Vector3d point : points) {
-      opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
-      opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
+      beam::opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point);
+      beam::opt<Eigen::Vector2i> pixel_b = camera_model_->ProjectPoint(point, outside_domain);
       if (!pixel.has_value() || !pixel_b.has_value()) { continue; }
       REQUIRE((pixel.value()[0] - pixel_b.value()[0]) == 0);
       REQUIRE((pixel.value()[1] - pixel_b.value()[1]) == 0);
-      opt<Eigen::Vector3d> back_projected_ray =
+      beam::opt<Eigen::Vector3d> back_projected_ray =
           camera_model_->BackProject(pixel.value());
       REQUIRE(back_projected_ray.has_value());
       if (back_projected_ray.has_value()) {
         Eigen::Vector3d back_projected_point =
             point.norm() * back_projected_ray.value();
-        opt<Eigen::Vector2i> back_projected_pixel =
+        beam::opt<Eigen::Vector2i> back_projected_pixel =
             camera_model_->ProjectPoint(back_projected_point);
         REQUIRE(back_projected_pixel.has_value());
         REQUIRE(std::abs(pixel.value()[0] - back_projected_pixel.value()[0]) < 2);
@@ -93,11 +93,11 @@ TEST_CASE("Test projection and back project with random pixels") {
   double min_d = 1;
   double max_d = 10;
   for (Eigen::Vector2i pixel : pixels) {
-    opt<Eigen::Vector3d> ray = camera_model_->BackProject(pixel);
+    beam::opt<Eigen::Vector3d> ray = camera_model_->BackProject(pixel);
     REQUIRE(ray.has_value());
     if (!ray.has_value()) { continue; }
     Eigen::Vector3d point = ray.value() * fRand(min_d, max_d);
-    opt<Eigen::Vector2i> projected_pixel = camera_model_->ProjectPoint(point);
+    beam::opt<Eigen::Vector2i> projected_pixel = camera_model_->ProjectPoint(point);
     REQUIRE(projected_pixel.has_value());
     if (!projected_pixel.has_value()) { continue; }
     REQUIRE(std::abs(pixel[0] - projected_pixel.value()[0]) < 2);
@@ -124,7 +124,7 @@ TEST_CASE("Test Projection with invalid points") {
     double y = fRand(min_y, max_y);
     double z = fRand(min_z, max_z);
     Eigen::Vector3d point(x, y, z);
-    opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
+    beam::opt<Eigen::Vector2i> pixel = camera_model_->ProjectPoint(point, outside_domain);
     REQUIRE(!pixel.has_value());
     REQUIRE(outside_domain == true);
   }

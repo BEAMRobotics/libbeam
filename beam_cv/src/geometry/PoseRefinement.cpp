@@ -10,7 +10,7 @@
 #include <ceres/types.h>
 #include <optional>
 
-#include <beam_optimization/CamPoseReprojectionCost.hpp>
+#include <beam_optimization/CamPoseReprojectionCost.h>
 
 namespace beam_cv {
 

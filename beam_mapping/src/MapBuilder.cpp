@@ -2,9 +2,9 @@
 
 #include "beam_filtering/CropBox.h"
 #include "beam_filtering/DROR.h"
-#include "beam_utils/angles.hpp"
-#include "beam_utils/log.hpp"
-#include "beam_utils/math.hpp"
+#include "beam_utils/angles.h"
+#include "beam_utils/log.h"
+#include "beam_utils/math.h"
 #include <fstream>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/radius_outlier_removal.h>

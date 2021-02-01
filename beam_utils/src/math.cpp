@@ -1,9 +1,9 @@
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 
 namespace beam {
 
 int randi(int ub, int lb) {
-  return rand() % lb + ub;
+  return rand() % (ub - lb + 1) + lb;
 }
 
 double randf(double ub, double lb) {
@@ -363,11 +363,11 @@ Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B) {
 }
 
 Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d R) {
-  return invSkewTransform(R.log());
+  return InvSkewTransform(R.log());
 }
 
 Eigen::Matrix3d LieAlgebraToR(const Eigen::Vector3d eps) {
-  return skewTransform(eps).exp();
+  return SkewTransform(eps).exp();
 }
 
 beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
@@ -394,7 +394,7 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
   return T;
 }
 
-beam::Vec3 invSkewTransform(const beam::Mat3 M) {
+beam::Vec3 InvSkewTransform(const beam::Mat3 M) {
   Eigen::Vector3d V;
   V(0) = M(2, 1);
   V(1) = M(0, 2);
@@ -402,7 +402,7 @@ beam::Vec3 invSkewTransform(const beam::Mat3 M) {
   return V;
 }
 
-beam::Mat3 skewTransform(const beam::Vec3 V) {
+beam::Mat3 SkewTransform(const beam::Vec3 V) {
   beam::Mat3 M;
   M(0, 0) = 0;
   M(0, 1) = -V(2, 0);
@@ -414,6 +414,15 @@ beam::Mat3 skewTransform(const beam::Vec3 V) {
   M(2, 1) = V(0, 0);
   M(2, 2) = 0;
   return M;
+}
+
+Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T) {
+  Eigen::Matrix4d T_inv;
+  T_inv.setIdentity();
+  T_inv.block(0, 0, 3, 3) = T.block(0, 0, 3, 3).transpose();
+  T_inv.block(0, 3, 3, 1) =
+      -T.block(0, 0, 3, 3).transpose() * T.block(0, 3, 3, 1);
+  return T_inv;
 }
 
 std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
@@ -479,15 +488,6 @@ Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
   T.block(0, 0, 3, 3) = R;
   T.block(0, 3, 3, 1) = t;
   return T;
-}
-
-Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T) {
-  Eigen::Matrix4d T_inv;
-  T_inv.setIdentity();
-  T_inv.block(0, 0, 3, 3) = T.block(0, 0, 3, 3).transpose();
-  T_inv.block(0, 3, 3, 1) =
-      -T.block(0, 0, 3, 3).transpose() * T.block(0, 3, 3, 1);
-  return T_inv;
 }
 
 Eigen::Matrix4d

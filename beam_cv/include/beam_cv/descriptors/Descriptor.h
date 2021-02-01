@@ -7,7 +7,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <beam_utils/utils.hpp> 
+#include <beam_utils/utils.h> 
 
 namespace beam_cv {
 

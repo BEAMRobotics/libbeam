@@ -6,7 +6,7 @@
 #include <beam_calibration/Radtan.h>
 #include <beam_colorize/Projection.h>
 #include <beam_colorize/RayTrace.h>
-#include <beam_utils/math.hpp>
+#include <beam_utils/math.h>
 
 int main(int argc, char* argv[]) {
   if (argc < 2 || argc > 2) {

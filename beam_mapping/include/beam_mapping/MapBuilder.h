@@ -6,7 +6,7 @@
 
 #include "beam_calibration/TfTree.h"
 #include "beam_mapping/Poses.h"
-#include "beam_utils/math.hpp"
+#include "beam_utils/math.h"
 
 // PCL specific headers
 #include <pcl/common/transforms.h>

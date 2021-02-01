@@ -1,10 +1,11 @@
 #pragma once
 
+#include <cstdio>
+
 #include <ceres/autodiff_cost_function.h>
 #include <ceres/cost_function_to_functor.h>
 #include <ceres/numeric_diff_cost_function.h>
 #include <ceres/rotation.h>
-#include <cstdio>
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_utils/optional.h>

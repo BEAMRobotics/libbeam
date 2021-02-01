@@ -4,14 +4,13 @@
 
 #pragma once
 
-#include <beam_utils/utils.hpp>
+#include <beam_utils/utils.h>
 
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 #include <beam_utils/optional.h>
 
-template <class T>
-using opt = beam::optional<T>;
+static bool outside_domain_default_{false};
 
 namespace beam_calibration {
 
@@ -45,7 +44,7 @@ public:
    * @param point 3d point to be projected [x,y,z]^T
    * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  virtual opt<Eigen::Vector2d>
+  virtual beam::opt<Eigen::Vector2d>
       ProjectPointPrecise(const Eigen::Vector3d& point,
                           bool& outside_domain = outside_domain_default_) = 0;
 
@@ -54,7 +53,7 @@ public:
    * @param point 3d point to be projected [x,y,z]^T
    * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  virtual opt<Eigen::Vector2i>
+  virtual beam::opt<Eigen::Vector2i>
       ProjectPoint(const Eigen::Vector3d& point,
                    bool& outside_domain = outside_domain_default_) = 0;
 
@@ -67,7 +66,7 @@ public:
    *                       | dP2/dx , dP2/dy, dP2/dz |
    * @param outside_domain optional parameter, set if point is outside camera model domain
    */
-  virtual opt<Eigen::Vector2i>
+  virtual beam::opt<Eigen::Vector2i>
       ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
                    bool& outside_domain = outside_domain_default_) = 0;
 
@@ -77,7 +76,7 @@ public:
    * the image, from camera center = [0,0,0]
    * @param point [u = col, v = row]
    */
-  virtual opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
+  virtual beam::opt<Eigen::Vector3d> BackProject(const Eigen::Vector2i& pixel) = 0;
 
   /**
    * @brief Method for setting the LadyBug camera ID 
@@ -185,7 +184,7 @@ protected:
   uint32_t image_width_{0};
   Eigen::VectorXd intrinsics_;
 
-  inline static bool outside_domain_default_ = false;
+  // static bool outside_domain_default_ = false;
 
   unsigned int cam_id_ = 0;
   
