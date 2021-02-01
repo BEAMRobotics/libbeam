@@ -8,11 +8,26 @@
 #include <ceres/rotation.h>
 #include <ceres/solver.h>
 #include <ceres/types.h>
-#include <optional>
 
 #include <beam_optimization/CamPoseReprojectionCost.h>
 
 namespace beam_cv {
+
+PoseRefinement::PoseRefinement() {
+  // set ceres solver params
+  ceres_solver_options_.minimizer_progress_to_stdout = false;
+  ceres_solver_options_.max_num_iterations = 100;
+  ceres_solver_options_.max_solver_time_in_seconds = 1e6;
+  ceres_solver_options_.function_tolerance = 1e-8;
+  ceres_solver_options_.gradient_tolerance = 1e-10;
+  ceres_solver_options_.parameter_tolerance = 1e-8;
+  ceres_solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
+  ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
+}
+
+PoseRefinement::PoseRefinement(const ceres::Solver::Options options) {
+  ceres_solver_options_ = options;
+}
 
 Eigen::Matrix4d PoseRefinement::RefinePose(
     const Eigen::Matrix4d& estimate,
@@ -57,16 +72,6 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
 }
 
 std::shared_ptr<ceres::Problem> PoseRefinement::SetupCeresProblem() {
-  // set ceres solver params
-  ceres_solver_options_.minimizer_progress_to_stdout = false;
-  ceres_solver_options_.max_num_iterations = 100;
-  ceres_solver_options_.max_solver_time_in_seconds = 1e6;
-  ceres_solver_options_.function_tolerance = 1e-8;
-  ceres_solver_options_.gradient_tolerance = 1e-10;
-  ceres_solver_options_.parameter_tolerance = 1e-8;
-  ceres_solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
-  ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
-
   // set ceres problem options
   ceres::Problem::Options ceres_problem_options;
 

@@ -1,12 +1,12 @@
-
 #define CATCH_CONFIG_MAIN
+
+#include <beam_cv/geometry/PoseRefinement.h>
+
 #include <fstream>
 #include <iostream>
 #include <math.h>
 
 #include <catch2/catch.hpp>
-
-#include <beam_cv/geometry/PoseRefinement.h>
 
 #include <beam_calibration/Radtan.h>
 #include <beam_utils/math.h>
@@ -46,18 +46,16 @@ void PerturbCorrespondences(std::vector<Eigen::Vector2i>& pixels,
 }
 
 void PerturbPose(Eigen::Matrix4d& pose, double r_pert, double t_pert) {
-  // perturb rotation
-  Eigen::AngleAxisd roll(beam::randf(r_pert, -r_pert),
-                         Eigen::Vector3d::UnitZ());
-  Eigen::AngleAxisd pitch(beam::randf(r_pert, -r_pert),
-                          Eigen::Vector3d::UnitY());
-  Eigen::AngleAxisd yaw(beam::randf(r_pert, -r_pert), Eigen::Vector3d::UnitX());
-  Eigen::Quaterniond q = roll * pitch * yaw;
-  pose.block(0, 0, 3, 3) = q.toRotationMatrix();
-  // perturb translation
-  pose(0, 3) = beam::randf(t_pert, -t_pert);
-  pose(1, 3) = beam::randf(t_pert, -t_pert);
-  pose(2, 3) = beam::randf(t_pert, -t_pert);
+  // generate random perturbations
+  Eigen::Matrix<double, 6, 1> perturbations;
+  perturbations(0) = beam::randf(r_pert, -r_pert);
+  perturbations(1) = beam::randf(r_pert, -r_pert);
+  perturbations(2) = beam::randf(r_pert, -r_pert);
+  perturbations(3) = beam::randf(t_pert, -t_pert);
+  perturbations(4) = beam::randf(t_pert, -t_pert);
+  perturbations(5) = beam::randf(t_pert, -t_pert);
+
+  pose = beam::PerturbTransformRadM(pose, perturbations);
 }
 
 TEST_CASE("Refine given perfect correspondences, perfect pose.") {

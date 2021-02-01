@@ -10,11 +10,24 @@
 #include <beam_calibration/CameraModel.h>
 
 namespace beam_cv {
+
 /**
  * @brief static class implementing pose refinement.
  */
+
 class PoseRefinement {
 public:
+  /**
+   * @brief Default constructor - ceres solver options are set to defaults.
+   */
+  PoseRefinement();
+
+  /**
+   * @brief Constructor for custom ceres solver options.
+   * @param options Client's ceres solver options.
+   */
+  PoseRefinement(const ceres::Solver::Options options);
+
   /**
    * @brief Refines an estimated transformation matrix to minimize
    * reprojection error for a set of points/pixel correspondences.
