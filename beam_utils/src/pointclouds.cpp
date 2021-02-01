@@ -27,11 +27,11 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
                        std::string& frame_id, uint32_t& seq) {
   // Convert from ROS to pcl pointcloud2
   pcl::PCLPointCloud2 cloud2;
-  pcl_conversions::toPCL(msg, cloud2)
+  pcl_conversions::toPCL(msg, cloud2);
 
   // convert to pcl pointcloud
-  PointCloud cloud;
-  pcl::fromPCLPointCloud2(cloud2, cloud);
+  PointCloudPtr cloud = boost::make_shared<PointCloud>();
+  pcl::fromPCLPointCloud2(cloud2, *cloud);
 
   // get info from header
   time = msg.header.stamp;
