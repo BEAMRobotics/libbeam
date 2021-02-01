@@ -12,6 +12,7 @@
 #include <beam_cv/geometry/Triangulation.h>
 
 #include <beam_calibration/Radtan.h>
+#include <beam_utils/math.h>
 
 void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
                  std::vector<Eigen::Vector2i>& matches2) {
@@ -48,7 +49,9 @@ void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
     int y = rand() % cam->GetHeight();
     Eigen::Vector2i pixel(x, y);
     Eigen::Vector3d point = cam->BackProject(pixel).value();
-    int scalar = rand() + 1;
+    double depth_min = 1;
+    double depth_max = 15;
+    double scalar = beam::randf(depth_max, depth_min);
     point *= scalar;
     pixels.push_back(pixel);
     points.push_back(point);
@@ -129,9 +132,10 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   BEAM_INFO("Starting 7 Point RANSAC");
   beam::tic(&t);
-  beam::opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam, cam, frame1_matches, frame2_matches,
-      beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
+  beam::opt<Eigen::Matrix4d> pose =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam, cam, frame1_matches, frame2_matches,
+          beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
   float elapsed = beam::toc(&t);
   BEAM_INFO("7 Point RANSAC elapsed time (20 iterations): {}", elapsed);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
@@ -159,9 +163,10 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 8 Point") {
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   BEAM_INFO("Starting 8 Point RANSAC");
   beam::tic(&t);
-  beam::opt<Eigen::Matrix4d> pose = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam, cam, frame1_matches, frame2_matches,
-      beam_cv::EstimatorMethod::EIGHTPOINT, 200, 5, 123);
+  beam::opt<Eigen::Matrix4d> pose =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam, cam, frame1_matches, frame2_matches,
+          beam_cv::EstimatorMethod::EIGHTPOINT, 200, 5, 123);
   float elapsed = beam::toc(&t);
   BEAM_INFO("8 Point RANSAC elapsed time (200 iterations): {}", elapsed);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();

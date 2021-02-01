@@ -3,7 +3,7 @@
 namespace beam {
 
 int randi(int ub, int lb) {
-  return rand() % lb + ub;
+  return rand() % (ub - lb + 1) + lb;
 }
 
 double randf(double ub, double lb) {

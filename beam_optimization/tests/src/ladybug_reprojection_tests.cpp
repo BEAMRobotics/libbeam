@@ -1,9 +1,9 @@
 #define CATCH_CONFIG_MAIN
 
+#include <cmath>
 #include <random>
 #include <stdio.h>
 #include <stdlib.h>
-#include <cmath>
 
 #include <Eigen/Geometry>
 #include <catch2/catch.hpp>
@@ -12,11 +12,11 @@
 #include <ceres/solver.h>
 #include <ceres/types.h>
 
+#include <CamPoseReprojectionCost.h>
 #include <beam_utils/angles.h>
 #include <beam_utils/math.h>
 #include <beam_utils/visualizer.h>
 #include <test_util.h>
-#include <CamPoseReprojectionCost.h>
 
 namespace beam_optimization {
 
@@ -126,7 +126,7 @@ TEST_CASE("Test lb projection - no noise") {
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
     beam::opt<Eigen::Vector2d> pixel =
         camera_model->ProjectPointPrecise(point_transformed.hnormalized());
@@ -145,7 +145,7 @@ TEST_CASE("Test lb projection - no noise") {
     std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
 
-    for (uint16_t i = 0; i < points.size(); i++) {
+    for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
       beam::opt<Eigen::Vector2d> perturbed_pixel =
           camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
@@ -182,7 +182,7 @@ TEST_CASE("Test lb projection - no noise") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -228,7 +228,7 @@ TEST_CASE("Test lb projection - no noise") {
     std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
 
-    for (uint16_t i = 0; i < points.size(); i++) {
+    for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
       beam::opt<Eigen::Vector2d> final_pixel =
           camera_model->ProjectPointPrecise(final_points[i].hnormalized());
@@ -308,7 +308,7 @@ TEST_CASE("Test lb projection - with noise") {
   // create projected (detected) points - with noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
     beam::opt<Eigen::Vector2d> pixel =
         camera_model->ProjectPointPrecise(point_transformed.hnormalized());
@@ -335,7 +335,7 @@ TEST_CASE("Test lb projection - with noise") {
     std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
 
-    for (uint16_t i = 0; i < points.size(); i++) {
+    for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
       beam::opt<Eigen::Vector2d> perturbed_pixel =
           camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
@@ -372,7 +372,7 @@ TEST_CASE("Test lb projection - with noise") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -417,7 +417,7 @@ TEST_CASE("Test lb projection - with noise") {
     std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
 
-    for (uint16_t i = 0; i < points.size(); i++) {
+    for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
       beam::opt<Eigen::Vector2d> final_pixel =
           camera_model->ProjectPointPrecise(final_points[i].hnormalized());
@@ -499,7 +499,7 @@ TEST_CASE("Test lb projection - with clipping") {
   // create projected (detected) points - no noise
   std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
     beam::opt<Eigen::Vector2d> pixel =
         camera_model->ProjectPointPrecise(point_transformed.hnormalized());
@@ -518,7 +518,7 @@ TEST_CASE("Test lb projection - with clipping") {
     std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
 
-    for (uint16_t i = 0; i < points.size(); i++) {
+    for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
       beam::opt<Eigen::Vector2d> perturbed_pixel =
           camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
@@ -557,7 +557,7 @@ TEST_CASE("Test lb projection - with clipping") {
   problem2->AddParameterBlock(&(results_perturbed_init[0]), 7,
                               se3_parameterization_.get());
 
-  for (int i = 0; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     if (pixels_valid[i]) {
       Eigen::Vector3d P_CAMERA = points[i].hnormalized();
 
@@ -602,7 +602,7 @@ TEST_CASE("Test lb projection - with clipping") {
     std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
     std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
 
-    for (uint16_t i = 0; i < points.size(); i++) {
+    for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
       beam::opt<Eigen::Vector2d> final_pixel =
           camera_model->ProjectPointPrecise(final_points[i].hnormalized());
