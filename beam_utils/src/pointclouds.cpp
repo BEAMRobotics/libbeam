@@ -5,8 +5,8 @@
 namespace beam {
 
 sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
-                                  const ros::Time& time, std::string& frame_id,
-                                  uint32_t seq) {
+                                  const ros::Time& time,
+                                  const std::string& frame_id, uint32_t seq) {
   // Convert to pointcloud2 data type
   pcl::PCLPointCloud2 cloud2;
   pcl::toPCLPointCloud2(*cloud, cloud2);
