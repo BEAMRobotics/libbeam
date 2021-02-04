@@ -1,4 +1,4 @@
-#include "beam_matching/NdtMatcher.hpp"
+#include <beam_matching/NdtMatcher.h>
 
 #include <fstream>
 #include <iostream>
@@ -63,12 +63,12 @@ void NdtMatcher::SetNdtParams() {
   this->ndt_.setMaximumIterations(this->params_.max_iter);
 }
 
-void NdtMatcher::SetRef(const PCLPointCloudPtr &ref) {
+void NdtMatcher::SetRef(const PointCloudPtr &ref) {
     this->ref_ = ref;
     this->ndt_.setInputSource(this->ref_);
 }
 
-void NdtMatcher::SetTarget(const PCLPointCloudPtr &target) {
+void NdtMatcher::SetTarget(const PointCloudPtr &target) {
     this->target_ = target;
     this->ndt_.setInputTarget(this->target_);
 }

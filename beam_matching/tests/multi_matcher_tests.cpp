@@ -1,46 +1,39 @@
+#define CATCH_CONFIG_MAIN
+
+#include <catch2/catch.hpp>
 #include <pcl/io/pcd_io.h>
 
-#include "wave/wave_test.hpp"
-#include "beam_matching/icp.hpp"
-#include "beam_matching/multi_matcher.hpp"
+#include <beam_matching/IcpMatcher.h>
+#include <beam_matching/MultiMatcher.h>
 
-namespace wave {
+namespace beam_matching {
 
-const auto TEST_SCAN = "tests/data/testscan.pcd";
+PointCloudPtr cld_;
+MultiMatcher<IcpMatcher, IcpMatcherParams> matcher_;
 
-class MultiTest : public testing::Test {
- protected:
-    MultiTest() {}
+void SetUp() {
+  std::string test_path = __FILE__;
+  std::string current_file = "multi_matcher_tests.cpp";
+  test_path.erase(test_path.end() - current_file.size(), test_path.end());
+  std::string scan_path = test_path + "data/testscan.pcd";
 
-    virtual ~MultiTest() {}
-
-    virtual void SetUp() {
-        this->cld = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-        pcl::io::loadPCDFile(TEST_SCAN, *(this->cld));
-    }
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cld;
-    MultiMatcher<ICPMatcher, ICPMatcherParams> matcher;
-};
-
-// Tests that threads are created and destroyed properly
-TEST(MultiTests, initialization) {
-    MultiMatcher<ICPMatcher, ICPMatcherParams> matcher;
+  cld_ = boost::make_shared<PointCloud>();
+  pcl::io::loadPCDFile(scan_path, *(cld_));
 }
 
-TEST_F(MultiTest, simultaneousmatching) {
-    // Setup
-    pcl::PointCloud<pcl::PointXYZ>::Ptr dupes[9];
-    for (int i = 0; i < 9; i++) {
-        dupes[i] = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-        *(dupes[i]) = *(this->cld);
-    }
-    for (int i = 0; i < 8; i++) {
-        this->matcher.insert(i, dupes[i], dupes[i + 1]);
-    }
-    while (!this->matcher.done()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
+TEST_CASE("Test simultaneous matching") {
+  SetUp();
+  PointCloudPtr dupes[9];
+  for (int i = 0; i < 9; i++) {
+    dupes[i] = boost::make_shared<PointCloud>();
+    *(dupes[i]) = *(cld_);
+  }
+  for (int i = 0; i < 8; i++) {
+    matcher_.Insert(i, dupes[i], dupes[i + 1]);
+  }
+  while (!matcher_.Done()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
 }
 
-}  // namespace wave
+} // namespace beam_matching

@@ -3,14 +3,13 @@
  *
  * @defgroup matching
  * Classes to perform scan matching/registration.
- * There are (or will be) a variety of different scan matching algorithms
+ * There are a variety of different scan matching algorithms
  * available with a similar interface.
  */
 
-#ifndef BEAM_MATCHING_MATCHER_HPP
-#define BEAM_MATCHING_MATCHER_HPP
+#pragma once
 
-#include "beam_utils/utils.h"
+#include <beam_utils/utils.h>
 
 namespace beam_matching {
 /** @addtogroup matching
@@ -43,15 +42,17 @@ class Matcher {
     const Eigen::Affine3d GetResult() {
         return this->result_;
     };
+
     const Eigen::Matrix<double, 6, 6> &GetInfo() {
         return this->information_;
     };
+
     float GetRes() {
         return this->resolution_;
     };
 
     /**
-     * `setRef` and `setTarget` are implemented for each specific matching
+     * @brief `setRef` and `setTarget` are implemented for each specific matching
      * algorithm and are how the pointclouds are passed to the matching object.
      * Note that there isn't a parameter for an initial transform; the initial
      * transform is always assumed to be identity inside the matcher class. If
@@ -66,7 +67,7 @@ class Matcher {
         this->SetTarget(target);
     };
 
-    /** Actually performs the match. Any heavy processing is done here.
+    /** @brief Actually performs the match. Any heavy processing is done here.
      * @returns true if match was successful, false if match was not successful
      */
     virtual bool Match() {
@@ -78,18 +79,22 @@ class Matcher {
     }
 
  protected:
-    /** The edge length (in the same distance-units as those used in the
+    /** 
+     * The edge length (in the same distance-units as those used in the
      * pointcloud) of a downsampling voxel filter. If no downsampling is
      * happening, this will be -1
      */
     float resolution_;
 
-    /** The transformation calculated by the scan registration algorithm. It is
+    /** 
+     * The transformation calculated by the scan registration algorithm. It is
      * the transformation needed to transform the target pointcloud to the
      * reference pointcloud in the reference frame of the reference pointcloud.
      */
     Eigen::Affine3d result_;
-    /** The information matrix calculated by the scan-matching algorithm. The
+
+    /** 
+     * The information matrix calculated by the scan-matching algorithm. The
      * diagonal elements correpond to translational perturbations in the x, y,
      * and z directions and angular perturbations on the 3-2-1 euler angles, in
      * that order and in the frame of the reference pointcloud. This may change
@@ -101,4 +106,3 @@ class Matcher {
 /** @} group matching */
 }  // namespace beam_matching
 
-#endif  // BEAM_MATCHING_MATCHER_HPP
