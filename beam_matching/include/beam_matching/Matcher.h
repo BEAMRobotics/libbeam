@@ -39,11 +39,11 @@ class Matcher {
 
     virtual ~Matcher() {}
 
-    const Eigen::Affine3d GetResult() {
+    Eigen::Affine3d GetResult() {
         return this->result_;
     };
 
-    const Eigen::Matrix<double, 6, 6> &GetInfo() {
+    Eigen::Matrix<double, 6, 6> &GetInfo() {
         return this->information_;
     };
 

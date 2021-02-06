@@ -12,7 +12,7 @@ using json = nlohmann::json;
 namespace beam_matching {
 
 GicpMatcherParams::GicpMatcherParams(const std::string& config_path) {
-  BEAM_INFO("Loading file: {}", config_path.c_str());
+  BEAM_INFO("Loading GICP matcher file: {}", config_path.c_str());
 
   json J;
   std::ifstream file(config_path);

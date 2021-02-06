@@ -14,7 +14,7 @@ using json = nlohmann::json;
 namespace beam_matching {
 
 IcpMatcherParams::IcpMatcherParams(std::string& param_config) {
-  BEAM_INFO("Loading file: {}", param_config.c_str());
+  BEAM_INFO("Loading ICP matcher config file: {}", param_config.c_str());
 
   json J;
   std::ifstream file(param_config);
@@ -155,10 +155,9 @@ void IcpMatcher::EstimateInfo() {
 }
 
 // This is an implementation of the Haralick or Censi covariance approximation
-// for ICP
-// The core idea behind this is that the covariance of the cost f'n J wrt
-// optimization variable x is
-// cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
+// for ICP. The core idea behind this is that the covariance of the cost f'n J wrt
+// optimization variable x is:
+//    cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
 
 // Idea was taken from
 // https://censi.science/pub/research/2007-icra-icpcov.pdf
