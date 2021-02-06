@@ -55,7 +55,7 @@ struct IcpMatcherParams {
   /// When set to more than 0, each match is performed multiple times from
   /// a coarse to fine scale (in terms of voxel downsampling).
   /// Each step doubles the resolution
-  int multiscale_steps = 3;
+  int multiscale_steps = 0;
 
   /// Voxel side length for downsampling. If set to 0, downsampling is
   /// not performed. If multiscale matching is set, this is the resolution
