@@ -45,7 +45,7 @@ public:
    * @param image the image to detect features in.
    * @return a vector containing all of the keypoints found within the image.
    */
-  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image) override;
 
 private:
   int threshold_;

@@ -8,9 +8,8 @@ SuperPointDescriptor::SuperPointDescriptor(
 
 cv::Mat SuperPointDescriptor::ExtractDescriptors(
     const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints) {
-  
   if(!model_->has_been_initialized){
-    model_->Detect(image, true);
+    model_->Detect(image);
   }
 
   cv::Mat descriptors;

@@ -74,19 +74,18 @@ TEST_CASE("Test feature extraction.") {
   Setup();
 
   // extract features and descriptors
+  bool use_cuda = false;
   std::shared_ptr<beam_cv::SuperPointModel> model =
-      std::make_shared<beam_cv::SuperPointModel>(model_file_path_);
+      std::make_shared<beam_cv::SuperPointModel>(model_file_path_, use_cuda);
 
   int grid_size = image_left_.rows / 5;
-  bool use_cuda = false;
   // beam_cv::SuperPointDetector detector(model, 300, 0.3, 100, 40, grid_size,
   //                                      false);
   beam_cv::SuperPointDetector::Params params{.max_features = 1000,
                                              .conf_threshold = 0.1,
                                              .border = 10,
                                              .nms_dist_threshold = 40,
-                                             .grid_size = grid_size,
-                                             .use_cuda = use_cuda};
+                                             .grid_size = grid_size};
   beam_cv::SuperPointDetector detector(model, params);
   beam_cv::SuperPointDescriptor descriptor(model);
 

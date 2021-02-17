@@ -44,6 +44,7 @@ struct SuperPoint : torch::nn::Module {
   // descriptor
   torch::nn::Conv2d convDa;
   torch::nn::Conv2d convDb;
+  int recursion_count_ = 0;
 };
 
 /**
@@ -72,7 +73,7 @@ public:
    * convreting from a python trained model to a c++ script, see:
    * https://pytorch.org/tutorials/advanced/cpp_export.html
    */
-  SuperPointModel(const std::string& model_file);
+  SuperPointModel(const std::string& model_file, bool use_cuda = false);
 
   /**
    * @brief Default destructor
@@ -86,7 +87,7 @@ public:
    * version of libtorch installed. If cuda is unavailable and this bool is set
    * to true, it will not attempt to run on cuda.
    */
-  void Detect(cv::Mat img, bool cuda);
+  void Detect(cv::Mat img);
 
   /**
    * @brief Compute the descriptors given a set of keypoints.
@@ -141,6 +142,7 @@ private:
   std::shared_ptr<SuperPoint> model_;
   torch::Tensor mProb_;
   torch::Tensor mDesc_;
+  bool use_cuda_ = false;
 };
 
 } // namespace beam_cv

@@ -25,15 +25,13 @@ public:
     int border{0};
     int nms_dist_threshold{5};
     int grid_size{0};
-    bool use_cuda{false};
 
     void Print() {
       std::cout << "max_features: " << max_features << "\n"
                 << "conf_threshold: " << conf_threshold << "\n"
                 << "border: " << border << "\n"
                 << "nms_dist_threshold: " << nms_dist_threshold << "\n"
-                << "grid_size: " << grid_size << "\n"
-                << "use_cuda: " << use_cuda << "\n";
+                << "grid_size: " << grid_size << "\n";
     }
   };
 
@@ -49,7 +47,7 @@ public:
   SuperPointDetector(const std::shared_ptr<SuperPointModel>& model,
                      int max_features = 0, float conf_threshold = 0.01,
                      int border = 0, int nms_dist_threshold = 5,
-                     int grid_size = 0, bool use_cuda = false);
+                     int grid_size = 0);
 
   /**
    * @brief Constructor
@@ -71,7 +69,7 @@ public:
    * @return a vector containing all of the keypoints found within the image,
    * after filtering.
    */
-  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image) override;
 
 private:
   Params params_;

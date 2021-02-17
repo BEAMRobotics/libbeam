@@ -46,6 +46,8 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(Ladybug)
+
+set(Torch_DIR /home/steve/pytorch/pytorch-install/share/cmake/Torch)
 FIND_PACKAGE(Torch REQUIRED)
 
 # Where dependencies do not provide IMPORTED targets, define them
@@ -135,3 +137,4 @@ IF(EXPORT_BUILD)
         "${CMAKE_CURRENT_BINARY_DIR}/beamConfig.cmake"
         INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}")
 ENDIF(EXPORT_BUILD)
+ADD_SUBDIRECTORY(relocalization)

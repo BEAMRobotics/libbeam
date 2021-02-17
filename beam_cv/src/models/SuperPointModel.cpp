@@ -91,30 +91,35 @@ std::vector<torch::Tensor> SuperPoint::forward(torch::Tensor x) {
   return ret;
 }
 
-SuperPointModel::SuperPointModel(const std::string& model_file) {
+SuperPointModel::SuperPointModel(const std::string& model_file, bool use_cuda) {
   BEAM_INFO("Loading model: {}", model_file);
+  if (use_cuda){
+    BEAM_INFO("Using CUDA with superpoint model");
+    use_cuda_ = true;
+  } else {
+    BEAM_INFO("Not using CUDA with superpoint model");
+  }
   model_ = std::make_shared<SuperPoint>();
   torch::load(model_, model_file);
   BEAM_INFO("Model loaded successfully.");
 }
 
-void SuperPointModel::Detect(cv::Mat img, bool cuda) {
+void SuperPointModel::Detect(cv::Mat img) {
   auto x = torch::from_blob(img.data, {1, 1, img.rows, img.cols},
                             torch::kByte);
   x = x.to(torch::kFloat) / 255;
 
-  bool use_cuda = cuda && torch::cuda::is_available();
   torch::DeviceType device_type;
-  if (use_cuda)
+  if (use_cuda_ && torch::cuda::is_available()){
     device_type = torch::kCUDA;
-  else
+  } else {
     device_type = torch::kCPU;
+  }
   torch::Device device(device_type);
 
   model_->to(device);
   x = x.set_requires_grad(false);
   auto out = model_->forward(x.to(device));
-
   mProb_ = out[0].squeeze(0); // [H, W]
   mDesc_ = out[1];            // [1, 256, H/8, W/8]
   has_been_initialized = true;
@@ -175,8 +180,11 @@ void SuperPointModel::ComputeDescriptors(
   grid[0][0].slice(1, 1, 2) =
       2.0 * fkpts.slice(1, 0, 1) / mProb_.size(0) - 1; // y
 
-  auto desc =
-      torch::grid_sampler(mDesc_, grid, 0, 0, false); // [1, 256, 1, n_keypoints]
+  if (use_cuda_) {
+    grid = grid.to(torch::Device(torch::kCUDA));
+  }
+
+  auto desc = torch::grid_sampler(mDesc_, grid, 0, 0, false);
   desc = desc.squeeze(0).squeeze(1);           // [256, n_keypoints]
 
   // normalize to 1

@@ -48,7 +48,7 @@ public:
    * @return an array containing the computed descriptors.
    */
   cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+                             std::vector<cv::KeyPoint>& keypoints) override;
 
 private:
   /**
