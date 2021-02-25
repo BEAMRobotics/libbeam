@@ -106,7 +106,7 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
   beam::opt<Eigen::Matrix4d> pose;
   beam_cv::RelativePoseEstimator::RecoverPose(cam, cam, frame1_matches,
-                                              frame2_matches, R, t, pose);
+                                              frame2_matches, R, t, pose, 10.0);
 
   REQUIRE(pose.value().isApprox(P, 1e-4));
 }

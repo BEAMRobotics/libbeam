@@ -17,7 +17,7 @@
 
 std::shared_ptr<beam_cv::Matcher> matcher =
     std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,
-                                            true, cv::FM_RANSAC, 1);
+                                            true, cv::FM_RANSAC, 5);
 
 std::shared_ptr<beam_calibration::CameraModel> LoadCam0() {
   std::string cam_loc = __FILE__;
@@ -53,7 +53,7 @@ TEST_CASE("Test feature matching: ORB") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
       std::make_shared<beam_cv::ORBDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
-      std::make_shared<beam_cv::ORBDetector>();
+      std::make_shared<beam_cv::ORBDetector>(1000);
 
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
@@ -63,10 +63,12 @@ TEST_CASE("Test feature matching: ORB") {
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
-  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher,
+  pL_v,
                                  pR_v);
 
-  beam::opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
+  beam::opt<Eigen::Matrix4d> T =
+  beam_cv::RelativePoseEstimator::RANSACEstimator(
       cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
       12);
 
@@ -98,11 +100,14 @@ TEST_CASE("Test feature matching: SIFT") {
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
-  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher,
+  pL_v,
                                  pR_v);
 
-  beam::opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0, 1);
+  beam::opt<Eigen::Matrix4d> T =
+  beam_cv::RelativePoseEstimator::RANSACEstimator(
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+      1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -131,11 +136,14 @@ TEST_CASE("Test feature matching: BRISK") {
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
-  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher,
+  pL_v,
                                  pR_v);
 
-  beam::opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0, 1);
+  beam::opt<Eigen::Matrix4d> T =
+  beam_cv::RelativePoseEstimator::RANSACEstimator(
+      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+      1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -150,3 +158,105 @@ TEST_CASE("Test feature matching: BRISK") {
 
   REQUIRE(theta_deg < 10.0);
 }
+
+// TEST_CASE("Test feature extraction and relative pose") {
+//   std::shared_ptr<beam_cv::Descriptor> descriptor =
+//       std::make_shared<beam_cv::ORBDescriptor>();
+//   std::shared_ptr<beam_cv::Detector> detector =
+//       std::make_shared<beam_cv::ORBDetector>(5000);
+
+//   std::string cam1_loc = "/home/jake/sample.json";
+//   std::shared_ptr<beam_calibration::CameraModel> cam0 =
+//       beam_calibration::CameraModel::Create(cam1_loc);
+
+//   cv::Mat imL = cv::imread("/home/jake/first.jpg", cv::IMREAD_COLOR);
+//   cv::Mat imR = cv::imread("/home/jake/second.jpg", cv::IMREAD_COLOR);
+
+//   std::vector<Eigen::Vector2i> pL_v;
+//   std::vector<Eigen::Vector2i> pR_v;
+//   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
+//                                  pR_v);
+
+//   beam::opt<Eigen::Matrix4d> T =
+//       beam_cv::RelativePoseEstimator::RANSACEstimator(
+//           cam0, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::EIGHTPOINT, 20,
+//           10.0);
+//   std::cout << T.value() << std::endl;
+//   for (auto& p : pL_v) {
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0]).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0]).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0]).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0] - 1).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0] - 1).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0] - 1).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0] + 1).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0] + 1).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1], p[0] + 1).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).y = 0;
+
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).z = 255;
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).x = 0;
+//     imL.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).y = 0;
+//   }
+
+//   for (auto& p : pR_v) {
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0]).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0]).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0]).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0] - 1).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0] - 1).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0] - 1).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).y = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0] + 1).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0] + 1).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1], p[0] + 1).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).y = 0;
+
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).z = 255;
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).x = 0;
+//     imR.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).y = 0;
+//   }
+
+//   cv::imwrite("/home/jake/1.jpg", imL);
+//   cv::imwrite("/home/jake/2.jpg", imR);
+// }

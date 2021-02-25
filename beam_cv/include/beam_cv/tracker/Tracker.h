@@ -60,8 +60,8 @@ public:
    * @param image the image to add.
    * @param current_time the time at which the image was captured
    */
-  void AddImage(const cv::Mat& image,
-                const ros::Time& current_time);
+  bool AddImage(const cv::Mat& image, const ros::Time& current_time,
+                double match_distance_threshold = 0.0);
 
   /** @brief Draw tracks for the requested image.
    * @param img_num the number of the image within the sequence
@@ -116,8 +116,8 @@ private:
   /** @brief Generate a new ID for each newly detected feature.
    * @return the assigned ID.
    */
-  size_t GenerateFeatureID() const {
-    static size_t id = 0;
+  uint64_t GenerateFeatureID() const {
+    static uint64_t id = 0;
     return id++;
   }
 
@@ -134,8 +134,7 @@ private:
   /** @brief Register the current time with the current img_count
    * @param current_time the time at which this image was received
    */
-  void
-      TimestampImage(const ros::Time& current_time);
+  void TimestampImage(const ros::Time& current_time);
 
   /** @brief Cleans out the LandmarkMeasurementContainer for images outside the
    *  requested window_size.
