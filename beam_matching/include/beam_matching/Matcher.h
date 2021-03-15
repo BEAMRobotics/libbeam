@@ -39,6 +39,9 @@ public:
 
   virtual ~Matcher() {}
 
+  /** 
+   * @brief Returns T_TARGET_REF
+   */
   Eigen::Affine3d GetResult() { return this->result_; };
 
   /**
