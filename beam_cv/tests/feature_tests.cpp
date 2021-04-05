@@ -8,12 +8,17 @@
 #include <beam_cv/descriptors/Descriptors.h>
 #include <beam_cv/detectors/Detectors.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
+#include <beam_cv/geometry/Triangulation.h>
 #include <beam_cv/matchers/Matchers.h>
 #include <beam_utils/angles.h>
 
 #include <beam_utils/time.h>
 
 #include <beam_calibration/Radtan.h>
+
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 std::shared_ptr<beam_cv::Matcher> matcher =
     std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,
@@ -58,19 +63,18 @@ TEST_CASE("Test feature matching: ORB") {
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
 
-  cv::Mat imL = LoadIm1();
-  cv::Mat imR = LoadIm0();
+  cv::Mat imL = LoadIm0();
+  cv::Mat imR = LoadIm1();
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
-  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher,
-  pL_v,
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
   beam::opt<Eigen::Matrix4d> T =
-  beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
-      12);
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          12);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -95,19 +99,18 @@ TEST_CASE("Test feature matching: SIFT") {
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
 
-  cv::Mat imL = LoadIm1();
-  cv::Mat imR = LoadIm0();
+  cv::Mat imL = LoadIm0();
+  cv::Mat imR = LoadIm1();
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
-  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher,
-  pL_v,
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
   beam::opt<Eigen::Matrix4d> T =
-  beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
-      1);
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -131,19 +134,18 @@ TEST_CASE("Test feature matching: BRISK") {
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
 
-  cv::Mat imL = LoadIm1();
-  cv::Mat imR = LoadIm0();
+  cv::Mat imL = LoadIm0();
+  cv::Mat imR = LoadIm1();
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
-  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher,
-  pL_v,
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
   beam::opt<Eigen::Matrix4d> T =
-  beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
-      1);
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -163,25 +165,19 @@ TEST_CASE("Test feature matching: BRISK") {
 //   std::shared_ptr<beam_cv::Descriptor> descriptor =
 //       std::make_shared<beam_cv::ORBDescriptor>();
 //   std::shared_ptr<beam_cv::Detector> detector =
-//       std::make_shared<beam_cv::ORBDetector>(5000);
+//       std::make_shared<beam_cv::FASTDetector>();
 
-//   std::string cam1_loc = "/home/jake/sample.json";
-//   std::shared_ptr<beam_calibration::CameraModel> cam0 =
-//       beam_calibration::CameraModel::Create(cam1_loc);
+//   std::string im_R_loc = "/home/jake/im1.jpg";
+//   std::string im_L_loc = "/home/jake/im2.jpg";
 
-//   cv::Mat imL = cv::imread("/home/jake/first.jpg", cv::IMREAD_COLOR);
-//   cv::Mat imR = cv::imread("/home/jake/second.jpg", cv::IMREAD_COLOR);
+//   cv::Mat imL = cv::imread(im_L_loc, cv::IMREAD_COLOR);
+//   cv::Mat imR = cv::imread(im_R_loc, cv::IMREAD_COLOR);
 
 //   std::vector<Eigen::Vector2i> pL_v;
 //   std::vector<Eigen::Vector2i> pR_v;
 //   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
 //                                  pR_v);
 
-//   beam::opt<Eigen::Matrix4d> T =
-//       beam_cv::RelativePoseEstimator::RANSACEstimator(
-//           cam0, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::EIGHTPOINT, 20,
-//           10.0);
-//   std::cout << T.value() << std::endl;
 //   for (auto& p : pL_v) {
 //     imL.at<cv::Point3_<uchar>>(p[1], p[0]).z = 255;
 //     imL.at<cv::Point3_<uchar>>(p[1], p[0]).x = 0;

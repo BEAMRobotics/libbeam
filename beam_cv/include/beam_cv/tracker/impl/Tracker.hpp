@@ -135,13 +135,13 @@ bool Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time,
     matches = this->matcher->MatchDescriptors(this->prev_desc_, curr_desc,
                                               this->prev_kp_, curr_kp);
     // compute median match distance to decide whether to register or not
-    double median_distance = 0;
-    if (match_distance_threshold > 0) {
+    double median_distance = -1.0;
+    if (match_distance_threshold != 0.0) {
       median_distance =
           beam_cv::ComputeMedianMatchDistance(matches, prev_kp_, curr_kp);
     }
     if (median_distance > match_distance_threshold ||
-        match_distance_threshold == 0) {
+        median_distance == -1.0) {
       // Register the time this image
       this->TimestampImage(current_time);
       // Register keypoints with IDs, and store Landmarks in container

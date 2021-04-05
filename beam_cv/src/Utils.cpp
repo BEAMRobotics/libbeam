@@ -300,9 +300,10 @@ void DetectComputeAndMatch(
   }
 }
 
-double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
-                                const std::vector<cv::KeyPoint>& keypoints_1,
-                                const std::vector<cv::KeyPoint>& keypoints_2) {
+double
+    ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
+                               const std::vector<cv::KeyPoint>& keypoints_1,
+                               const std::vector<cv::KeyPoint>& keypoints_2) {
   double d_sum = 0;
   int total = 0;
   std::vector<double> distances;
@@ -314,7 +315,12 @@ double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
     distances.push_back(d);
   }
   std::sort(distances.begin(), distances.end());
-  return distances[distances.size() / 2];
+  if (distances.size() > 0) {
+    std::sort(distances.begin(), distances.end());
+    return distances[distances.size() / 2];
+  } else {
+    return -1.0;
+  }
 }
 
 } // namespace beam_cv
