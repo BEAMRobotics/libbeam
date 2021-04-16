@@ -39,5 +39,34 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg,
                        std::string& frame_id = string_tmp,
                        uint32_t& seq = seq_tmp);
 
+PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
+                                 uint8_t g, uint8_t b);
+
+PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
+                                 uint8_t g, uint8_t b);
+
+PointCloudColPtr
+    AddFrameToCloud(const PointCloudColPtr& cloud,
+                    const PointCloudColPtr& frame,
+                    const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
+
+PointCloudPtr
+    AddFrameToCloud(const PointCloudPtr& cloud, const PointCloudPtr& frame,
+                    const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
+
+PointCloudColPtr
+    AddFrameToCloud(const PointCloudColPtr& cloud,
+                    const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity(),
+                    double increment = 0.01, double length = 0.3);
+
+PointCloudPtr
+    AddFrameToCloud(const PointCloudPtr& cloud,
+                    const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity(),
+                    double increment = 0.01, double length = 0.3);
+
+PointCloud CreateFrame(double increment = 0.01, double length = 0.3);
+
+PointCloudCol CreateFrameCol(double increment = 0.01, double length = 0.3);
+
 /** @} group utils */
 } // namespace beam
