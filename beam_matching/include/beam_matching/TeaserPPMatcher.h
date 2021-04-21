@@ -37,6 +37,15 @@ struct TeaserPPMatcherParams {
   
 };
 
+/**
+ * @brief Teaser++ Wrapper around 
+ *   https://github.com/MIT-SPARK/TEASER-plusplus
+ * NOTE: this implementation requires input clouds to be in order
+ * based on their estimated correspondences. I.e., the ith point 
+ * of the ref cloud must correspond to the ith point of the target
+ * cloud. This is an oversight in the interface of Teaser++. 
+ * @TODO: Calculate the correspondences (see note above)
+ */
 class TeaserPPMatcher : public Matcher<PointCloudPtr> {
 public:
 
@@ -68,7 +77,7 @@ public:
   void SetTarget(const PointCloudPtr& target);
 
   /**
-   * @briefruns the matcher, blocks until finished.
+   * @brief runs the matcher, blocks until finished.
    * @return true if successful
    */
   bool Match();
