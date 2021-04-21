@@ -186,12 +186,6 @@ double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
                                   const std::vector<cv::KeyPoint>& keypoints_2);
 
 /**
- * @brief draws red squares on feature points
- * @param input image
- * @param features vector of feature locations
- */
-cv::Mat DrawFeatures(const cv::Mat& input, const std::vector<Eigen::Vector2i>& features);
-/**
  * @brief This class provides a simple yet efficient Union-Find data structure
  * which is helpful in finding disjoint sets in various datasets:
  * https://en.wikipedia.org/wiki/Disjoint-set_data_structure

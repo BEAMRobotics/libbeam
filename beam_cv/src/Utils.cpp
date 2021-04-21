@@ -323,48 +323,4 @@ double
   }
 }
 
-cv::Mat DrawFeatures(const cv::Mat& input,
-                     const std::vector<Eigen::Vector2i>& features) {
-  cv::Mat output;
-  input.convertTo(output, CV_8UC3);
-  for (auto& p : features) {
-    output.at<cv::Point3_<uchar>>(p[1], p[0]).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1], p[0]).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1], p[0]).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0]).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1], p[0] - 1).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1], p[0] - 1).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1], p[0] - 1).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0] - 1).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1] - 1, p[0] + 1).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1], p[0] + 1).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1], p[0] + 1).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1], p[0] + 1).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0] + 1).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0]).y = 0;
-
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).z = 255;
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).x = 0;
-    output.at<cv::Point3_<uchar>>(p[1] + 1, p[0] - 1).y = 0;
-  }
-  return output;
-}
-
 } // namespace beam_cv
