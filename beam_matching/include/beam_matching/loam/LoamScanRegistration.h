@@ -31,24 +31,21 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-
 class LoamScanRegistration {
 public:
   /**
-   * @brief 
+   * @brief
    */
   LoamScanRegistration(const LoamParamsPtr& params);
 
   /**
-   * @brief 
+   * @brief
    */
   ~LoamScanRegistration() = default;
-  
-  private:
 
+private:
   LoamParamsPtr params_;
-}
+};
 
 /** @} group matching */
 } // namespace beam_matching
-

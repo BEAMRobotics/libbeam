@@ -24,6 +24,9 @@
 
 #pragma once
 
+#include <boost/shared_ptr.hpp>
+#include <vector>
+
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
@@ -33,6 +36,7 @@ namespace beam_matching {
  * LoamPointCloud and LoamMatcher classes
  */
 class LoamParams {
+public:
   /** @brief To separate points into beams (or rings) we need to separate them
    * into bins based on number of beams and FOV. This can be calculated here
    * once instead of each time we get a new scan*/
@@ -42,7 +46,7 @@ class LoamParams {
     double current_angle = fov_deg / 2;
     while (current_angle >= -fov_deg / 2) {
       beam_angle_bins_.push_back(current_angle);
-      current_angle -= fov_deg / number_of_beams;
+      current_angle -= fov_deg / (number_of_beams - 1);
     }
     return beam_angle_bins_;
   }
@@ -59,7 +63,7 @@ class LoamParams {
 
 private:
   std::vector<double> beam_angle_bins_;
-}
+};
 
 using LoamParamsPtr = boost::shared_ptr<LoamParams>;
 

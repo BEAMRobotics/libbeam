@@ -25,7 +25,8 @@
 #pragma once
 
 #include <beam_matching/Matcher.h>
-#include <beam_matching/LoamPointCloud.h>
+#include <beam_matching/loam/LoamPointCloud.h>
+#include <beam_matching/loam/LoamParams.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
@@ -69,13 +70,13 @@ public:
    * @brief sets the reference pointcloud for the matcher
    * @param ref - Pointcloud
    */
-  void SetRef(const PointCloudPtr& ref);
+  void SetRef(const LoamPointCloudPtr& ref);
 
   /**
    * @brief sets the target (or scene) pointcloud for the matcher
    * @param target - Pointcloud
    */
-  void SetTarget(const PointCloudPtr& target);
+  void SetTarget(const LoamPointCloudPtr& target);
 
   /**
    * @brief runs the matcher, blocks until finished.

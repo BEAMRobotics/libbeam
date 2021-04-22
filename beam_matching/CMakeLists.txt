@@ -88,6 +88,22 @@ target_link_libraries(${PROJECT_NAME}_teaserpp_tests
     teaserpp::teaser_io
 )
 
+add_executable(${PROJECT_NAME}_loam_tests
+  tests/loam_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_loam_tests
+  PUBLIC
+    include
+)
+
+target_link_libraries(${PROJECT_NAME}_loam_tests
+    ${PROJECT_NAME}
+    beam::utils
+    Eigen3::Eigen
+    Catch2::Catch2
+)
+
 add_executable(${PROJECT_NAME}_multi_matcher_tests
   tests/multi_matcher_tests.cpp
 )

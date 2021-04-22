@@ -1,4 +1,4 @@
-#include <beam_matching/LoamPointCloud.h>
+#include <beam_matching/loam/LoamPointCloud.h>
 
 #include <Eigen/Geometry>
 #include <pcl/common/transforms.h>

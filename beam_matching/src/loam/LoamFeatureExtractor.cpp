@@ -12,13 +12,14 @@ LoamFeatureExtractor::LoamFeatureExtractor(const LoamParamsPtr& params)
 
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
   GetScanLines(cloud);
+  return LoamPointCloud();
 }
 
 void LoamFeatureExtractor::GetScanLines(const PointCloud& cloud){
-  ScanLines_ = std::vector<PointCloud>(params_.number_of_beams, PointCloud());
+  ScanLines_ = std::vector<PointCloud>(params_->number_of_beams, PointCloud());
 
   // calculate bins for angle of beams
-  std::vector<double> beam_angle_bins_deg = params_.GetBeamAngleBinsDeg();
+  std::vector<double> beam_angle_bins_deg = params_->GetBeamAngleBinsDeg();
 
   // extract valid points from input cloud
   for (auto point_id = 0; point_id < cloud.size(); point_id++) {
@@ -40,7 +41,7 @@ void LoamFeatureExtractor::GetScanLines(const PointCloud& cloud){
         std::atan(point.y / std::sqrt(point.x * point.x + point.z * point.z)));
 
     // get the scan bin (or scan line)
-    double max_angle = params_.fov_deg / 2;
+    double max_angle = params_->fov_deg / 2;
     double min_angle = -max_angle;
     int line_id = beam_angle_bins_deg.size() - 1;
     for (int i = 0; i < beam_angle_bins_deg.size(); i++) {

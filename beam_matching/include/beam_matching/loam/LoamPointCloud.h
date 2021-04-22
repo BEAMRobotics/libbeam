@@ -75,7 +75,7 @@ public:
   private:
   PointCloud edge_features_;
   PointCloud planar_features_;
-}
+};
 
 using LoamPointCloudPtr = boost::shared_ptr<LoamPointCloud>;
 

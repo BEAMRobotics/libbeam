@@ -29,18 +29,8 @@ void LoamMatcher::SetParams(LoamMatcherParams params) {
   SetLoamParams();
 }
 
-void LoamMatcher::SetRef(const PointCloudPtr& ref) {
-  LoamPointCloud ref_loam(*ref, params_.loam_params);
-  this->ref_ = boost::make_shared<LoamPointCloud>(ref_loam);
-}
-
 void LoamMatcher::SetRef(const LoamPointCloudPtr& ref) {
   this->ref_ = ref;
-}
-
-void LoamMatcher::SetTarget(const PointCloudPtr& target) {
-  LoamPointCloud target_loam(*target, params_.loam_params);
-  this->target_ = boost::make_shared<LoamPointCloud>(target_loam);
 }
 
 void LoamMatcher::SetTarget(const LoamPointCloudPtr& target) {

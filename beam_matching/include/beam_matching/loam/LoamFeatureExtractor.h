@@ -52,7 +52,7 @@ public:
 
   LoamParamsPtr params_;
   std::vector<PointCloud> ScanLines_;
-}
+};
 
 /** @} group matching */
 } // namespace beam_matching
