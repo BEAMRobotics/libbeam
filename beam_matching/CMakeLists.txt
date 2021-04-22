@@ -14,8 +14,11 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/NdtMatcher.cpp
     src/GicpMatcher.cpp
     src/TeaserPPMatcher.cpp
-    src/LoamPointCloud.cpp
     src/LoamMatcher.cpp
+    src/loam/LoamPointCloud.cpp
+    src/loam/LoamFeatureExtractor.cpp
+    src/loam/LoamScanRegistration.cpp
+    
 )
 
 ##################### TESTS #########################

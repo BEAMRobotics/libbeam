@@ -46,7 +46,7 @@ struct LoamMatcherParams {
   std::shared_ptr<LoamParams> loam_params;
 };
 
-class LoamMatcher : public Matcher<PointCloudPtr> {
+class LoamMatcher : public Matcher<LoamPointCloudPtr> {
 public:
   LoamMatcher() = default;
   /**
@@ -92,12 +92,9 @@ public:
 private:
   void SetLoamParams();
 
-  /** An instance of a PCL voxel filter. It is used to downsample input. */
-  pcl::VoxelGrid<pcl::PointXYZ> filter_;
-
-  PointCloudPtr ref_;
-  PointCloudPtr target_;
-  PointCloudPtr final_;
+  // LoamRegistration registration_;
+  LoamPointCloudPtr ref_;
+  LoamPointCloudPtr target_;
 
   LoamMatcherParams params_;
 };

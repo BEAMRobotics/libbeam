@@ -31,16 +31,13 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-/**
- * @brief Struct for storing all LOAM params. This will be used by the
- * LoamPointCloud and LoamMatcher classes
- */
-struct LoamParams {
-  double test = 0;
-}
-
 class LoamPointCloud {
 public:
+  /**
+   * @brief Default constructor
+   */
+  LoamPointCloud() = default;
+
   /**
    * @brief Constructor that takes in two pointclouds that are already separated
    * into edge and planar clouds
@@ -49,15 +46,6 @@ public:
    */
   LoamPointCloud(const PointCloud& edge_features,
                  const PointCloud& planar_features);
-
-  /**
-   * @brief Constructor that takes a raw pointcloud. This will extract the
-   * features and store them into separate PointClouds
-   * @param raw_cloud
-   * @param params parameters for extracting features
-   */
-  LoamPointCloud(const PointCloud& raw_cloud,
-                 const std::shared_ptr<LoamParams>& params);
 
   /**
    * @brief Add a new set of planar features
@@ -78,16 +66,15 @@ public:
   void AddEdgeFeatures(const PointCloud& new_features,
                        const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
-  void ExtractLoamFeatures(const PointCloud& cloud, PointCloud& edge_features,
-                           PointCloud& planar_features);
+  PointCloud EdgeFeatures();
 
-  PointCloud ExtractEdgeFeatures(const PointCloud& raw_cloud);
+  PointCloud PlanarFeatures();
 
-  PointCloud ExtractPlanarFeatures(const PointCloud& raw_cloud);
+  void TransformPointCloud(const Eigen::Matrix4d& T);
 
-  PointCloud edge_features;
-  PointCloud planar_features;
-  std::shared_ptr<LoamParams> params;
+  private:
+  PointCloud edge_features_;
+  PointCloud planar_features_;
 }
 
 using LoamPointCloudPtr = boost::shared_ptr<LoamPointCloud>;
