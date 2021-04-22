@@ -36,6 +36,7 @@ public:
    * @return Returns point to XYZ point cloud
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr GetCloud();
+
   /**
    * @brief Sets cloud point cloud attribute
    * @param input_cloud point cloud to set
@@ -116,7 +117,7 @@ public:
   float GetPixelScale(const Eigen::Vector2i& pixel);
 
   /**
-   * @brief returns area of a pixel in world scale
+   * @brief subsamples the depth map using a sliding window
    * @param pixel
    * @return float
    */

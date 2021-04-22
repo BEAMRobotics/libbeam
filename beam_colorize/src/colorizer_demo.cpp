@@ -7,6 +7,7 @@
 #include <beam_colorize/Projection.h>
 #include <beam_colorize/RayTrace.h>
 #include <beam_utils/math.h>
+#include <beam_utils/time.h>
 
 int main(int argc, char* argv[]) {
   if (argc < 2 || argc > 2) {
@@ -56,7 +57,11 @@ int main(int argc, char* argv[]) {
       colorizer->SetImage(image);
       colorizer->SetIntrinsics(model);
       colorizer->SetDistortion(image_distorted);
+      struct timespec t;
+      beam::tic(&t);
       cloud_colored = colorizer->ColorizePointCloud();
+      float elapsed = beam::toc(&t);
+      BEAM_INFO("Colorizing time elapsed: {}", elapsed);
 
       // visualize colored point cloud
       pcl::visualization::PCLVisualizer::Ptr viewer(

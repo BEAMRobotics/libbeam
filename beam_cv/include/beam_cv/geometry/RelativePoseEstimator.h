@@ -92,7 +92,7 @@ public:
                   const std::vector<Eigen::Vector2i>& p2_v,
                   const std::vector<Eigen::Matrix3d>& R,
                   const std::vector<Eigen::Vector3d>& t,
-                  beam::opt<Eigen::Matrix4d>& pose);
+                  beam::opt<Eigen::Matrix4d>& pose, double inlier_threshold = 10.0);
 };
 
 } // namespace beam_cv

@@ -11,11 +11,12 @@
 
 std::shared_ptr<beam_cv::Matcher> matcher =
     std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,
-                                            true, cv::FM_RANSAC, 1);
+                                            true, cv::FM_RANSAC, 5);
 std::shared_ptr<beam_cv::Descriptor> descriptor =
     std::make_shared<beam_cv::ORBDescriptor>();
 std::shared_ptr<beam_cv::Detector> detector =
-    std::make_shared<beam_cv::ORBDetector>();
+    std::make_shared<beam_cv::ORBDetector>(5000, 1.2, 8, 31,
+                                           cv::ORB::FAST_SCORE, 20);
 
 std::vector<cv::Mat> ReadImageSequence() {
   std::string libbeam_root = beam::LibbeamRoot();
@@ -36,7 +37,7 @@ TEST_CASE("Test adding images to tracker.") {
   ros::Time::init();
   beam_cv::Tracker tracker(detector, descriptor, matcher, 10);
   for (int i = 0; i < 10; i++) {
-    tracker.AddImage(images[i], ros::Time::now());
+    tracker.AddImage(images[i], ros::Time::now(), 10.0);
   }
 
   struct timespec t;
