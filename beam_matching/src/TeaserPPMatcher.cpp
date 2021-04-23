@@ -99,12 +99,12 @@ bool TeaserPPMatcher::Match() {
   if (ref_->size() == 0 || target_->size() == 0) { return false; }
 
   // Convert the point clouds to Eigen
-  Eigen::Matrix<double, 3, Eigen::Dynamic> src_cloud(3, ref_->size());
+  Eigen::Matrix<float, 3, Eigen::Dynamic> src_cloud(3, ref_->size());
   for (size_t i = 0; i < ref_->size(); ++i) {
     src_cloud.col(i) << ref_->points.at(i).x, ref_->points.at(i).y,
         ref_->points.at(i).z;
   }
-  Eigen::Matrix<double, 3, Eigen::Dynamic> tgt_cloud(3, target_->size());
+  Eigen::Matrix<float, 3, Eigen::Dynamic> tgt_cloud(3, target_->size());
   for (size_t i = 0; i < target_->size(); ++i) {
     tgt_cloud.col(i) << target_->points.at(i).x, target_->points.at(i).y,
         target_->points.at(i).z;
@@ -132,8 +132,8 @@ bool TeaserPPMatcher::Match() {
   teaserpp_.solve(src_cloud, tgt_cloud);
   teaser::RegistrationSolution solution = teaserpp_.getSolution();
   Eigen::Matrix4d result = Eigen::Matrix4d::Identity();
-  result.block(0, 3, 3, 1) = solution.translation;
-  result.block(0, 0, 3, 3) = solution.rotation;
+  result.block(0, 3, 3, 1) = solution.translation.cast<double>();
+  result.block(0, 0, 3, 3) = solution.rotation.cast<double>();
   result_ = Eigen::Affine3d(result);
   return solution.valid;
 }

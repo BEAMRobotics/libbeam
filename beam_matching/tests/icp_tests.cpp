@@ -20,7 +20,7 @@ IcpMatcher matcher;
 
 void FileSetUp() {
   test_path.erase(test_path.end() - current_file.size(), test_path.end());
-  scan_path = test_path + "data/testscan.pcd";
+  scan_path = test_path + "data/test_scan_vlp16.pcd";
   config_path = test_path + "config/icp_config.json";
 }
 
@@ -46,8 +46,8 @@ TEST_CASE("Test initialization") {
   REQUIRE(params.fit_eps == 1e-2);
   REQUIRE(params.lidar_ang_covar == 7.78e-9);
   REQUIRE(params.lidar_lin_covar == 2.5e-4);
-  REQUIRE(params.multiscale_steps == 3);
-  REQUIRE(params.res == 0.1f);
+  REQUIRE(params.multiscale_steps == 0);
+  REQUIRE(params.res == 0.1);
 }
 
 TEST_CASE("Test zero displacement case without downsampling") {

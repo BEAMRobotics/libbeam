@@ -2,7 +2,7 @@
   "noise_bound": 0.05,
   "cbar2": 1,
   "estimate_scaling": false,
-  "rotation_max_iterations": 100,
+  "rotation_max_iterations": 80,
   "rotation_gnc_factor": 1.4,
   "rotation_estimation_algorithm": "GNC_TLS",
   "rotation_cost_threshold": 0.005,

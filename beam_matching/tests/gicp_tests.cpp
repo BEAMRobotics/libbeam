@@ -17,7 +17,7 @@ GicpMatcher matcher;
 
 void FileSetup() {
   test_path.erase(test_path.end() - current_file.size(), test_path.end());
-  scan_path = test_path + "data/testscan.pcd";
+  scan_path = test_path + "data/test_scan_vlp16.pcd";
   config_path = test_path + "config/gicp_config.json";
 }
 

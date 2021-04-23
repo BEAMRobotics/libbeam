@@ -15,7 +15,7 @@ void SetUp() {
   std::string test_path = __FILE__;
   std::string current_file = "multi_matcher_tests.cpp";
   test_path.erase(test_path.end() - current_file.size(), test_path.end());
-  std::string scan_path = test_path + "data/testscan.pcd";
+  std::string scan_path = test_path + "data/test_scan_vlp16.pcd";
 
   cld_ = boost::make_shared<PointCloud>();
   pcl::io::loadPCDFile(scan_path, *(cld_));

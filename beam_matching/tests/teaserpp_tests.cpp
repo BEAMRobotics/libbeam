@@ -60,7 +60,7 @@ public:
     std::string test_path = __FILE__;
     std::string current_file = "teaserpp_tests.cpp";
     test_path.erase(test_path.end() - current_file.size(), test_path.end());
-    // std::string scan_path1 = test_path + "data/testscan.pcd";
+    std::string scan_path1 = test_path + "data/test_scan_vlp16.pcd";
     std::string scan_path2 = test_path + "data/bun_zipper_res3.ply";
     std::string config_path = test_path + "config/teaserpp_config.json";
 
@@ -81,13 +81,11 @@ public:
         beam::randf(max_pert_trans, -max_pert_trans);
     T_WORLD_CLOUD2 = beam::PerturbTransformDegM(T_WORLD_CLOUD1, perturb);
 
-    // NOTE: lidar scan too large for many computers
-    // read lidar scan and transform
-    // lidar_scan = boost::make_shared<PointCloud>();
-    // pcl::io::loadPCDFile(scan_path1, *lidar_scan);
-    // lidar_scan_pert = boost::make_shared<PointCloud>();
-    // pcl::transformPointCloud(*lidar_scan, *lidar_scan_pert,
-    //                          beam::InvertTransform(T_WORLD_CLOUD2));
+    lidar_scan = boost::make_shared<PointCloud>();
+    pcl::io::loadPCDFile(scan_path1, *lidar_scan);
+    lidar_scan_pert = boost::make_shared<PointCloud>();
+    pcl::transformPointCloud(*lidar_scan, *lidar_scan_pert,
+                             beam::InvertTransform(T_WORLD_CLOUD2));
 
     // read ply as teaser pointcloud
     LoadTeaserClouds(bunny, bunny_pert, beam::InvertTransform(T_WORLD_CLOUD2),
@@ -97,8 +95,8 @@ public:
   Eigen::Matrix4d T_WORLD_CLOUD1;
   Eigen::Matrix4d T_WORLD_CLOUD2;
   TeaserPPMatcherParams params;
-  // PointCloudPtr lidar_scan;
-  // PointCloudPtr lidar_scan_pert;
+  PointCloudPtr lidar_scan;
+  PointCloudPtr lidar_scan_pert;
   Eigen::Matrix<double, 3, Eigen::Dynamic> bunny;
   Eigen::Matrix<double, 3, Eigen::Dynamic> bunny_pert;
 };
@@ -126,12 +124,8 @@ TEST_CASE("Test bunny registration with beam Matcher class") {
 }
 
 TEST_CASE("Test lidar scan registration with beam Matcher class") {
-  // setup matcher
-  PointCloudPtr bunny_pcl = EigenPointCloudToPCL(data_.bunny);
-  PointCloudPtr bunny_pert_pcl = EigenPointCloudToPCL(data_.bunny_pert);
-
   TeaserPPMatcher matcher(data_.params);
-  matcher.Setup(bunny_pcl, bunny_pert_pcl);
+  matcher.Setup(data_.lidar_scan, data_.lidar_scan_pert);
 
   // test and assert
   bool match_success = matcher.Match();
