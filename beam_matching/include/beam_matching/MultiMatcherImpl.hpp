@@ -1,5 +1,4 @@
-#ifndef BEAM_MULTI_MATCHER_IMPL_HPP
-#define BEAM_MULTI_MATCHER_IMPL_HPP
+#pragma once
 
 #include <iostream>
 
@@ -16,18 +15,18 @@ MultiMatcher<T, R>::~MultiMatcher() {
 }
 
 template <class T, class R>
-void MultiMatcher<T, R>::initPool(R params) {
+void MultiMatcher<T, R>::InitPool(R params) {
     this->config = params;
     for (int i = 0; i < this->n_thread; i++) {
         this->matchers.emplace_back(T(R(this->config)));
         this->pool.emplace_back(
-          std::thread(&MultiMatcher<T, R>::spin, this, i));
+          std::thread(&MultiMatcher<T, R>::Spin, this, i));
     }
 }
 
 template <class T, class R>
-void MultiMatcher<T, R>::spin(int threadid) {
-    std::tuple<int, PCLPointCloudPtr, PCLPointCloudPtr> val;
+void MultiMatcher<T, R>::Spin(int threadid) {
+    std::tuple<int, PointCloudPtr, PointCloudPtr> val;
     while (true) {
         {
             std::unique_lock<std::mutex> lock(this->ip_mutex);
@@ -42,15 +41,15 @@ void MultiMatcher<T, R>::spin(int threadid) {
             lock.unlock();
             this->ip_condition.notify_one();
         }
-        this->matchers.at(threadid).setRef(std::get<1>(val));
-        this->matchers.at(threadid).setTarget(std::get<2>(val));
-        this->matchers.at(threadid).match();
-        this->matchers.at(threadid).estimateInfo();
+        this->matchers.at(threadid).SetRef(std::get<1>(val));
+        this->matchers.at(threadid).SetTarget(std::get<2>(val));
+        this->matchers.at(threadid).Match();
+        this->matchers.at(threadid).EstimateInfo();
         {
             std::unique_lock<std::mutex> lockop(this->op_mutex);
             this->output.emplace(std::get<0>(val),
-                                 this->matchers.at(threadid).getResult(),
-                                 this->matchers.at(threadid).getInfo());
+                                 this->matchers.at(threadid).GetResult(),
+                                 this->matchers.at(threadid).GetInfo());
             {
                 std::unique_lock<std::mutex> lockcnt(this->cnt_mutex);
                 --(this->remaining_matches);
@@ -62,9 +61,9 @@ void MultiMatcher<T, R>::spin(int threadid) {
 }
 
 template <class T, class R>
-void MultiMatcher<T, R>::insert(const int &id,
-                                const PCLPointCloudPtr &src,
-                                const PCLPointCloudPtr &target) {
+void MultiMatcher<T, R>::Insert(const int &id,
+                                const PointCloudPtr &src,
+                                const PointCloudPtr &target) {
     {
         std::unique_lock<std::mutex> lock(this->ip_mutex);
         while (this->input.size() >= static_cast<size_t>(this->queue_size)) {
@@ -81,7 +80,7 @@ void MultiMatcher<T, R>::insert(const int &id,
 }
 
 template <class T, class R>
-bool MultiMatcher<T, R>::done() {
+bool MultiMatcher<T, R>::Done() {
     {
         std::unique_lock<std::mutex> lockcnt(this->cnt_mutex);
         if (this->remaining_matches == 0) {
@@ -93,5 +92,3 @@ bool MultiMatcher<T, R>::done() {
 }
 
 }  // namespace beam_matching
-
-#endif  // BEAM_MULTI_MATCHER_IMPL_HPP

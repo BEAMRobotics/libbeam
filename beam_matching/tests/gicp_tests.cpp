@@ -4,7 +4,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/search/impl/search.hpp>
 
-#include <beam_matching/GicpMatcher.hpp>
+#include <beam_matching/GicpMatcher.h>
 
 namespace beam_matching {
 

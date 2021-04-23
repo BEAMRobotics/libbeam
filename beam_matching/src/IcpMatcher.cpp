@@ -1,59 +1,20 @@
-// Software License Agreement (BSD License)
-//
-// Point Cloud Library (PCL) - www.pointclouds.org
-// Copyright (c) 2009-2012, Willow Garage, Inc.
-// Copyright (c) 2012-, Open Perception, Inc.
-// Copyright (c) XXX, respective authors.
-//
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-//        modification, are permitted provided that the following conditions
-// are met:
-//
-//* Redistributions of source code must retain the above copyright
-//        notice, this list of conditions and the following disclaimer.
-//* Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following
-//        disclaimer in the documentation and/or other materials provided
-//        with the distribution.
-//* Neither the name of the copyright holder(s) nor the names of its
-//        contributors may be used to endorse or promote products derived
-//        from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//        LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-//        FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-//        COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//        INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-//                                                                  BUT NOT
-//                                                                  LIMITED TO,
-//                                                                  PROCUREMENT
-//                                                                  OF
-//                                                                  SUBSTITUTE
-//                                                                  GOODS OR
-//                                                                  SERVICES;
-// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-//        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//        POSSIBILITY OF SUCH DAMAGE.
+#include <beam_matching/IcpMatcher.h>
 
-#include "beam_matching/IcpMatcher.hpp"
-
-#include <Eigen/Geometry>
-#include <beam_utils/log.h>
 #include <fstream>
 #include <iostream>
+
+#include <Eigen/Geometry>
 #include <nlohmann/json.hpp>
+#include <pcl/search/impl/search.hpp>
+
+#include <beam_utils/log.h>
 
 using json = nlohmann::json;
 
 namespace beam_matching {
 
 IcpMatcherParams::IcpMatcherParams(std::string& param_config) {
-  BEAM_INFO("Loading file: {}", param_config.c_str());
+  BEAM_INFO("Loading ICP matcher config file: {}", param_config.c_str());
 
   json J;
   std::ifstream file(param_config);
@@ -120,11 +81,11 @@ void IcpMatcher::SetIcpParams() {
   this->icp_.setEuclideanFitnessEpsilon(this->params_.fit_eps);
 }
 
-void IcpMatcher::SetRef(const PCLPointCloudPtr& ref) {
+void IcpMatcher::SetRef(const PointCloudPtr& ref) {
   this->ref_ = ref;
 }
 
-void IcpMatcher::SetTarget(const PCLPointCloudPtr& target) {
+void IcpMatcher::SetTarget(const PointCloudPtr& target) {
   this->target_ = target;
 }
 
@@ -194,10 +155,9 @@ void IcpMatcher::EstimateInfo() {
 }
 
 // This is an implementation of the Haralick or Censi covariance approximation
-// for ICP
-// The core idea behind this is that the covariance of the cost f'n J wrt
-// optimization variable x is
-// cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
+// for ICP. The core idea behind this is that the covariance of the cost f'n J wrt
+// optimization variable x is:
+//    cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
 
 // Idea was taken from
 // https://censi.science/pub/research/2007-icra-icpcov.pdf
@@ -443,6 +403,7 @@ void IcpMatcher::EstimateCensi() {
         // clang-format on
       }
     }
+
     // The covariance is approximately: (Prakhya eqn. 3)
     // d2J_dX2^-1 * d2J_dZdX*cov(z)*d2J_dZdX' *  d2J_dX2^-1
     // = d2J_dX2^-1 * middle * d2J_dX2^-1
@@ -458,7 +419,7 @@ void IcpMatcher::EstimateCensi() {
 
 void IcpMatcher::EstimateLUMold() {
   auto& source_trans = this->final_;
-  PCLPointCloudPtr targetc;
+  PointCloudPtr targetc;
   if (this->params_.res > 0) {
     targetc = this->downsampled_target_;
   } else {
@@ -487,10 +448,7 @@ void IcpMatcher::EstimateLUMold() {
 
     if (nn_sqr_dist[0] <
         this->params_.max_corr * this->params_.max_corr) // if the distance to
-    // point is less than max
-    // correspondence
-    // distance, use it to
-    // calculate
+    // point is less than max correspondence distance, use it to calculate
     {
       Eigen::Vector3f source_pt = qpt.getVector3fMap();
       Eigen::Vector3f target_pt = targetc->points[nn_idx[0]].getVector3fMap();
@@ -587,7 +545,7 @@ void IcpMatcher::EstimateLUMold() {
 // Taken from the Lu and Milios matcher in PCL
 void IcpMatcher::EstimateLUM() {
   auto& ref = this->final_;
-  PCLPointCloudPtr targetc;
+  PointCloudPtr targetc;
   if (this->params_.res > 0) {
     targetc = this->downsampled_target_;
   } else {

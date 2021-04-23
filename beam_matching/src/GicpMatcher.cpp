@@ -1,16 +1,18 @@
-#include "beam_matching/GicpMatcher.hpp"
+#include <beam_matching/GicpMatcher.h>
 
-#include <beam_utils/log.h>
 #include <fstream>
 #include <iostream>
+
 #include <nlohmann/json.hpp>
+
+#include <beam_utils/log.h>
 
 using json = nlohmann::json;
 
 namespace beam_matching {
 
 GicpMatcherParams::GicpMatcherParams(const std::string& config_path) {
-  BEAM_INFO("Loading file: {}", config_path.c_str());
+  BEAM_INFO("Loading GICP matcher file: {}", config_path.c_str());
 
   json J;
   std::ifstream file(config_path);
@@ -49,7 +51,7 @@ void GicpMatcher::SetGicpParams() {
   this->gicp_.setEuclideanFitnessEpsilon(this->params_.fit_eps);
 }
 
-void GicpMatcher::SetRef(const PCLPointCloudPtr& ref) {
+void GicpMatcher::SetRef(const PointCloudPtr& ref) {
   if (this->resolution_ > 0) {
     this->filter_.setInputCloud(ref);
     this->filter_.filter(*(this->ref_));
@@ -59,7 +61,7 @@ void GicpMatcher::SetRef(const PCLPointCloudPtr& ref) {
   this->gicp_.setInputSource(this->ref_);
 }
 
-void GicpMatcher::SetTarget(const PCLPointCloudPtr& target) {
+void GicpMatcher::SetTarget(const PointCloudPtr& target) {
   if (resolution_ > 0) {
     this->filter_.setInputCloud(target);
     this->filter_.filter(*(this->target_));

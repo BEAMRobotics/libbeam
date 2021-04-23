@@ -15,13 +15,13 @@
  * by more than this quantity, stop.
  */
 
-#ifndef BEAM_MATCHING_GICP_HPP
-#define BEAM_MATCHING_GICP_HPP
+#pragma once
 
 #include <pcl/registration/gicp.h>
+#include <pcl/filters/voxel_grid.h>
 
-#include "beam_matching/Matcher.hpp"
-#include "beam_matching/pcl_common.hpp"
+#include <beam_matching/Matcher.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
 /** @addtogroup matching
@@ -38,48 +38,54 @@ struct GicpMatcherParams {
   float res = 0.1;
 };
 
-class GicpMatcher : public Matcher<PCLPointCloudPtr> {
+class GicpMatcher : public Matcher<PointCloudPtr> {
 public:
   GicpMatcher() = default;
   explicit GicpMatcher(const GicpMatcherParams params);
 
-  /** sets the parameters for the matcher
+  /**
+   * @brief sets the parameters for the matcher
    * @param params - GicpMatcherParams
    */
   void SetParams(const GicpMatcherParams params);
 
-  /** gets the parameters for the matcher
+  /**
+   * @brief gets the parameters for the matcher
    * @return GicpMatcherParams
    */
   GicpMatcherParams GetParams() { return params_; }
 
-  /** sets the reference pointcloud for the matcher
+  /**
+   * @brief sets the reference pointcloud for the matcher
    * @param ref - Pointcloud
    */
-  void SetRef(const PCLPointCloudPtr& ref);
+  void SetRef(const PointCloudPtr& ref);
 
-  /** sets the target (or scene) pointcloud for the matcher
+  /**
+   * @brief sets the target (or scene) pointcloud for the matcher
    * @param targer - Pointcloud
    */
-  void SetTarget(const PCLPointCloudPtr& target);
+  void SetTarget(const PointCloudPtr& target);
 
-  /** runs the matcher, blocks until finished.
-   * Returns true if successful
+  /**
+   * @briefruns the matcher, blocks until finished.
+   * @return true if successful
    */
   bool Match();
 
 private:
   /**
-   * configures the gicp matcher
+   * @brief configures the gicp matcher
    */
   void SetGicpParams();
+
   pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> gicp_;
   pcl::VoxelGrid<pcl::PointXYZ> filter_;
-  PCLPointCloudPtr ref_, target_, final_;
+  PointCloudPtr ref_;
+  PointCloudPtr target_;
+  PointCloudPtr final_;
   GicpMatcherParams params_;
 };
 
 /** @} group matching */
 } // namespace beam_matching
-
-#endif // BEAM_MATCHING_ICP_HPP
