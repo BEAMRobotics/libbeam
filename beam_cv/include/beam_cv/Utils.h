@@ -176,6 +176,16 @@ void DetectComputeAndMatch(
     std::vector<Eigen::Vector2i>& pL_v, std::vector<Eigen::Vector2i>& pR_v);
 
 /**
+ * @brief computes median distance between matches
+ * @param matches vector of matches
+ * @param keypoints_1 corresponding keypoints in left image
+ * @param keypoints_2 corresponding keypoints in right image
+ */
+double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
+                                  const std::vector<cv::KeyPoint>& keypoints_1,
+                                  const std::vector<cv::KeyPoint>& keypoints_2);
+
+/**
  * @brief This class provides a simple yet efficient Union-Find data structure
  * which is helpful in finding disjoint sets in various datasets:
  * https://en.wikipedia.org/wiki/Disjoint-set_data_structure

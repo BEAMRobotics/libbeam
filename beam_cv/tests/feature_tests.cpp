@@ -8,6 +8,7 @@
 #include <beam_cv/descriptors/Descriptors.h>
 #include <beam_cv/detectors/Detectors.h>
 #include <beam_cv/geometry/RelativePoseEstimator.h>
+#include <beam_cv/geometry/Triangulation.h>
 #include <beam_cv/matchers/Matchers.h>
 #include <beam_utils/angles.h>
 
@@ -15,9 +16,13 @@
 
 #include <beam_calibration/Radtan.h>
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
 std::shared_ptr<beam_cv::Matcher> matcher =
     std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,
-                                            true, cv::FM_RANSAC, 1);
+                                            true, cv::FM_RANSAC, 5);
 
 std::shared_ptr<beam_calibration::CameraModel> LoadCam0() {
   std::string cam_loc = __FILE__;
@@ -53,22 +58,23 @@ TEST_CASE("Test feature matching: ORB") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
       std::make_shared<beam_cv::ORBDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
-      std::make_shared<beam_cv::ORBDetector>();
+      std::make_shared<beam_cv::ORBDetector>(1000);
 
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
 
-  cv::Mat imL = LoadIm1();
-  cv::Mat imR = LoadIm0();
+  cv::Mat imL = LoadIm0();
+  cv::Mat imR = LoadIm1();
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
-  beam::opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
-      12);
+  beam::opt<Eigen::Matrix4d> T =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          12);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -93,16 +99,18 @@ TEST_CASE("Test feature matching: SIFT") {
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
 
-  cv::Mat imL = LoadIm1();
-  cv::Mat imR = LoadIm0();
+  cv::Mat imL = LoadIm0();
+  cv::Mat imR = LoadIm1();
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
-  beam::opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0, 1);
+  beam::opt<Eigen::Matrix4d> T =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
@@ -126,16 +134,18 @@ TEST_CASE("Test feature matching: BRISK") {
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
 
-  cv::Mat imL = LoadIm1();
-  cv::Mat imR = LoadIm0();
+  cv::Mat imL = LoadIm0();
+  cv::Mat imR = LoadIm1();
 
   std::vector<Eigen::Vector2i> pL_v;
   std::vector<Eigen::Vector2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
-  beam::opt<Eigen::Matrix4d> T = beam_cv::RelativePoseEstimator::RANSACEstimator(
-      cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0, 1);
+  beam::opt<Eigen::Matrix4d> T =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          1);
 
   Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
   Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());

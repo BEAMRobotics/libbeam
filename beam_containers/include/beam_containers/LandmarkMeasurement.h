@@ -30,7 +30,7 @@ template <typename SensorIdType>
 struct LandmarkMeasurement {
   TimePoint time_point;
   SensorIdType sensor_id;
-  size_t landmark_id;
+  uint64_t landmark_id;
   size_t image;
   Eigen::Vector2d value;
 

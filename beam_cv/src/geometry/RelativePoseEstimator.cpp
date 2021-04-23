@@ -61,11 +61,12 @@ beam::opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   return E;
 }
 
-beam::opt<std::vector<Eigen::Matrix3d>> RelativePoseEstimator::EssentialMatrix7Point(
-    const std::shared_ptr<beam_calibration::CameraModel>& cam1,
-    const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-    const std::vector<Eigen::Vector2i>& p1_v,
-    const std::vector<Eigen::Vector2i>& p2_v) {
+beam::opt<std::vector<Eigen::Matrix3d>>
+    RelativePoseEstimator::EssentialMatrix7Point(
+        const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+        const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+        const std::vector<Eigen::Vector2i>& p1_v,
+        const std::vector<Eigen::Vector2i>& p2_v) {
   if (p2_v.size() < 7 || p1_v.size() < 7 || p1_v.size() != p2_v.size()) {
     BEAM_CRITICAL("Invalid number of input point matches.");
     return {};
@@ -204,8 +205,9 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     // perform pose estimation of the given method
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
-      beam::opt<Eigen::Matrix3d> E = RelativePoseEstimator::EssentialMatrix8Point(
-          cam1, cam2, sampled_pr, sampled_pc);
+      beam::opt<Eigen::Matrix3d> E =
+          RelativePoseEstimator::EssentialMatrix8Point(cam1, cam2, sampled_pr,
+                                                       sampled_pc);
       if (E.has_value()) { Evec.push_back(E.value()); }
     } else if (method == EstimatorMethod::SEVENPOINT) {
       beam::opt<std::vector<Eigen::Matrix3d>> E =
@@ -222,17 +224,19 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       std::vector<Eigen::Vector3d> t;
       RelativePoseEstimator::RtFromE(E, R, t);
       beam::opt<Eigen::Matrix4d> pose;
-      int inliers = RelativePoseEstimator::RecoverPose(cam1, cam2, sampled_pr,
-                                                       sampled_pc, R, t, pose);
+      int inliers = RelativePoseEstimator::RecoverPose(
+          cam1, cam2, p1_v, p2_v, R, t, pose, inlier_threshold);
+
       if (pose.has_value()) {
-        found_valid = true;
         if (inliers > current_inliers) {
+          found_valid = true;
           current_inliers = inliers;
           current_pose = pose.value();
         }
       }
     }
   }
+
   if (found_valid) {
     return current_pose;
   } else {
@@ -269,9 +273,12 @@ int RelativePoseEstimator::RecoverPose(
     const std::vector<Eigen::Vector2i>& p1_v,
     const std::vector<Eigen::Vector2i>& p2_v,
     const std::vector<Eigen::Matrix3d>& R,
-    const std::vector<Eigen::Vector3d>& t, beam::opt<Eigen::Matrix4d>& pose) {
+    const std::vector<Eigen::Vector3d>& t, beam::opt<Eigen::Matrix4d>& pose,
+    double inlier_threshold) {
   Eigen::Matrix4d T_cam2_world;
   // iterate through each possibility
+  int max_count = 0;
+  int ret_inliers = 0;
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       // build relative pose possibility
@@ -285,7 +292,7 @@ int RelativePoseEstimator::RecoverPose(
           Triangulation::TriangulatePoints(cam1, cam2, I, T_cam2_world, p1_v,
                                            p2_v);
       int inliers = beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, points, I,
-                                          T_cam2_world, 5.0);
+                                          T_cam2_world, inlier_threshold);
       int size = points.size();
       int count = 0;
       // check if each point is in front of both cameras
@@ -297,15 +304,20 @@ int RelativePoseEstimator::RecoverPose(
         Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
         if (points[point_idx].value()[2] > 0 && ptc[2] > 0) { count++; }
       }
-      // if all points are in front of both, return the pose
-      if (count == size) {
+      // kep track of pose that has the most points in front of both cameras
+      if (count > max_count) {
+        max_count = count;
+        ret_inliers = inliers;
         pose = T_cam2_world;
-        return inliers;
       }
     }
   }
-  pose = {};
-  return -1;
+  if (max_count == 0) {
+    pose = {};
+    return -1;
+  } else {
+    return ret_inliers;
+  }
 }
 
 } // namespace beam_cv
