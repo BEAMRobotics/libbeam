@@ -43,7 +43,7 @@ public:
   inline std::vector<double> GetBeamAngleBinsDeg() {
     if (beam_angle_bins_.size() != 0) { return beam_angle_bins_; }
 
-    double current_angle = fov_deg / 2;
+    double current_angle = fov_deg / 2 - fov_deg / (number_of_beams - 1) / 2;
     while (current_angle >= -fov_deg / 2) {
       beam_angle_bins_.push_back(current_angle);
       current_angle -= fov_deg / (number_of_beams - 1);
@@ -59,13 +59,44 @@ public:
 
   /** @brief Used allong with number_of_beams to separate cloud into rings of
    * points*/
-  double fov_deg{40};
+  double fov_deg{30};
+
+  /** The time per scan. */
+  float scan_period{0.1}; // TODO: what is this used for???
+
+  /** The number of (equally sized) regions used to distribute the feature
+   * extraction within a scan. */
+  int n_feature_regions{6};
+
+  /** The number of surrounding points (+/- region around a point) used to
+   * calculate a point curvature. */
+  int curvature_region{5};
+
+  /** The maximum number of sharp corner points per feature region. */
+  int max_corner_sharp{2};
+
+  /** The maximum number of less sharp corner points per feature region. */
+  int max_corner_less_sharp{10 * 2};
+
+  /** The maximum number of flat surface points per feature region. */
+  int max_surface_flat{4};
+
+  /** The voxel size used for down sizing the remaining less flat surface
+   * points. */
+  float less_flat_filter_size{0.2};
+
+  /** The curvature threshold below / above a point is considered a flat /
+   * corner point. */
+  float surface_curvature_threshold{0.1};
+
+  /** Vertical axis of the lidar. Used to separate the cloud ino rings. */
+  std::string vertical_axis{"Z"};
 
 private:
   std::vector<double> beam_angle_bins_;
 };
 
-using LoamParamsPtr = boost::shared_ptr<LoamParams>;
+using LoamParamsPtr = std::shared_ptr<LoamParams>;
 
 /** @} group matching */
 } // namespace beam_matching

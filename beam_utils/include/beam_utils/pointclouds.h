@@ -68,5 +68,60 @@ PointCloud CreateFrame(double increment = 0.01, double length = 0.3);
 
 PointCloudCol CreateFrameCol(double increment = 0.01, double length = 0.3);
 
+/** 
+ * @brief Calculate the absolute distance of the point to the origin.
+ * @param p The point.
+ * @return The distance to the point.
+ */
+template <typename PointT>
+inline float PointDistance(const PointT& p)
+{
+  return std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+}
+
+/** 
+ * @brief Calculate the squared distance of the point to the origin.
+ * @param p The point.
+ * @return The squared distance to the point.
+ */
+template <typename PointT>
+inline float SquaredPointDistance(const PointT& p)
+{
+  return p.x * p.x + p.y * p.y + p.z * p.z;
+}
+
+/** 
+ * @brief Calculate the squared difference of the given two points.
+ * @param a The first point.
+ * @param b The second point.
+ * @param wb The weighting factor for the SECOND point.
+ * @return The squared difference between point a and b.
+ */
+template <typename PointT>
+inline float SquaredDiff(const PointT& a, const PointT& b, const float& wb)
+{
+  float diffX = a.x - b.x * wb;
+  float diffY = a.y - b.y * wb;
+  float diffZ = a.z - b.z * wb;
+
+  return diffX * diffX + diffY * diffY + diffZ * diffZ;
+}
+
+/** 
+ * @brief Calculate the squared difference of the given two points.
+ * @param a The first point.
+ * @param b The second point.
+ * @return The squared difference between point a and b.
+ */
+template <typename PointT>
+inline float SquaredDiff(const PointT& a, const PointT& b)
+{
+  float diffX = a.x - b.x;
+  float diffY = a.y - b.y;
+  float diffZ = a.z - b.z;
+
+  return diffX * diffX + diffY * diffY + diffZ * diffZ;
+}
+
 /** @} group utils */
 } // namespace beam
