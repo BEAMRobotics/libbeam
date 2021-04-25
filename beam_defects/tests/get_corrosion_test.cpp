@@ -20,8 +20,8 @@ TEST_CASE("Corrosion defect type is returned", "[GetType]") {
 
 TEST_CASE("Corrosion size calculation and VERY_SEVERE OSIM check",
           "[GetSize]") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud2 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
@@ -61,7 +61,7 @@ TEST_CASE("No Corrosion returns size of 0") {
 
 TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "
           "severity check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
+  auto cloud = std::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 10;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -85,7 +85,7 @@ TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "
   cloud->points[9] = PB{-.1, -.1, 0, I, RGB, R, G, B, A, T, C, S, CS2, D};
 
   // Extract XYZ point cloud
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.8; // threshold for determining if point it corrosion
   *cloud_xyz = beam_defects::IsolateCorrosionPoints(cloud, threshold);
   REQUIRE(cloud_xyz->points.size() == Approx(7));
@@ -101,7 +101,7 @@ TEST_CASE("Corrosion (xy-plane) extraction, size calculation, and LIGHT OSIM "
 
 TEST_CASE("Corrosion (xz-plane and yz-plane) extraction, size calculation, and "
           "MEDIUM OSIM check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
+  auto cloud = std::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 40;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -157,7 +157,7 @@ TEST_CASE("Corrosion (xz-plane and yz-plane) extraction, size calculation, and "
   cloud->points[39] = PB{-10, -10, -5, I, RGB, R, G, B, A, T, C, S, CS3, D};
 
   // Generate vector of delam objects to test GetCorrosion
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.5, tolerance = 0.2;
   int min_points = 5, max_points = 1000;
   std::vector<beam_defects::Defect::Ptr> corrosion_vector =

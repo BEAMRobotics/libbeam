@@ -13,7 +13,7 @@ TEST_CASE("Crack defect type is returned", "[GetType]") {
 }
 
 TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
@@ -32,7 +32,7 @@ TEST_CASE("No crack returns size of 0") {
 }
 
 TEST_CASE("Crack (xy-plane) size calculation and LIGHT OSIM check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 6;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -51,7 +51,7 @@ TEST_CASE("Crack (xy-plane) size calculation and LIGHT OSIM check") {
 }
 
 TEST_CASE("Crack (xz-plane) size calculation and MEDIUM OSIM check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 11;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -75,7 +75,7 @@ TEST_CASE("Crack (xz-plane) size calculation and MEDIUM OSIM check") {
 }
 
 TEST_CASE("Crack (yz-plane) size calculation and SEVERE OSIM check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   cloud->width = 22;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);

@@ -11,7 +11,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCrackPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold) {
   auto cloud_filtered =
-      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
   pcl::ExtractIndices<beam_containers::PointBridge> extract;
 
@@ -24,7 +24,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCrackPoints(
   extract.setIndices(inliers);
   extract.filter(*cloud_filtered);
 
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   copyPointCloud(*cloud_filtered, *cloud_xyz);
 
   return *cloud_xyz;
@@ -35,7 +35,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateSpallPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold) {
   auto cloud_filtered =
-      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
   pcl::ExtractIndices<beam_containers::PointBridge> extract;
 
@@ -48,7 +48,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateSpallPoints(
   extract.setIndices(inliers);
   extract.filter(*cloud_filtered);
 
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   copyPointCloud(*cloud_filtered, *cloud_xyz);
 
   return *cloud_xyz;
@@ -59,7 +59,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateDelamPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold) {
   auto cloud_filtered =
-      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
   pcl::ExtractIndices<beam_containers::PointBridge> extract;
 
@@ -72,7 +72,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateDelamPoints(
   extract.setIndices(inliers);
   extract.filter(*cloud_filtered);
 
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   copyPointCloud(*cloud_filtered, *cloud_xyz);
 
   return *cloud_xyz;
@@ -83,7 +83,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold) {
   auto cloud_filtered =
-      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
   pcl::ExtractIndices<beam_containers::PointBridge> extract;
 
@@ -96,7 +96,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
   extract.setIndices(inliers);
   extract.filter(*cloud_filtered);
 
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   copyPointCloud(*cloud_filtered, *cloud_xyz);
 
   return *cloud_xyz;
@@ -106,7 +106,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
 std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
     GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                        float tolerance, int min_size, int max_size) {
-  auto tree = boost::make_shared<pcl::search::KdTree<pcl::PointXYZ>>();
+  auto tree = std::make_shared<pcl::search::KdTree<pcl::PointXYZ>>();
   tree->setInputCloud(input_cloud);
 
   std::vector<pcl::PointIndices> cluster_indices;
@@ -122,7 +122,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
   for (std::vector<pcl::PointIndices>::const_iterator it =
            cluster_indices.begin();
        it != cluster_indices.end(); ++it) {
-    auto cloud_cluster = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    auto cloud_cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     for (std::vector<int>::const_iterator pit = it->indices.begin();
          pit != it->indices.end(); ++pit)
       cloud_cluster->points.push_back(input_cloud->points[*pit]);
@@ -141,7 +141,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
 std::vector<beam_defects::Defect::Ptr> GetCracks(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
-  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_filtered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *cloud_filtered = IsolateCrackPoints(input_cloud, threshold);
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
@@ -162,7 +162,7 @@ std::vector<beam_defects::Defect::Ptr> GetCracks(
 std::vector<beam_defects::Defect::Ptr> GetSpalls(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
-  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_filtered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *cloud_filtered = IsolateSpallPoints(input_cloud, threshold);
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
@@ -183,7 +183,7 @@ std::vector<beam_defects::Defect::Ptr> GetSpalls(
 std::vector<beam_defects::Defect::Ptr> GetDelams(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
-  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_filtered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *cloud_filtered = IsolateDelamPoints(input_cloud, threshold);
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);
@@ -204,7 +204,7 @@ std::vector<beam_defects::Defect::Ptr> GetDelams(
 std::vector<beam_defects::Defect::Ptr> GetCorrosion(
     const pcl::PointCloud<beam_containers::PointBridge>::Ptr& input_cloud,
     const float& threshold, float tolerance, int min_size, int max_size) {
-  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_filtered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *cloud_filtered = IsolateCorrosionPoints(input_cloud, threshold);
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_vector =
       GetExtractedClouds(cloud_filtered, tolerance, min_size, max_size);

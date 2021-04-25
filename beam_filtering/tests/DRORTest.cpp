@@ -10,7 +10,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr GetPCD() {
   std::string pcd_location = __FILE__;
   pcd_location.erase(pcd_location.end() - 12, pcd_location.end());
   pcd_location += "test_data/" + pcd_name;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = boost::make_shared<PointCloud>();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = std::make_shared<PointCloud>();
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_location, *cloud) == -1) {
     LOG_INFO("Couldn't read pcd file:  %s\n", pcd_location.c_str());
   } else {
@@ -35,7 +35,7 @@ TEST_CASE("Test params i/o") {
 
 TEST_CASE("Test with example scan") {
   PointCloud::Ptr input_cloud = GetPCD();
-  PointCloud::Ptr output_cloud = boost::make_shared<PointCloud>();
+  PointCloud::Ptr output_cloud = std::make_shared<PointCloud>();
   beam_filtering::DROR outlier_removal;
   double min_neighbors = 3, radius_multiplier = 3, azimuth_angle = 0.16,
          min_search_radius = 0.04;

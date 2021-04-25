@@ -19,7 +19,7 @@ Visualizer::~Visualizer() {
 
 void Visualizer::startVis(uint16_t coord_size) {
   point_cloud_display = 
-    boost::make_shared<pcl::visualization::PCLVisualizer> (display_name);
+    std::make_shared<pcl::visualization::PCLVisualizer> (display_name);
   point_cloud_display->setBackgroundColor (0, 0, 0);
   point_cloud_display->addCoordinateSystem (coord_size);
   point_cloud_display->initCameraParameters ();
