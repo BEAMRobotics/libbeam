@@ -248,7 +248,7 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
                                            uint8_t lidar_number) {
   if (!lidars_[lidar_number].use_cropbox) { return cloud; }
-  PointCloud::Ptr cropped_cloud = boost::make_shared<PointCloud>();
+  PointCloud::Ptr cropped_cloud = std::make_shared<PointCloud>();
   beam_filtering::CropBox cropper;
   cropper.SetMinVector(lidars_[lidar_number].cropbox_min);
   cropper.SetMaxVector(lidars_[lidar_number].cropbox_max);
@@ -259,10 +259,10 @@ PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
 PointCloud::Ptr
     MapBuilder::FilterPointCloud(PointCloud::Ptr cloud,
                                  std::vector<FilterParamsType> filter_params) {
-  PointCloud::Ptr filtered_cloud = boost::make_shared<PointCloud>(*cloud);
+  PointCloud::Ptr filtered_cloud = std::make_shared<PointCloud>(*cloud);
   for (uint8_t i = 0; i < filter_params.size(); i++) {
     PointCloud::Ptr input_cloud =
-        boost::make_shared<PointCloud>(*filtered_cloud);
+        std::make_shared<PointCloud>(*filtered_cloud);
     std::string filter_type = filter_params[i].first;
     std::vector<double> params = filter_params[i].second;
     if (filter_type == "DROR") {
@@ -350,8 +350,8 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
 
   if (save_scan) {
     pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
-        boost::make_shared<pcl::PCLPointCloud2>();
-    PointCloud::Ptr cloud_tmp = boost::make_shared<PointCloud>();
+        std::make_shared<pcl::PCLPointCloud2>();
+    PointCloud::Ptr cloud_tmp = std::make_shared<PointCloud>();
     pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
     pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
     PointCloud::Ptr cloud_cropped =
@@ -395,8 +395,8 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
   std::string fixed_frame = poses_fixed_frame_;
   std::string moving_frame = poses_moving_frame_;
   std::string lidar_frame = lidars_[lidar_number].frame;
-  PointCloud::Ptr scan_aggregate = boost::make_shared<PointCloud>();
-  PointCloud::Ptr scan_intermediary = boost::make_shared<PointCloud>();
+  PointCloud::Ptr scan_aggregate = std::make_shared<PointCloud>();
+  PointCloud::Ptr scan_intermediary = std::make_shared<PointCloud>();
   Eigen::Affine3d T_MOVING_LIDAR =
       extrinsics_.GetTransformEigen(moving_frame, lidar_frame);
   Eigen::Affine3d T_FIXED_LIDAR, T_FIXED_MOVING;
@@ -416,8 +416,8 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
     if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
     T_INT_LIDAR = T_FIXED_INT.inverse() * T_FIXED_LIDAR;
 
-    PointCloud::Ptr scan_intermediate_frame = boost::make_shared<PointCloud>();
-    PointCloud::Ptr intermediary_transformed = boost::make_shared<PointCloud>();
+    PointCloud::Ptr scan_intermediate_frame = std::make_shared<PointCloud>();
+    PointCloud::Ptr intermediary_transformed = std::make_shared<PointCloud>();
     pcl::transformPointCloud(*scans_[k], *scan_intermediate_frame, T_INT_LIDAR);
     *scan_intermediary += *scan_intermediate_frame;
 
@@ -447,7 +447,7 @@ void MapBuilder::SaveMaps() {
     pcl::io::savePCDFileBinary(save_path, *maps_[i]);
   }
   if (this->combine_lidar_scans_) {
-    PointCloud::Ptr combined_map = boost::make_shared<PointCloud>();
+    PointCloud::Ptr combined_map = std::make_shared<PointCloud>();
     for (uint8_t i = 0; i < maps_.size(); i++) { *combined_map += *maps_[i]; }
     std::string save_path =
         save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";

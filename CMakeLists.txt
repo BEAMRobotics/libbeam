@@ -33,9 +33,9 @@ OPTION(EXPORT_BUILD
 # Require Eigen 3.2.92, also called 3.3 beta-1, since it's in xenial
 FIND_PACKAGE(Eigen3 REQUIRED)
 FIND_PACKAGE(Boost 1.58.0 COMPONENTS system filesystem)
-FIND_PACKAGE(PCL 1.8 REQUIRED COMPONENTS
+FIND_PACKAGE(PCL 1.11.1 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
-    surface segmentation)
+    surface segmentation features)
 FIND_PACKAGE(OpenCV 3.2.0 REQUIRED COMPONENTS)
 FIND_PACKAGE(yaml-cpp REQUIRED)
 FIND_PACKAGE(Ceres 1.11)

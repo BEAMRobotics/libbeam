@@ -3,9 +3,8 @@
 #include <iostream>
 
 TEST_CASE("ros and chrono conversions", "[Time.h]") {
-  uint32_t seconds = 987;
-  uint32_t nanoseconds = 654321012;
-  uint32_t full_time = 987654321012;
+  uint64_t seconds = 987;
+  uint64_t nanoseconds = 654321012;
   ros::Time ros_time_true(seconds, nanoseconds);
   std::chrono::seconds seconds_chrono(seconds);
   std::chrono::nanoseconds nanoseconds_chrono(nanoseconds);

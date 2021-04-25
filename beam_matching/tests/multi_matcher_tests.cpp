@@ -17,7 +17,7 @@ void SetUp() {
   test_path.erase(test_path.end() - current_file.size(), test_path.end());
   std::string scan_path = test_path + "data/test_scan_vlp16.pcd";
 
-  cld_ = boost::make_shared<PointCloud>();
+  cld_ = std::make_shared<PointCloud>();
   pcl::io::loadPCDFile(scan_path, *(cld_));
 }
 
@@ -25,7 +25,7 @@ TEST_CASE("Test simultaneous matching") {
   SetUp();
   PointCloudPtr dupes[9];
   for (int i = 0; i < 9; i++) {
-    dupes[i] = boost::make_shared<PointCloud>();
+    dupes[i] = std::make_shared<PointCloud>();
     *(dupes[i]) = *(cld_);
   }
   for (int i = 0; i < 8; i++) {

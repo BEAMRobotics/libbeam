@@ -39,9 +39,9 @@ void DROR::Filter(pcl::PointCloud<pcl::PointXYZ>& input_cloud,
                   pcl::PointCloud<pcl::PointXYZ>& filtered_cloud) {
   // Clear points in output cloud
   filtered_cloud.clear();
-  PointCloudPtr input_pointer = boost::make_shared<PointCloud>(input_cloud);
+  PointCloudPtr input_pointer = std::make_shared<PointCloud>(input_cloud);
   // init. kd search tree
-  KdTreePtr kd_tree_ = boost::make_shared<pcl::KdTreeFLANN<pcl::PointXYZ>>();
+  KdTreePtr kd_tree_ = std::make_shared<pcl::KdTreeFLANN<pcl::PointXYZ>>();
   kd_tree_->setInputCloud(input_pointer);
 
   // Go over all the points and check which doesn't have enough neighbors
@@ -74,13 +74,13 @@ void DROR::Filter(pcl::PointCloud<pcl::PointXYZI>& input_cloud,
   // Clear points in output cloud
   filtered_cloud.clear();
   pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_ptr =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZI>>(input_cloud);
-  PointCloudPtr input_xyz = boost::make_shared<PointCloud>();
+      std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(input_cloud);
+  PointCloudPtr input_xyz = std::make_shared<PointCloud>();
   pcl::copyPointCloud(*input_cloud_ptr, *input_xyz);
   pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
 
   // init. kd search tree
-  KdTreePtr kd_tree_ = boost::make_shared<pcl::KdTreeFLANN<pcl::PointXYZ>>();
+  KdTreePtr kd_tree_ = std::make_shared<pcl::KdTreeFLANN<pcl::PointXYZ>>();
   kd_tree_->setInputCloud(input_xyz);
 
   // for (pcl::PointCloud<pcl::PointXYZ>::iterator it = input_xyz->begin();

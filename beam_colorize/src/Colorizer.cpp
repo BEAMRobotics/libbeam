@@ -30,7 +30,7 @@ void Colorizer::SetPointCloud(
 
 void Colorizer::SetPointCloud(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input) {
-  input_point_cloud_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+  input_point_cloud_ = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
   pcl::copyPointCloud(*cloud_input, *input_point_cloud_);
 
   // if transform already set, transform cloud here
