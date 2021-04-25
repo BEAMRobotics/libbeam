@@ -9,6 +9,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     PCL::PCL
     nlohmann_json::nlohmann_json
     teaserpp::teaser_registration
+    teaserpp::teaser_features
+    teaserpp::teaser_io
   SOURCES
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
