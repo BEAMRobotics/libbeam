@@ -38,6 +38,9 @@ TeaserPPMatcherParams::TeaserPPMatcherParams(const std::string& config_path) {
   }
   rotation_cost_threshold = J["rotation_cost_threshold"];
   res = J["res"];
+  estimate_correspondences = J["estimate_correspondences"];
+  corr_normal_search_radius = J["corr_normal_search_radius"];
+  corr_fpfh_search_radius = J["corr_fpfh_search_radius"];
 }
 
 teaser::RobustRegistrationSolver::Params
@@ -99,26 +102,6 @@ void TeaserPPMatcher::SetTarget(const PointCloudPtr& target) {
 bool TeaserPPMatcher::Match() {
   if (ref_->size() == 0 || target_->size() == 0) { return false; }
 
-  // Convert the point clouds to Eigen & to Teaser pointcloud
-  // Eigen::Matrix<float, 3, Eigen::Dynamic> src_cloud(3, ref_->size());
-  teaser::PointCloud src_cloud_teaser;
-  for (size_t i = 0; i < ref_->size(); ++i) {
-    // src_cloud.col(i) << ref_->points.at(i).x, ref_->points.at(i).y,
-    //     ref_->points.at(i).z;
-    src_cloud_teaser.push_back(teaser::PointXYZ{.x = ref_->points.at(i).x,
-                                                .y = ref_->points.at(i).y,
-                                                .z = ref_->points.at(i).z});
-  }
-  // Eigen::Matrix<float, 3, Eigen::Dynamic> tgt_cloud(3, target_->size());
-  teaser::PointCloud tgt_cloud_teaser;
-  for (size_t i = 0; i < target_->size(); ++i) {
-    // tgt_cloud.col(i) << target_->points.at(i).x, target_->points.at(i).y,
-    //     target_->points.at(i).z;
-    tgt_cloud_teaser.push_back(teaser::PointXYZ{.x = ref_->points.at(i).x,
-                                                .y = ref_->points.at(i).y,
-                                                .z = ref_->points.at(i).z});
-  }
-
   // check that clouds aren't too large for the current memory
   double max_size = static_cast<double>(ref_->size());
   if (target_->size() > ref_->size()) {
@@ -137,29 +120,57 @@ bool TeaserPPMatcher::Match() {
               max_size, num_GBs_available, num_GBs_required);
   }
 
-  /////////////////////////
-  std::cout << "TEST1\n";
-  // compute correspondences using FPFH
-  teaser::FPFHEstimation fpfh;
-  float normal_search_radius = 0.02;
-  float fpfh_search_radius = 0.04;
-  auto src_descriptors = fpfh.computeFPFHFeatures(
-      src_cloud_teaser, normal_search_radius, fpfh_search_radius);
-  std::cout << "TEST2\n";
-  auto tgt_descriptors = fpfh.computeFPFHFeatures(
-      tgt_cloud_teaser, normal_search_radius, fpfh_search_radius);
-  std::cout << "TEST3\n";
-  teaser::Matcher matcher;
-  auto correspondences = matcher.calculateCorrespondences(
-      src_cloud_teaser, tgt_cloud_teaser, *src_descriptors, *tgt_descriptors,
-      false, true, false, 0.95);
-  std::cout << "TEST4\n";
-  std::cout << "correspondences.size(): " << correspondences.size() << "\n";
-  /////////////////////////
+  if (params_.estimate_correspondences) {
+    // Convert the point clouds to Teaser pointcloud
+    teaser::PointCloud src_cloud;
+    for (size_t i = 0; i < ref_->size(); ++i) {
+      src_cloud.push_back(teaser::PointXYZ{.x = ref_->points.at(i).x,
+                                                  .y = ref_->points.at(i).y,
+                                                  .z = ref_->points.at(i).z});
+    }
+    teaser::PointCloud tgt_cloud;
+    for (size_t i = 0; i < target_->size(); ++i) {
+      tgt_cloud.push_back(teaser::PointXYZ{.x = ref_->points.at(i).x,
+                                                  .y = ref_->points.at(i).y,
+                                                  .z = ref_->points.at(i).z});
+    }
 
-  // solve, get solution & return validity
-  teaserpp_.solve(src_cloud_teaser, tgt_cloud_teaser, correspondences);
-  // teaserpp_.solve(src_cloud, tgt_cloud, correspondences);
+    std::cout << "TEST1\n";
+    // compute correspondences using FPFH
+    teaser::FPFHEstimation fpfh;
+    std::cout << "src_cloud.size(): " << src_cloud.size() << "\n";
+    std::cout << "tgt_cloud.size(): " << tgt_cloud.size() << "\n";
+    auto src_descriptors = fpfh.computeFPFHFeatures(
+        src_cloud, params_.corr_normal_search_radius,
+        params_.corr_fpfh_search_radius);
+    std::cout << "TEST2\n";
+    auto tgt_descriptors = fpfh.computeFPFHFeatures(
+        tgt_cloud, params_.corr_normal_search_radius,
+        params_.corr_fpfh_search_radius);
+    std::cout << "TEST3\n";
+    teaser::Matcher matcher;
+    auto correspondences = matcher.calculateCorrespondences(
+        src_cloud, tgt_cloud, *src_descriptors, *tgt_descriptors,
+        false, true, false, 0.95);
+    std::cout << "TEST4\n";
+    std::cout << "correspondences.size(): " << correspondences.size() << "\n";
+    teaserpp_.solve(src_cloud, tgt_cloud, correspondences);
+    std::cout << "TEST5\n";
+  } else {
+    // Convert the pointclouds to Eigen
+    Eigen::Matrix<double, 3, Eigen::Dynamic> src_cloud(3, ref_->size());
+    for (size_t i = 0; i < ref_->size(); ++i) {
+      src_cloud.col(i) << ref_->points.at(i).x, ref_->points.at(i).y,
+          ref_->points.at(i).z;
+    }
+    Eigen::Matrix<double, 3, Eigen::Dynamic> tgt_cloud(3, target_->size());
+    for (size_t i = 0; i < target_->size(); ++i) {
+      tgt_cloud.col(i) << target_->points.at(i).x, target_->points.at(i).y,
+          target_->points.at(i).z;
+    }
+    teaserpp_.solve(src_cloud, tgt_cloud);
+  }
+
   teaser::RegistrationSolution solution = teaserpp_.getSolution();
   Eigen::Matrix4d result = Eigen::Matrix4d::Identity();
   result.block(0, 3, 3, 1) = solution.translation.cast<double>();

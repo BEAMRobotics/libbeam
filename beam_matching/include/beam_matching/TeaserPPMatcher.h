@@ -24,14 +24,17 @@ struct TeaserPPMatcherParams {
 
   using RotAlgo = teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM;
 
-  double noise_bound = 0.05;
-  double cbar2 = 1;
-  bool estimate_scaling = false;
-  int rotation_max_iterations = 100;
-  double rotation_gnc_factor = 1.4;
-  RotAlgo rotation_estimation_algorithm = RotAlgo::GNC_TLS;
-  double rotation_cost_threshold = 0.005;
-  float res = 0.1;
+  double noise_bound{0.05};
+  double cbar2{1};
+  bool estimate_scaling{false};
+  int rotation_max_iterations{100};
+  double rotation_gnc_factor{1.4};
+  RotAlgo rotation_estimation_algorithm{RotAlgo::GNC_TLS};
+  double rotation_cost_threshold{0.005};
+  float res{0.1};
+  bool estimate_correspondences{true};
+  float corr_normal_search_radius{0.02};
+  float corr_fpfh_search_radius{0.04};
 
   teaser::RobustRegistrationSolver::Params GetSolverParams();
   

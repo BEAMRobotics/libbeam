@@ -103,7 +103,32 @@ public:
 
 Data data_;
 
-TEST_CASE("Test bunny registration with beam Matcher class") {
+TEST_CASE("Test bunny registration without calculating correspondences") {
+  PointCloudPtr bunny_pcl = EigenPointCloudToPCL(data_.bunny);
+  PointCloudPtr bunny_pert_pcl = EigenPointCloudToPCL(data_.bunny_pert);
+
+  // setup matcher
+  std::cout << "TESTA\n";
+  TeaserPPMatcherParams params2 = data_.params;
+  params2.estimate_correspondences = false;
+  std::cout << "TESTB\n";
+  TeaserPPMatcher matcher(params2);
+std::cout << "TESTC\n";
+  // test and assert
+  bool match_success = matcher.Match();
+  std::cout << "TESTD\n";
+  REQUIRE(match_success == true);
+  Eigen::Matrix4d T_CLOUD2_WORLD_measured = matcher.GetResult().matrix();
+  const Eigen::Matrix4d& T = beam::InvertTransform(data_.T_WORLD_CLOUD2);
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      REQUIRE(std::abs(T(i, j) - T_CLOUD2_WORLD_measured(i, j)) < 0.001);
+    }
+  }
+}
+
+/*
+TEST_CASE("Test bunny registration with correspondence calcs") {
   PointCloudPtr bunny_pcl = EigenPointCloudToPCL(data_.bunny);
   PointCloudPtr bunny_pert_pcl = EigenPointCloudToPCL(data_.bunny_pert);
 
@@ -138,5 +163,6 @@ TEST_CASE("Test lidar scan registration with beam Matcher class") {
     }
   }
 }
+*/
 
 } // namespace beam_matching
