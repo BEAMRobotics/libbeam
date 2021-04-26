@@ -18,7 +18,7 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
 
   // extract features from individual scans
   for (size_t i = 0; i < scan_indices_.size(); i++) {
-    PointCloudPtr surf_points_less_flat_scan = boost::make_shared<PointCloud>();
+    PointCloudPtr surf_points_less_flat_scan = std::make_shared<PointCloud>();
     size_t scan_start_idx = scan_indices_[i].first;
     size_t scan_end_idx = scan_indices_[i].second;
 

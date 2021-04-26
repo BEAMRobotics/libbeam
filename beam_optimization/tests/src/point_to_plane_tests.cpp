@@ -7,10 +7,9 @@
 #include <ceres/solver.h>
 #include <ceres/types.h>
 
-#include <vicon_calibration/Utils.h>
-#include <vicon_calibration/optimization/CeresLidarCostFunction.h>
+#include <beam_utils/math.h>
 
-using namespace vicon_calibration;
+namespace beam_optimization {
 
 class Data {
 public:
@@ -36,7 +35,6 @@ public:
   bool output_results_{false};
   Eigen::Matrix4d T_WORLD_CLOUD1;
   Eigen::Matrix4d T_WORLD_CLOUD2;
-
 };
 
 Data data_;
@@ -70,7 +68,7 @@ std::shared_ptr<ceres::Problem> SetupCeresProblem() {
       new ceres::QuaternionParameterization());
   std::unique_ptr<ceres::LocalParameterization> identity_parameterization(
       new ceres::IdentityParameterization(3));
-  data_.se3_parameterization_ = std::unique_ptr<ceres::LocalParameterization>(
+  data_.se3_parameterization = std::unique_ptr<ceres::LocalParameterization>(
       new ceres::ProductParameterization(quat_parameterization.release(),
                                          identity_parameterization.release()));
 
@@ -91,7 +89,7 @@ void SolveProblem(const std::shared_ptr<ceres::Problem>& problem,
 
 TEST_CASE("Test point to line with perturbed pose") {
   // create points: take 3 points along each of the principle axes
-  Eigen::Vector3d PX1(1,0,0);
-  
+  Eigen::Vector3d PX1(1, 0, 0);
 }
 
+} // namespace beam_optimization

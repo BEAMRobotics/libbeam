@@ -42,7 +42,7 @@ void LoadTeaserClouds(Eigen::Matrix<double, 3, Eigen::Dynamic>& cloud,
 
 PointCloudPtr EigenPointCloudToPCL(
     const Eigen::Matrix<double, 3, Eigen::Dynamic>& cloud_eig) {
-  PointCloudPtr cloud_pcl = boost::make_shared<PointCloud>();
+  PointCloudPtr cloud_pcl = std::make_shared<PointCloud>();
   for (int i = 0; i < cloud_eig.cols(); i++) {
     pcl::PointXYZ p;
     p.x = cloud_eig(0, i);
@@ -83,9 +83,9 @@ public:
 
     // NOTE: lidar scan too large for many computers
     // read lidar scan and transform
-    // lidar_scan = boost::make_shared<PointCloud>();
+    // lidar_scan = std::make_shared<PointCloud>();
     // pcl::io::loadPCDFile(scan_path1, *lidar_scan);
-    // lidar_scan_pert = boost::make_shared<PointCloud>();
+    // lidar_scan_pert = std::make_shared<PointCloud>();
     // pcl::transformPointCloud(*lidar_scan, *lidar_scan_pert,
     //                          beam::InvertTransform(T_WORLD_CLOUD2));
 

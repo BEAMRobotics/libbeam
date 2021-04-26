@@ -40,9 +40,9 @@ public:
         beam::randf(max_pert_trans, -max_pert_trans);
     T_WORLD_CLOUD2 = beam::PerturbTransformDegM(T_WORLD_CLOUD1, perturb);
 
-    lidar_scan = boost::make_shared<PointCloud>();
+    lidar_scan = std::make_shared<PointCloud>();
     pcl::io::loadPCDFile(scan_path1, *lidar_scan);
-    // lidar_scan_pert = boost::make_shared<PointCloud>();
+    // lidar_scan_pert = std::make_shared<PointCloud>();
     // pcl::transformPointCloud(*lidar_scan, *lidar_scan_pert,
     //                          beam::InvertTransform(T_WORLD_CLOUD2));
   }

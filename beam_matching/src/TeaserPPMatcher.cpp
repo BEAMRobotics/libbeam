@@ -63,8 +63,8 @@ void TeaserPPMatcher::SetParams(const TeaserPPMatcherParams params) {
 }
 
 void TeaserPPMatcher::SetTeaserPPParams() {
-  ref_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
-  target_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
+  ref_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
+  target_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
 
   if (params_.res > 0) {
     resolution_ = params_.res;
@@ -139,7 +139,7 @@ bool TeaserPPMatcher::Match() {
 }
 
 PointCloudPtr TeaserPPMatcher::GetAlignedRefCloud() {
-  PointCloudPtr final = boost::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
+  PointCloudPtr final = std::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
   pcl::transformPointCloud(*ref_, *final, result_);
   return final;
 }
