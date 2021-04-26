@@ -89,7 +89,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   }
   BEAM_INFO("Performing Point Cloud Construction...");
   pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+      std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   for (int row = 0; row < depth_image_->rows; row += 2) {
     for (int col = 0; col < depth_image_->cols; col += 2) {
       float distance = depth_image_->at<float>(row, col);
@@ -205,7 +205,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::GetCloud() {
 }
 
 void DepthMap::SetCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud) {
-  cloud_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  cloud_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::copyPointCloud(*input_cloud, *cloud_);
   point_cloud_initialized_ = true;
 }

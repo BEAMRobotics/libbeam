@@ -62,7 +62,7 @@ public:
     BEAM_INFO("Performing ray casting.");
     // create copied point cloud to use for kdtree
     pcl::PointCloud<pcl::PointXYZ>::Ptr template_cloud =
-        boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+        std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     for (size_t i = 0; i < cloud_->points.size(); i++) {
       pcl::PointXYZ p(cloud_->points[i].x, cloud_->points[i].y,
                       cloud_->points[i].z);

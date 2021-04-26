@@ -50,9 +50,9 @@ std::vector<float> NormalizeVector(const std::vector<float>& vect_A) {
 pcl::PointCloud<pcl::PointXYZ>
     PCNoiseRemoval(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                    float outlier_threshold) {
-  auto cloud_filtered = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  auto coefficients = boost::make_shared<pcl::ModelCoefficients>();
-  auto inliers = boost::make_shared<pcl::PointIndices>();
+  auto cloud_filtered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto coefficients = std::make_shared<pcl::ModelCoefficients>();
+  auto inliers = std::make_shared<pcl::PointIndices>();
   // Create the segmentation object
   pcl::SACSegmentation<pcl::PointXYZ> seg;
   seg.setOptimizeCoefficients(true);
@@ -78,7 +78,7 @@ pcl::PointCloud<pcl::PointXYZ>
 pcl::PointCloud<pcl::PointXYZ>
     ConcaveHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                 float alpha) {
-  auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_hull = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::ConcaveHull<pcl::PointXYZ> concave_hull;
   concave_hull.setInputCloud(input_cloud);
   concave_hull.setAlpha(alpha); // limits the size of the hull segments. Smaller
@@ -91,7 +91,7 @@ pcl::PointCloud<pcl::PointXYZ>
 // caluclate convex hull of a point cloud
 pcl::PointCloud<pcl::PointXYZ>
     ConvexHull(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
-  auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_hull = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::ConvexHull<pcl::PointXYZ> convex_hull;
   convex_hull.setInputCloud(input_cloud);
   convex_hull.reconstruct(*cloud_hull);

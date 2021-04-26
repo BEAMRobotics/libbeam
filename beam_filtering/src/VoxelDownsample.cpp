@@ -29,7 +29,7 @@ void VoxelDownsample::Filter(const PointCloudXYZ& input_cloud,
   pcl::VoxelGrid<pcl::PointXYZ> downsampler;
   downsampler.setLeafSize(voxel_size_[0], voxel_size_[1], voxel_size_[2]);
   for (PointCloudXYZPtr cloud_ptr : broken_cloud_ptrs) {
-    PointCloudXYZPtr filtered_cloud_ptr = boost::make_shared<PointCloudXYZ>();
+    PointCloudXYZPtr filtered_cloud_ptr = std::make_shared<PointCloudXYZ>();
     downsampler.setInputCloud(cloud_ptr);
     downsampler.filter(*filtered_cloud_ptr);
     output_cloud += *filtered_cloud_ptr;
@@ -70,7 +70,7 @@ std::vector<PointCloudXYZPtr>
     // No overflow, return output cloud pointers in vector.
     std::vector<PointCloudXYZPtr> output_cloud_ptrs;
     PointCloudXYZPtr output_cloud_ptr =
-        boost::make_shared<PointCloudXYZ>(input_cloud);
+        std::make_shared<PointCloudXYZ>(input_cloud);
     output_cloud_ptrs.push_back(output_cloud_ptr);
     return output_cloud_ptrs;
   }
@@ -88,8 +88,8 @@ std::pair<PointCloudXYZPtr, PointCloudXYZPtr>
   float midpoint = (eigen_max[max_axis] + eigen_min[max_axis]) / 2;
 
   // Create clouds for points (1) < than midpoint (2) > than midpoint.
-  PointCloudXYZPtr cloud_1_ptr = boost::make_shared<PointCloudXYZ>();
-  PointCloudXYZPtr cloud_2_ptr = boost::make_shared<PointCloudXYZ>();
+  PointCloudXYZPtr cloud_1_ptr = std::make_shared<PointCloudXYZ>();
+  PointCloudXYZPtr cloud_2_ptr = std::make_shared<PointCloudXYZ>();
   for (pcl::PointXYZ point : input_cloud) {
     Eigen::Vector3f eigen_point(point.x, point.y, point.z);
     if (eigen_point[max_axis] < midpoint) {

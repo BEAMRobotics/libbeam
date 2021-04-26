@@ -119,9 +119,9 @@ public:
 protected:
   // Variable for storing the defect point cloud
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+      std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+      std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float alpha_ = 0.1;
   bool defect_cloud_initialized_ = false, cloud_hull_calculated_ = false;
 };

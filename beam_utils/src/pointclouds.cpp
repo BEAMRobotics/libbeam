@@ -31,7 +31,7 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
   pcl_conversions::toPCL(msg, cloud2);
 
   // convert to pcl pointcloud
-  PointCloudPtr cloud = boost::make_shared<PointCloud>();
+  PointCloudPtr cloud = std::make_shared<PointCloud>();
   pcl::fromPCLPointCloud2(cloud2, *cloud);
 
   // get info from header
@@ -44,7 +44,7 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
 
 PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
                                  uint8_t g, uint8_t b) {
-  PointCloudColPtr cloud_col = boost::make_shared<PointCloudCol>();
+  PointCloudColPtr cloud_col = std::make_shared<PointCloudCol>();
   for (auto it = cloud->begin(); it != cloud->end(); it++) {
     pcl::PointXYZRGB p;
     p.x = it->x;
@@ -61,7 +61,7 @@ PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
 PointCloudColPtr AddFrameToCloud(const PointCloudColPtr& cloud,
                                  const PointCloudColPtr& frame,
                                  const Eigen::Matrix4d& T) {
-  PointCloudColPtr cloud_out = boost::make_shared<PointCloudCol>();
+  PointCloudColPtr cloud_out = std::make_shared<PointCloudCol>();
   if (T.isIdentity()) {
     *cloud_out += *frame;
   } else {
@@ -74,7 +74,7 @@ PointCloudColPtr AddFrameToCloud(const PointCloudColPtr& cloud,
 PointCloudPtr AddFrameToCloud(const PointCloudPtr& cloud,
                               const PointCloudPtr& frame,
                               const Eigen::Matrix4d& T) {
-  PointCloudPtr cloud_out = boost::make_shared<PointCloud>();
+  PointCloudPtr cloud_out = std::make_shared<PointCloud>();
   if (T.isIdentity()) {
     *cloud_out += *frame;
   } else {
@@ -87,9 +87,9 @@ PointCloudPtr AddFrameToCloud(const PointCloudPtr& cloud,
 PointCloudColPtr AddFrameToCloud(const PointCloudColPtr& cloud,
                                  const Eigen::Matrix4d& T, double increment,
                                  double length) {
-  PointCloudColPtr frame = boost::make_shared<PointCloudCol>();
+  PointCloudColPtr frame = std::make_shared<PointCloudCol>();
   *frame = CreateFrameCol(increment, length);
-  PointCloudColPtr cloud_out = boost::make_shared<PointCloudCol>();
+  PointCloudColPtr cloud_out = std::make_shared<PointCloudCol>();
   if (T.isIdentity()) {
     *cloud_out += *frame;
   } else {
@@ -103,8 +103,8 @@ PointCloudPtr AddFrameToCloud(const PointCloudPtr& cloud,
                               const Eigen::Matrix4d& T, double increment,
                               double length) {
   PointCloudPtr frame =
-      boost::make_shared<PointCloud>(CreateFrame(increment, length));
-  PointCloudPtr cloud_out = boost::make_shared<PointCloud>();
+      std::make_shared<PointCloud>(CreateFrame(increment, length));
+  PointCloudPtr cloud_out = std::make_shared<PointCloud>();
   if (T.isIdentity()) {
     *cloud_out += *frame;
   } else {

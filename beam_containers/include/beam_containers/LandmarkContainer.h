@@ -165,7 +165,7 @@ public:
    */
   size_t Erase(const TimeType& t, SensorIdType s, LandmarkIdType id) {
     auto& composite = this->composite();
-    auto it = composite.find(boost::make_tuple(t, s, id));
+    auto it = composite.find(std::make_tuple(t, s, id));
     if (it == composite.end()) { return 0; }
     composite.erase(it);
     return 1;
@@ -200,7 +200,7 @@ public:
    */
   ValueType Get(const TimeType& t, SensorIdType s, LandmarkIdType id) const {
     const auto& composite = this->composite();
-    auto iter = composite.find(boost::make_tuple(t, s, id));
+    auto iter = composite.find(std::make_tuple(t, s, id));
     if (iter == composite.end()) {
       // Requested key is not in this container
       throw std::out_of_range("LandmarkContainer::get");
@@ -235,8 +235,8 @@ public:
     // The composite index is already sorted by time first, thus it's enough to
     // do a partial search. Find the start and end of the range.
     const auto& composite = this->composite();
-    auto iter_begin = composite.lower_bound(boost::make_tuple(start));
-    auto iter_end = composite.upper_bound(boost::make_tuple(end));
+    auto iter_begin = composite.lower_bound(std::make_tuple(start));
+    auto iter_end = composite.upper_bound(std::make_tuple(end));
     return {iter_begin, iter_end};
   }
 

@@ -38,8 +38,8 @@ void Defect::SetHullAlpha(float alpha) {
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
   // code that calculates the hull of a defect cloud
-  auto calc_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  auto cloud_hull = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto calc_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_hull = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   if (!defect_cloud_initialized_) {
     BEAM_CRITICAL("Point cloud not initialized before call to GetHull2D().");
@@ -71,7 +71,7 @@ std::vector<float> Defect::GetBBoxDims2D() {
 float Defect::GetMaxDim2D() {
   if (!cloud_hull_calculated_) { defect_cloud_hull_ = GetHull2D(); }
 
-  auto mock_cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto mock_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   *mock_cloud = *defect_cloud_hull_;
   float max_dist = 0;
 

@@ -16,11 +16,11 @@ int main() {
   // Read in the cloud data
   pcl::PCDReader reader;
   auto cloud =
-      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   reader.read("test_data/20190515_raytrace_label_PB.pcd", *cloud);
 
   auto cloud_cnn =
-      boost::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
   reader.read("test_data/20190515_raytrace_cnn_PB.pcd", *cloud_cnn);
 
   // Example code for extracting defects and their size
@@ -46,7 +46,7 @@ int main() {
   }
 
   // Read in new cloud data
-  auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud2 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   reader.read("test_data/cloud_cluster_0.pcd", *cloud2);
 
   // Example code for creating a defect

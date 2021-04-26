@@ -19,7 +19,7 @@ RayTrace::RayTrace() : Colorizer() {}
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
 
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
 
