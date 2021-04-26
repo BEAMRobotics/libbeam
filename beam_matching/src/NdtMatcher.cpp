@@ -46,9 +46,9 @@ void NdtMatcher::SetParams(NdtMatcherParams params) {
 }
 
 void NdtMatcher::SetNdtParams() {
-  this->ref_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  this->target_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  this->final_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->ref_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->target_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->final_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   if (this->params_.res < this->params_.min_res) {
       LOG_ERROR("Invalid resolution given, using minimum");

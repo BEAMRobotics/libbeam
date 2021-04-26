@@ -62,12 +62,12 @@ void IcpMatcher::SetParams(IcpMatcherParams params) {
 }
 
 void IcpMatcher::SetIcpParams() {
-  this->ref_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  this->target_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  this->final_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  this->downsampled_ref_ = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->ref_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->target_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->final_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  this->downsampled_ref_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   this->downsampled_target_ =
-      boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+      std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   if (this->params_.res > 0) {
     this->filter_.setLeafSize(this->params_.res, this->params_.res,
@@ -531,7 +531,7 @@ void IcpMatcher::EstimateLUMold() {
   }
 
   // When reaching the limitations of computation due to linearization
-  if (ss < 0.0000000000001 || !pcl_isfinite(ss)) {
+  if (ss < 0.0000000000001 || !std::isfinite(ss)) {
     LOG_ERROR("Covariance matrix calculation was unsuccessful");
     this->information_ = Eigen::Matrix<double, 6, 6>::Identity();
   }
@@ -640,7 +640,7 @@ void IcpMatcher::EstimateLUM() {
     }
 
     // When reaching the limitations of computation due to linearization
-    if (ss < 0.0000000000001 || !pcl_isfinite(ss)) {
+    if (ss < 0.0000000000001 || !std::isfinite(ss)) {
       LOG_ERROR("Covariance matrix calculation was unsuccessful");
       this->information_ = Eigen::Matrix<double, 6, 6>::Identity();
       return;

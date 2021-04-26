@@ -8,8 +8,8 @@
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
 TEST_CASE("Test invalid inputs and params i/o") {
-  PointCloud::Ptr input_cloud = boost::make_shared<PointCloud>();
-  PointCloud::Ptr output_cloud = boost::make_shared<PointCloud>();
+  PointCloud::Ptr input_cloud = std::make_shared<PointCloud>();
+  PointCloud::Ptr output_cloud = std::make_shared<PointCloud>();
   beam_filtering::CropBox cropper;
   REQUIRE_THROWS(cropper.Filter(*input_cloud, *output_cloud));
   Eigen::Vector3f min_vec(-1, -1, -1);
@@ -31,8 +31,8 @@ double GetRandNum(int precision) {
 }
 
 TEST_CASE("Test cropper is working on real points") {
-  PointCloud::Ptr input_cloud = boost::make_shared<PointCloud>();
-  PointCloud::Ptr output_cloud = boost::make_shared<PointCloud>();
+  PointCloud::Ptr input_cloud = std::make_shared<PointCloud>();
+  PointCloud::Ptr output_cloud = std::make_shared<PointCloud>();
   beam_filtering::CropBox cropper;
   Eigen::Vector3f min_vec(-1, -1, -1);
   Eigen::Vector3f max_vec(1, 1, 1);
@@ -90,7 +90,7 @@ TEST_CASE("Test cropper is working on real points") {
     cropper2.SetMinVector(min_vec);
     cropper2.SetMaxVector(max_vec);
     cropper2.SetRemoveOutsidePoints(false);
-    PointCloud::Ptr output_cloud2 = boost::make_shared<PointCloud>();
+    PointCloud::Ptr output_cloud2 = std::make_shared<PointCloud>();
     cropper2.Filter(*input_cloud, *output_cloud2);
     REQUIRE(cropper2.GetRemoveOutsidePoints() == false);
     REQUIRE(output_cloud2->points.size() == 100);

@@ -45,7 +45,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (beam_containers::PointBridge,
                                    (float, z, z)
                                    (float, intensity, intensity)
                                    (float, rgb, rgb)
-                                   (uint8_t, thermal, thermal)
+                                   (std::uint8_t, thermal, thermal)
                                    (float, crack, crack)
                                    (float, spall, spall)
                                    (float, corrosion, corrosion)

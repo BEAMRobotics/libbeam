@@ -19,8 +19,8 @@ TEST_CASE("Spall defect type is returned", "[GetType]") {
 }
 
 TEST_CASE("Spall size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud2 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
@@ -60,7 +60,7 @@ TEST_CASE("No spall returns size of 0") {
 
 TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "
           "severity check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
+  auto cloud = std::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 10;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -84,7 +84,7 @@ TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "
   cloud->points[9] = PB{-.1, -.1, 0, I, RGB, R, G, B, A, T, C, S2, CS, D};
 
   // Extract XYZ point cloud
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.8; // threshold for determining if point it a spall
   *cloud_xyz = beam_defects::IsolateSpallPoints(cloud, threshold);
   REQUIRE(cloud_xyz->points.size() == Approx(7));
@@ -99,7 +99,7 @@ TEST_CASE("Spall (xy-plane) extraction, size calculation, and LIGHT OSIM "
 
 TEST_CASE("Spall (xz-plane and yz-plane) extraction, size calculation, and "
           "MEDIUM OSIM check") {
-  auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
+  auto cloud = std::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 40;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -155,7 +155,7 @@ TEST_CASE("Spall (xz-plane and yz-plane) extraction, size calculation, and "
   cloud->points[39] = PB{-10, -10, -5, I, RGB, R, G, B, A, T, C, S3, CS, D};
 
   // Generate vector of delam objects to test GetSpalls
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.5, tolerance = 0.2;
   int min_points = 5, max_points = 1000;
   std::vector<beam_defects::Defect::Ptr> spalls_vector = beam_defects::GetSpalls(

@@ -19,8 +19,8 @@ TEST_CASE("Delam defect type is returned", "[GetType]") {
 }
 
 TEST_CASE("Delam size calculation and VERY_SEVERE OSIM check", "[GetSize]") {
-  auto cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  auto cloud2 = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud2 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   // Read in the pointcloud data
   pcl::PCDReader reader;
@@ -59,7 +59,7 @@ TEST_CASE("No Delam returns size of 0") {
 }
 
 TEST_CASE("Delam (xy-plane) extraction, size calculation") {
-  auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
+  auto cloud = std::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 10;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -83,7 +83,7 @@ TEST_CASE("Delam (xy-plane) extraction, size calculation") {
   cloud->points[9] = PB{-.1, -.1, 0, I, RGB, R, G, B, A, T, C, S, CS, D2};
 
   // Extract XYZ point cloud
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.8; // threshold for determining if point it a delam
   *cloud_xyz = beam_defects::IsolateDelamPoints(cloud, threshold);
   REQUIRE(cloud_xyz->points.size() == Approx(7));
@@ -97,7 +97,7 @@ TEST_CASE("Delam (xy-plane) extraction, size calculation") {
 }
 
 TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation") {
-  auto cloud = boost::make_shared<pcl::PointCloud<PB>>();
+  auto cloud = std::make_shared<pcl::PointCloud<PB>>();
   cloud->width = 40;
   cloud->height = 1;
   cloud->points.resize(cloud->width * cloud->height);
@@ -153,7 +153,7 @@ TEST_CASE("Delam (xz-plane and yz-plane) extraction, size calculation") {
   cloud->points[39] = PB{-10, -10, -5, I, RGB, R, G, B, A, T, C, S, CS, D3};
 
   // Generate vector of delam objects to test GetDelams
-  auto cloud_xyz = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float threshold = 0.5, tolerance = 0.2;
   int min_points = 5, max_points = 1000;
   std::vector<beam_defects::Defect::Ptr> delams_vector =

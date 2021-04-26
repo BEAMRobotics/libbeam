@@ -209,8 +209,9 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
     BEAM_WARN("Invalid input, number of pixels must match.");
     return -1;
   }
-  std::vector<beam::opt<Eigen::Vector3d>> points = Triangulation::TriangulatePoints(
-      cam1, cam2, T_cam1_world, T_cam2_world, p1_v, p2_v);
+  std::vector<beam::opt<Eigen::Vector3d>> points =
+      Triangulation::TriangulatePoints(cam1, cam2, T_cam1_world, T_cam2_world,
+                                       p1_v, p2_v);
   return CheckInliers(cam1, cam2, p1_v, p2_v, points, T_cam1_world,
                       T_cam2_world, inlier_threshold);
 }
@@ -296,6 +297,29 @@ void DetectComputeAndMatch(
     Eigen::Vector2i pR = beam_cv::ConvertKeypoint(imR_p).cast<int>();
     pL_v.push_back(pL);
     pR_v.push_back(pR);
+  }
+}
+
+double
+    ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
+                               const std::vector<cv::KeyPoint>& keypoints_1,
+                               const std::vector<cv::KeyPoint>& keypoints_2) {
+  double d_sum = 0;
+  int total = 0;
+  std::vector<double> distances;
+  for (auto& mat : matches) {
+    cv::KeyPoint kp1 = keypoints_1[mat.queryIdx];
+    cv::KeyPoint kp2 = keypoints_2[mat.trainIdx];
+    double d = sqrt((kp1.pt.x - kp2.pt.x) * (kp1.pt.x - kp2.pt.x) +
+                    (kp1.pt.y - kp2.pt.y) * (kp1.pt.y - kp2.pt.y));
+    distances.push_back(d);
+  }
+  std::sort(distances.begin(), distances.end());
+  if (distances.size() > 0) {
+    std::sort(distances.begin(), distances.end());
+    return distances[distances.size() / 2];
+  } else {
+    return -1.0;
   }
 }
 
