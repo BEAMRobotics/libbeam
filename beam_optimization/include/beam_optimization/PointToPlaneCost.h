@@ -18,7 +18,7 @@ struct CeresPointToPlaneCostFunction {
    * @param P_REF2 reference surface point 2
    * @param P_REF3 reference surface point 2
    */
-  CeresPointToLineCostFunction(const Eigen::Vector3d P_TGT,
+  CeresPointToPlaneCostFunction(const Eigen::Vector3d P_TGT,
                                const Eigen::Vector3d P_REF1,
                                const Eigen::Vector3d P_REF2,
                                const Eigen::Vector3d P_REF3)
@@ -28,10 +28,10 @@ struct CeresPointToPlaneCostFunction {
   template <typename T>
   bool operator()(const T* const T_REF_TGT, T* residuals) const {
     // cast member variables
-    Eigen::Vector3<T> _P_TGT = P_TGT_.cast<T>();
-    Eigen::Vector3<T> _P_REF1 = P_REF1_.cast<T>();
-    Eigen::Vector3<T> _P_REF2 = P_REF2_.cast<T>();
-    Eigen::Vector3<T> _P_REF3 = P_REF3_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_TGT = P_TGT_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_REF1 = P_REF1_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_REF2 = P_REF2_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_REF3 = P_REF3_.cast<T>();
 
     // get pointer of type T to current point
     T P_TGT[3];
@@ -79,7 +79,7 @@ struct CeresPointToPlaneCostFunction {
         sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     residuals[0] = ceres::DotProduct(dR1, cross) / norm;
-    
+
     return true;
   }
 
@@ -89,8 +89,8 @@ struct CeresPointToPlaneCostFunction {
                                      const Eigen::Vector3d P_REF1,
                                      const Eigen::Vector3d P_REF2,
                                      const Eigen::Vector3d P_REF3) {
-    return (new ceres::AutoDiffCostFunction<CeresPointToLineCostFunction, 1, 7>(
-        new CeresPointToLineCostFunction(P_TGT, P_REF1, P_REF2, P_REF3)));
+    return (new ceres::AutoDiffCostFunction<CeresPointToPlaneCostFunction, 1, 7>(
+        new CeresPointToPlaneCostFunction(P_TGT, P_REF1, P_REF2, P_REF3)));
   }
 
   Eigen::Vector3d P_TGT_;

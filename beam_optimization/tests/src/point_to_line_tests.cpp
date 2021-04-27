@@ -9,6 +9,8 @@
 
 #include <beam_utils/math.h>
 
+#include <beam_optimization/PointToLineCost.h>
+
 namespace beam_optimization {
 
 class Data {
@@ -32,12 +34,19 @@ public:
   ceres::Solver::Options solver_options;
   std::unique_ptr<ceres::LossFunction> loss_function;
   std::unique_ptr<ceres::LocalParameterization> se3_parameterization;
-  bool output_results_{false};
+  bool output_results{false};
   Eigen::Matrix4d T_WORLD_CLOUD1;
   Eigen::Matrix4d T_WORLD_CLOUD2;
 };
 
 Data data_;
+
+std::vector<double> MatrixToPoseVector(const Eigen::Matrix4d& T) {
+  Eigen::Matrix3d R = T.block(0, 0, 3, 3);
+  Eigen::Quaternion<double> q = Eigen::Quaternion<double>(R);
+  return std::vector<double>{q.w(),   q.x(),   q.y(),  q.z(),
+                             T(0, 3), T(1, 3), T(2, 3)};
+}
 
 std::shared_ptr<ceres::Problem> SetupCeresProblem() {
   // set ceres solver params
@@ -75,11 +84,10 @@ std::shared_ptr<ceres::Problem> SetupCeresProblem() {
   return problem;
 }
 
-void SolveProblem(const std::shared_ptr<ceres::Problem>& problem,
-                  bool output_results) {
+void SolveProblem(const std::shared_ptr<ceres::Problem>& problem) {
   ceres::Solver::Summary ceres_summary;
   ceres::Solve(data_.solver_options, problem.get(), &ceres_summary);
-  if (output_results) {
+  if (data_.output_results) {
     LOG_INFO("Done.");
     LOG_INFO("Outputting ceres summary:");
     std::string report = ceres_summary.FullReport();
@@ -88,8 +96,47 @@ void SolveProblem(const std::shared_ptr<ceres::Problem>& problem,
 }
 
 TEST_CASE("Test point to line with perturbed pose") {
-  // create points: take 3 points along each of the principle axes
-  Eigen::Vector3d PX1(1, 0, 0);
+  // create reference points: take 2 points along each of the principle axes
+  Eigen::Vector3d PX1(0, 0, 0);
+  Eigen::Vector3d PX2(1, 0, 0);
+  Eigen::Vector3d PY1(0, 0, 0);
+  Eigen::Vector3d PY2(0, 1, 0);
+  Eigen::Vector3d PZ1(0, 0, 0);
+  Eigen::Vector3d PZ2(0, 0, 1);
+
+  // create target points: take point in between reference points
+  Eigen::Vector3d PX(0.5, 0, 0);
+  Eigen::Vector3d PY(0, 0.5, 0);
+  Eigen::Vector3d PZ(0, 0, 0.5);
+
+  // build problem and add params
+  auto results = MatrixToPoseVector(data_.T_WORLD_CLOUD2);
+  auto ground_truth = MatrixToPoseVector(data_.T_WORLD_CLOUD1);
+
+  std::shared_ptr<ceres::Problem> problem = SetupCeresProblem();
+  problem->AddParameterBlock(&(results[0]), 7,
+                             data_.se3_parameterization.get());
+
+  std::unique_ptr<ceres::CostFunction> cost_function1(
+      CeresPointToLineCostFunction::Create(PX, PX1, PX2));
+  problem->AddResidualBlock(cost_function1.release(), data_.loss_function.get(),
+                            &(results[0]));
+
+  std::unique_ptr<ceres::CostFunction> cost_function2(
+      CeresPointToLineCostFunction::Create(PY, PY1, PY2));
+  problem->AddResidualBlock(cost_function2.release(), data_.loss_function.get(),
+                            &(results[0]));
+
+  std::unique_ptr<ceres::CostFunction> cost_function3(
+      CeresPointToLineCostFunction::Create(PZ, PZ1, PZ2));
+  problem->AddResidualBlock(cost_function3.release(), data_.loss_function.get(),
+                            &(results[0]));
+
+  SolveProblem(problem);
+
+  for (int i = 0; i < 7; i++){
+    REQUIRE(std::abs(results[i] - ground_truth[i]) < 0.001);
+  }
 }
 
 } // namespace beam_optimization

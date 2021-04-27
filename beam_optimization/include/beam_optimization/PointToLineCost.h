@@ -26,9 +26,9 @@ struct CeresPointToLineCostFunction {
   template <typename T>
   bool operator()(const T* const T_REF_TGT, T* residuals) const {
     // cast member variables
-    Eigen::Vector3<T> _P_TGT = P_TGT_.cast<T>();
-    Eigen::Vector3<T> _P_REF1 = P_REF1_.cast<T>();
-    Eigen::Vector3<T> _P_REF2 = P_REF2_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_TGT = P_TGT_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_REF1 = P_REF1_.cast<T>();
+    Eigen::Matrix<T,3,1> _P_REF2 = P_REF2_.cast<T>();
 
     T P_TGT[3];
     P_TGT[0] = _P_TGT[0];

@@ -40,7 +40,7 @@ void SetUp(const IcpMatcherParams params, const Eigen::Affine3d perturb) {
 
 TEST_CASE("Test initialization") {
   auto params = matcher.GetParams();
-  REQUIRE(params.max_corr == 3);
+  REQUIRE(params.max_corr == 0);
   REQUIRE(params.max_iter == 100);
   REQUIRE(params.t_eps == 1e-8);
   REQUIRE(params.fit_eps == 1e-2);
