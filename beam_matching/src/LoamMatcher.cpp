@@ -10,37 +10,41 @@
 
 namespace beam_matching {
 
-LoamMatcherParams::LoamMatcherParams(std::string& param_config) {
-  BEAM_INFO("Loading LOAM matcher config file: {}", param_config.c_str());
-
-  nlohmann::json J;
-  std::ifstream file(param_config);
-  file >> J;
+LoamMatcher::LoamMatcher() {
+  params_ = std::make_shared<LoamParams>();
+  feature_extractor_ = std::make_unique<LoamFeatureExtractor>(params_);
+  loam_scan_registration_ = std::make_unique<LoamScanRegistration>(params_);
 }
 
-LoamMatcher::LoamMatcher(LoamMatcherParams params) : params_(params) {
-  SetLoamParams();
+LoamMatcher::LoamMatcher(const LoamParams& params) {
+  params_ = std::make_shared<LoamParams>(params);
+  feature_extractor_ = std::make_unique<LoamFeatureExtractor>(params_);
+  loam_scan_registration_ = std::make_unique<LoamScanRegistration>(params_);
 }
 
 LoamMatcher::~LoamMatcher() {}
 
-void LoamMatcher::SetParams(LoamMatcherParams params) {
-  this->params_ = params;
-  SetLoamParams();
+void LoamMatcher::SetParams(const LoamParams& params) {
+  params_ = std::make_shared<LoamParams>(params);
+  feature_extractor_ = std::make_unique<LoamFeatureExtractor>(params_);
+  loam_scan_registration_ = std::make_unique<LoamScanRegistration>(params_);
 }
 
-void LoamMatcher::SetRef(const LoamPointCloudPtr& ref) {
-  this->ref_ = ref;
+void LoamMatcher::SetRef(const PointCloudPtr& ref) {
+  LoamPointCloud ref_loam = feature_extractor_->ExtractFeatures(*ref);
+  this->ref_ = std::make_shared<LoamPointCloud>(ref_loam);
 }
 
-void LoamMatcher::SetTarget(const LoamPointCloudPtr& target) {
-  this->target_ = target;
+void LoamMatcher::SetTarget(const PointCloudPtr& target) {
+  LoamPointCloud target_loam = feature_extractor_->ExtractFeatures(*target);
+  this->target_ = std::make_shared<LoamPointCloud>(target_loam);
 }
 
 bool LoamMatcher::Match() {
-  // TODO:
-  // registration_.
-  return true;
+  bool registration_successful =
+      loam_scan_registration_->RegisterScans(ref_, target_);
+  result_ = Eigen::Affine3d(loam_scan_registration_->GetT_REF_TGT());
+  return registration_successful;
 }
 
 } // namespace beam_matching

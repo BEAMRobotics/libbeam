@@ -24,39 +24,23 @@
 
 #pragma once
 
-#include <beam_matching/Matcher.h>
-#include <beam_matching/loam/LoamPointCloud.h>
-#include <beam_matching/loam/LoamParams.h>
 #include <beam_utils/pointclouds.h>
+
+#include <beam_matching/Matcher.h>
+#include <beam_matching/loam/LoamFeatureExtractor.h>
+#include <beam_matching/loam/LoamParams.h>
+#include <beam_matching/loam/LoamPointCloud.h>
+#include <beam_matching/loam/LoamScanRegistration.h>
 
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-struct LoamMatcherParams {
-  LoamMatcherParams(std::string& param_config);
-  LoamMatcherParams() {}
-
-  /// Voxel side length for downsampling. If set to 0, downsampling is
-  /// not performed. If multiscale matching is set, this is the resolution
-  /// of the final, fine-scale match
-  float res = 0;
-
-  // shared pointer to LoamParams. These are needed inside the LoamPointCloud
-  // class so we will store it as a pointer to a separate class
-  std::shared_ptr<LoamParams> loam_params;
-};
-
-class LoamMatcher : public Matcher<LoamPointCloudPtr> {
+class LoamMatcher : public Matcher<PointCloudPtr> {
 public:
-  LoamMatcher() = default;
-  /**
-   * @brief This constructor takes an argument in order to adjust how much
-   * downsampling is done before matching is attempted. Pointclouds are
-   * downsampled using a voxel filter, the argument is the edge length of
-   * each voxel. If resolution is non-positive, no downsampling is used.
-   */
-  explicit LoamMatcher(LoamMatcherParams params);
+  LoamMatcher();
+
+  explicit LoamMatcher(const LoamParams& params);
 
   ~LoamMatcher();
 
@@ -64,19 +48,19 @@ public:
    * @brief sets the parameters for the matcher
    * @param params - LoamMatcherParams
    */
-  void SetParams(LoamMatcherParams params);
+  void SetParams(const LoamParams& params);
 
   /**
    * @brief sets the reference pointcloud for the matcher
    * @param ref - Pointcloud
    */
-  void SetRef(const LoamPointCloudPtr& ref);
+  void SetRef(const PointCloudPtr& ref);
 
   /**
    * @brief sets the target (or scene) pointcloud for the matcher
    * @param target - Pointcloud
    */
-  void SetTarget(const LoamPointCloudPtr& target);
+  void SetTarget(const PointCloudPtr& target);
 
   /**
    * @brief runs the matcher, blocks until finished.
@@ -88,16 +72,16 @@ public:
    * @brief gets the parameters for the matcher
    * @return LoamMatcherParams
    */
-  LoamMatcherParams GetParams() { return params_; }
+  LoamParamsPtr GetParams() { return params_; }
 
 private:
-  void SetLoamParams();
-
-  // LoamRegistration registration_;
   LoamPointCloudPtr ref_;
   LoamPointCloudPtr target_;
 
-  LoamMatcherParams params_;
+  LoamParamsPtr params_;
+
+  std::unique_ptr<LoamFeatureExtractor> feature_extractor_;
+  std::unique_ptr<LoamScanRegistration> loam_scan_registration_;
 };
 
 /** @} group matching */

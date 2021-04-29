@@ -34,17 +34,69 @@ namespace beam_matching {
 class LoamScanRegistration {
 public:
   /**
-   * @brief
+   * @brief constructor
+   * @param params required parameters
    */
   LoamScanRegistration(const LoamParamsPtr& params);
 
   /**
-   * @brief
+   * @brief default destructor
    */
   ~LoamScanRegistration() = default;
 
+  /**
+   * @brief performs the loam scan registration
+   * @param ref reference pointcloud (cloud we are registering against). This
+   * can be a single scan or a full map
+   * @param tgt target pointcloud (cloud whose pose we want w.r.t. the
+   * reference). This can be a single scan or a full map
+   * @param T_REF_TGT optional inital transform between the two clouds
+   * @return true if registration was successful
+   */
+  bool RegisterScans(
+      const LoamPointCloudPtr& ref, const LoamPointCloudPtr& tgt,
+      const Eigen::Matrix4d& T_REF_TGT = Eigen::Matrix4d::Identity());
+
+  /**
+   * @brief get result
+   * @return transform from target cloud to reference cloud
+   */
+  Eigen::Matrix4d GetT_REF_TGT();
+
 private:
+  void Setup();
+
+  bool GetEdgeMeasurements();
+
+  bool GetSurfaceMeasurements();
+
+  bool Solve(int iteration);
+
+  bool HasConverged(int iteration);
+
+  struct EdgeMeasurement {
+    Eigen::Vector3d query_pt;
+    Eigen::Vector3d ref_pt1;
+    Eigen::Vector3d ref_pt2;
+  };
+
+  struct SurfaceMeasurement {
+    Eigen::Vector3d query_pt;
+    Eigen::Vector3d ref_pt1;
+    Eigen::Vector3d ref_pt2;
+    Eigen::Vector3d ref_pt3;
+  };
+
   LoamParamsPtr params_;
+
+  LoamPointCloudPtr ref_;
+  LoamPointCloudPtr tgt_;
+  std::vector<EdgeMeasurement> edge_measurements_;
+  std::vector<SurfaceMeasurement> surface_measurements_;
+  bool registration_successful_{true};
+  bool converged_{false};
+  Eigen::Matrix4d T_REF_TGT_;
+  Eigen::Matrix4d T_REF_TGT_prev_iter_;
 };
 
 /** @} group matching */

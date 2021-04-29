@@ -9,86 +9,106 @@
 
 namespace beam_matching {
 
-LoamPointCloud::LoamPointCloud(const PointCloud& edge_features,
-                               const PointCloud& planar_features,
-                               const PointCloud& edge_features_less_sharp,
-                               const PointCloud& planar_features_less_flat)
-    : edge_features_(edge_features),
-      planar_features_(planar_features),
-      edge_features_less_sharp_(edge_features_less_sharp),
-      planar_features_less_flat_(planar_features_less_flat) {}
+void LoamFeatures::Clear(){
+  strong.Clear();
+  weak.Clear();
+}
 
-void LoamPointCloud::AddPlanarFeatures(const PointCloud& new_features,
+void LoamFeatureCloud::Clear(){
+  cloud.clear();
+  ClearKDTree();
+}
+
+void LoamFeatureCloud::ClearKDTree(){
+  kdtree = pcl::KdTreeFLANN<pcl::PointXYZ>();
+  kdtree_empty = true;
+}
+
+void LoamFeatureCloud::BuildKDTree(bool override_tree){
+  // if tree is not empty, and we do not want to override, then do nothing
+  if(!kdtree_empty && !override_tree){return;}
+
+  kdtree = pcl::KdTreeFLANN<pcl::PointXYZ>();
+  kdtree.setInputCloud(std::make_shared<PointCloud>(cloud));
+  kdtree_empty = false;
+}
+
+LoamPointCloud::LoamPointCloud(const PointCloud& edge_features_strong,
+                               const PointCloud& surface_features_strong,
+                               const PointCloud& edge_features_weak,
+                               const PointCloud& surface_features_weak)
+{
+  edges.strong.cloud = edge_features_strong;
+  surfaces.strong.cloud = surface_features_strong;
+  edges.weak.cloud = edge_features_weak;
+  surfaces.weak.cloud = surface_features_weak;
+}
+
+void LoamPointCloud::AddSurfaceFeaturesStrong(const PointCloud& new_features,
                                        const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
     PointCloud new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
-    planar_features_ += new_features_transformed;
+    surfaces.strong.cloud += new_features_transformed;
     return;
   }
-  planar_features_ += new_features;
+  surfaces.strong.cloud += new_features;
   return;
 }
 
-void LoamPointCloud::AddEdgeFeatures(const PointCloud& new_features,
+void LoamPointCloud::AddEdgeFeaturesStrong(const PointCloud& new_features,
                                      const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
     PointCloud new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
-    edge_features_ += new_features_transformed;
+    edges.strong.cloud += new_features_transformed;
     return;
   }
-  edge_features_ += new_features;
+  edges.strong.cloud += new_features;
   return;
 }
 
-void LoamPointCloud::AddPlanarFeaturesLessFlat(const PointCloud& new_features,
+void LoamPointCloud::AddSurfaceFeaturesWeak(const PointCloud& new_features,
                                                const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
     PointCloud new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
-    planar_features_less_flat_ += new_features_transformed;
+    surfaces.weak.cloud += new_features_transformed;
     return;
   }
-  planar_features_less_flat_ += new_features;
+  surfaces.weak.cloud += new_features;
   return;
 }
 
-void LoamPointCloud::AddEdgeFeaturesLessSharp(const PointCloud& new_features,
+void LoamPointCloud::AddEdgeFeaturesWeak(const PointCloud& new_features,
                                               const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
     PointCloud new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
-    edge_features_less_sharp_ += new_features_transformed;
+    edges.weak.cloud += new_features_transformed;
     return;
   }
-  edge_features_less_sharp_ += new_features;
+  edges.weak.cloud += new_features;
   return;
 }
 
-PointCloud LoamPointCloud::EdgeFeatures() {
-  return edge_features_;
-}
-
-PointCloud LoamPointCloud::PlanarFeatures() {
-  return planar_features_;
-}
-
-PointCloud LoamPointCloud::EdgeFeaturesLessSharp() {
-  return edge_features_;
-}
-
-PointCloud LoamPointCloud::PlanarFeaturesLessFlat() {
-  return planar_features_;
-}
-
 void LoamPointCloud::TransformPointCloud(const Eigen::Matrix4d& T) {
-  pcl::transformPointCloud(edge_features_, edge_features_, T);
-  pcl::transformPointCloud(planar_features_, planar_features_, T);
-  pcl::transformPointCloud(edge_features_less_sharp_, edge_features_less_sharp_,
-                           T);
-  pcl::transformPointCloud(planar_features_less_flat_,
-                           planar_features_less_flat_, T);
+  if(edges.strong.cloud.size() > 0){
+    pcl::transformPointCloud(edges.strong.cloud, edges.strong.cloud, T);
+    edges.strong.ClearKDTree();
+  }
+  if(edges.weak.cloud.size() > 0){
+    pcl::transformPointCloud(edges.weak.cloud, edges.weak.cloud, T);
+    edges.weak.ClearKDTree();
+  }
+  if(surfaces.strong.cloud.size() > 0){
+    pcl::transformPointCloud(surfaces.strong.cloud, surfaces.strong.cloud, T);
+    surfaces.strong.ClearKDTree();
+  }
+  if(surfaces.weak.cloud.size() > 0){
+    pcl::transformPointCloud(surfaces.weak.cloud, surfaces.weak.cloud, T);
+    surfaces.weak.ClearKDTree();
+  }
 }
 
 void LoamPointCloud::Save(const std::string& output_path) {
@@ -100,30 +120,30 @@ void LoamPointCloud::Save(const std::string& output_path) {
     return;
   }
 
-  if (edge_features_.size() == 0) {
-    BEAM_WARN("Edge features are emtpy. Not saving cloud.");
+  if (edges.strong.cloud.size() == 0) {
+    BEAM_WARN("Strong edge features are emtpy. Not saving cloud.");
   } else {
-    pcl::io::savePCDFileASCII(output_path + "edge_features.pcd",
-                              edge_features_);
+    pcl::io::savePCDFileASCII(output_path + "edge_features_strong.pcd",
+                              edges.strong.cloud);
   }
-  if (edge_features_less_sharp_.size() == 0) {
-    BEAM_WARN("Less sharp edge features are emtpy. Not saving cloud.");
+  if (edges.weak.cloud.size() == 0) {
+    BEAM_WARN("Weak edge features are emtpy. Not saving cloud.");
   } else {
-    pcl::io::savePCDFileASCII(output_path + "edge_features_less_sharp.pcd",
-                              edge_features_less_sharp_);
+    pcl::io::savePCDFileASCII(output_path + "edge_features_weak.pcd",
+                              edges.weak.cloud);
   }
-  if (planar_features_.size() == 0) {
-    BEAM_WARN("Planar features are emtpy. Not saving cloud.");
+  if (surfaces.strong.cloud.size() == 0) {
+    BEAM_WARN("Strong surface features are emtpy. Not saving cloud.");
   } else {
-    pcl::io::savePCDFileASCII(output_path + "planar_features.pcd",
-                              planar_features_);
+    pcl::io::savePCDFileASCII(output_path + "surface_features_strong.pcd",
+                              surfaces.strong.cloud);
   }
 
-  if (planar_features_less_flat_.size() == 0) {
-    BEAM_WARN("Less flat planar features are emtpy. Not saving cloud.");
+  if (surfaces.weak.cloud.size() == 0) {
+    BEAM_WARN("Weak surface features are emtpy. Not saving cloud.");
   } else {
-    pcl::io::savePCDFileASCII(output_path + "planar_features_less_flat.pcd",
-                              planar_features_less_flat_);
+    pcl::io::savePCDFileASCII(output_path + "surface_features_weak.pcd",
+                              surfaces.weak.cloud);
   }
 }
 } // namespace beam_matching

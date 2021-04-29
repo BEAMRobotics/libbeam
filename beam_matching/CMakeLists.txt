@@ -3,6 +3,7 @@ PROJECT(beam_matching)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
+    beam::optimization
     Eigen3::Eigen
     Catch2::Catch2
     Boost::boost

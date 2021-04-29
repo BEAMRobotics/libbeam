@@ -26,10 +26,26 @@
 
 #include <beam_matching/Matcher.h>
 #include <beam_utils/pointclouds.h>
+#include <pcl/kdtree/kdtree_flann.h>
 
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
+
+struct LoamFeatureCloud {
+  PointCloud cloud;
+  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+  void BuildKDTree(bool override_tree = false);
+  void Clear();
+  void ClearKDTree();
+  bool kdtree_empty{true};
+};
+
+struct LoamFeatures {
+  LoamFeatureCloud strong;
+  LoamFeatureCloud weak;
+  void Clear();
+};
 
 class LoamPointCloud {
 public:
@@ -40,34 +56,34 @@ public:
 
   /**
    * @brief Constructor that takes in two pointclouds that are already separated
-   * into edge and planar clouds
+   * into edge and surface clouds
    * @param edge_features
-   * @param planar_features
+   * @param surface_features
    * @param edge_features_less_sharp
-   * @param planar_features_less_flat
+   * @param surface_features_less_flat
    */
-  LoamPointCloud(const PointCloud& edge_features,
-                 const PointCloud& planar_features,
-                 const PointCloud& edge_features_less_sharp = PointCloud(),
-                 const PointCloud& planar_features_less_flat = PointCloud());
+  LoamPointCloud(const PointCloud& edge_features_strong,
+                 const PointCloud& surface_features_strong,
+                 const PointCloud& edge_features_weak = PointCloud(),
+                 const PointCloud& surface_features_weak = PointCloud());
 
   /**
-   * @brief Add a new set of planar features
-   * @param new_features planar features
+   * @brief Add a new set of surface features
+   * @param new_features surface features
    * @param T if specified, new features will be transformed using T before
    * added to the cloud.
    */
-  void
-      AddPlanarFeatures(const PointCloud& new_features,
-                        const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
+  void AddSurfaceFeaturesStrong(
+      const PointCloud& new_features,
+      const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
-   * @brief Add a new set of planar features
-   * @param new_features planar features
+   * @brief Add a new set of weak (less flat) surface features
+   * @param new_features surface features
    * @param T if specified, new features will be transformed using T before
    * added to the cloud.
    */
-  void AddPlanarFeaturesLessFlat(
+  void AddSurfaceFeaturesWeak(
       const PointCloud& new_features,
       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
@@ -77,39 +93,29 @@ public:
    * @param T if specified, new features will be transformed using T before
    * added to the cloud.
    */
-  void AddEdgeFeatures(const PointCloud& new_features,
-                       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
+  void AddEdgeFeaturesStrong(
+      const PointCloud& new_features,
+      const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
-   * @brief Add a new set of edge features
+   * @brief Add a new set of weak (less sharp) edge features
    * @param new_features edge features
    * @param T if specified, new features will be transformed using T before
    * added to the cloud.
    */
-  void AddEdgeFeaturesLessSharp(
+  void AddEdgeFeaturesWeak(
       const PointCloud& new_features,
       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
-
-  PointCloud EdgeFeatures();
-
-  PointCloud PlanarFeatures();
-
-  PointCloud EdgeFeaturesLessSharp();
-
-  PointCloud PlanarFeaturesLessFlat();
 
   void TransformPointCloud(const Eigen::Matrix4d& T);
 
   void Save(const std::string& output_path);
 
-private:
-  PointCloud edge_features_;
-  PointCloud planar_features_;
-  PointCloud edge_features_less_sharp_;
-  PointCloud planar_features_less_flat_;
+  LoamFeatures edges;
+  LoamFeatures surfaces;
 };
 
-using LoamPointCloudPtr = boost::shared_ptr<LoamPointCloud>;
+using LoamPointCloudPtr = std::shared_ptr<LoamPointCloud>;
 
 /** @} group matching */
 } // namespace beam_matching
