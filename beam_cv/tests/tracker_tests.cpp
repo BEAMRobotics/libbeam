@@ -37,7 +37,7 @@ TEST_CASE("Test adding images to tracker.") {
   ros::Time::init();
   beam_cv::Tracker tracker(detector, descriptor, matcher, 10);
   for (int i = 0; i < 10; i++) {
-    tracker.AddImage(images[i], ros::Time::now(), 10.0);
+    tracker.AddImage(images[i], ros::Time::now());
   }
 
   struct timespec t;

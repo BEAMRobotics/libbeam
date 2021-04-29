@@ -28,6 +28,7 @@ void Tracker::PurgeContainer(const int img) {
 
 std::map<int, size_t>
     Tracker::RegisterKeypoints(const std::vector<cv::KeyPoint>& curr_kp,
+                               const cv::Mat& curr_desc,
                                const std::vector<cv::DMatch>& matches) {
   // Maps current keypoint indices to IDs
   std::map<int, size_t> curr_ids;
@@ -40,10 +41,12 @@ std::map<int, size_t>
       curr_ids[m.trainIdx] = id;
       // Extract value of keypoint.
       Eigen::Vector2d landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
+      cv::Mat landmark_descriptor = curr_desc.row(m.trainIdx);
       auto img_count = this->img_times_.size() - 1;
       // Emplace LandmarkMeasurement into LandmarkMeasurementContainer
       this->landmarks_.Emplace(this->img_times_.at(img_count), this->sensor_id_,
-                               curr_ids.at(m.trainIdx), img_count, landmark);
+                               curr_ids.at(m.trainIdx), img_count, landmark,
+                               landmark_descriptor);
     } else {
       // Else, assign new ID
       auto id = this->GenerateFeatureID();
@@ -54,6 +57,9 @@ std::map<int, size_t>
       Eigen::Vector2d prev_landmark =
           ConvertKeypoint(this->prev_kp_.at(m.queryIdx));
       Eigen::Vector2d curr_landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
+      cv::Mat curr_descriptor = curr_desc.row(m.trainIdx);
+      cv::Mat prev_descriptor = this->prev_desc_.row(m.trainIdx);
+
       // Find previous and current times from lookup table
       // Subtract one, since images are zero indexed.
       auto curr_img = this->img_times_.size() - 1;
@@ -63,11 +69,11 @@ std::map<int, size_t>
       // Add previous and current landmarks to container
       this->landmarks_.Emplace(prev_time, this->sensor_id_,
                                this->prev_ids_.at(m.queryIdx), prev_img,
-                               prev_landmark);
+                               prev_landmark, prev_descriptor);
 
       this->landmarks_.Emplace(curr_time, this->sensor_id_,
-                               curr_ids.at(m.trainIdx), curr_img,
-                               curr_landmark);
+                               curr_ids.at(m.trainIdx), curr_img, curr_landmark,
+                               curr_descriptor);
     }
   }
 
@@ -115,8 +121,7 @@ std::vector<FeatureTrack> Tracker::GetTracks(const size_t img_num) const {
   return feature_tracks;
 }
 
-bool Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time,
-                       double match_distance_threshold) {
+void Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
   // Check if this is the first image being tracked.
   if (this->img_times_.size() == 0) {
     // Register the time this image
@@ -134,42 +139,16 @@ bool Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time,
     this->DetectAndCompute(image, curr_kp, curr_desc);
     matches = this->matcher->MatchDescriptors(this->prev_desc_, curr_desc,
                                               this->prev_kp_, curr_kp);
-    // compute median match distance to decide whether to register or not
-    double median_distance = -1.0;
-    // if there are matches and distance thresh is over 0
-    if (matches.size() > 0 && match_distance_threshold > 0) {
-      median_distance =
-          beam_cv::ComputeMedianMatchDistance(matches, prev_kp_, curr_kp);
-      // if match distance is over thresh then add to tracker
-      if (median_distance > match_distance_threshold) {
-        // Register the time this image
-        this->TimestampImage(current_time);
-        // Register keypoints with IDs, and store Landmarks in container
-        curr_ids = this->RegisterKeypoints(curr_kp, matches);
-        // Set previous ID map to be the current one, and reset
-        this->prev_ids_.swap(curr_ids);
-        // Update previous keypoints and descriptors
-        this->prev_kp_ = curr_kp;
-        this->prev_desc_ = curr_desc;
-      } else {
-        return false;
-      }
-    }
-    // if there arent enough matches, or we dont wish to use a threshold then
-    // add anyways
-    else {
-      // Register the time this image
-      this->TimestampImage(current_time);
-      // Register keypoints with IDs, and store Landmarks in container
-      curr_ids = this->RegisterKeypoints(curr_kp, matches);
-      // Set previous ID map to be the current one, and reset
-      this->prev_ids_.swap(curr_ids);
-      // Update previous keypoints and descriptors
-      this->prev_kp_ = curr_kp;
-      this->prev_desc_ = curr_desc;
-    }
+    // Register the time this image
+    this->TimestampImage(current_time);
+    // Register keypoints with IDs, and store Landmarks in container
+    curr_ids = this->RegisterKeypoints(curr_kp, curr_desc, matches);
+    // Set previous ID map to be the current one, and reset
+    this->prev_ids_.swap(curr_ids);
+    // Update previous keypoints and descriptors
+    this->prev_kp_ = curr_kp;
+    this->prev_desc_ = curr_desc;
   }
-  return true;
 }
 
 std::vector<std::vector<FeatureTrack>>

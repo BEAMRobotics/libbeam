@@ -60,8 +60,7 @@ public:
    * @param image the image to add.
    * @param current_time the time at which the image was captured
    */
-  bool AddImage(const cv::Mat& image, const ros::Time& current_time,
-                double match_distance_threshold = 0.0);
+  void AddImage(const cv::Mat& image, const ros::Time& current_time);
 
   /** @brief Draw tracks for the requested image.
    * @param img_num the number of the image within the sequence
@@ -150,6 +149,7 @@ private:
    */
   std::map<int, size_t>
       RegisterKeypoints(const std::vector<cv::KeyPoint>& curr_kp,
+                        const cv::Mat& curr_desc,
                         const std::vector<cv::DMatch>& matches);
 }; // namespace beam_cv
 

@@ -193,7 +193,7 @@ public:
 
   // Retrieval
 
-  /** @briefGets the value of a landmark measurement.
+  /** @brief Gets the value of a landmark measurement.
    * @throw std::out_of_range if a measurement with exactly matching time,
    * sensor, and landmark id does not exist.
    * No interpolation is performed.
@@ -266,6 +266,10 @@ public:
       }
     }
     return unique_ids;
+  }
+
+  std::vector<LandmarkIdType> GetLandmarkIDsInImage(const TimeType& now) const {
+    return this->GetLandmarkIDsInWindow(now, now);
   }
 
   /** @briefGet a sequence of measurements of a landmark from one sensor
