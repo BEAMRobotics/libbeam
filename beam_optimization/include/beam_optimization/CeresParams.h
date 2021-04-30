@@ -37,6 +37,11 @@ public:
    * beam_optimization/config/CeresParamsDefault.json
    */
   CeresParams(const std::string& config_path) {
+    if(config_path.empty()){
+      LoadDefaultParams();
+      return;
+    }
+    
     if (!boost::filesystem::exists(config_path)) {
       BEAM_ERROR(
           "Ceres config file does not exist: {}. Using default parameters.",

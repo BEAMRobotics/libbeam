@@ -109,7 +109,7 @@ public:
 
   void TransformPointCloud(const Eigen::Matrix4d& T);
 
-  void Save(const std::string& output_path);
+  void Save(const std::string& output_path, bool combine_features = false);
 
   LoamFeatures edges;
   LoamFeatures surfaces;

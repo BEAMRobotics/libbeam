@@ -21,13 +21,13 @@ public:
     std::string current_file = "loam_tests.cpp";
     test_path.erase(test_path.end() - current_file.size(), test_path.end());
     std::string scan_path1 = test_path + "data/test_scan_vlp16.pcd";
-    std::string config_path = test_path + "config/loam_config.json";
+    config_path = test_path + "config/loam_config.json";
 
     // load matcher params
-    params = LoamParams(config_path);
+    params = std::make_shared<LoamParams>(config_path);
 
     // create poses
-    srand(time(NULL));
+    // srand(time(NULL));
     double max_pert_rot{10};
     double max_pert_trans{0.05};
     T_WORLD_CLOUD1 = Eigen::Matrix4d::Identity();
@@ -39,24 +39,33 @@ public:
         beam::randf(max_pert_trans, -max_pert_trans),
         beam::randf(max_pert_trans, -max_pert_trans);
     T_WORLD_CLOUD2 = beam::PerturbTransformDegM(T_WORLD_CLOUD1, perturb);
+    Eigen::VectorXd perturb_small(6);
+    perturb_small << 0.5, -0.5, 3, beam::randf(max_pert_trans, -max_pert_trans),
+        beam::randf(max_pert_trans, -max_pert_trans),
+        beam::randf(max_pert_trans, -max_pert_trans);
+    T_WORLD_CLOUD3 = beam::PerturbTransformDegM(T_WORLD_CLOUD1, perturb_small);
 
     lidar_scan = std::make_shared<PointCloud>();
     pcl::io::loadPCDFile(scan_path1, *lidar_scan);
     lidar_scan_pert = std::make_shared<PointCloud>();
     pcl::transformPointCloud(*lidar_scan, *lidar_scan_pert,
                              beam::InvertTransform(T_WORLD_CLOUD2));
+    lidar_scan_pert_small = std::make_shared<PointCloud>();
+    pcl::transformPointCloud(*lidar_scan, *lidar_scan_pert_small,
+                             beam::InvertTransform(T_WORLD_CLOUD3));
   }
 
+  std::string config_path;
   Eigen::Matrix4d T_WORLD_CLOUD1;
   Eigen::Matrix4d T_WORLD_CLOUD2;
-  LoamParams params;
+  Eigen::Matrix4d T_WORLD_CLOUD3;
+  LoamParamsPtr params;
   PointCloudPtr lidar_scan;
   PointCloudPtr lidar_scan_pert;
+  PointCloudPtr lidar_scan_pert_small;
 };
 
-Data data_;
-
-TEST_CASE("Test LoamParams") {
+TEST_CASE("Test angle bins", "[LoamParams]") {
   // Test beam anle bins
   LoamParams params;
   params.number_of_beams = 3;
@@ -67,7 +76,9 @@ TEST_CASE("Test LoamParams") {
   REQUIRE(bins[1] == -7.5);
 }
 
-TEST_CASE("Test LoamFeatureExtractor") {
+TEST_CASE("Test features are extracted for each type",
+          "[LoamFeatureExtractor]") {
+  Data data_;
   LoamParamsPtr params = std::make_shared<LoamParams>();
   params->number_of_beams = 16;
   params->fov_deg = 20;
@@ -88,13 +99,81 @@ TEST_CASE("Test LoamFeatureExtractor") {
   // loam_cloud.Save("/home/nick/tmp/loam_tests/");
 }
 
-TEST_CASE("Test LoamScanRegistration"){
-  //
-}
+TEST_CASE("Scan registration tests", "[ScanRegistration and LoamMatcher]") {
+  Data data_;
+  SECTION("test initial guess") {
+    Eigen::Matrix4d T_gnd_truth =
+        beam::InvertTransform(data_.T_WORLD_CLOUD1) * data_.T_WORLD_CLOUD2;
 
-TEST_CASE("Test LoamMatcher"){
-  //
-}
+    LoamFeatureExtractor fea_extractor(data_.params);
+    LoamScanRegistration scan_reg(data_.params);
 
+    LoamPointCloudPtr loam_cloud = std::make_shared<LoamPointCloud>();
+    LoamPointCloudPtr loam_cloud_pert = std::make_shared<LoamPointCloud>();
+    *loam_cloud = fea_extractor.ExtractFeatures(*data_.lidar_scan);
+    *loam_cloud_pert = fea_extractor.ExtractFeatures(*data_.lidar_scan_pert);
+
+    bool reg_successful =
+        scan_reg.RegisterScans(loam_cloud, loam_cloud_pert, T_gnd_truth);
+    Eigen::Matrix4d T_meas = scan_reg.GetT_REF_TGT();
+
+    ///////// save resuls ////////
+    // std::string save_path = "/home/nick/tmp/loam_tests/";
+    // loam_cloud->Save(save_path + "cloud_orig/");
+    // loam_cloud_pert->Save(save_path + "cloud_pert/");
+    // loam_cloud_pert->TransformPointCloud(T_meas);
+    // loam_cloud_pert->Save(save_path + "cloud_aligned/");
+    ///////////////////////////////
+
+    REQUIRE(reg_successful);
+    REQUIRE(beam::ArePosesEqual(T_meas, T_gnd_truth, 1, 0.03));
+  }
+  SECTION("test small perturb") {
+    Eigen::Matrix4d T_gnd_truth =
+        beam::InvertTransform(data_.T_WORLD_CLOUD1) * data_.T_WORLD_CLOUD3;
+
+    LoamParamsPtr params = std::make_shared<LoamParams>();
+    *params = *data_.params;
+    params->iterate_correspondences = true;
+    LoamFeatureExtractor fea_extractor(params);
+    LoamScanRegistration scan_reg(params);
+
+    LoamPointCloudPtr loam_cloud = std::make_shared<LoamPointCloud>();
+    LoamPointCloudPtr loam_cloud_pert = std::make_shared<LoamPointCloud>();
+    *loam_cloud = fea_extractor.ExtractFeatures(*data_.lidar_scan);
+    *loam_cloud_pert =
+        fea_extractor.ExtractFeatures(*data_.lidar_scan_pert_small);
+
+    bool reg_successful = scan_reg.RegisterScans(loam_cloud, loam_cloud_pert);
+    Eigen::Matrix4d T_meas = scan_reg.GetT_REF_TGT();
+
+    ///////// save resuls ////////
+    // std::string save_path = "/home/nick/tmp/loam_tests/";
+    // loam_cloud->Save(save_path + "cloud_orig/");
+    // loam_cloud_pert->Save(save_path + "cloud_pert/");
+    // loam_cloud_pert->TransformPointCloud(T_meas);
+    // loam_cloud_pert->Save(save_path + "cloud_aligned/");
+    ///////////////////////////////
+
+    REQUIRE(reg_successful);
+    REQUIRE(beam::ArePosesEqual(T_meas, T_gnd_truth, 1, 0.05));
+  }
+  SECTION("test matcher class") {
+    Eigen::Matrix4d T_gnd_truth =
+        beam::InvertTransform(data_.T_WORLD_CLOUD1) * data_.T_WORLD_CLOUD3;
+
+    LoamParams params(data_.config_path);
+    params.iterate_correspondences = true;
+    LoamMatcher matcher(params);
+
+    matcher.Setup(data_.lidar_scan, data_.lidar_scan_pert_small);
+
+    bool match_success = matcher.Match();
+    Eigen::Matrix4d T_meas = matcher.GetResult().matrix();
+
+    REQUIRE(match_success == true);
+    REQUIRE(beam::ArePosesEqual(T_meas, T_gnd_truth, 1, 0.05));
+  }
+}
 
 } // namespace beam_matching

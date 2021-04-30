@@ -40,9 +40,9 @@ public:
   LoamScanRegistration(const LoamParamsPtr& params);
 
   /**
-   * @brief default destructor
+   * @brief destructor
    */
-  ~LoamScanRegistration() = default;
+  ~LoamScanRegistration();
 
   /**
    * @brief performs the loam scan registration
@@ -74,6 +74,8 @@ private:
 
   bool HasConverged(int iteration);
 
+  void OutputResults(int iteration);
+
   struct EdgeMeasurement {
     Eigen::Vector3d query_pt;
     Eigen::Vector3d ref_pt1;
@@ -95,8 +97,13 @@ private:
   std::vector<SurfaceMeasurement> surface_measurements_;
   bool registration_successful_{true};
   bool converged_{false};
-  Eigen::Matrix4d T_REF_TGT_;
-  Eigen::Matrix4d T_REF_TGT_prev_iter_;
+  Eigen::Matrix4d T_REF_TGT_{Eigen::Matrix4d::Identity()};
+  Eigen::Matrix4d T_REF_TGT_prev_iter_{Eigen::Matrix4d::Identity()};
+
+  // Debugging tools
+  std::string debug_output_path_{"/home/nick/tmp/loam_tests/"};
+  bool output_results_{false};
+
 };
 
 /** @} group matching */

@@ -59,15 +59,16 @@ public:
     nlohmann::json J;
     std::ifstream file(param_config);
     file >> J;
+
     number_of_beams = J["number_of_beams"];
     fov_deg = J["fov_deg"];
     n_feature_regions = J["n_feature_regions"];
     curvature_region = J["curvature_region"];
-    max_corner_sharp = J["TEmax_corner_sharpST"];
+    max_corner_sharp = J["max_corner_sharp"];
     max_corner_less_sharp = J["max_corner_less_sharp"];
     max_surface_flat = J["max_surface_flat"];
     less_flat_filter_size = J["less_flat_filter_size"];
-    surface_curvature_threshold = J["TEsurface_curvature_thresholdST"];
+    surface_curvature_threshold = J["surface_curvature_threshold"];
     vertical_axis = J["vertical_axis"];
     max_correspondence_distance = J["max_correspondence_distance"];
     validate_correspondences = J["validate_correspondences"];

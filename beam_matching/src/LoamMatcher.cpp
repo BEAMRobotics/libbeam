@@ -17,12 +17,19 @@ LoamMatcher::LoamMatcher() {
 }
 
 LoamMatcher::LoamMatcher(const LoamParams& params) {
-  params_ = std::make_shared<LoamParams>(params);
+  params_ = std::make_shared<LoamParams>();
+  *params_ = params;
   feature_extractor_ = std::make_unique<LoamFeatureExtractor>(params_);
   loam_scan_registration_ = std::make_unique<LoamScanRegistration>(params_);
 }
 
-LoamMatcher::~LoamMatcher() {}
+LoamMatcher::~LoamMatcher() {
+  if (feature_extractor_) { feature_extractor_.reset(); }
+  if (loam_scan_registration_) { loam_scan_registration_.reset(); }
+  if (params_) { params_.reset(); }
+  if (ref_) { ref_.reset(); }
+  if (target_) { target_.reset(); }
+}
 
 void LoamMatcher::SetParams(const LoamParams& params) {
   params_ = std::make_shared<LoamParams>(params);

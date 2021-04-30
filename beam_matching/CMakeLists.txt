@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::optimization
     Eigen3::Eigen
     Catch2::Catch2
+    ceres
     Boost::boost
     PCL::PCL
     nlohmann_json::nlohmann_json

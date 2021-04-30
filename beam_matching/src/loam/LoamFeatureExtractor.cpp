@@ -143,8 +143,8 @@ std::vector<PointCloud>
     const pcl::PointXYZ& point = cloud[point_id];
 
     // skip NaN and INF valued points
-    if (!pcl_isfinite(point.x) || !pcl_isfinite(point.y) ||
-        !pcl_isfinite(point.z)) {
+    if (!std::isfinite(point.x) || !std::isfinite(point.y) ||
+        !std::isfinite(point.z)) {
       continue;
     }
 
