@@ -2,8 +2,9 @@
  * @ingroup matching
  *
  * Wrapper of Teaser++
- * See: https://github.com/MIT-SPARK/TEASER-plusplus/blob/master/doc/quickstart.rst
- * 
+ * See:
+ * https://github.com/MIT-SPARK/TEASER-plusplus/blob/master/doc/quickstart.rst
+ *
  */
 
 #pragma once
@@ -22,7 +23,8 @@ struct TeaserPPMatcherParams {
   TeaserPPMatcherParams(const std::string& config_path);
   TeaserPPMatcherParams() {}
 
-  using RotAlgo = teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM;
+  using RotAlgo =
+      teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM;
 
   double noise_bound{0.05};
   double cbar2{1};
@@ -31,27 +33,25 @@ struct TeaserPPMatcherParams {
   double rotation_gnc_factor{1.4};
   RotAlgo rotation_estimation_algorithm{RotAlgo::GNC_TLS};
   double rotation_cost_threshold{0.005};
-  float res{0.1};
+  float res{0};
   bool estimate_correspondences{true};
   float corr_normal_search_radius{0.02};
   float corr_fpfh_search_radius{0.04};
 
   teaser::RobustRegistrationSolver::Params GetSolverParams();
-  
 };
 
 /**
- * @brief Teaser++ Wrapper around 
+ * @brief Teaser++ Wrapper around
  *   https://github.com/MIT-SPARK/TEASER-plusplus
  * NOTE: this implementation requires input clouds to be in order
- * based on their estimated correspondences. I.e., the ith point 
+ * based on their estimated correspondences. I.e., the ith point
  * of the ref cloud must correspond to the ith point of the target
- * cloud. This is an oversight in the interface of Teaser++. 
+ * cloud. This is an oversight in the interface of Teaser++.
  * @TODO: Calculate the correspondences (see note above)
  */
 class TeaserPPMatcher : public Matcher<PointCloudPtr> {
 public:
-
   TeaserPPMatcher() = default;
   explicit TeaserPPMatcher(const TeaserPPMatcherParams params);
 
@@ -96,6 +96,12 @@ private:
    * @return transformed cloud pointer
    */
   PointCloudPtr GetAlignedRefCloud();
+
+  /**
+   * @brief Outputs warning if cloud size is too large for Teaser++ given system
+   * specs
+   */
+  void CheckMaxCloudSize();
 
   teaser::RobustRegistrationSolver teaserpp_;
   pcl::VoxelGrid<pcl::PointXYZ> filter_;

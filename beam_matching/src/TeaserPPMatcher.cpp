@@ -102,68 +102,46 @@ void TeaserPPMatcher::SetTarget(const PointCloudPtr& target) {
 bool TeaserPPMatcher::Match() {
   if (ref_->size() == 0 || target_->size() == 0) { return false; }
 
-  // check that clouds aren't too large for the current memory
-  double max_size = static_cast<double>(ref_->size());
-  if (target_->size() > ref_->size()) {
-    max_size = static_cast<double>(target_->size());
-  }
-  // see: teaser::RobustRegistrationSolver::computeTIMs
-  double num_GBs_required =
-      (max_size / 1000 * (max_size / 1000 - 1) / 2) * 3 / 1000 * 8;
-  struct sysinfo info;
-  sysinfo(&info);
-  auto free_mem_bytes = info.freeram * info.mem_unit;
-  double num_GBs_available = static_cast<double>(free_mem_bytes) / 1000000000;
-  if (num_GBs_available < num_GBs_required) {
-    BEAM_WARN("Available RAM may not be sufficient for Teaser++ with point "
-              "cloud of size {}. Available: {}GB, required: {}GB",
-              max_size, num_GBs_available, num_GBs_required);
-  }
+  CheckMaxCloudSize();
 
   if (params_.estimate_correspondences) {
     // Convert the point clouds to Teaser pointcloud
     teaser::PointCloud src_cloud;
     for (size_t i = 0; i < ref_->size(); ++i) {
       src_cloud.push_back(teaser::PointXYZ{.x = ref_->points.at(i).x,
-                                                  .y = ref_->points.at(i).y,
-                                                  .z = ref_->points.at(i).z});
+                                           .y = ref_->points.at(i).y,
+                                           .z = ref_->points.at(i).z});
     }
     teaser::PointCloud tgt_cloud;
     for (size_t i = 0; i < target_->size(); ++i) {
       tgt_cloud.push_back(teaser::PointXYZ{.x = ref_->points.at(i).x,
-                                                  .y = ref_->points.at(i).y,
-                                                  .z = ref_->points.at(i).z});
+                                           .y = ref_->points.at(i).y,
+                                           .z = ref_->points.at(i).z});
     }
 
-    std::cout << "TEST1\n";
     // compute correspondences using FPFH
     teaser::FPFHEstimation fpfh;
-    std::cout << "src_cloud.size(): " << src_cloud.size() << "\n";
-    std::cout << "tgt_cloud.size(): " << tgt_cloud.size() << "\n";
-    auto src_descriptors = fpfh.computeFPFHFeatures(
-        src_cloud, params_.corr_normal_search_radius,
-        params_.corr_fpfh_search_radius);
-    std::cout << "TEST2\n";
-    auto tgt_descriptors = fpfh.computeFPFHFeatures(
-        tgt_cloud, params_.corr_normal_search_radius,
-        params_.corr_fpfh_search_radius);
-    std::cout << "TEST3\n";
+    auto src_descriptors =
+        fpfh.computeFPFHFeatures(src_cloud, params_.corr_normal_search_radius,
+                                 params_.corr_fpfh_search_radius);
+
+    auto tgt_descriptors =
+        fpfh.computeFPFHFeatures(tgt_cloud, params_.corr_normal_search_radius,
+                                 params_.corr_fpfh_search_radius);
+
     teaser::Matcher matcher;
     auto correspondences = matcher.calculateCorrespondences(
-        src_cloud, tgt_cloud, *src_descriptors, *tgt_descriptors,
-        false, true, false, 0.95);
-    std::cout << "TEST4\n";
-    std::cout << "correspondences.size(): " << correspondences.size() << "\n";
+        src_cloud, tgt_cloud, *src_descriptors, *tgt_descriptors, false, true,
+        false, 0.95);
     teaserpp_.solve(src_cloud, tgt_cloud, correspondences);
-    std::cout << "TEST5\n";
   } else {
     // Convert the pointclouds to Eigen
-    Eigen::Matrix<double, 3, Eigen::Dynamic> src_cloud(3, ref_->size());
+    Eigen::Matrix<float, 3, Eigen::Dynamic> src_cloud(3, ref_->size());
     for (size_t i = 0; i < ref_->size(); ++i) {
       src_cloud.col(i) << ref_->points.at(i).x, ref_->points.at(i).y,
           ref_->points.at(i).z;
     }
-    Eigen::Matrix<double, 3, Eigen::Dynamic> tgt_cloud(3, target_->size());
+    Eigen::Matrix<float, 3, Eigen::Dynamic> tgt_cloud(3, target_->size());
     for (size_t i = 0; i < target_->size(); ++i) {
       tgt_cloud.col(i) << target_->points.at(i).x, target_->points.at(i).y,
           target_->points.at(i).z;
@@ -183,6 +161,26 @@ PointCloudPtr TeaserPPMatcher::GetAlignedRefCloud() {
   PointCloudPtr final = std::make_shared<pcl::PointCloud<pcl::PointXYZ> >();
   pcl::transformPointCloud(*ref_, *final, result_);
   return final;
+}
+
+void TeaserPPMatcher::CheckMaxCloudSize() {
+  // check that clouds aren't too large for the current memory
+  double max_size = static_cast<double>(ref_->size());
+  if (target_->size() > ref_->size()) {
+    max_size = static_cast<double>(target_->size());
+  }
+  // see: teaser::RobustRegistrationSolver::computeTIMs
+  double num_GBs_required =
+      (max_size / 1000 * (max_size / 1000 - 1) / 2) * 3 / 1000 * 8;
+  struct sysinfo info;
+  sysinfo(&info);
+  auto free_mem_bytes = info.freeram * info.mem_unit;
+  double num_GBs_available = static_cast<double>(free_mem_bytes) / 1000000000;
+  if (num_GBs_available < num_GBs_required) {
+    BEAM_WARN("Available RAM may not be sufficient for Teaser++ with point "
+              "cloud of size {}. Available: {}GB, required: {}GB",
+              max_size, num_GBs_available, num_GBs_required);
+  }
 }
 
 } // namespace beam_matching

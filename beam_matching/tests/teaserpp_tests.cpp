@@ -12,6 +12,41 @@
 
 namespace beam_matching {
 
+bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
+                           double angle_threshold_deg,
+                           double translation_threshold_m,
+                           bool is_threshold_minimum, bool must_pass_both) {
+  Eigen::Matrix4d T_DIFF = beam::InvertTransform(T1) * T2;
+  Eigen::Matrix3d R_DIFF = T_DIFF.block(0, 0, 3, 3);
+  double angle =
+      beam::Rad2Deg(std::abs(Eigen::AngleAxis<double>(R_DIFF).angle()));
+  double translation = T_DIFF.block(0, 3, 3, 1).norm();
+
+  if (is_threshold_minimum) {
+    if (must_pass_both) {
+      return angle > angle_threshold_deg &&
+             translation > translation_threshold_m;
+    } else {
+      return angle > angle_threshold_deg ||
+             translation > translation_threshold_m;
+    }
+  } else {
+    if (must_pass_both) {
+      return angle < angle_threshold_deg &&
+             translation < translation_threshold_m;
+    } else {
+      return angle < angle_threshold_deg ||
+             translation < translation_threshold_m;
+    }
+  }
+}
+
+bool ArePosesEqual(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
+                   double angle_threshold_deg, double translation_threshold_m) {
+  return PassedMotionThreshold(T1, T2, angle_threshold_deg,
+                               translation_threshold_m, false, true);
+}
+
 void LoadTeaserClouds(Eigen::Matrix<double, 3, Eigen::Dynamic>& cloud,
                       Eigen::Matrix<double, 3, Eigen::Dynamic>& cloud_pert,
                       const Eigen::Matrix4d& T_CLOUDPERT_CLOUD,
@@ -101,30 +136,23 @@ public:
   Eigen::Matrix<double, 3, Eigen::Dynamic> bunny_pert;
 };
 
-Data data_;
-
 TEST_CASE("Test bunny registration without calculating correspondences") {
+  Data data_;
+
   PointCloudPtr bunny_pcl = EigenPointCloudToPCL(data_.bunny);
   PointCloudPtr bunny_pert_pcl = EigenPointCloudToPCL(data_.bunny_pert);
 
   // setup matcher
-  std::cout << "TESTA\n";
   TeaserPPMatcherParams params2 = data_.params;
   params2.estimate_correspondences = false;
-  std::cout << "TESTB\n";
   TeaserPPMatcher matcher(params2);
-std::cout << "TESTC\n";
+
   // test and assert
   bool match_success = matcher.Match();
-  std::cout << "TESTD\n";
   REQUIRE(match_success == true);
   Eigen::Matrix4d T_CLOUD2_WORLD_measured = matcher.GetResult().matrix();
   const Eigen::Matrix4d& T = beam::InvertTransform(data_.T_WORLD_CLOUD2);
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      REQUIRE(std::abs(T(i, j) - T_CLOUD2_WORLD_measured(i, j)) < 0.001);
-    }
-  }
+  REQUIRE(ArePosesEqual(T, T_CLOUD2_WORLD_measured, 1, 0.05));
 }
 
 /*
