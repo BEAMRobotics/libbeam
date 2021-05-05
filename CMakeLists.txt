@@ -56,6 +56,10 @@ INCLUDE(cmake/ImportCeres.cmake)
 INCLUDE(cmake/ImportCatkin.cmake)
 INCLUDE(cmake/ImportOpenCV.cmake)
 
+#SET(GTEST_ROOT "${PROJECT_SOURCE_DIR}/deps/googletest"
+#    CACHE PATH "Path to gtest source")
+INCLUDE(cmake/AddGTest.cmake)
+
 # Add a special "beam" target including all modules
 # The BEAM_ADD_LIBRARY helper in BeamHelpers.cmake will add each module to this
 ADD_LIBRARY(beam INTERFACE)
