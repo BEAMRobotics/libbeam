@@ -24,6 +24,13 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ##################### TESTS #########################
+BEAM_ADD_GTEST(${PROJECT_NAME}_gtests
+      tests/loam_gtests.cpp
+)
+target_link_libraries(${PROJECT_NAME}_gtests
+    ${PROJECT_NAME}
+    beam::utils
+)
 
 add_executable(${PROJECT_NAME}_icp_tests
   tests/icp_tests.cpp
@@ -88,22 +95,6 @@ target_link_libraries(${PROJECT_NAME}_teaserpp_tests
     Eigen3::Eigen
     Catch2::Catch2
     teaserpp::teaser_io
-)
-
-add_executable(${PROJECT_NAME}_loam_tests
-  tests/loam_tests.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_loam_tests
-  PUBLIC
-    include
-)
-
-target_link_libraries(${PROJECT_NAME}_loam_tests
-    ${PROJECT_NAME}
-    beam::utils
-    Eigen3::Eigen
-    Catch2::Catch2
 )
 
 add_executable(${PROJECT_NAME}_multi_matcher_tests
