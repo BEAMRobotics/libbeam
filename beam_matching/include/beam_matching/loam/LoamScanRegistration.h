@@ -31,10 +31,13 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
+/**
+ * @brief class for performing registration of two loam clouds
+ */
 class LoamScanRegistration {
 public:
   /**
-   * @brief constructor
+   * @brief constructor using params
    * @param params required parameters
    */
   LoamScanRegistration(const LoamParamsPtr& params);
@@ -76,12 +79,17 @@ private:
 
   void OutputResults(int iteration);
 
+  /** Simple struct for storing an edge measurement which contains a query point
+   * for the target cloud and two reference points from the reference cloud */
   struct EdgeMeasurement {
     Eigen::Vector3d query_pt;
     Eigen::Vector3d ref_pt1;
     Eigen::Vector3d ref_pt2;
   };
 
+  /** Simple struct for storing a surface measurement which contains a query
+   * point for the target cloud and three reference points from the reference
+   * cloud */
   struct SurfaceMeasurement {
     Eigen::Vector3d query_pt;
     Eigen::Vector3d ref_pt1;
@@ -103,7 +111,6 @@ private:
   // Debugging tools
   std::string debug_output_path_{"/home/nick/tmp/loam_tests/"};
   bool output_results_{false};
-
 };
 
 /** @} group matching */

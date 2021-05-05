@@ -36,6 +36,9 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
+/**
+ * @brief derived Matcher class which wraps LoamScanRegistration to conform to the Matcher base class interface.
+ */
 class LoamMatcher : public Matcher<PointCloudPtr> {
 public:
   LoamMatcher();

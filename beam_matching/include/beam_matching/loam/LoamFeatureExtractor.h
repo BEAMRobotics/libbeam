@@ -42,18 +42,34 @@ enum PointLabel {
   SURFACE_FLAT = -1      // flat surface point
 };
 
+/**
+ * @brief class for extracting loam features from a regular pcl pointcloud
+ */
 class LoamFeatureExtractor {
 public:
   /**
-   * @brief
+   * @brief constructor that requires a pointer to a loam params object
    */
   LoamFeatureExtractor(const LoamParamsPtr& params);
 
   /**
-   * @brief
+   * @brief default destructor
    */
   ~LoamFeatureExtractor() = default;
 
+  /**
+   * @brief main function that extracts loam features from a pointcloud and
+   * returns a loam pointcloud. This extraction method extracts strong and weak
+   * features for surface (or planar) points as well as edge (or sharp)
+   * features. Weak sharp points are just less sharp, and weak surface features
+   * are just less flat. Weak features can be useful if no correspondence is
+   * found for a sharp feature when performing registration.
+   * @param pointcloud regular pcl pointcloud in lidar frame. Note this cannot
+   * be transformed to world frame since it requires the scan to be separated
+   * into scan lines which cannot be done after the point cloud has been
+   * transformed to any other coordinate frame.
+   * @return loam pointcloud in lidar frame
+   */
   LoamPointCloud ExtractFeatures(const PointCloud& cloud);
 
 private:

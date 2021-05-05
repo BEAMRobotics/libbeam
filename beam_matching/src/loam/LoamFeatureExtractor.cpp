@@ -14,6 +14,11 @@ LoamFeatureExtractor::LoamFeatureExtractor(const LoamParamsPtr& params)
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
   Reset();
   std::vector<PointCloud> scan_lines = GetScanLines(cloud);
+  if (static_cast<int>(scan_lines.size()) != params_->number_of_beams) {
+    BEAM_WARN("Number of scan lines extracted is not equal to the specified "
+              "number of lidar beams, please confirm lidar settings (number of "
+              "beams and FOV).");
+  }
   GetSortedScan(scan_lines);
 
   // extract features from individual scans

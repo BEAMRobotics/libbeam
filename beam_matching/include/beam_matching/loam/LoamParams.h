@@ -33,7 +33,8 @@ namespace beam_matching {
 
 /**
  * @brief Struct for storing all LOAM params. This will be used by the
- * LoamPointCloud and LoamMatcher classes
+ * LoamPointCloud, LoamFeatureExtractor, LoamScanRegistration and LoamMatcher.
+ * therefore it is normally recommended to use a shared pointer to this obeject.
  */
 class LoamParams {
 public:
@@ -48,9 +49,9 @@ public:
    */
   LoamParams(std::string& param_config) {
     if (!boost::filesystem::exists(param_config)) {
-      BEAM_ERROR(
-          "Loam Params config file does not exist: {}. Using default parameters.",
-          param_config);
+      BEAM_ERROR("Loam Params config file does not exist: {}. Using default "
+                 "parameters.",
+                 param_config);
       return;
     }
 
@@ -73,7 +74,8 @@ public:
     max_correspondence_distance = J["max_correspondence_distance"];
     validate_correspondences = J["validate_correspondences"];
     iterate_correspondences = J["iterate_correspondences"];
-    convergence_criteria_translation_m = J["convergence_criteria_translation_m"];
+    convergence_criteria_translation_m =
+        J["convergence_criteria_translation_m"];
     convergence_criteria_rotation_deg = J["convergence_criteria_rotation_deg"];
     max_correspondence_iterations = J["max_correspondence_iterations"];
     output_ceres_summary = J["output_ceres_summary"];
