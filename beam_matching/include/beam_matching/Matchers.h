@@ -12,3 +12,5 @@
 #include <beam_matching/IcpMatcher.h>
 #include <beam_matching/GicpMatcher.h>
 #include <beam_matching/NdtMatcher.h>
+#include <beam_matching/TeaserPPMatcher.h>
+#include <beam_matching/LoamMatcher.h>

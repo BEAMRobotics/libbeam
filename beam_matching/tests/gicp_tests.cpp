@@ -13,9 +13,6 @@ std::string config_path;
 std::string test_path = __FILE__;
 std::string current_file = "gicp_tests.cpp";
 
-const auto TEST_SCAN = "tests/data/testscan.pcd";
-const auto TEST_CONFIG = "tests/config/gicp.yaml";
-
 GicpMatcher matcher;
 
 void FileSetup() {

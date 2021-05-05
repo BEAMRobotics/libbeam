@@ -1,18 +1,8 @@
 /** @file
  * @ingroup matching
  *
- * Wrapper of ICP in PCL
- *
- * There are a few parameters that may be changed specific to this algorithm.
- * They can be set in the yaml config file.
- *
- * - corr_rand: nearest neighbour correspondences used to calculate
- * distributions
- * - max_iter: Limits number of ICP iterations
- * - t_eps: Criteria to stop iterating. If the difference between consecutive
- * transformations is less than this, stop.
- * - fit_eps: Criteria to stop iterating. If the cost function does not improve
- * by more than this quantity, stop.
+ * Wrapper of GICP in PCL
+ * 
  */
 
 #pragma once

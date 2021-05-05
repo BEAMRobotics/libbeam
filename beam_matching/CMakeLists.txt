@@ -3,8 +3,10 @@ PROJECT(beam_matching)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
+    beam::optimization
     Eigen3::Eigen
     Catch2::Catch2
+    ceres
     Boost::boost
     PCL::PCL
     nlohmann_json::nlohmann_json
@@ -12,9 +14,21 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
     src/GicpMatcher.cpp
+    src/LoamMatcher.cpp
+    src/loam/LoamPointCloud.cpp
+    src/loam/LoamFeatureExtractor.cpp
+    src/loam/LoamScanRegistration.cpp
+    
 )
 
 ##################### TESTS #########################
+BEAM_ADD_GTEST(${PROJECT_NAME}_gtests
+      tests/loam_gtests.cpp
+)
+target_link_libraries(${PROJECT_NAME}_gtests
+    ${PROJECT_NAME}
+    beam::utils
+)
 
 add_executable(${PROJECT_NAME}_icp_tests
   tests/icp_tests.cpp

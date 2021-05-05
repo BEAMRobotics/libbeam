@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #ifndef NDEBUG
   #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
 #endif
@@ -50,6 +52,15 @@ inline void OutputPercentComplete(int current_, int total_,
   } else if (current_ == total_) {
     LOG_INFO("100 %% complete (%d of %d)", current_, total_);
   }
+}
+
+template <typename T>
+void PrintVector(const std::vector<T>& v){
+  std::cout << "[";
+  for (int i = 0; i < v.size() - 1; i++){
+    std::cout << v[i] << ", ";
+  }
+  std::cout << v[v.size() - 1] << "]\n";
 }
 
 /** @} group utils */
