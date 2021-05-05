@@ -10,12 +10,10 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Boost::boost
     PCL::PCL
     nlohmann_json::nlohmann_json
-    teaserpp::teaser_registration
   SOURCES
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
     src/GicpMatcher.cpp
-    src/TeaserPPMatcher.cpp
     src/LoamMatcher.cpp
     src/loam/LoamPointCloud.cpp
     src/loam/LoamFeatureExtractor.cpp
@@ -78,23 +76,6 @@ target_link_libraries(${PROJECT_NAME}_gicp_tests
     beam::utils
     Eigen3::Eigen
     Catch2::Catch2
-)
-
-add_executable(${PROJECT_NAME}_teaserpp_tests
-  tests/teaserpp_tests.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_teaserpp_tests
-  PUBLIC
-    include
-)
-
-target_link_libraries(${PROJECT_NAME}_teaserpp_tests
-    ${PROJECT_NAME}
-    beam::utils
-    Eigen3::Eigen
-    Catch2::Catch2
-    teaserpp::teaser_io
 )
 
 add_executable(${PROJECT_NAME}_multi_matcher_tests
