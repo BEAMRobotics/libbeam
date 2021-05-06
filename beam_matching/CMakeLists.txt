@@ -10,6 +10,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Boost::boost
     PCL::PCL
     nlohmann_json::nlohmann_json
+    teaserpp::teaser_registration
+    teaserpp::teaser_features
   SOURCES
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
@@ -18,16 +20,25 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/loam/LoamPointCloud.cpp
     src/loam/LoamFeatureExtractor.cpp
     src/loam/LoamScanRegistration.cpp
-    
+    src/TeaserPPMatcher.cpp
 )
 
 ##################### TESTS #########################
-BEAM_ADD_GTEST(${PROJECT_NAME}_gtests
+BEAM_ADD_GTEST(${PROJECT_NAME}_loam_gtests
       tests/loam_gtests.cpp
 )
-target_link_libraries(${PROJECT_NAME}_gtests
+target_link_libraries(${PROJECT_NAME}_loam_gtests
     ${PROJECT_NAME}
     beam::utils
+)
+
+BEAM_ADD_GTEST(${PROJECT_NAME}_teaserpp_gtests
+      tests/teaserpp_gtests.cpp
+)
+target_link_libraries(${PROJECT_NAME}_teaserpp_gtests
+    ${PROJECT_NAME}
+    beam::utils
+    teaserpp::teaser_io
 )
 
 add_executable(${PROJECT_NAME}_icp_tests

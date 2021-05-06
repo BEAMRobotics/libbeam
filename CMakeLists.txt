@@ -44,6 +44,9 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(Ladybug)
+find_package(teaserpp REQUIRED teaser_registration teaser_features teaser_io)
+
+message( "teaserpp_FOUND: " ${teaserpp_FOUND} )
 
 # Where dependencies do not provide IMPORTED targets, define them
 INCLUDE(cmake/ImportEigen3.cmake)

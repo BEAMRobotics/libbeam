@@ -7,3 +7,4 @@ cd ./beam_matching/
 ./beam_matching_ndt_tests
 ./beam_matching_multi_matcher_tests
 ./gtests/beam_matching_loam_gtests
+./gtests/beam_matching_teaserpp_gtests
