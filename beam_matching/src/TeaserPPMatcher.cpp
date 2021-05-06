@@ -98,7 +98,11 @@ void TeaserPPMatcher::SetTarget(const PointCloudPtr& target) {
 }
 
 bool TeaserPPMatcher::Match() {
-  if (ref_->size() == 0 || target_->size() == 0) { return false; }
+  if (ref_->size() == 0 || target_->size() == 0) {
+    BEAM_WARN("Reference and/or target clouds are empty, not matching. Make "
+              "sure you set your clouds correctly before calling match().");
+    return false;
+  }
 
   CheckMaxCloudSize();
 
@@ -120,17 +124,19 @@ bool TeaserPPMatcher::Match() {
     // compute correspondences using FPFH
     teaser::FPFHEstimation fpfh;
     auto src_descriptors =
-        fpfh.computeFPFHFeatures(src_cloud, params_.corr_normal_search_radius,
+        fpfh.computeFPFHFeatures(src_cloud,
+        params_.corr_normal_search_radius,
                                  params_.corr_fpfh_search_radius);
 
     auto tgt_descriptors =
-        fpfh.computeFPFHFeatures(tgt_cloud, params_.corr_normal_search_radius,
+        fpfh.computeFPFHFeatures(tgt_cloud,
+        params_.corr_normal_search_radius,
                                  params_.corr_fpfh_search_radius);
 
     teaser::Matcher matcher;
     auto correspondences = matcher.calculateCorrespondences(
         src_cloud, tgt_cloud, *src_descriptors, *tgt_descriptors, false, true,
-        false, 0.95);
+        false, 0.95);  
     teaserpp_.solve(src_cloud, tgt_cloud, correspondences);
   } else {
     // Convert the pointclouds to Eigen
