@@ -22,13 +22,12 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
 )
 
 ##################### TESTS #########################
-BEAM_ADD_GTEST(${PROJECT_NAME}_gtests
-      tests/loam_gtests.cpp
-)
-target_link_libraries(${PROJECT_NAME}_gtests
-    ${PROJECT_NAME}
-    beam::utils
-)
+add_executable(${PROJECT_NAME}_loam_gtests tests/loam_gtests.cpp)
+target_link_libraries(${PROJECT_NAME}_loam_gtests 
+  gtest_main
+  ${PROJECT_NAME}
+  beam::utils)
+add_test(NAME ${PROJECT_NAME}_loam_gtests COMMAND ${PROJECT_NAME}_loam_gtests)
 
 add_executable(${PROJECT_NAME}_icp_tests
   tests/icp_tests.cpp

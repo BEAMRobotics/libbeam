@@ -162,39 +162,3 @@ MACRO(BEAM_ADD_MODULE NAME)
     # Depend on these modules and external libraries, and make clients use them
     TARGET_LINK_LIBRARIES(${NAME} ${link_type} ${BEAM_ADD_MODULE_DEPENDS})
 ENDMACRO(BEAM_ADD_MODULE)
-
-# beam_add_gtest: Add a gtest target
-#
-# BEAM_ADD_GTEST(Name [DISABLED] src1 [src2...])
-#
-# The test will be added to the tests run by "make test", unless DISABLED is
-# given. It will be linked against the needed gtest libraries. Any other links
-# can be made separately with the target_link_libraries command.
-FUNCTION(BEAM_ADD_GTEST NAME)
-
-    # Define the arguments this function accepts
-    SET(options DISABLED)
-    SET(one_value_args "")
-    SET(multi_value_args "")
-    CMAKE_PARSE_ARGUMENTS(BEAM_ADD_GTEST
-        "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
-
-    # Build the test executable using the given sources
-    ADD_EXECUTABLE(${NAME} ${BEAM_ADD_GTEST_UNPARSED_ARGUMENTS})
-
-    # Link gtest libraries including one providing main()
-    TARGET_LINK_LIBRARIES(${NAME} GTest::Main)
-
-    # Put the test executable in the gtests/ directory
-    SET_TARGET_PROPERTIES(${NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/gtests)
-
-    # Build this test on "make tests"
-    ADD_DEPENDENCIES(tests ${NAME})
-
-    IF(NOT BEAM_ADD_GTEST_DISABLED)
-        # Add the executable as a test, so it runs with "make test"
-        ADD_TEST(NAME ${NAME} COMMAND ${NAME})
-    ENDIF()
-
-ENDFUNCTION(BEAM_ADD_GTEST)
