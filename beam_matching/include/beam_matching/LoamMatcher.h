@@ -27,7 +27,6 @@
 #include <beam_utils/pointclouds.h>
 
 #include <beam_matching/Matcher.h>
-#include <beam_matching/loam/LoamFeatureExtractor.h>
 #include <beam_matching/loam/LoamParams.h>
 #include <beam_matching/loam/LoamPointCloud.h>
 #include <beam_matching/loam/LoamScanRegistration.h>
@@ -39,7 +38,7 @@ namespace beam_matching {
 /**
  * @brief derived Matcher class which wraps LoamScanRegistration to conform to the Matcher base class interface.
  */
-class LoamMatcher : public Matcher<PointCloudPtr> {
+class LoamMatcher : public Matcher<LoamPointCloudPtr> {
 public:
   LoamMatcher();
 
@@ -57,13 +56,13 @@ public:
    * @brief sets the reference pointcloud for the matcher
    * @param ref - Pointcloud
    */
-  void SetRef(const PointCloudPtr& ref);
+  void SetRef(const LoamPointCloudPtr& ref);
 
   /**
    * @brief sets the target (or scene) pointcloud for the matcher
    * @param target - Pointcloud
    */
-  void SetTarget(const PointCloudPtr& target);
+  void SetTarget(const LoamPointCloudPtr& target);
 
   /**
    * @brief runs the matcher, blocks until finished.
@@ -83,7 +82,6 @@ private:
 
   LoamParamsPtr params_;
 
-  std::unique_ptr<LoamFeatureExtractor> feature_extractor_;
   std::unique_ptr<LoamScanRegistration> loam_scan_registration_;
 };
 

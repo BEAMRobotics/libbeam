@@ -164,12 +164,25 @@ TEST(LoamMatcher, SmallPerturb) {
   Eigen::Matrix4d T_gnd_truth =
       beam::InvertTransform(data_.T_WORLD_CLOUD1) * data_.T_WORLD_CLOUD3;
 
-  LoamParams params(data_.config_path);
-  params.iterate_correspondences = true;
-  LoamMatcher matcher(params);
+  // get loam params
+  LoamParamsPtr params = std::make_shared<LoamParams>();
+  *params = *data_.params;
+  params->iterate_correspondences = true;
 
-  matcher.Setup(data_.lidar_scan, data_.lidar_scan_pert_small);
+  // get loam cloud
+  LoamFeatureExtractor fea_extractor(params);
+  LoamPointCloudPtr loam_cloud = std::make_shared<LoamPointCloud>();
+  LoamPointCloudPtr loam_cloud_pert = std::make_shared<LoamPointCloud>();
+  *loam_cloud = fea_extractor.ExtractFeatures(*data_.lidar_scan);
+  *loam_cloud_pert =
+      fea_extractor.ExtractFeatures(*data_.lidar_scan_pert_small);
 
+  // setup matcher
+  LoamMatcher matcher(*params);
+  matcher.Setup(loam_cloud, loam_cloud_pert);
+
+
+  // match
   bool match_success = matcher.Match();
   Eigen::Matrix4d T_meas = matcher.GetResult().matrix();
 
