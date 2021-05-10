@@ -44,7 +44,8 @@ void LoamMatcher::SetTarget(const LoamPointCloudPtr& target) {
 bool LoamMatcher::Match() {
   bool registration_successful =
       loam_scan_registration_->RegisterScans(ref_, target_);
-  result_ = Eigen::Affine3d(loam_scan_registration_->GetT_REF_TGT());
+  const Eigen::Matrix4d& T_REF_TGT = loam_scan_registration_->GetT_REF_TGT();
+  result_ = Eigen::Affine3d(beam::InvertTransform(T_REF_TGT));
   return registration_successful;
 }
 

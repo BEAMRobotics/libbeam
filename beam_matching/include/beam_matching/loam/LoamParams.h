@@ -140,7 +140,7 @@ public:
    * correspondences (2 for edges and 3 for planes) isn't found, and less sharp
    * or less flat features are available, we will use those for the
    * correspondences. */
-  double max_correspondence_distance{0.2};
+  double max_correspondence_distance{0.5};
 
   /** TODO: Validate correspondences by doing an eigen value analysis. This
    * probably requires a denser reference scan to check neighbors*/
@@ -148,7 +148,7 @@ public:
 
   /** Iteratively calculate correspondences after each pose solution is
    * estiamted. Set this to true when not confident on the initial estimate. */
-  bool iterate_correspondences{false};
+  bool iterate_correspondences{true};
 
   /** Correspondence iteration will stop if change in translation is below this
    * criteria (and change in rotation is below rotation criteria). In Meters.
