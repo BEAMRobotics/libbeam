@@ -15,8 +15,7 @@ std::shared_ptr<beam_cv::Matcher> matcher =
 std::shared_ptr<beam_cv::Descriptor> descriptor =
     std::make_shared<beam_cv::ORBDescriptor>();
 std::shared_ptr<beam_cv::Detector> detector =
-    std::make_shared<beam_cv::ORBDetector>(5000, 1.2, 8, 31,
-                                           cv::ORB::FAST_SCORE, 20);
+    std::make_shared<beam_cv::FASTDetector>(300);
 
 std::vector<cv::Mat> ReadImageSequence() {
   std::string libbeam_root = beam::LibbeamRoot();

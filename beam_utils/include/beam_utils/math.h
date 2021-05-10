@@ -301,5 +301,13 @@ Eigen::Matrix4d
 std::vector<double>
     TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T);
 
+void QuaternionAndTranslationToTransformMatrix(const Eigen::Quaterniond& q,
+                                               const Eigen::Vector3d& p,
+                                               Eigen::Matrix4d& T);
+
+void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
+                                               Eigen::Quaterniond& q,
+                                               Eigen::Vector3d& p);
+
 /** @} group utils */
 } // namespace beam

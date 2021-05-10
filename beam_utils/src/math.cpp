@@ -510,4 +510,21 @@ std::vector<double>
   return pose;
 }
 
+void QuaternionAndTranslationToTransformMatrix(const Eigen::Quaterniond& q,
+                                               const Eigen::Vector3d& p,
+                                               Eigen::Matrix4d& T) {
+  T = Eigen::Matrix4d::Identity();
+  T.block<3, 3>(0, 0) = q.normalized().toRotationMatrix();
+  T.block<3, 1>(0, 3) = p.transpose();
+}
+
+void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
+                                               Eigen::Quaterniond& q,
+                                               Eigen::Vector3d& p) {
+  Eigen::Matrix3d R = T.block<3, 3>(0, 0);
+  Eigen::Quaterniond q_tmp(R);
+  q = q_tmp;
+  p = T.block<3, 1>(0, 3).transpose();
+}
+
 } // namespace beam
