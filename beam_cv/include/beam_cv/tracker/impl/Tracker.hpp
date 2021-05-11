@@ -1,5 +1,3 @@
-#include "beam_cv/tracker/Tracker.h"
-
 namespace beam_cv {
 
 // Private Functions
@@ -41,12 +39,11 @@ std::map<int, size_t>
       curr_ids[m.trainIdx] = id;
       // Extract value of keypoint.
       Eigen::Vector2d landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
-      cv::Mat landmark_descriptor = curr_desc.row(m.trainIdx);
+      // cv::Mat landmark_descriptor = curr_desc.row(m.trainIdx);
       auto img_count = this->img_times_.size() - 1;
       // Emplace LandmarkMeasurement into LandmarkMeasurementContainer
       this->landmarks_.Emplace(this->img_times_.at(img_count), this->sensor_id_,
-                               curr_ids.at(m.trainIdx), img_count, landmark,
-                               landmark_descriptor);
+                               curr_ids.at(m.trainIdx), img_count, landmark);
     } else {
       // Else, assign new ID
       auto id = this->GenerateFeatureID();
@@ -57,8 +54,8 @@ std::map<int, size_t>
       Eigen::Vector2d prev_landmark =
           ConvertKeypoint(this->prev_kp_.at(m.queryIdx));
       Eigen::Vector2d curr_landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
-      cv::Mat curr_descriptor = curr_desc.row(m.trainIdx);
-      cv::Mat prev_descriptor = this->prev_desc_.row(m.trainIdx);
+      // cv::Mat curr_descriptor = curr_desc.row(m.trainIdx);
+      // cv::Mat prev_descriptor = this->prev_desc_.row(m.trainIdx);
 
       // Find previous and current times from lookup table
       // Subtract one, since images are zero indexed.
@@ -69,11 +66,11 @@ std::map<int, size_t>
       // Add previous and current landmarks to container
       this->landmarks_.Emplace(prev_time, this->sensor_id_,
                                this->prev_ids_.at(m.queryIdx), prev_img,
-                               prev_landmark, prev_descriptor);
+                               prev_landmark);
 
       this->landmarks_.Emplace(curr_time, this->sensor_id_,
-                               curr_ids.at(m.trainIdx), curr_img, curr_landmark,
-                               curr_descriptor);
+                               curr_ids.at(m.trainIdx), curr_img,
+                               curr_landmark);
     }
   }
 
@@ -174,6 +171,21 @@ std::vector<std::vector<FeatureTrack>>
   return feature_tracks;
 }
 
+Eigen::Vector2d Tracker::Get(const ros::Time& t, uint64_t landmark_id) const {
+  return this->landmarks_.Get(t, this->sensor_id_, landmark_id);
+}
+
+std::vector<uint64_t>
+    Tracker::GetLandmarkIDsInImage(const ros::Time& now) const {
+  return this->landmarks_.GetLandmarkIDsInImage(now);
+}
+
+FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
+  return this->landmarks_.GetTrackInWindow(this->sensor_id_, landmark_id,
+                                           ros::Time(0),
+                                           img_times_[this->img_times_.size()]);
+}
+
 cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
                             const cv::Mat& image) const {
   cv::Mat out_img = image;
@@ -191,4 +203,5 @@ cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
   }
   return out_img;
 }
+
 } // namespace beam_cv

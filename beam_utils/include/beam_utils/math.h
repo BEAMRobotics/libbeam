@@ -324,6 +324,29 @@ std::vector<double>
     TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T);
 
 /**
+ * @brief convert vector of quaternion and translation [qw
+ * qx qy qz tx ty tx] to eigen matrix pose. This vector form is usually the
+ * format used in Ceres when using the quaternion + identity parameterization
+ * @param q input quaternion
+ * @param p input pose
+ * @param T output Transformation matrix
+ */
+void QuaternionAndTranslationToTransformMatrix(const Eigen::Quaterniond& q,
+                                               const Eigen::Vector3d& p,
+                                               Eigen::Matrix4d& T);
+/**
+ * @brief convert eigen matrix pose to vector of quaternion and translation [qw
+ * qx qy qz tx ty tx]. This is the format used in Ceres, simply build this pose
+ * and send the &pose to Ceres with a quaternion + identity parameterization
+ * @param T input Transformation matrix
+ * @param q output quaternion
+ * @param p output pose
+ */
+void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
+                                               Eigen::Quaterniond& q,
+                                               Eigen::Vector3d& p);
+
+/**
  * @brief Determine if two poses (in matrix form) differ by some motion
  * threshold, parameterized by a rotational and translational
  * error. This works by first taking inv(T1) * T2 which gets the relative

@@ -63,6 +63,33 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   return xp;
 }
 
+beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
+    const std::shared_ptr<beam_calibration::CameraModel>& cam,
+    const std::vector<Eigen::Matrix4d>& T_cam_world,
+    const std::vector<Eigen::Vector2i>& pixels) {
+  if (pixels.size() != T_cam_world.size()) {
+    return {};
+  }
+  int rows = pixels.size() * 2;
+  Eigen::MatrixXd A(rows, 4);
+  for (uint32_t i = 0; i < pixels.size(); i++) {
+    Eigen::Vector3d m = cam->BackProject(pixels[i]).value();
+    double mx = m[0], my = m[1], mz = m[2];
+    Eigen::Matrix4d T = T_cam_world[i];
+    Eigen::Vector4d P1 = T.row(0), P2 = T.row(1), P3 = T.row(2);
+    A.row(2 * i) = (mx * P3) - (mz * P1);
+    A.row((2 * i) + 1) = (my * P3) - (mz * P2);
+  }
+  /* Solve the system by finding the right nullspace of A using the SVD
+  decomposition*/
+  Eigen::Vector4d x;
+  Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
+  x = svd.matrixV().col(A.cols() - 1);
+  // normalize result to be in euclidean coordinates
+  Eigen::Vector3d xp = x.head(3) / x(3);
+  return xp;
+}
+
 std::vector<beam::opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,

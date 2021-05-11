@@ -45,7 +45,19 @@ public:
       const std::vector<std::shared_ptr<beam_calibration::CameraModel>>& cams,
       const std::vector<Eigen::Matrix4d>& T_cam_world,
       const std::vector<Eigen::Vector2i>& pixels);
-      
+
+  /**
+   * @brief Triangulates single point given a single camera model and multiple
+   * measurements
+   * @param cam camera model
+   * @param T_cam_world list of transforms form world to camera
+   * @param pixels list of pixel locations in each camera image
+   */
+  static beam::opt<Eigen::Vector3d> TriangulatePoint(
+      const std::shared_ptr<beam_calibration::CameraModel>& cam,
+      const std::vector<Eigen::Matrix4d>& T_cam_world,
+      const std::vector<Eigen::Vector2i>& pixels);
+
   /**
    * @brief Triangulates a list of points given two camera models and
    * corresponding pixel locations
