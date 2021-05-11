@@ -510,6 +510,23 @@ std::vector<double>
   return pose;
 }
 
+void QuaternionAndTranslationToTransformMatrix(const Eigen::Quaterniond& q,
+                                               const Eigen::Vector3d& p,
+                                               Eigen::Matrix4d& T) {
+  T = Eigen::Matrix4d::Identity();
+  T.block<3, 3>(0, 0) = q.normalized().toRotationMatrix();
+  T.block<3, 1>(0, 3) = p.transpose();
+}
+
+void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
+                                               Eigen::Quaterniond& q,
+                                               Eigen::Vector3d& p) {
+  Eigen::Matrix3d R = T.block<3, 3>(0, 0);
+  Eigen::Quaterniond q_tmp(R);
+  q = q_tmp;
+  p = T.block<3, 1>(0, 3).transpose();
+}
+
 bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                            double angle_threshold_deg,
                            double translation_threshold_m,
@@ -519,7 +536,7 @@ bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
   double angle =
       beam::Rad2Deg(std::abs(Eigen::AngleAxis<double>(R_DIFF).angle()));
   double translation = T_DIFF.block(0, 3, 3, 1).norm();
-  
+
   if (is_threshold_minimum) {
     if (must_pass_both) {
       return angle > angle_threshold_deg &&

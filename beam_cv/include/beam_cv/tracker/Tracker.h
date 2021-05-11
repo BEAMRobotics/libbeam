@@ -20,6 +20,9 @@
 namespace beam_cv {
 
 typedef std::vector<beam_containers::LandmarkMeasurement<int>> FeatureTrack;
+typedef beam_containers::LandmarkContainer<
+    beam_containers::LandmarkMeasurement<int>>
+    LMContainer;
 
 /** Image tracker class.
  * The Tracker class is templated on a feature detector, descriptor, and matcher
@@ -60,8 +63,7 @@ public:
    * @param image the image to add.
    * @param current_time the time at which the image was captured
    */
-  bool AddImage(const cv::Mat& image, const ros::Time& current_time,
-                double match_distance_threshold = 0.0);
+  void AddImage(const cv::Mat& image, const ros::Time& current_time);
 
   /** @brief Draw tracks for the requested image.
    * @param img_num the number of the image within the sequence
@@ -77,6 +79,25 @@ public:
    */
   std::vector<std::vector<FeatureTrack>>
       OfflineTracker(const std::vector<cv::Mat>& image_sequence);
+
+  /** @brief Get value of a landmark at time t
+   * @param t time to look for
+   * @param landmark_id to retrieve
+   * @return the pixel of the landmark at time t
+   */
+  Eigen::Vector2d Get(const ros::Time& t, uint64_t landmark_id) const;
+
+  /** @brief Get all landmark ids in a given image at time t
+   * @param now timestamp of image
+   * @return the vector landmark ids
+   */
+  std::vector<uint64_t> GetLandmarkIDsInImage(const ros::Time& now) const;
+
+  /** @brief Get feature track of a given landmark
+   * @param landmark_id to get track of
+   * @return the vector of landmark measurements
+   */
+  FeatureTrack GetTrack(uint64_t landmark_id);
 
   std::shared_ptr<beam_cv::Detector> detector;
   std::shared_ptr<beam_cv::Descriptor> descriptor;
@@ -107,8 +128,7 @@ private:
   std::map<size_t, ros::Time> img_times_;
 
   // Measurement container variables
-  beam_containers::LandmarkContainer<beam_containers::LandmarkMeasurement<int>>
-      landmarks_;
+  LMContainer landmarks_;
 
   // The sensor ID. TODO: Expand this for use with multiple cams.
   int sensor_id_ = 0;
@@ -150,6 +170,7 @@ private:
    */
   std::map<int, size_t>
       RegisterKeypoints(const std::vector<cv::KeyPoint>& curr_kp,
+                        const cv::Mat& curr_desc,
                         const std::vector<cv::DMatch>& matches);
 }; // namespace beam_cv
 
