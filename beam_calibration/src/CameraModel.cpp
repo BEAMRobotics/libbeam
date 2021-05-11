@@ -28,6 +28,8 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
       camera_model = std::make_shared<DoubleSphere>(file_location);
     } else if (camera_type == "RADTAN") {
       camera_model = std::make_shared<Radtan>(file_location);
+    } else if (camera_type == "CATADITROPIC") {
+      camera_model = std::make_shared<Cataditropic>(file_location);
     } else {
       BEAM_CRITICAL("Invalid camera type read from JSON.");
       throw std::runtime_error{"Invalid camera type read from JSON."};

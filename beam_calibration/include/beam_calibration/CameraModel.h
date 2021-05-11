@@ -17,7 +17,7 @@ namespace beam_calibration {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class CameraType { RADTAN = 0, KANNALABRANDT, DOUBLESPHERE, LADYBUG };
+enum class CameraType { RADTAN = 0, KANNALABRANDT, DOUBLESPHERE, LADYBUG, CATADITROPIC };
 
 /**
  * @brief Abstract class for camera models
@@ -192,13 +192,15 @@ protected:
   std::map<CameraType, int> intrinsics_size_ = {{CameraType::LADYBUG, 4},
                                                 {CameraType::RADTAN, 8},
                                                 {CameraType::KANNALABRANDT, 8},
-                                                {CameraType::DOUBLESPHERE, 6}};
+                                                {CameraType::DOUBLESPHERE, 6},
+                                                {CameraType::CATADITROPIC, 9}};
   // Map for storing string input
   std::map<std::string, CameraType> intrinsics_types_ = {
       {"LADYBUG", CameraType::LADYBUG},
       {"RADTAN", CameraType::RADTAN},
       {"KANNALABRANDT", CameraType::KANNALABRANDT},
-      {"DOUBLESPHERE", CameraType::DOUBLESPHERE}};
+      {"DOUBLESPHERE", CameraType::DOUBLESPHERE},
+      {"CATADITROPIC", CameraType::CATADITROPIC}};
 };
 
 } // namespace beam_calibration
