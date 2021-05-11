@@ -4,7 +4,7 @@
  * Wrapper of ICP in PCL
  *
  * There are a few parameters that may be changed specific to this algorithm.
- * They can be set in the yaml config file.
+ * They can be set in the json config file.
  *
  * - max_corr: correspondences behind this many distance-units are
  * discarded

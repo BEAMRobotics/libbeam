@@ -290,24 +290,121 @@ Eigen::Matrix4d PerturbTransformRadM(const Eigen::Matrix4d& T_in,
 Eigen::Matrix4d PerturbTransformDegM(const Eigen::Matrix4d& T_in,
                                      const Eigen::VectorXd& perturbations);
 
+/**
+ * @brief build a 4x4 transformation matrix from rpy (in degrees) and
+ * translation (in m)
+ * @param rollInDeg rotation about x
+ * @param pitchInDeg rotation about y
+ * @param yawInDeg rotation about z
+ * @param tx translation in x
+ * @param ty translation in y
+ * @param tz translation in z
+ * @return transformation matrix [R t ; 0 1]
+ */
 Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
                                         double yawInDeg, double tx, double ty,
                                         double tz);
 
+/**
+ * @brief convert vector of quaternion and translation [qw
+ * qx qy qz tx ty tx] to eigen matrix pose. This vector form is usually the
+ * format used in Ceres when using the quaternion + identity parameterization
+ * @param pose [qw qx qy qz tx ty tx]
+ */
 Eigen::Matrix4d
     QuaternionAndTranslationToTransformMatrix(const std::vector<double>& pose);
 
-// [qw qx qy qz tx ty tx]
+/**
+ * @brief convert eigen matrix pose to vector of quaternion and translation [qw
+ * qx qy qz tx ty tx]. This is the format used in Ceres, simply build this pose
+ * and send the &pose to Ceres with a quaternion + identity parameterization
+ * @param T pose matrix
+ */
 std::vector<double>
     TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T);
 
+/**
+ * @brief convert vector of quaternion and translation [qw
+ * qx qy qz tx ty tx] to eigen matrix pose. This vector form is usually the
+ * format used in Ceres when using the quaternion + identity parameterization
+ * @param q input quaternion
+ * @param p input pose
+ * @param T output Transformation matrix
+ */
 void QuaternionAndTranslationToTransformMatrix(const Eigen::Quaterniond& q,
                                                const Eigen::Vector3d& p,
                                                Eigen::Matrix4d& T);
-
+/**
+ * @brief convert eigen matrix pose to vector of quaternion and translation [qw
+ * qx qy qz tx ty tx]. This is the format used in Ceres, simply build this pose
+ * and send the &pose to Ceres with a quaternion + identity parameterization
+ * @param T input Transformation matrix
+ * @param q output quaternion
+ * @param p output pose
+ */
 void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
                                                Eigen::Quaterniond& q,
                                                Eigen::Vector3d& p);
+
+/**
+ * @brief Determine if two poses (in matrix form) differ by some motion
+ * threshold, parameterized by a rotational and translational
+ * error. This works by first taking inv(T1) * T2 which gets the relative
+ * transform between the two poses. Then it calculated the norm of the
+ * translation, and the absolute value of the angle in AxisAngle representation
+ *
+ * Two main use cases:
+ *  (1) Checking if poses are equal:
+ *      (a) set is_threshold_minimum to false
+ *      (b) set must_pass_both to true
+ *      (c) set thresholds to something small based on your desired accuracy
+ *  (2) Checking for minimal change in pose (e.g., to know if we want to extract
+ * a new keyframe) (c) set is_threshold_minimum to true (b) set must_pass_both
+ * to false (c) pick motion thresholds
+ *
+ * @param T1 pose1
+ * @param T2 pose2
+ * @param angle_threshold_deg angle threshold in degrees
+ * @param translation_threshold_m translation threshold in meters
+ * @param is_threshold_minimum requires motion to be greater than threshold if
+ * set to true
+ * @param must_pass_both if set, it will return true only if both angle and
+ * translation thresholds are passed
+ * @return result
+ */
+bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
+                           double angle_threshold_deg,
+                           double translation_threshold_m,
+                           bool is_threshold_minimum = true,
+                           bool must_pass_both = false);
+
+/**
+ * @brief Wrapper around PassedMotionThreshold that sets is_threshold_minimum to
+ * false and must_pass_both to true. This can be used to check if two estimates
+ * of the same pose are similar
+ * @param T1 pose1
+ * @param T2 pose2
+ * @param angle_threshold_deg maximum angle error in degrees
+ * @param translation_threshold_m maximum translation error in meters
+ * @return result
+ */
+bool ArePosesEqual(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
+                   double angle_threshold_deg = 1,
+                   double translation_threshold_m = 0.005);
+
+/**
+ * @brief Wrapper around PassedMotionThreshold that sets is_threshold_minimum to
+ * true and must_pass_both to false. This can be used to check if two poses
+ * differ by some rotation OR some translation.
+ * @param T1 pose1
+ * @param T2 pose2
+ * @param angle_threshold_deg minimum angle change in degrees
+ * @param translation_threshold_m minimum translation change in meters
+ * @return result
+ */
+bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
+                     double angle_threshold_deg = 1,
+                     double translation_threshold_m = 0.005);
 
 /** @} group utils */
 } // namespace beam

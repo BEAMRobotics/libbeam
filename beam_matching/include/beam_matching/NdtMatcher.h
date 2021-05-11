@@ -4,8 +4,8 @@
  * Wrapper of NDT in PCL.
  *
  * There are a few parameters that may be changed specific to this algorithm.
- * They can be set in the yaml config file. The path to this file should be
- * specified in the constructor for the class. A sample yaml file can be found
+ * They can be set in the json config file. The path to this file should be
+ * specified in the constructor for the class. A sample json file can be found
  * in the beam_matching/config directory.
  *
  * - step_size: Maximum Newton step size used in line search
