@@ -19,6 +19,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/CameraModel.cpp
     src/Ladybug.cpp
     src/KannalaBrandt.cpp
+    src/Cataditropic.cpp
 )
 
 ################ tests ##################
