@@ -193,7 +193,7 @@ protected:
                                                 {CameraType::RADTAN, 8},
                                                 {CameraType::KANNALABRANDT, 8},
                                                 {CameraType::DOUBLESPHERE, 6},
-                                                {CameraType::CATADITROPIC, 8}};
+                                                {CameraType::CATADITROPIC, 9}};
   // Map for storing string input
   std::map<std::string, CameraType> intrinsics_types_ = {
       {"LADYBUG", CameraType::LADYBUG},

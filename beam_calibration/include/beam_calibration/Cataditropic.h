@@ -9,13 +9,13 @@
 namespace beam_calibration {
 
 /**
- * @brief Derived class for KB camera model
+ * @brief Derived class for Cataditropic model:
+ * [https://www.robots.ox.ac.uk/~cmei/articles/single_viewpoint_calib_mei_07.pdf]
  */
 class Cataditropic : public CameraModel {
 public:
   /**
-   * @brief Constructor. All code was implemented from the following paper:
-   * https://arxiv.org/pdf/1807.08957.pdf
+   * @brief Constructor.
    * @param input_file path to input file
    */
   Cataditropic(const std::string& file_path);
@@ -68,9 +68,6 @@ public:
 
 protected:
   void Distortion(const Eigen::Vector2d& p_u, Eigen::Vector2d& d_u) const;
-
-  void Distortion(const Eigen::Vector2d& p_u, Eigen::Vector2d& d_u,
-                  Eigen::Matrix2d& J) const;
 
   double fx_;
   double fy_;

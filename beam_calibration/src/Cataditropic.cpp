@@ -24,11 +24,7 @@ Cataditropic::Cataditropic(const std::string& file_path) {
 beam::opt<Eigen::Vector2d>
     Cataditropic::ProjectPointPrecise(const Eigen::Vector3d& point,
                                       bool& outside_domain) {
-  if (point(2) <= 0) {
-    outside_domain = true;
-    return {};
-  }
-
+  if (point(2) < 0) { return {}; }
   Eigen::Vector2d p_u, p_d;
   Eigen::Vector2d out_point;
   // Project points to the normalised plane
@@ -42,7 +38,6 @@ beam::opt<Eigen::Vector2d>
 
   // Apply generalised projection matrix
   out_point << fx_ * p_d(0) + cx_, fy_ * p_d(1) + cy_;
-
   if (PixelInImage(out_point)) { return out_point; }
   return {};
 }
@@ -62,44 +57,14 @@ beam::opt<Eigen::Vector2i>
 beam::opt<Eigen::Vector2i>
     Cataditropic::ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
                                bool& outside_domain) {
-  double norm, inv_denom;
-  double dxdmx, dydmx, dxdmy, dydmy;
-  norm = point.norm();
-  // Project points to the normalised plane
-  inv_denom = 1.0 / (point(2) + xi_ * norm);
-
-  // Calculate jacobian
-  inv_denom = inv_denom * inv_denom / norm;
-  double dudx = inv_denom * (norm * point(2) +
-                             xi_ * (point(1) * point(1) + point(2) * point(2)));
-  double dvdx = -inv_denom * xi_ * point(0) * point(1);
-  double dudy = dvdx;
-  double dvdy = inv_denom * (norm * point(2) +
-                             xi_ * (point(0) * point(0) + point(2) * point(2)));
-  inv_denom = inv_denom * (-xi_ * point(2) - norm); // reuse variable
-  double dudz = point(0) * inv_denom;
-  double dvdz = point(1) * inv_denom;
-
-  // Make the product of the jacobians
-  // and add projection matrix jacobian
-  inv_denom = fx_ * (dudx * dxdmx + dvdx * dxdmy); // reuse
-  dvdx = fy_ * (dudx * dydmx + dvdx * dydmy);
-  dudx = inv_denom;
-
-  inv_denom = fx_ * (dudy * dxdmx + dvdy * dxdmy); // reuse
-  dvdy = fy_ * (dudy * dydmx + dvdy * dydmy);
-  dudy = inv_denom;
-
-  inv_denom = fx_ * (dudz * dxdmx + dvdz * dxdmy); // reuse
-  dvdz = fy_ * (dudz * dydmx + dvdz * dydmy);
-  dudz = inv_denom;
-
-  J << dudx, dudy, dudz, dvdx, dvdy, dvdz;
+  BEAM_WARN("Jacobian not yet implemented.");
   return ProjectPoint(point, outside_domain);
 }
 
 beam::opt<Eigen::Vector3d>
     Cataditropic::BackProject(const Eigen::Vector2i& pixel) {
+  if (!PixelInImage(pixel)) { return {}; }
+
   Eigen::Vector3d P;
   double mx_d, my_d, mx2_d, mxy_d, my2_d, mx_u, my_u;
   double rho2_d, rho4_d, radDist_d, Dx_d, Dy_d, inv_denom_d;
@@ -165,32 +130,6 @@ void Cataditropic::Distortion(const Eigen::Vector2d& p_u,
   rad_dist_u = k1_ * rho2_u + k2_ * rho2_u * rho2_u;
   d_u << p_u(0) * rad_dist_u + 2.0 * p1_ * mxy_u + p2_ * (rho2_u + 2.0 * mx2_u),
       p_u(1) * rad_dist_u + 2.0 * p2_ * mxy_u + p1_ * (rho2_u + 2.0 * my2_u);
-}
-
-void Cataditropic::Distortion(const Eigen::Vector2d& p_u, Eigen::Vector2d& d_u,
-                              Eigen::Matrix2d& J) const {
-  double mx2_u, my2_u, mxy_u, rho2_u, rad_dist_u;
-
-  mx2_u = p_u(0) * p_u(0);
-  my2_u = p_u(1) * p_u(1);
-  mxy_u = p_u(0) * p_u(1);
-  rho2_u = mx2_u + my2_u;
-  rad_dist_u = k1_ * rho2_u + k2_ * rho2_u * rho2_u;
-  d_u << p_u(0) * rad_dist_u + 2.0 * p1_ * mxy_u + p2_ * (rho2_u + 2.0 * mx2_u),
-      p_u(1) * rad_dist_u + 2.0 * p2_ * mxy_u + p1_ * (rho2_u + 2.0 * my2_u);
-
-  double dxdmx = 1.0 + rad_dist_u + k1_ * 2.0 * mx2_u +
-                 k2_ * rho2_u * 4.0 * mx2_u + 2.0 * p1_ * p_u(1) +
-                 6.0 * p2_ * p_u(0);
-  double dydmx = k1_ * 2.0 * p_u(0) * p_u(1) +
-                 k2_ * 4.0 * rho2_u * p_u(0) * p_u(1) + p1_ * 2.0 * p_u(0) +
-                 2.0 * p2_ * p_u(1);
-  double dxdmy = dydmx;
-  double dydmy = 1.0 + rad_dist_u + k1_ * 2.0 * my2_u +
-                 k2_ * rho2_u * 4.0 * my2_u + 6.0 * p1_ * p_u(1) +
-                 2.0 * p2_ * p_u(0);
-
-  J << dxdmx, dxdmy, dydmx, dydmy;
 }
 
 } // namespace beam_calibration

@@ -77,6 +77,19 @@ target_link_libraries(${PROJECT_NAME}_kannala_brandt_tests
   Catch2::Catch2
 )
 
+add_executable(${PROJECT_NAME}_cataditropic_tests
+  tests/cataditropic_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_cataditropic_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_cataditropic_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
 add_executable(${PROJECT_NAME}_convert_camera_models_tests
   tests/convert_camera_models_tests.cpp
 )
