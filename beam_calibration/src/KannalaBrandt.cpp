@@ -15,6 +15,17 @@ KannalaBrandt::KannalaBrandt(const std::string& file_path) {
   k4_ = intrinsics_[7];
 }
 
+std::shared_ptr<CameraModel> KannalaBrandt::Clone(){
+  std::shared_ptr<KannalaBrandt> clone = std::make_shared<KannalaBrandt>();
+  clone->type_ = CameraType::KANNALABRANDT;
+  clone->SetIntrinsics(this->GetIntrinsics());
+  clone->SetImageDims(this->GetHeight(), this->GetWidth());
+  clone->SetFrameID(this->GetFrameID());
+  clone->SetCalibrationDate(this->GetCalibrationDate());
+  return clone;
+}
+
+
 beam::opt<Eigen::Vector2d>
     KannalaBrandt::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;

@@ -20,6 +20,11 @@ namespace beam_calibration {
 class Ladybug : public CameraModel {
 public:
   /**
+   * @brief Default constructor
+   */
+  Ladybug() = default;
+
+  /**
    * @brief Constructor
    * @param input_file path to input file
    */
@@ -31,9 +36,15 @@ public:
   ~Ladybug() override = default;
 
   /**
+   * @brief Method to perform a deep copying of this object
+   */
+  std::shared_ptr<CameraModel> Clone() override;
+
+  /**
    * @brief Method for projecting a point into an image plane (continous)
    * @param point 3d point to be projected [x,y,z]^T
-   * @param outside_domain optional parameter, set if point is outside camera model domain
+   * @param outside_domain optional parameter, set if point is outside camera
+   * model domain
    */
   beam::opt<Eigen::Vector2d> ProjectPointPrecise(
       const Eigen::Vector3d& point,
@@ -43,7 +54,8 @@ public:
    * @brief Method for projecting a point into an image plane
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
-   * @param outside_domain optional parameter, set if point is outside camera model domain
+   * @param outside_domain optional parameter, set if point is outside camera
+   * model domain
    */
   beam::opt<Eigen::Vector2i>
       ProjectPoint(const Eigen::Vector3d& point,
@@ -54,10 +66,9 @@ public:
    * @return projected point
    * @param point 3d point to be projected [x,y,z]^T
    * @param J 2 x 3 projection jacobian.
-   * @param outside_domain optional parameter, set if point is outside camera model domain
-   * For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T
-   *                   J = | dP1/dx , dP1/dy, dP1/dz |
-   *                       | dP2/dx , dP2/dy, dP2/dz |
+   * @param outside_domain optional parameter, set if point is outside camera
+   * model domain For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T J = |
+   * dP1/dx , dP1/dy, dP1/dz | | dP2/dx , dP2/dy, dP2/dz |
    */
   beam::opt<Eigen::Vector2i>
       ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
@@ -87,7 +98,7 @@ protected:
   const unsigned int LB_FULL_WIDTH_ = 2048;
   const unsigned int LB_FULL_HEIGHT_ = 2464;
 
-  //static bool outside_domain_default_;
+  // static bool outside_domain_default_;
 
   double focal_length_;
   double cx_;

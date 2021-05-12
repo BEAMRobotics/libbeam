@@ -15,6 +15,11 @@ namespace beam_calibration {
 class Cataditropic : public CameraModel {
 public:
   /**
+   * @brief Default constructor
+   */
+  Cataditropic() = default;
+
+  /**
    * @brief Constructor.
    * @param input_file path to input file
    */
@@ -24,6 +29,11 @@ public:
    * @brief Default destructor
    */
   ~Cataditropic() override = default;
+
+  /**
+   * @brief Method to perform a deep copying of this object
+   */
+  std::shared_ptr<CameraModel> Clone() override;
 
   /**
    * @brief Method for projecting a point into an image plane (continous)
