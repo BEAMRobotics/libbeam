@@ -29,6 +29,16 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
+std::shared_ptr<CameraModel> Ladybug::Clone(){
+  std::shared_ptr<Ladybug> clone = std::make_shared<Ladybug>();
+  clone->type_ = CameraType::LADYBUG;
+  clone->SetIntrinsics(this->GetIntrinsics());
+  clone->SetImageDims(this->GetHeight(), this->GetWidth());
+  clone->SetFrameID(this->GetFrameID());
+  clone->SetCalibrationDate(this->GetCalibrationDate());
+  return clone;
+}
+
 beam::opt<Eigen::Vector2d>
     Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;

@@ -13,6 +13,17 @@ DoubleSphere::DoubleSphere(const std::string& file_path) {
   alpha_ = intrinsics_[5];
 }
 
+std::shared_ptr<CameraModel> DoubleSphere::Clone(){
+  std::shared_ptr<DoubleSphere> clone = std::make_shared<DoubleSphere>();
+  clone->type_ = CameraType::DOUBLESPHERE;
+  clone->SetIntrinsics(this->GetIntrinsics());
+  clone->SetImageDims(this->GetHeight(), this->GetWidth());
+  clone->SetFrameID(this->GetFrameID());
+  clone->SetCalibrationDate(this->GetCalibrationDate());
+  return clone;
+}
+
+
 beam::opt<Eigen::Vector2d>
     DoubleSphere::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;

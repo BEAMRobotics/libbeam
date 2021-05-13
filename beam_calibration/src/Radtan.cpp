@@ -31,6 +31,16 @@ Radtan::Radtan(uint32_t image_height, uint32_t image_width,
   p2_ = intrinsics_[7];
 }
 
+std::shared_ptr<CameraModel> Radtan::Clone(){
+  std::shared_ptr<Radtan> clone = std::make_shared<Radtan>();
+  clone->type_ = CameraType::RADTAN;
+  clone->SetIntrinsics(this->GetIntrinsics());
+  clone->SetImageDims(this->GetHeight(), this->GetWidth());
+  clone->SetFrameID(this->GetFrameID());
+  clone->SetCalibrationDate(this->GetCalibrationDate());
+  return clone;
+}
+
 beam::opt<Eigen::Vector2d> Radtan::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
   outside_domain = false;
   
