@@ -21,6 +21,17 @@ Cataditropic::Cataditropic(const std::string& file_path) {
   m_inv_K23 = -cy_ / fy_;
 }
 
+std::shared_ptr<CameraModel> Cataditropic::Clone(){
+  std::shared_ptr<Cataditropic> clone = std::make_shared<Cataditropic>();
+  clone->type_ = CameraType::CATADITROPIC;
+  clone->SetIntrinsics(this->GetIntrinsics());
+  clone->SetImageDims(this->GetHeight(), this->GetWidth());
+  clone->SetFrameID(this->GetFrameID());
+  clone->SetCalibrationDate(this->GetCalibrationDate());
+  return clone;
+}
+
+
 beam::opt<Eigen::Vector2d>
     Cataditropic::ProjectPointPrecise(const Eigen::Vector3d& point,
                                       bool& outside_domain) {
