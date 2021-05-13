@@ -304,8 +304,6 @@ double
     ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
                                const std::vector<cv::KeyPoint>& keypoints_1,
                                const std::vector<cv::KeyPoint>& keypoints_2) {
-  double d_sum = 0;
-  int total = 0;
   std::vector<double> distances;
   for (auto& mat : matches) {
     cv::KeyPoint kp1 = keypoints_1[mat.queryIdx];
