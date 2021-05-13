@@ -17,13 +17,13 @@ namespace beam_cv {
 enum class DescriptorType { ORB = 0, SIFT, BRISK };
 
 // Map for storing string input
-std::map<std::string, DescriptorType> DescriptorTypeStringMap = {
+static std::map<std::string, DescriptorType> DescriptorTypeStringMap = {
     {"ORB", DescriptorType::ORB},
     {"SIFT", DescriptorType::SIFT},
     {"BRISK", DescriptorType::BRISK}};
 
 // Map for storing int input
-std::map<uint8_t, DescriptorType> DescriptorTypeIntMap = {
+static std::map<uint8_t, DescriptorType> DescriptorTypeIntMap = {
     {0, DescriptorType::ORB},
     {1, DescriptorType::SIFT},
     {2, DescriptorType::BRISK}};
