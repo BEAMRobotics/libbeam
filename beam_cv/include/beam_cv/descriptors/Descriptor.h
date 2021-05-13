@@ -7,15 +7,31 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <beam_utils/utils.h> 
+#include <beam_utils/utils.h>
 
 namespace beam_cv {
+
+/**
+ * @brief Enum class for different types descriptors
+ */
+enum class DescriptorType { ORB = 0, SIFT, BRISK };
+
+// Map for storing string input
+std::map<std::string, DescriptorType> DescriptorTypeStringMap = {
+    {"ORB", DescriptorType::ORB},
+    {"SIFT", DescriptorType::SIFT},
+    {"BRISK", DescriptorType::BRISK}};
+
+// Map for storing int input
+std::map<uint8_t, DescriptorType> DescriptorTypeIntMap = {
+    {0, DescriptorType::ORB},
+    {1, DescriptorType::SIFT},
+    {2, DescriptorType::BRISK}};
 
 /** Representation of a generic keypoint descriptor extractor.
  */
 class Descriptor {
 public:
-
   /**
    * @brief Default constructor
    */
@@ -34,7 +50,6 @@ public:
    */
   virtual cv::Mat ExtractDescriptors(const cv::Mat& image,
                                      std::vector<cv::KeyPoint>& keypoints) = 0;
-
 };
 
 } // namespace beam_cv
