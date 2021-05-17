@@ -96,8 +96,7 @@ TEST_CASE("Test triangulation.") {
 TEST_CASE("Test 8 point Relative Pose Estimator.") {
   Eigen::Matrix4d P;
   P << 0.994502, -0.0321403, -0.0996619, 0.872111, 0.0304609, 0.999368,
-      -0.0183281, 0.154409, 0.100188, 0.0151916, 0.994853, 0.464306, 0, 0, 0,
-      1;
+      -0.0183281, 0.154409, 0.100188, 0.0151916, 0.994853, 0.464306, 0, 0, 0, 1;
 
   std::string cam_loc = __FILE__;
   cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
@@ -120,8 +119,7 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
   beam::opt<Eigen::Matrix4d> pose;
   beam_cv::RelativePoseEstimator::RecoverPose(cam, cam, frame1_matches,
-                                              frame2_matches, R, t,
-                                              pose, 10.0);
+                                              frame2_matches, R, t, pose, 10.0);
 
   REQUIRE(pose.value().isApprox(P, 1e-4));
 }
@@ -152,8 +150,7 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
   BEAM_INFO("7 Point RANSAC elapsed time (20 iterations): {}", elapsed);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
-                                          frame2_matches, Pr, pose.value(),
-                                          5);
+                                          frame2_matches, Pr, pose.value(), 5);
   INFO(num_inliers);
   REQUIRE(num_inliers == 100);
 }
@@ -184,35 +181,47 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 8 Point") {
   BEAM_INFO("8 Point RANSAC elapsed time (200 iterations): {}", elapsed);
   Eigen::Matrix4d Pr = Eigen::Matrix4d::Identity();
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
-                                          frame2_matches, Pr, pose.value(),
-                                          10);
+                                          frame2_matches, Pr, pose.value(), 10);
   INFO(num_inliers);
   REQUIRE(num_inliers == 49);
 }
 
 TEST_CASE("Test P3P Absolute Pose Estimator") {
-  Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
-
-  // make camera model
-  std::string location = __FILE__;
-  location.erase(location.end() - 24, location.end());
-  std::string intrinsics_loc = location + "tests/test_data/K.json";
+  std::string cam_loc = __FILE__;
+  cam_loc.erase(cam_loc.end() - 24, cam_loc.end());
+  cam_loc += "tests/test_data/K.json";
   std::shared_ptr<beam_calibration::CameraModel> cam =
-      beam_calibration::CameraModel::Create(intrinsics_loc);
+      beam_calibration::CameraModel::Create(cam_loc);
+  std::string matches_loc = __FILE__;
+  matches_loc.erase(matches_loc.end() - 24, matches_loc.end());
+  matches_loc += "tests/test_data/matches.txt";
 
-  // generate 3 correspondences
-  std::vector<Eigen::Vector2i> pixels;
-  std::vector<Eigen::Vector3d> points;
-  GenerateP3PMatches(cam, pixels, points, 3);
+  // extract poses
+  std::vector<Eigen::Vector2i> frame1_matches;
+  std::vector<Eigen::Vector2i> frame2_matches;
+  ReadMatches(matches_loc, frame1_matches, frame2_matches);
+  Eigen::Matrix4d Pl = Eigen::Matrix4d::Identity();
+  beam::opt<Eigen::Matrix4d> Pr =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam, cam, frame1_matches, frame2_matches,
+          beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
+  REQUIRE(Pr.has_value());
+  std::vector<beam::opt<Eigen::Vector3d>> t_points =
+      beam_cv::Triangulation::TriangulatePoints(cam, cam, Pl, Pr.value(),
+                                                frame1_matches, frame2_matches);
+  std::vector<Eigen::Vector3d> points;                                     
+  for(auto& p: t_points){
+    points.push_back(p.value());
+  }
 
   // find the pose
   std::vector<Eigen::Matrix4d> poses =
-      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, pixels, points);
+      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, frame2_matches, points);
 
   // check if the solution was found
   bool check = false;
   for (size_t i = 0; i < poses.size(); i++) {
-    if (poses[i].isApprox(truth, 1e-3)) { check = true; }
+    if (poses[i].isApprox(Pr.value(), 0.1)) { check = true; }
   }
 
   REQUIRE(check);
