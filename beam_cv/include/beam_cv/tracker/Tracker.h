@@ -91,7 +91,9 @@ public:
    * @param now timestamp of image
    * @return the vector landmark ids
    */
-  std::vector<uint64_t> GetLandmarkIDsInImage(const ros::Time& now) const;
+  std::vector<uint64_t> GetLandmarkIDsInImage(
+      const ros::Time& now,
+      ros::Duration threshold = ros::Duration(0.000001)) const;
 
   /** @brief Get feature track of a given landmark
    * @param landmark_id to get track of

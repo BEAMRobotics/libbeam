@@ -39,11 +39,12 @@ std::map<int, size_t>
       curr_ids[m.trainIdx] = id;
       // Extract value of keypoint.
       Eigen::Vector2d landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
-      // cv::Mat landmark_descriptor = curr_desc.row(m.trainIdx);
+      cv::Mat landmark_descriptor = curr_desc.row(m.trainIdx);
       auto img_count = this->img_times_.size() - 1;
       // Emplace LandmarkMeasurement into LandmarkMeasurementContainer
       this->landmarks_.Emplace(this->img_times_.at(img_count), this->sensor_id_,
-                               curr_ids.at(m.trainIdx), img_count, landmark);
+                               curr_ids.at(m.trainIdx), img_count, landmark,
+                               landmark_descriptor);
     } else {
       // Else, assign new ID
       auto id = this->GenerateFeatureID();
@@ -54,8 +55,8 @@ std::map<int, size_t>
       Eigen::Vector2d prev_landmark =
           ConvertKeypoint(this->prev_kp_.at(m.queryIdx));
       Eigen::Vector2d curr_landmark = ConvertKeypoint(curr_kp.at(m.trainIdx));
-      // cv::Mat curr_descriptor = curr_desc.row(m.trainIdx);
-      // cv::Mat prev_descriptor = this->prev_desc_.row(m.trainIdx);
+      cv::Mat curr_descriptor = curr_desc.row(m.trainIdx);
+      cv::Mat prev_descriptor = this->prev_desc_.row(m.queryIdx);
 
       // Find previous and current times from lookup table
       // Subtract one, since images are zero indexed.
@@ -66,11 +67,11 @@ std::map<int, size_t>
       // Add previous and current landmarks to container
       this->landmarks_.Emplace(prev_time, this->sensor_id_,
                                this->prev_ids_.at(m.queryIdx), prev_img,
-                               prev_landmark);
+                               prev_landmark, prev_descriptor);
 
       this->landmarks_.Emplace(curr_time, this->sensor_id_,
-                               curr_ids.at(m.trainIdx), curr_img,
-                               curr_landmark);
+                               curr_ids.at(m.trainIdx), curr_img, curr_landmark,
+                               curr_descriptor);
     }
   }
 
@@ -176,8 +177,10 @@ Eigen::Vector2d Tracker::Get(const ros::Time& t, uint64_t landmark_id) const {
 }
 
 std::vector<uint64_t>
-    Tracker::GetLandmarkIDsInImage(const ros::Time& now) const {
-  return this->landmarks_.GetLandmarkIDsInImage(now);
+    Tracker::GetLandmarkIDsInImage(const ros::Time& now,
+                                   ros::Duration threshold) const {
+  return this->landmarks_.GetLandmarkIDsInWindow(now - threshold,
+                                                 now + threshold);
 }
 
 FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {

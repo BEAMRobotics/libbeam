@@ -5,7 +5,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::calibration
     beam::containers
     beam::utils
-    beam::depth
     beam::optimization
     OpenCV::OpenCV
     Eigen3::Eigen

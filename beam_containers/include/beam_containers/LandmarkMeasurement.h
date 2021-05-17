@@ -37,12 +37,13 @@ struct LandmarkMeasurement {
 
   LandmarkMeasurement(const TimePoint& t, const SensorIdType& s,
                       const size_t& id, const size_t& img,
-                      const Eigen::Vector2d& v)
+                      const Eigen::Vector2d& v, const cv::Mat& desc)
       : time_point{t},
         sensor_id{s},
         landmark_id{id},
         image{img},
-        value{v} {}
+        value{v},
+        descriptor{desc} {}
 };
 
 } // namespace beam_containers
