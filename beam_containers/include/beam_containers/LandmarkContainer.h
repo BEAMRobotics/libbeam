@@ -268,10 +268,6 @@ public:
     return unique_ids;
   }
 
-  std::vector<LandmarkIdType> GetLandmarkIDsInImage(const TimeType& now) const {
-    return this->GetLandmarkIDsInWindow(now, now);
-  }
-
   /** @briefGet a sequence of measurements of a landmark from one sensor
    * @return a vector of landmark measurements sorted by time
    */
