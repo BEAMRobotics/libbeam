@@ -6,6 +6,14 @@
 
 namespace beam {
 
+bool HasExtension(const std::string& input, const std::string& extension) {
+  std::string file_extension = input;
+  file_extension.erase(file_extension.end() - input.length(),
+                       file_extension.end() - extension.length());
+  if (file_extension != extension) { return false; }
+  return true;
+}
+
 std::string LibbeamRoot() {
   std::string path_from_root = "beam_utils/src/filesystem.cpp";
   std::string root_location = __FILE__;

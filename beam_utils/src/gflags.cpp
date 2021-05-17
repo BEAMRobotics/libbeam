@@ -1,15 +1,10 @@
 #include <beam_utils/gflags.h>
+
 #include <boost/filesystem.hpp>
 
-namespace beam { namespace gflags {
+#include <beam_utils/filesystem.h>
 
-bool IsExtension(const std::string& input, const std::string& should_be) {
-  std::string file_extension = input;
-  file_extension.erase(file_extension.end() - input.length(),
-                       file_extension.end() - should_be.length());
-  if (file_extension != should_be) { return false; }
-  return true;
-}
+namespace beam { namespace gflags {
 
 bool ValidateCannotBeEmpty(const char* flagname, const std::string& value) {
   if (!value.empty()) { return true; }
@@ -47,7 +42,7 @@ bool ValidateJsonFileMustExist(const char* flagname, const std::string& value) {
   }
 
   std::string extension{".json"};
-  if (IsExtension(value, extension)) { return true; }
+  if (HasExtension(value, extension)) { return true; }
   printf("Invalid value for --%s: %s. File extension must be %s.\n", flagname,
          value.c_str(), extension.c_str());
   return false;
@@ -61,7 +56,7 @@ bool ValidateTxtFileMustExist(const char* flagname, const std::string& value) {
   }
 
   std::string extension{".txt"};
-  if (IsExtension(value, extension)) { return true; }
+  if (HasExtension(value, extension)) { return true; }
   printf("Invalid value for --%s: %s. File extension must be %s.\n", flagname,
          value.c_str(), extension.c_str());
   return false;
@@ -75,7 +70,7 @@ bool ValidatePlyFileMustExist(const char* flagname, const std::string& value) {
   }
 
   std::string extension{".ply"};
-  if (IsExtension(value, extension)) { return true; }
+  if (HasExtension(value, extension)) { return true; }
   printf("Invalid value for --%s: %s. File extension must be %s.\n", flagname,
          value.c_str(), extension.c_str());
   return false;
@@ -89,7 +84,7 @@ bool ValidateBagFileMustExist(const char* flagname, const std::string& value) {
   }
 
   std::string extension{".bag"};
-  if (IsExtension(value, extension)) { return true; }
+  if (HasExtension(value, extension)) { return true; }
   printf("Invalid value for --%s: %s. File extension must be %s.\n", flagname,
          value.c_str(), extension.c_str());
   return false;
@@ -97,7 +92,7 @@ bool ValidateBagFileMustExist(const char* flagname, const std::string& value) {
 
 bool ValidateMustBeJson(const char* flagname, const std::string& value) {
   std::string extension{".json"};
-  if (IsExtension(value, extension)) { return true; }
+  if (HasExtension(value, extension)) { return true; }
   printf("Invalid value for --%s: %s. File extension must be %s.\n", flagname,
          value.c_str(), extension.c_str());
   return false;

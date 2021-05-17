@@ -14,6 +14,12 @@ namespace beam {
  *  @{ */
 
 /**
+ * @brief returns true if the input string finishes with the extension specified by entension (e.g., ".json")
+ */
+bool HasExtension(const std::string& input, const std::string& extension);
+
+
+/**
  * @brief get the path to libbeam's root folder
  */
 std::string LibbeamRoot();
@@ -28,6 +34,8 @@ std::string LibbeamRoot();
 std::vector<std::string> GetFiles(const std::string& directory,
                                   const std::string& extension = "",
                                   bool recursive = false);
+
+
 
 /** @} group utils */
 } // namespace beam

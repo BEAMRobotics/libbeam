@@ -15,8 +15,6 @@ namespace beam {
 
 namespace gflags {
 
-bool IsExtension(const std::string& input, const std::string& should_be);
-
 bool ValidateCannotBeEmpty(const char* flagname, const std::string& value);
 
 bool ValidateDirMustExist(const char* flagname, const std::string& value);
