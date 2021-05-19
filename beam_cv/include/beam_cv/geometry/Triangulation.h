@@ -35,18 +35,6 @@ public:
       const Eigen::Vector2i& p1, const Eigen::Vector2i& p2);
 
   /**
-   * @brief Triangulates single point given a list camera models and
-   * corresponding pixel locations
-   * @param cams list of cameras
-   * @param T_cam_world list of transforms form world to camera
-   * @param pixels list of pixel locations in each camera image
-   */
-  static beam::opt<Eigen::Vector3d> TriangulatePoint(
-      const std::vector<std::shared_ptr<beam_calibration::CameraModel>>& cams,
-      const std::vector<Eigen::Matrix4d>& T_cam_world,
-      const std::vector<Eigen::Vector2i>& pixels);
-
-  /**
    * @brief Triangulates single point given a single camera model and multiple
    * measurements
    * @param cam camera model

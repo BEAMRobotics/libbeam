@@ -297,12 +297,7 @@ int RelativePoseEstimator::RecoverPose(
       int count = 0;
       // check if each point is in front of both cameras
       for (int point_idx = 0; point_idx < size; point_idx++) {
-        Eigen::Vector4d pt_h;
-        pt_h << points[point_idx].value()[0], points[point_idx].value()[1],
-            points[point_idx].value()[2], 1;
-        pt_h = T_cam2_world * pt_h;
-        Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
-        if (points[point_idx].value()[2] > 0 && ptc[2] > 0) { count++; }
+        if (points[point_idx].has_value()) { count++; }
       }
       // kep track of pose that has the most points in front of both cameras
       if (count > max_count) {
