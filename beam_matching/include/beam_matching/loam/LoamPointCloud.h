@@ -155,6 +155,12 @@ public:
    */
   void Save(const std::string& output_path, bool combine_features = false);
 
+  /**
+   * @brief add a new loam pointcloud to this cloud. This will also clear all kd search trees.
+   * @param cloud new cloud to add
+   */
+  void Merge(const LoamPointCloud& cloud);
+
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;
 
