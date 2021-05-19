@@ -20,9 +20,6 @@
 namespace beam_cv {
 
 typedef std::vector<beam_containers::LandmarkMeasurement<int>> FeatureTrack;
-typedef beam_containers::LandmarkContainer<
-    beam_containers::LandmarkMeasurement<int>>
-    LMContainer;
 
 /** Image tracker class.
  * The Tracker class is templated on a feature detector, descriptor, and matcher
@@ -85,13 +82,13 @@ public:
    * @param landmark_id to retrieve
    * @return the pixel of the landmark at time t
    */
-  Eigen::Vector2d Get(const ros::Time& t, uint64_t landmark_id) const;
+  Eigen::Vector2d Get(const ros::Time& t, uint32_t landmark_id) const;
 
   /** @brief Get all landmark ids in a given image at time t
    * @param now timestamp of image
    * @return the vector landmark ids
    */
-  std::vector<uint64_t> GetLandmarkIDsInImage(
+  std::vector<uint32_t> GetLandmarkIDsInImage(
       const ros::Time& now,
       ros::Duration threshold = ros::Duration(0.000001)) const;
 
@@ -99,7 +96,7 @@ public:
    * @param landmark_id to get track of
    * @return the vector of landmark measurements
    */
-  FeatureTrack GetTrack(uint64_t landmark_id);
+  FeatureTrack GetTrack(uint32_t landmark_id);
 
   std::shared_ptr<beam_cv::Detector> detector;
   std::shared_ptr<beam_cv::Descriptor> descriptor;
@@ -130,7 +127,8 @@ private:
   std::map<size_t, ros::Time> img_times_;
 
   // Measurement container variables
-  LMContainer landmarks_;
+  beam_containers::LandmarkContainer<beam_containers::LandmarkMeasurement<int>>
+      landmarks_;
 
   // The sensor ID. TODO: Expand this for use with multiple cams.
   int sensor_id_ = 0;
@@ -138,8 +136,8 @@ private:
   /** @brief Generate a new ID for each newly detected feature.
    * @return the assigned ID.
    */
-  uint64_t GenerateFeatureID() const {
-    static uint64_t id = 0;
+  uint32_t GenerateFeatureID() const {
+    static uint32_t id = 0;
     return id++;
   }
 

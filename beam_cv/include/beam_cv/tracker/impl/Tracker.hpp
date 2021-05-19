@@ -172,21 +172,23 @@ std::vector<std::vector<FeatureTrack>>
   return feature_tracks;
 }
 
-Eigen::Vector2d Tracker::Get(const ros::Time& t, uint64_t landmark_id) const {
+Eigen::Vector2d Tracker::Get(const ros::Time& t, uint32_t landmark_id) const {
   return this->landmarks_.Get(t, this->sensor_id_, landmark_id);
 }
 
-std::vector<uint64_t>
+std::vector<uint32_t>
     Tracker::GetLandmarkIDsInImage(const ros::Time& now,
                                    ros::Duration threshold) const {
   return this->landmarks_.GetLandmarkIDsInWindow(now - threshold,
                                                  now + threshold);
 }
 
-FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
+FeatureTrack Tracker::GetTrack(uint32_t landmark_id) {
+  ros::Time start_time = (this->img_times_.begin())->second;
+  auto img_count = this->img_times_.size();
+  ros::Time end_time = this->img_times_[img_count - 1];
   return this->landmarks_.GetTrackInWindow(this->sensor_id_, landmark_id,
-                                           ros::Time(0),
-                                           img_times_[this->img_times_.size()]);
+                                           start_time, end_time);
 }
 
 cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
