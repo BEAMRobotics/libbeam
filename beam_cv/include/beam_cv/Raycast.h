@@ -14,7 +14,6 @@
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_containers/PointBridge.h>
-#include <beam_depth/Utils.h>
 #include <beam_utils/utils.h>
 
 #include <functional>

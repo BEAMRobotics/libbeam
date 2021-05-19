@@ -64,10 +64,10 @@ INSTALL(TARGETS beam EXPORT beamTargets)
 # Modules with missing dependencies are not built, and circular dependencies are
 # not supported. Thus modules must be listed after their dependencies, for now.
 ADD_SUBDIRECTORY(beam_calibration)
-#ADD_SUBDIRECTORY(beam_colorize)
+ADD_SUBDIRECTORY(beam_colorize)
 ADD_SUBDIRECTORY(beam_cv)
-#ADD_SUBDIRECTORY(beam_defects)
-#ADD_SUBDIRECTORY(beam_depth)
+ADD_SUBDIRECTORY(beam_defects)
+ADD_SUBDIRECTORY(beam_depth)
 ADD_SUBDIRECTORY(beam_utils)
 ADD_SUBDIRECTORY(beam_containers)
 ADD_SUBDIRECTORY(beam_filtering)
