@@ -24,12 +24,12 @@ void Tracker::PurgeContainer(const int img) {
   }
 }
 
-std::map<int, size_t>
+std::map<int, uint64_t>
     Tracker::RegisterKeypoints(const std::vector<cv::KeyPoint>& curr_kp,
                                const cv::Mat& curr_desc,
                                const std::vector<cv::DMatch>& matches) {
   // Maps current keypoint indices to IDs
-  std::map<int, size_t> curr_ids;
+  std::map<int, uint64_t> curr_ids;
 
   for (const auto& m : matches) {
     // Check to see if ID has already been assigned to keypoint
@@ -90,7 +90,7 @@ std::map<int, size_t>
 }
 
 // Public Functions
-std::vector<FeatureTrack> Tracker::GetTracks(const size_t img_num) const {
+std::vector<FeatureTrack> Tracker::GetTracks(const uint64_t img_num) const {
   std::vector<FeatureTrack> feature_tracks;
   // Determine how many images have been added
   size_t img_count = this->img_times_.size() - 1;
@@ -132,7 +132,7 @@ void Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
     cv::Mat curr_desc;
     std::vector<cv::DMatch> matches;
     // Variables for bookkeeping
-    std::map<int, size_t> curr_ids;
+    std::map<int, uint64_t> curr_ids;
     // Detect, describe, and match keypoints
     this->DetectAndCompute(image, curr_kp, curr_desc);
     matches = this->matcher->MatchDescriptors(this->prev_desc_, curr_desc,
@@ -172,18 +172,18 @@ std::vector<std::vector<FeatureTrack>>
   return feature_tracks;
 }
 
-Eigen::Vector2d Tracker::Get(const ros::Time& t, uint32_t landmark_id) const {
+Eigen::Vector2d Tracker::Get(const ros::Time& t, uint64_t landmark_id) const {
   return this->landmarks_.Get(t, this->sensor_id_, landmark_id);
 }
 
-std::vector<uint32_t>
+std::vector<uint64_t>
     Tracker::GetLandmarkIDsInImage(const ros::Time& now,
                                    ros::Duration threshold) const {
   return this->landmarks_.GetLandmarkIDsInWindow(now - threshold,
                                                  now + threshold);
 }
 
-FeatureTrack Tracker::GetTrack(uint32_t landmark_id) {
+FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
   ros::Time start_time = (this->img_times_.begin())->second;
   auto img_count = this->img_times_.size();
   ros::Time end_time = this->img_times_[img_count - 1];
