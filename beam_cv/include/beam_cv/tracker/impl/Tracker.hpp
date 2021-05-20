@@ -183,6 +183,12 @@ std::vector<uint64_t>
                                                  now + threshold);
 }
 
+std::vector<uint64_t>
+    Tracker::GetLandmarkIDsInWindow(const ros::Time& start,
+                                    const ros::Time& end) const {
+  return this->landmarks_.GetLandmarkIDsInWindow(start, end);
+}
+
 FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
   ros::Time start_time = (this->img_times_.begin())->second;
   auto img_count = this->img_times_.size();
