@@ -92,6 +92,14 @@ public:
       const ros::Time& now,
       ros::Duration threshold = ros::Duration(0.000001)) const;
 
+  /** @brief Get all landmark ids in a given time window
+   * @param start timestamp of start
+   * @param end timestamp of end
+   * @return the vector landmark ids
+   */
+  std::vector<uint64_t> GetLandmarkIDsInWindow(const ros::Time& start,
+                                               const ros::Time& end) const;
+
   /** @brief Get feature track of a given landmark
    * @param landmark_id to get track of
    * @return the vector of landmark measurements
@@ -131,7 +139,7 @@ private:
       landmarks_;
 
   // The sensor ID. TODO: Expand this for use with multiple cams.
-  int sensor_id_ = 0;
+  uint8_t sensor_id_ = 0;
 
   /** @brief Generate a new ID for each newly detected feature.
    * @return the assigned ID.
