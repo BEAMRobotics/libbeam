@@ -45,8 +45,7 @@ TEST_CASE("Test adding images to tracker.") {
   float elapsed = beam::toc(&t);
   BEAM_INFO("Adding image to window (size 10): {} seconds", elapsed);
 
-  std::vector<std::vector<beam_containers::LandmarkMeasurement<int>>>
-      feature_tracks;
+  std::vector<beam_cv::FeatureTrack> feature_tracks;
   REQUIRE_THROWS(feature_tracks = tracker.GetTracks(11));
   REQUIRE_NOTHROW(feature_tracks = tracker.GetTracks(5));
 }
