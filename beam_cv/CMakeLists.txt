@@ -27,6 +27,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/detectors/SIFTDetector.cpp
     src/detectors/GFTTDetector.cpp
     src/matchers/FLANNMatcher.cpp
+    src/matchers/BFMatcher.cpp
 )
 
 ############# Test files #############

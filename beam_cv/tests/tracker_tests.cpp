@@ -9,13 +9,14 @@
 #include <beam_utils/filesystem.h>
 #include <beam_utils/time.h>
 
-std::shared_ptr<beam_cv::Matcher> matcher =
-    std::make_shared<beam_cv::FLANNMatcher>(beam_cv::FLANN::KDTree, 0.8, true,
-                                            true, cv::FM_RANSAC, 5);
+std::shared_ptr<beam_cv::Matcher> matcher1 =
+    std::make_shared<beam_cv::FLANNMatcher>();
+std::shared_ptr<beam_cv::Matcher> matcher2 =
+    std::make_shared<beam_cv::BFMatcher>();
 std::shared_ptr<beam_cv::Descriptor> descriptor =
     std::make_shared<beam_cv::ORBDescriptor>();
 std::shared_ptr<beam_cv::Detector> detector =
-    std::make_shared<beam_cv::FASTDetector>(300);
+    std::make_shared<beam_cv::GFTTDetector>(500);
 
 std::vector<cv::Mat> ReadImageSequence() {
   std::string libbeam_root = beam::LibbeamRoot();
@@ -31,10 +32,10 @@ std::vector<cv::Mat> ReadImageSequence() {
   return images;
 }
 
-TEST_CASE("Test adding images to tracker.") {
+TEST_CASE("Test adding images to tracker - FLANN Matcher.") {
   std::vector<cv::Mat> images = ReadImageSequence();
   ros::Time::init();
-  beam_cv::Tracker tracker(detector, descriptor, matcher, 10);
+  beam_cv::Tracker tracker(detector, descriptor, matcher1, 10);
   for (int i = 0; i < 10; i++) {
     tracker.AddImage(images[i], ros::Time::now());
   }
@@ -43,7 +44,26 @@ TEST_CASE("Test adding images to tracker.") {
   beam::tic(&t);
   tracker.AddImage(images[10], ros::Time::now());
   float elapsed = beam::toc(&t);
-  BEAM_INFO("Adding image to window (size 10): {} seconds", elapsed);
+  BEAM_INFO("Adding image to window (FLANN): {} seconds", elapsed);
+
+  std::vector<beam_cv::FeatureTrack> feature_tracks;
+  REQUIRE_THROWS(feature_tracks = tracker.GetTracks(11));
+  REQUIRE_NOTHROW(feature_tracks = tracker.GetTracks(5));
+}
+
+TEST_CASE("Test adding images to tracker - Brute Force Matcher.") {
+  std::vector<cv::Mat> images = ReadImageSequence();
+  ros::Time::init();
+  beam_cv::Tracker tracker(detector, descriptor, matcher2, 10);
+  for (int i = 0; i < 10; i++) {
+    tracker.AddImage(images[i], ros::Time::now());
+  }
+
+  struct timespec t;
+  beam::tic(&t);
+  tracker.AddImage(images[10], ros::Time::now());
+  float elapsed = beam::toc(&t);
+  BEAM_INFO("Adding image to window (BRUTE FORCE): {} seconds", elapsed);
 
   std::vector<beam_cv::FeatureTrack> feature_tracks;
   REQUIRE_THROWS(feature_tracks = tracker.GetTracks(11));
