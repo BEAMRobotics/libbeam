@@ -10,6 +10,7 @@
 
 #include <beam_calibration/Radtan.h>
 #include <beam_utils/math.h>
+#include <beam_utils/time.h>
 
 std::shared_ptr<beam_calibration::CameraModel> cam;
 
@@ -121,12 +122,16 @@ TEST_CASE("Refine given perturbed pixels and points, perturbed pose.") {
   int pixel_pert = 2;
   double point_pert = .05;
   PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
-
+  struct timespec t;
+  beam::tic(&t);
   // refine pose
   beam_cv::PoseRefinement refiner;
   std::string report;
   Eigen::Matrix4d pose =
       refiner.RefinePose(estimate, cam, pixels, points, report);
+  float elapsed = beam::toc(&t);
+  std::cout << elapsed << std::endl;
+  BEAM_INFO("Pose Refinement Time: {}", elapsed);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-2));

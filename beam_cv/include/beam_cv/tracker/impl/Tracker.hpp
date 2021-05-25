@@ -119,6 +119,54 @@ std::vector<FeatureTrack> Tracker::GetTracks(const uint64_t img_num) const {
   return feature_tracks;
 }
 
+bool Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time,
+                       std::map<uint64_t, Eigen::Vector2d>& matched_landmarks,
+                       int match_threshold) {
+  // Check if this is the first image being tracked.
+  if (this->img_times_.size() == 0) {
+    // Register the time this image
+    this->TimestampImage(current_time);
+    // Detect features within first image. No tracks can be generated yet.
+    this->DetectAndCompute(image, this->prev_kp_, this->prev_desc_);
+  } else {
+    // Variables for feature detection, description, and matching
+    std::vector<cv::KeyPoint> curr_kp;
+    cv::Mat curr_desc;
+    std::vector<cv::DMatch> matches;
+    // Variables for bookkeeping
+    std::map<int, uint64_t> curr_ids;
+    // Detect, describe, and match keypoints
+    this->DetectAndCompute(image, curr_kp, curr_desc);
+    matches = this->matcher->MatchDescriptors(this->prev_desc_, curr_desc,
+                                              this->prev_kp_, curr_kp);
+    // if matches drop below threshold, then register image
+    if (matches.size() <= match_threshold) {
+      // Register the time this image
+      this->TimestampImage(current_time);
+      // Register keypoints with IDs, and store Landmarks in container
+      curr_ids = this->RegisterKeypoints(curr_kp, curr_desc, matches);
+      // Set previous ID map to be the current one, and reset
+      this->prev_ids_.swap(curr_ids);
+      // Update previous keypoints and descriptors
+      this->prev_kp_ = curr_kp;
+      this->prev_desc_ = curr_desc;
+      return true;
+    } else {
+      // otherwise retrieve all the landmarks the current image sees, and where
+      // it sees them
+      matched_landmarks.clear();
+      for (const auto& m : matches) {
+        // Check to see if ID has already been assigned to keypoint
+        if (this->prev_ids_.count(m.queryIdx)) {
+          auto id = this->prev_ids_.at(m.queryIdx);
+          matched_landmarks[id] = ConvertKeypoint(curr_kp.at(m.trainIdx));
+        }
+      }
+      return false;
+    }
+  }
+}
+
 void Tracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
   // Check if this is the first image being tracked.
   if (this->img_times_.size() == 0) {
