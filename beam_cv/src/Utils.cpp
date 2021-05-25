@@ -230,22 +230,26 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
   int inliers = 0;
   // reproject triangulated points and find their error
   for (size_t i = 0; i < points.size(); i++) {
-    // transform points into each camera frame
-    Eigen::Vector4d pt_h;
-    pt_h << points[i].value()[0], points[i].value()[1], points[i].value()[2], 1;
-    Eigen::Vector4d pt_h_1 = T_cam1_world * pt_h, pt_h_2 = T_cam2_world * pt_h;
-    Eigen::Vector3d pt1 = pt_h_1.head(3) / pt_h_1(3);
-    Eigen::Vector3d pt2 = pt_h_2.head(3) / pt_h_2(3);
-    // reproject triangulated points into each frame
-    beam::opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
-    beam::opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
-    if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
-    // compute distance to actual pixel
-    Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
-    Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
-    double dist_1 = beam::distance(p1_rep.value(), p1_d);
-    double dist_2 = beam::distance(p2_rep.value(), p2_d);
-    if (dist_1 < inlier_threshold && dist_2 < inlier_threshold) { inliers++; }
+    if (points[i].has_value()) {
+      // transform points into each camera frame
+      Eigen::Vector4d pt_h;
+      pt_h << points[i].value()[0], points[i].value()[1], points[i].value()[2],
+          1;
+      Eigen::Vector4d pt_h_1 = T_cam1_world * pt_h,
+                      pt_h_2 = T_cam2_world * pt_h;
+      Eigen::Vector3d pt1 = pt_h_1.head(3) / pt_h_1(3);
+      Eigen::Vector3d pt2 = pt_h_2.head(3) / pt_h_2(3);
+      // reproject triangulated points into each frame
+      beam::opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
+      beam::opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
+      if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
+      // compute distance to actual pixel
+      Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
+      Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
+      double dist_1 = beam::distance(p1_rep.value(), p1_d);
+      double dist_2 = beam::distance(p2_rep.value(), p2_d);
+      if (dist_1 < inlier_threshold && dist_2 < inlier_threshold) { inliers++; }
+    }
   }
   return inliers;
 }
