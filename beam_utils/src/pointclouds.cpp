@@ -42,75 +42,72 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
   return cloud;
 }
 
-PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
-                                 uint8_t g, uint8_t b) {
-  PointCloudColPtr cloud_col = std::make_shared<PointCloudCol>();
-  for (auto it = cloud->begin(); it != cloud->end(); it++) {
+PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
+                              uint8_t b) {
+  PointCloudCol cloud_col;
+  for (uint32_t i = 0; i < cloud.size(); i++) {
+    auto& p_in = cloud[i];
     pcl::PointXYZRGB p;
-    p.x = it->x;
-    p.y = it->y;
-    p.z = it->z;
+    p.x = p_in.x;
+    p.y = p_in.y;
+    p.z = p_in.z;
     p.r = r;
     p.g = g;
     p.b = b;
-    cloud_col->points.push_back(p);
+    cloud_col.points.push_back(p);
   }
   return cloud_col;
 }
 
-PointCloudColPtr AddFrameToCloud(const PointCloudColPtr& cloud,
-                                 const PointCloudColPtr& frame,
-                                 const Eigen::Matrix4d& T) {
-  PointCloudColPtr cloud_out = std::make_shared<PointCloudCol>();
-  if (T.isIdentity()) {
-    *cloud_out += *frame;
-  } else {
-    pcl::transformPointCloud(*frame, *cloud_out, T);
-  }
-  *cloud_out += *cloud;
-  return cloud_out;
-}
-
-PointCloudPtr AddFrameToCloud(const PointCloudPtr& cloud,
-                              const PointCloudPtr& frame,
+PointCloudCol AddFrameToCloud(const PointCloudCol& cloud,
+                              const PointCloudCol& frame,
                               const Eigen::Matrix4d& T) {
-  PointCloudPtr cloud_out = std::make_shared<PointCloud>();
+  PointCloudCol cloud_out;
   if (T.isIdentity()) {
-    *cloud_out += *frame;
+    cloud_out += frame;
   } else {
-    pcl::transformPointCloud(*frame, *cloud_out, T);
+    pcl::transformPointCloud(frame, cloud_out, T);
   }
-  *cloud_out += *cloud;
+  cloud_out += cloud;
   return cloud_out;
 }
 
-PointCloudColPtr AddFrameToCloud(const PointCloudColPtr& cloud,
-                                 const Eigen::Matrix4d& T, double increment,
-                                 double length) {
-  PointCloudColPtr frame = std::make_shared<PointCloudCol>();
-  *frame = CreateFrameCol(increment, length);
-  PointCloudColPtr cloud_out = std::make_shared<PointCloudCol>();
+PointCloud AddFrameToCloud(const PointCloud& cloud, const PointCloud& frame,
+                           const Eigen::Matrix4d& T) {
+  PointCloud cloud_out;
   if (T.isIdentity()) {
-    *cloud_out += *frame;
+    cloud_out += frame;
   } else {
-    pcl::transformPointCloud(*frame, *cloud_out, T);
+    pcl::transformPointCloud(frame, cloud_out, T);
   }
-  *cloud_out += *cloud;
+  cloud_out += cloud;
   return cloud_out;
 }
 
-PointCloudPtr AddFrameToCloud(const PointCloudPtr& cloud,
+PointCloudCol AddFrameToCloud(const PointCloudCol& cloud,
                               const Eigen::Matrix4d& T, double increment,
                               double length) {
-  PointCloudPtr frame =
-      std::make_shared<PointCloud>(CreateFrame(increment, length));
-  PointCloudPtr cloud_out = std::make_shared<PointCloud>();
+  PointCloudCol frame = CreateFrameCol(increment, length);
+  PointCloudCol cloud_out;
   if (T.isIdentity()) {
-    *cloud_out += *frame;
+    cloud_out += frame;
   } else {
-    pcl::transformPointCloud(*frame, *cloud_out, T);
+    pcl::transformPointCloud(frame, cloud_out, T);
   }
-  *cloud_out += *cloud;
+  cloud_out += cloud;
+  return cloud_out;
+}
+
+PointCloud AddFrameToCloud(const PointCloud& cloud, const Eigen::Matrix4d& T,
+                           double increment, double length) {
+  PointCloud frame = CreateFrame(increment, length);
+  PointCloud cloud_out;
+  if (T.isIdentity()) {
+    cloud_out += frame;
+  } else {
+    pcl::transformPointCloud(frame, cloud_out, T);
+  }
+  cloud_out += cloud;
   return cloud_out;
 }
 
@@ -141,6 +138,53 @@ PointCloudCol CreateFrameCol(double increment, double length) {
   pointX.r = 255;
   pointY.g = 255;
   pointZ.b = 255;
+  while (cur_length < length) {
+    pointX.x = cur_length;
+    pointY.y = cur_length;
+    pointZ.z = cur_length;
+    frame.push_back(pointX);
+    frame.push_back(pointY);
+    frame.push_back(pointZ);
+    cur_length += increment;
+  }
+  return frame;
+}
+
+pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t, double increment, double length) {
+  pcl::PointCloud<pcl::PointXYZL> frame;
+  double cur_length{0};
+  pcl::PointXYZL pointX(0, 0, 0);
+  pcl::PointXYZL pointY(0, 0, 0);
+  pcl::PointXYZL pointZ(0, 0, 0);
+  pointX.label = t.toSec();
+  pointY.label = t.toSec();
+  pointZ.label = t.toSec();
+
+  while (cur_length < length) {
+    pointX.x = cur_length;
+    pointY.y = cur_length;
+    pointZ.z = cur_length;
+    frame.push_back(pointX);
+    frame.push_back(pointY);
+    frame.push_back(pointZ);
+    cur_length += increment;
+  }
+  return frame;
+}
+
+pcl::PointCloud<pcl::PointXYZRGBL> CreateFrameCol(const ros::Time& t, double increment, double length) {
+  pcl::PointCloud<pcl::PointXYZRGBL> frame;
+  double cur_length{0};
+  pcl::PointXYZRGBL pointX;
+  pcl::PointXYZRGBL pointY;
+  pcl::PointXYZRGBL pointZ;
+  pointX.r = 255;
+  pointY.g = 255;
+  pointZ.b = 255;
+  pointX.label = t.toSec();
+  pointY.label = t.toSec();
+  pointZ.label = t.toSec();
+  
   while (cur_length < length) {
     pointX.x = cur_length;
     pointY.y = cur_length;

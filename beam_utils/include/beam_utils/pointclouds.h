@@ -65,8 +65,8 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg,
  * @param b blue color intensity
  * @return colored pointcloud
  */
-PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
-                                 uint8_t g, uint8_t b);
+PointCloudCol ColorPointCloud(const PointCloudCol& cloud, uint8_t r, uint8_t g,
+                              uint8_t b);
 
 /**
  * @brief Add a coordinate frame (built a prebuilt pointcloud) to a color pcl
@@ -77,9 +77,8 @@ PointCloudColPtr ColorPointCloud(const PointCloudPtr& cloud, uint8_t r,
  * reference frame
  * @return pointcloud containing frame
  */
-PointCloudColPtr
-    AddFrameToCloud(const PointCloudColPtr& cloud,
-                    const PointCloudColPtr& frame,
+PointCloudCol
+    AddFrameToCloud(const PointCloudCol& cloud, const PointCloudCol& frame,
                     const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
 /**
@@ -91,8 +90,8 @@ PointCloudColPtr
  * reference frame
  * @return pointcloud containing frame
  */
-PointCloudPtr
-    AddFrameToCloud(const PointCloudPtr& cloud, const PointCloudPtr& frame,
+PointCloud
+    AddFrameToCloud(const PointCloud& cloud, const PointCloud& frame,
                     const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
 /**
@@ -106,8 +105,8 @@ PointCloudPtr
  * @param length frame length in meters
  * @return color pointcloud containing frame
  */
-PointCloudColPtr
-    AddFrameToCloud(const PointCloudColPtr& cloud,
+PointCloudCol
+    AddFrameToCloud(const PointCloudCol& cloud,
                     const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity(),
                     double increment = 0.01, double length = 0.3);
 
@@ -121,8 +120,8 @@ PointCloudColPtr
  * @param length frame length in meters
  * @return pointcloud containing frame
  */
-PointCloudPtr
-    AddFrameToCloud(const PointCloudPtr& cloud,
+PointCloud
+    AddFrameToCloud(const PointCloud& cloud,
                     const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity(),
                     double increment = 0.01, double length = 0.3);
 
@@ -135,7 +134,7 @@ PointCloudPtr
 PointCloud CreateFrame(double increment = 0.01, double length = 0.3);
 
 /**
- * @brief Build a coordinate frame of points.  The coordinate frame will be
+ * @brief Build a coordinate frame of points. The coordinate frame will be
  * colored RGB for frames XYZ, respectively.
  * @param increment distance between points in the frame, in meters
  * @param length frame length in meters
@@ -143,29 +142,48 @@ PointCloud CreateFrame(double increment = 0.01, double length = 0.3);
  */
 PointCloudCol CreateFrameCol(double increment = 0.01, double length = 0.3);
 
-/** 
+/**
+ * @brief Build a coordinate frame of points with timestamp as a label.
+ * @param t timestamp to add to the point labels
+ * @param increment distance between points in the frame, in meters
+ * @param length frame length in meters
+ * @return pointcloud frame
+ */
+pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
+                                            double increment, double length);
+
+/**
+ * @brief Build a coordinate frame of points with timestamp as a label. The
+ * coordinate frame will be colored RGB for frames XYZ, respectively.
+ * @param t timestamp to add to the point labels
+ * @param increment distance between points in the frame, in meters
+ * @param length frame length in meters
+ * @return colored pointcloud frame
+ */
+pcl::PointCloud<pcl::PointXYZRGBL>
+    CreateFrameCol(const ros::Time& t, double increment, double length);
+
+/**
  * @brief Calculate the absolute distance of the point to the origin.
  * @param p The point.
  * @return The distance to the point.
  */
 template <typename PointT>
-inline float PointDistance(const PointT& p)
-{
+inline float PointDistance(const PointT& p) {
   return std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
 }
 
-/** 
+/**
  * @brief Calculate the squared distance of the point to the origin.
  * @param p The point.
  * @return The squared distance to the point.
  */
 template <typename PointT>
-inline float SquaredPointDistance(const PointT& p)
-{
+inline float SquaredPointDistance(const PointT& p) {
   return p.x * p.x + p.y * p.y + p.z * p.z;
 }
 
-/** 
+/**
  * @brief Calculate the squared difference of the given two points.
  * @param a The first point.
  * @param b The second point.
@@ -173,8 +191,7 @@ inline float SquaredPointDistance(const PointT& p)
  * @return The squared difference between point a and b.
  */
 template <typename PointT>
-inline float SquaredDiff(const PointT& a, const PointT& b, const float& wb)
-{
+inline float SquaredDiff(const PointT& a, const PointT& b, const float& wb) {
   float diffX = a.x - b.x * wb;
   float diffY = a.y - b.y * wb;
   float diffZ = a.z - b.z * wb;
@@ -182,15 +199,14 @@ inline float SquaredDiff(const PointT& a, const PointT& b, const float& wb)
   return diffX * diffX + diffY * diffY + diffZ * diffZ;
 }
 
-/** 
+/**
  * @brief Calculate the squared difference of the given two points.
  * @param a The first point.
  * @param b The second point.
  * @return The squared difference between point a and b.
  */
 template <typename PointT>
-inline float SquaredDiff(const PointT& a, const PointT& b)
-{
+inline float SquaredDiff(const PointT& a, const PointT& b) {
   float diffX = a.x - b.x;
   float diffY = a.y - b.y;
   float diffZ = a.z - b.z;
