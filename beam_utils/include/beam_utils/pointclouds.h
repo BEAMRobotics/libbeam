@@ -150,7 +150,8 @@ PointCloudCol CreateFrameCol(double increment = 0.01, double length = 0.3);
  * @return pointcloud frame
  */
 pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
-                                            double increment, double length);
+                                            double increment = 0.01,
+                                            double length = 0.3);
 
 /**
  * @brief Build a coordinate frame of points with timestamp as a label. The
@@ -160,8 +161,9 @@ pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
  * @param length frame length in meters
  * @return colored pointcloud frame
  */
-pcl::PointCloud<pcl::PointXYZRGBL>
-    CreateFrameCol(const ros::Time& t, double increment, double length);
+pcl::PointCloud<pcl::PointXYZRGBL> CreateFrameCol(const ros::Time& t,
+                                                  double increment = 0.01,
+                                                  double length = 0.3);
 
 /**
  * @brief Calculate the absolute distance of the point to the origin.
