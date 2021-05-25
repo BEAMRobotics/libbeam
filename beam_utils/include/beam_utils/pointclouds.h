@@ -65,7 +65,7 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg,
  * @param b blue color intensity
  * @return colored pointcloud
  */
-PointCloudCol ColorPointCloud(const PointCloudCol& cloud, uint8_t r, uint8_t g,
+PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
                               uint8_t b);
 
 /**
