@@ -218,7 +218,11 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       BEAM_CRITICAL("Five point algorithm not yet implemented.");
       return {};
     }
-
+    /*
+      1. Directly compute inliers from the essential matrix (distance from point
+      to its epipolar line) to store the best essential matrix
+      2. at the end, recover the pose
+    */
     for (auto& E : Evec) {
       std::vector<Eigen::Matrix3d> R;
       std::vector<Eigen::Vector3d> t;
