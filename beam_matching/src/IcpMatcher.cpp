@@ -9,14 +9,12 @@
 
 #include <beam_utils/log.h>
 
-using json = nlohmann::json;
-
 namespace beam_matching {
 
-IcpMatcherParams::IcpMatcherParams(std::string& param_config) {
+IcpMatcher::Params::Params(const std::string& param_config) {
   BEAM_INFO("Loading ICP matcher config file: {}", param_config.c_str());
 
-  json J;
+  nlohmann::json J;
   std::ifstream file(param_config);
   file >> J;
 
@@ -40,7 +38,7 @@ IcpMatcherParams::IcpMatcherParams(std::string& param_config) {
   }
 }
 
-IcpMatcher::IcpMatcher(IcpMatcherParams params) : params_(params) {
+IcpMatcher::IcpMatcher(Params params) : params_(params) {
   SetIcpParams();
 }
 
@@ -56,7 +54,7 @@ IcpMatcher::~IcpMatcher() {
   if (this->final_) { this->final_.reset(); }
 }
 
-void IcpMatcher::SetParams(IcpMatcherParams params) {
+void IcpMatcher::SetParams(Params params) {
   this->params_ = params;
   SetIcpParams();
 }

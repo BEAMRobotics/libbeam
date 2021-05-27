@@ -7,14 +7,12 @@
 
 #include <beam_utils/log.h>
 
-using json = nlohmann::json;
-
 namespace beam_matching {
 
-GicpMatcherParams::GicpMatcherParams(const std::string& config_path) {
+GicpMatcher::Params::Params(const std::string& config_path) {
   BEAM_INFO("Loading GICP matcher file: {}", config_path.c_str());
 
-  json J;
+  nlohmann::json J;
   std::ifstream file(config_path);
   file >> J;
 
@@ -25,11 +23,11 @@ GicpMatcherParams::GicpMatcherParams(const std::string& config_path) {
   this->res = J["res"];
 }
 
-GicpMatcher::GicpMatcher(const GicpMatcherParams params) : params_(params) {
+GicpMatcher::GicpMatcher(const Params params) : params_(params) {
   SetGicpParams();
 }
 
-void GicpMatcher::SetParams(const GicpMatcherParams params) {
+void GicpMatcher::SetParams(const Params params) {
   this->params_ = params;
   SetGicpParams();
 }

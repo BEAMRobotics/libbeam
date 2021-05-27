@@ -29,19 +29,19 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-struct NdtMatcherParams {
-  NdtMatcherParams(const std::string& config_path);
-  NdtMatcherParams() {}
-
-  int step_size = 3;
-  int max_iter = 100;
-  double t_eps = 1e-8;
-  float res = 5;
-  float min_res = 0.05f;
-};
-
 class NdtMatcher : public Matcher<PointCloudPtr> {
 public:
+  struct Params {
+    Params(const std::string& config_path);
+    Params() {}
+
+    int step_size{3};
+    int max_iter{100};
+    double t_eps{1e-8};
+    float res{5};
+    float min_res{0.05f};
+  };
+
   NdtMatcher() = default;
 
   /**
@@ -50,20 +50,20 @@ public:
    * both resolutions are finer than the `min_res` class member, the
    * resolution is set to `min_res.`
    */
-  explicit NdtMatcher(NdtMatcherParams params);
+  explicit NdtMatcher(Params params);
   ~NdtMatcher();
 
   /**
    * @brief sets the parameters for the matcher
-   * @param params - NdtMatcherParams
+   * @param params - NdtMatcher Params
    */
-  void SetParams(NdtMatcherParams params);
+  void SetParams(Params params);
 
   /**
    * @brief Gets the parameters for the matcher
-   * @return NdtMatcherParams
+   * @return NdtMatcher Params
    */
-  NdtMatcherParams GetParams() { return params_; }
+  Params GetParams() { return params_; }
 
   /**
    * @brief sets the reference pointcloud for the matcher
@@ -100,8 +100,10 @@ private:
   PointCloudPtr ref_;
   PointCloudPtr target_;
   PointCloudPtr final_;
-  NdtMatcherParams params_;
+  Params params_;
 };
+
+using NdtMatcherParams = NdtMatcher::Params;
 
 /** @} group matching */
 } // namespace beam_matching

@@ -7,14 +7,12 @@
 #include <beam_utils/utils.h>
 #include <beam_utils/log.h>
 
-using json = nlohmann::json;
-
 namespace beam_matching {
 
-NdtMatcherParams::NdtMatcherParams(const std::string &config_path) {
+NdtMatcher::Params::Params(const std::string &config_path) {
   BEAM_INFO("Loading NDT matcher config file: {}", config_path.c_str());
 
-  json J;
+  nlohmann::json J;
   std::ifstream file(config_path);
   file >> J;
 
@@ -24,7 +22,7 @@ NdtMatcherParams::NdtMatcherParams(const std::string &config_path) {
   this->res = J["res"];
 }
 
-NdtMatcher::NdtMatcher(NdtMatcherParams params) : params_(params) {
+NdtMatcher::NdtMatcher(Params params) : params_(params) {
   SetNdtParams();
 }
 
@@ -40,7 +38,7 @@ NdtMatcher::~NdtMatcher() {
     }
 }
 
-void NdtMatcher::SetParams(NdtMatcherParams params) {
+void NdtMatcher::SetParams(Params params) {
   this->params_ = params;
   SetNdtParams();
 }
