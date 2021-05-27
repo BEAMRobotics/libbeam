@@ -59,6 +59,17 @@ public:
   /** @brief Track features within an image (presumably the next in a sequence).
    * @param image the image to add.
    * @param current_time the time at which the image was captured
+   * @param matched_landmarks of the matches features to the current frame
+   * @param match_threshold maximum number of matches in order to be added to the tracker
+   * @return true/false if image was added to tracker or not
+   */
+  bool AddImage(const cv::Mat& image, const ros::Time& current_time,
+                std::map<uint64_t, Eigen::Vector2d>& matched_landmarks,
+                int match_threshold = 50);
+
+  /** @brief Track features within an image (presumably the next in a sequence).
+   * @param image the image to add.
+   * @param current_time the time at which the image was captured
    */
   void AddImage(const cv::Mat& image, const ros::Time& current_time);
 
