@@ -47,14 +47,14 @@ public:
     track and parallax threshold
     2. compute homography between the pair (use opencv, and also determine if pure rotation)
     3. if its not pure rotation, add the decomposed poses to the candidates
+        (check slamtools for how to check if pure rotation)
     4. if it is pure rotation then fail
-    5. compute essential matrix relative pose estimate, and add to candidates
+    5. compute essential matrix (use opencv, since images are rectified) and get candidate poses
     8. go through candidate poses and find best one (most inliers)
     9. store the triangulated landmarks
     10. add these poses to the pair of frames (identity + relative pose)
     11. go through every other frame, find 3d correspondences to get a pose from pnp
     12. run a bundle adjustment on the entire window
-
     */
   }
 

@@ -202,7 +202,7 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       pc_copy.erase(pc_copy.begin() + idx);
       n--;
     }
-    // perform pose estimation of the given method
+    // perform estimation of the given method
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
       beam::opt<Eigen::Matrix3d> E =
@@ -219,9 +219,10 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       return {};
     }
     /*
-      1. Directly compute inliers from the essential matrix (distance from point
+      1. Add flag determining if the correspondences are from rectified images or not
+      2. If rectified, directly compute inliers from the essential matrix (distance from point
       to its epipolar line) to store the best essential matrix
-      2. at the end, recover the pose
+      3. at the end, recover the pose
     */
     for (auto& E : Evec) {
       std::vector<Eigen::Matrix3d> R;
