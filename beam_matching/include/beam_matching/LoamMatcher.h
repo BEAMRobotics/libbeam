@@ -40,6 +40,8 @@ namespace beam_matching {
  */
 class LoamMatcher : public Matcher<LoamPointCloudPtr> {
 public:
+  using Params = LoamParams;
+  
   LoamMatcher();
 
   explicit LoamMatcher(const LoamParams& params);

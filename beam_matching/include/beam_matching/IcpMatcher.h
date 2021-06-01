@@ -27,49 +27,50 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-struct IcpMatcherParams {
-  IcpMatcherParams(std::string& param_config);
-  IcpMatcherParams() {}
-
-  /// Maximum distance to correspond points for icp
-  double max_corr = 3;
-
-  /// Maximum iterations of ICP
-  int max_iter = 100;
-
-  /// Transformation epsilon. Stopping criteria. If the transform changes by
-  /// less than this amount, stop
-  double t_eps = 1e-8;
-
-  /// Stopping criteria, if cost function decreases by less than this, stop
-  double fit_eps = 1e-2;
-
-  /// Angular variance for lidar sensor model. Used if Censi covariance
-  /// estimation is set
-  double lidar_ang_covar = 7.78e-9;
-
-  /// Linear variance for lidar sensor model. Used if Censi covariance
-  /// estimation is set
-  double lidar_lin_covar = 2.5e-4;
-
-  /// When set to more than 0, each match is performed multiple times from
-  /// a coarse to fine scale (in terms of voxel downsampling).
-  /// Each step doubles the resolution
-  int multiscale_steps = 0;
-
-  /// Voxel side length for downsampling. If set to 0, downsampling is
-  /// not performed. If multiscale matching is set, this is the resolution
-  /// of the final, fine-scale match
-  float res = 0.1;
-  enum covar_method : int {
-    LUM,
-    CENSI,
-    LUMold
-  } covar_estimator = covar_method::LUM;
-};
-
 class IcpMatcher : public Matcher<PointCloudPtr> {
 public:
+  struct Params {
+    Params(const std::string& param_config);
+    Params() {}
+
+    /// Maximum distance to correspond points for icp
+    double max_corr{3};
+
+    /// Maximum iterations of ICP
+    int max_iter{100};
+
+    /// Transformation epsilon. Stopping criteria. If the transform changes by
+    /// less than this amount, stop
+    double t_eps{1e-8};
+
+    /// Stopping criteria, if cost function decreases by less than this, stop
+    double fit_eps{1e-2};
+
+    /// Angular variance for lidar sensor model. Used if Censi covariance
+    /// estimation is set
+    double lidar_ang_covar{7.78e-9};
+
+    /// Linear variance for lidar sensor model. Used if Censi covariance
+    /// estimation is set
+    double lidar_lin_covar{2.5e-4};
+
+    /// When set to more than 0, each match is performed multiple times from
+    /// a coarse to fine scale (in terms of voxel downsampling).
+    /// Each step doubles the resolution
+    int multiscale_steps{0};
+
+    /// Voxel side length for downsampling. If set to 0, downsampling is
+    /// not performed. If multiscale matching is set, this is the resolution
+    /// of the final, fine-scale match
+    float res{0.1};
+    
+    enum covar_method : int {
+      LUM,
+      CENSI,
+      LUMold
+    } covar_estimator = covar_method::LUM;
+  };
+
   IcpMatcher() = default;
   /**
    * @brief This constructor takes an argument in order to adjust how much
@@ -77,15 +78,15 @@ public:
    * downsampled using a voxel filter, the argument is the edge length of
    * each voxel. If resolution is non-positive, no downsampling is used.
    */
-  explicit IcpMatcher(IcpMatcherParams params);
+  explicit IcpMatcher(Params params);
 
   ~IcpMatcher();
 
   /**
    * @brief sets the parameters for the matcher
-   * @param params - IcpMatcherParams
+   * @param params - IcpMatcher Params
    */
-  void SetParams(IcpMatcherParams params);
+  void SetParams(Params params);
 
   /**
    * @brief sets the reference pointcloud for the matcher
@@ -112,9 +113,9 @@ public:
 
   /**
    * @brief gets the parameters for the matcher
-   * @return IcpMatcherParams
+   * @return IcpMatcher Params
    */
-  IcpMatcherParams GetParams() { return params_; }
+  Params GetParams() { return params_; }
 
 private:
   /**
@@ -152,8 +153,10 @@ private:
   PointCloudPtr downsampled_ref_;
   PointCloudPtr downsampled_target_;
 
-  IcpMatcherParams params_;
+  Params params_;
 };
+
+using IcpMatcherParams = IcpMatcher::Params;
 
 /** @} group matching */
 } // namespace beam_matching

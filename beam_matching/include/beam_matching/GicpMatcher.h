@@ -2,7 +2,7 @@
  * @ingroup matching
  *
  * Wrapper of GICP in PCL
- * 
+ *
  */
 
 #pragma once
@@ -17,33 +17,33 @@ namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
 
-struct GicpMatcherParams {
-  GicpMatcherParams(const std::string& config_path);
-  GicpMatcherParams() {}
-
-  int corr_rand = 10;
-  int max_iter = 100;
-  double r_eps = 1e-8;
-  double fit_eps = 1e-2;
-  float res = 0.1;
-};
-
 class GicpMatcher : public Matcher<PointCloudPtr> {
 public:
+  struct Params {
+    Params(const std::string& config_path);
+    Params() {}
+
+    int corr_rand{10};
+    int max_iter{100};
+    double r_eps{1e-8};
+    double fit_eps{1e-2};
+    float res{0.1};
+  };
+
   GicpMatcher() = default;
-  explicit GicpMatcher(const GicpMatcherParams params);
+  explicit GicpMatcher(const Params params);
 
   /**
    * @brief sets the parameters for the matcher
-   * @param params - GicpMatcherParams
+   * @param params - GicpMatcher Params
    */
-  void SetParams(const GicpMatcherParams params);
+  void SetParams(const Params params);
 
   /**
    * @brief gets the parameters for the matcher
-   * @return GicpMatcherParams
+   * @return GicpMatcher Params
    */
-  GicpMatcherParams GetParams() { return params_; }
+  Params GetParams() { return params_; }
 
   /**
    * @brief sets the reference pointcloud for the matcher
@@ -74,8 +74,10 @@ private:
   PointCloudPtr ref_;
   PointCloudPtr target_;
   PointCloudPtr final_;
-  GicpMatcherParams params_;
+  Params params_;
 };
+
+using GicpMatcherParams = GicpMatcher::Params;
 
 /** @} group matching */
 } // namespace beam_matching
