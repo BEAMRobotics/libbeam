@@ -202,7 +202,7 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       pc_copy.erase(pc_copy.begin() + idx);
       n--;
     }
-    // perform pose estimation of the given method
+    // perform estimation of the given method
     std::vector<Eigen::Matrix3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
       beam::opt<Eigen::Matrix3d> E =

@@ -242,7 +242,7 @@ public:
 
   /** Get a list of all unique landmark IDs in the container */
   std::vector<LandmarkIdType> GetLandmarkIDs() const {
-    return this->GetLandmarkIDsInWindow(TimeType::min(), TimeType::max());
+    return this->GetLandmarkIDsInWindow(MeasurementType::MinTime(), MeasurementType::MaxTime());
   }
 
   /** @brief Get unique landmark IDs with measurements in the time window
@@ -272,7 +272,7 @@ public:
    * @return a vector of landmark measurements sorted by time
    */
   Track GetTrack(const SensorIdType& s, const LandmarkIdType& id) const {
-    return this->GetTrackInWindow(s, id, TimeType::min(), TimeType::max());
+    return this->GetTrackInWindow(s, id, MeasurementType::MinTime(), MeasurementType::MaxTime());
   };
 
   /** @brief Get a sequence of measurements of a landmark from one sensor, in

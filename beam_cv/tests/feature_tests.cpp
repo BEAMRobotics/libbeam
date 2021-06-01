@@ -94,7 +94,7 @@ TEST_CASE("Test feature matching: SIFT") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
       std::make_shared<beam_cv::SIFTDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
-      std::make_shared<beam_cv::SIFTDetector>(200);
+      std::make_shared<beam_cv::GFTTDetector>();
 
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
@@ -129,7 +129,7 @@ TEST_CASE("Test feature matching: BRISK") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
       std::make_shared<beam_cv::BRISKDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
-      std::make_shared<beam_cv::SIFTDetector>(200);
+      std::make_shared<beam_cv::GFTTDetector>();
 
   std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
   std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
