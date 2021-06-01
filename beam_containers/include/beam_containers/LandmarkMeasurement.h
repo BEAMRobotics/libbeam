@@ -39,6 +39,14 @@ struct LandmarkMeasurement {
         image{img},
         value{v},
         descriptor{desc} {}
+  
+  static ros::Time MinTime(){
+    return ros::TIME_MIN;
+  }
+
+  static ros::Time MaxTime(){
+    return ros::TIME_MAX;
+  }
 };
 
 } // namespace beam_containers
