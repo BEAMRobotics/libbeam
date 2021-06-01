@@ -56,18 +56,28 @@ public:
    */
   std::vector<FeatureTrack> GetTracks(const size_t img_num) const;
 
-  /** @brief Track features within an image (presumably the next in a sequence).
-   * @param image the image to add.
-   * @param current_time the time at which the image was captured
-   * @param matched_landmarks of the matches features to the current frame
-   * @param match_threshold maximum number of matches in order to be added to the tracker
-   * @return true/false if image was added to tracker or not
+  /** @brief Match a given image against the current image in tracker
+   * @param image the image to match against the currently stored one
+   * @param kp resulting keypoints in the image
+   * @param desc resulting sdescriptors in the image
+   * @return map of <keypoint index: landmark id>
    */
-  bool AddImage(const cv::Mat& image, const ros::Time& current_time,
-                std::map<uint64_t, Eigen::Vector2d>& matched_landmarks,
-                int match_threshold = 50);
+  std::map<int, uint64_t> Match(const cv::Mat& image,
+                                std::vector<cv::KeyPoint>& kp, cv::Mat& desc,
+                                std::vector<cv::DMatch>& matches);
 
-  /** @brief Track features within an image (presumably the next in a sequence).
+  /** @brief Register results of matching into the tracker
+   * @param current_time timestamp of image to register
+   * @param kp keypoints in the image
+   * @param desc descriptors in the image
+   * @param matches with the current top image
+   */
+  void Register(const ros::Time& current_time,
+                const std::vector<cv::KeyPoint>& kp, const cv::Mat& desc,
+                const std::vector<cv::DMatch>& matches);
+
+  /** @brief Track features within an image (presumably the next in a
+   * sequence).
    * @param image the image to add.
    * @param current_time the time at which the image was captured
    */
