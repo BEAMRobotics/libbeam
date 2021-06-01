@@ -124,13 +124,12 @@ std::map<int, uint64_t> Tracker::Match(const cv::Mat& image,
                                        cv::Mat& desc,
                                        std::vector<cv::DMatch>& matches) {
   std::map<int, uint64_t> ids;
-  // Check if this is the first image being tracked.
+  // return empty ids if its first image
   if (this->img_times_.size() == 0) {
-    // Detect features within first image. No tracks can be generated yet.
-    this->DetectAndCompute(image, this->prev_kp_, this->prev_desc_);
+    return ids;
   } else {
     // Detect, describe, and match keypoints
-    this->DetectAndCompute(image, curr_kp, curr_desc);
+    this->DetectAndCompute(image, kp, desc);
     matches = this->matcher->MatchDescriptors(this->prev_desc_, desc,
                                               this->prev_kp_, kp);
     // fill id map
@@ -147,6 +146,7 @@ std::map<int, uint64_t> Tracker::Match(const cv::Mat& image,
 void Tracker::Register(const ros::Time& current_time,
                        const std::vector<cv::KeyPoint>& kp, const cv::Mat& desc,
                        const std::vector<cv::DMatch>& matches) {
+  if (this->img_times_.size() == 0) { return; }
   // Register the time this image
   this->TimestampImage(current_time);
   // Register keypoints with IDs, and store Landmarks in container
