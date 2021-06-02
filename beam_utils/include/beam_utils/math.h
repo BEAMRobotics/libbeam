@@ -406,5 +406,14 @@ bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                      double angle_threshold_deg = 1,
                      double translation_threshold_m = 0.005);
 
+
+  /**
+   * @brief Converts an array of float containing a pose measurement [R | t] (of
+   * size 3 x 4) to a 4 x 4 Eigen Matrix
+   * @param v vector of size 3 x 4 = 12
+   * @return T 
+   */
+  Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
+
 /** @} group utils */
 } // namespace beam
