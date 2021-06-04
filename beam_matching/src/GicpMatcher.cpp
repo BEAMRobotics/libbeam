@@ -3,17 +3,39 @@
 #include <fstream>
 #include <iostream>
 
+#include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
 #include <beam_utils/log.h>
+#include <beam_utils/filesystem.h>
 
 namespace beam_matching {
 
 GicpMatcher::Params::Params(const std::string& config_path) {
-  BEAM_INFO("Loading GICP matcher file: {}", config_path.c_str());
+  std::string read_file = config_path;
+  if (config_path.empty()) {
+    return;
+  } else if (!boost::filesystem::exists(config_path)) {
+    BEAM_WARN("Invalid matcher config path, file does not exist, using "
+              "default. Input: {}",
+              config_path);
+    return;
+  } else if (config_path == "DEFAULT_PATH") {
+    std::string default_path = beam::LibbeamRoot();
+    default_path += "beam_matching/config/gicp.json";
+    if (!boost::filesystem::exists(default_path)) {
+      BEAM_WARN("Could not find default gicp config at: {}. Using "
+                "default params.",
+                default_path);
+      return;
+    }
+    read_file = default_path;
+  }
+
+  BEAM_INFO("Loading GICP matcher file: {}", read_file);
 
   nlohmann::json J;
-  std::ifstream file(config_path);
+  std::ifstream file(read_file);
   file >> J;
 
   this->corr_rand = J["corr_rand"];

@@ -6,16 +6,38 @@
 #include <Eigen/Geometry>
 #include <nlohmann/json.hpp>
 #include <pcl/search/impl/search.hpp>
+#include <boost/filesystem.hpp>
 
 #include <beam_utils/log.h>
+#include <beam_utils/filesystem.h>
 
 namespace beam_matching {
 
 IcpMatcher::Params::Params(const std::string& param_config) {
-  BEAM_INFO("Loading ICP matcher config file: {}", param_config.c_str());
+  std::string read_file = param_config;
+  if (param_config.empty()) {
+    return;
+  } else if (!boost::filesystem::exists(param_config)) {
+    BEAM_WARN("Invalid matcher config path, file does not exist, using "
+              "default. Input: {}",
+              param_config);
+    return;
+  } else if (param_config == "DEFAULT_PATH") {
+    std::string default_path = beam::LibbeamRoot();
+    default_path += "beam_matching/config/icp.json";
+    if (!boost::filesystem::exists(default_path)) {
+      BEAM_WARN("Could not find default icp config at: {}. Using "
+                "default params.",
+                default_path);
+      return;
+    }
+    read_file = default_path;
+  }
+
+  BEAM_INFO("Loading ICP matcher config file: {}", read_file);
 
   nlohmann::json J;
-  std::ifstream file(param_config);
+  std::ifstream file(read_file);
   file >> J;
 
   int covar_est_temp;
@@ -153,8 +175,8 @@ void IcpMatcher::EstimateInfo() {
 }
 
 // This is an implementation of the Haralick or Censi covariance approximation
-// for ICP. The core idea behind this is that the covariance of the cost f'n J wrt
-// optimization variable x is:
+// for ICP. The core idea behind this is that the covariance of the cost f'n J
+// wrt optimization variable x is:
 //    cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
 
 // Idea was taken from

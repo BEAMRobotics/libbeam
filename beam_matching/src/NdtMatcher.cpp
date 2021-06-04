@@ -2,18 +2,41 @@
 
 #include <fstream>
 #include <iostream>
+
 #include <nlohmann/json.hpp>
+#include <boost/filesystem.hpp>
 
 #include <beam_utils/utils.h>
 #include <beam_utils/log.h>
+#include <beam_utils/filesystem.h>
 
 namespace beam_matching {
 
-NdtMatcher::Params::Params(const std::string &config_path) {
-  BEAM_INFO("Loading NDT matcher config file: {}", config_path.c_str());
+NdtMatcher::Params::Params(const std::string& config_path) {
+  std::string read_file = config_path;
+  if (config_path.empty()) {
+    return;
+  } else if (!boost::filesystem::exists(config_path)) {
+    BEAM_WARN("Invalid matcher config path, file does not exist, using "
+              "default. Input: {}",
+              config_path);
+    return;
+  } else if (config_path == "DEFAULT_PATH") {
+    std::string default_path = beam::LibbeamRoot();
+    default_path += "beam_matching/config/ndt.json";
+    if (!boost::filesystem::exists(default_path)) {
+      BEAM_WARN("Could not find default ndt config at: {}. Using "
+                "default params.",
+                default_path);
+      return;
+    }
+    read_file = default_path;
+  }
+
+  BEAM_INFO("Loading NDT matcher config file: {}", read_file);
 
   nlohmann::json J;
-  std::ifstream file(config_path);
+  std::ifstream file(read_file);
   file >> J;
 
   this->step_size = J["step_size"];
@@ -27,15 +50,9 @@ NdtMatcher::NdtMatcher(Params params) : params_(params) {
 }
 
 NdtMatcher::~NdtMatcher() {
-    if (this->ref_) {
-        this->ref_.reset();
-    }
-    if (this->target_) {
-        this->target_.reset();
-    }
-    if (this->final_) {
-        this->final_.reset();
-    }
+  if (this->ref_) { this->ref_.reset(); }
+  if (this->target_) { this->target_.reset(); }
+  if (this->final_) { this->final_.reset(); }
 }
 
 void NdtMatcher::SetParams(Params params) {
@@ -49,8 +66,8 @@ void NdtMatcher::SetNdtParams() {
   this->final_ = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   if (this->params_.res < this->params_.min_res) {
-      LOG_ERROR("Invalid resolution given, using minimum");
-      this->params_.res = this->params_.min_res;
+    LOG_ERROR("Invalid resolution given, using minimum");
+    this->params_.res = this->params_.min_res;
   }
 
   this->resolution_ = this->params_.res;
@@ -61,23 +78,23 @@ void NdtMatcher::SetNdtParams() {
   this->ndt_.setMaximumIterations(this->params_.max_iter);
 }
 
-void NdtMatcher::SetRef(const PointCloudPtr &ref) {
-    this->ref_ = ref;
-    this->ndt_.setInputSource(this->ref_);
+void NdtMatcher::SetRef(const PointCloudPtr& ref) {
+  this->ref_ = ref;
+  this->ndt_.setInputSource(this->ref_);
 }
 
-void NdtMatcher::SetTarget(const PointCloudPtr &target) {
-    this->target_ = target;
-    this->ndt_.setInputTarget(this->target_);
+void NdtMatcher::SetTarget(const PointCloudPtr& target) {
+  this->target_ = target;
+  this->ndt_.setInputTarget(this->target_);
 }
 
 bool NdtMatcher::Match() {
-    this->ndt_.align(*(this->final_));
-    if (this->ndt_.hasConverged()) {
-        this->result_.matrix() = ndt_.getFinalTransformation().cast<double>();
-        return true;
-    }
-    return false;
+  this->ndt_.align(*(this->final_));
+  if (this->ndt_.hasConverged()) {
+    this->result_.matrix() = ndt_.getFinalTransformation().cast<double>();
+    return true;
+  }
+  return false;
 }
 
-}  // namespace beam_matching
+} // namespace beam_matching

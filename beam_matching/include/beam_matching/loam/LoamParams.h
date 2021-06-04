@@ -25,7 +25,11 @@
 #pragma once
 
 #include <vector>
+
+#include <boost/filesystem.hpp>
+
 #include <beam_optimization/CeresParams.h>
+#include <beam_utils/filesystem.h>
 
 namespace beam_matching {
 /** @addtogroup matching
@@ -48,17 +52,30 @@ public:
    * @param param_config full path to json config file
    */
   LoamParams(std::string& param_config) {
-    if (!boost::filesystem::exists(param_config)) {
-      BEAM_ERROR("Loam Params config file does not exist: {}. Using default "
-                 "parameters.",
-                 param_config);
+    std::string read_file = param_config;
+    if (param_config.empty()) {
       return;
+    } else if (!boost::filesystem::exists(param_config)) {
+      BEAM_WARN("Invalid matcher config path, file does not exist, using "
+                "default. Input: {}",
+                param_config);
+      return;
+    } else if (param_config == "DEFAULT_PATH") {
+      std::string default_path = beam::LibbeamRoot();
+      default_path += "beam_matching/config/loam.json";
+      if (!boost::filesystem::exists(default_path)) {
+        BEAM_WARN("Could not find default icp config at: {}. Using "
+                  "default params.",
+                  default_path);
+        return;
+      }
+      read_file = default_path;
     }
 
-    BEAM_INFO("Loading LOAM config file: {}", param_config.c_str());
+    BEAM_INFO("Loading LOAM config file: {}", read_file);
 
     nlohmann::json J;
-    std::ifstream file(param_config);
+    std::ifstream file(read_file);
     file >> J;
 
     number_of_beams = J["number_of_beams"];
