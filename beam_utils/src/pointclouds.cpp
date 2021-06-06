@@ -72,6 +72,17 @@ PointCloudCol AddFrameToCloud(const PointCloudCol& cloud,
   return cloud_out;
 }
 
+void MergeFrameToCloud(PointCloudCol& cloud, const PointCloudCol& frame,
+                     const Eigen::Matrix4d& T) {
+  if (T.isIdentity()) {
+    cloud += frame;
+  } else {
+    PointCloudCol frame_transformed;
+    pcl::transformPointCloud(frame, frame_transformed, T);
+    cloud += frame_transformed;
+  }
+}
+
 PointCloud AddFrameToCloud(const PointCloud& cloud, const PointCloud& frame,
                            const Eigen::Matrix4d& T) {
   PointCloud cloud_out;
@@ -150,7 +161,8 @@ PointCloudCol CreateFrameCol(double increment, double length) {
   return frame;
 }
 
-pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t, double increment, double length) {
+pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
+                                            double increment, double length) {
   pcl::PointCloud<pcl::PointXYZL> frame;
   double cur_length{0};
   pcl::PointXYZL pointX(0, 0, 0);
@@ -172,7 +184,8 @@ pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t, double increment
   return frame;
 }
 
-pcl::PointCloud<pcl::PointXYZRGBL> CreateFrameCol(const ros::Time& t, double increment, double length) {
+pcl::PointCloud<pcl::PointXYZRGBL>
+    CreateFrameCol(const ros::Time& t, double increment, double length) {
   pcl::PointCloud<pcl::PointXYZRGBL> frame;
   double cur_length{0};
   pcl::PointXYZRGBL pointX;
@@ -184,7 +197,7 @@ pcl::PointCloud<pcl::PointXYZRGBL> CreateFrameCol(const ros::Time& t, double inc
   pointX.label = t.toSec();
   pointY.label = t.toSec();
   pointZ.label = t.toSec();
-  
+
   while (cur_length < length) {
     pointX.x = cur_length;
     pointY.y = cur_length;
