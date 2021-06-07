@@ -95,6 +95,18 @@ PointCloud
                     const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
 /**
+ * @brief Merge a coordinate frame (built a prebuilt pointcloud) to a pcl
+ * pointcloud
+ * @param cloud reference to original cloud
+ * @param frame poincloud frame to add
+ * @param T optional transform to apply to the frame to get it in the cloud
+ * reference frame
+ * @return pointcloud containing frame
+ */
+void MergeFrameToCloud(PointCloudCol& cloud, const PointCloudCol& frame,
+                       const Eigen::Matrix4d& T);
+
+/**
  * @brief Add a coordinate frame to a color pcl pointcloud. This function calls
  * CreateFrameCol to build the frame. The coordinate frame will be colored RGB
  * for frames XYZ, respectively.
