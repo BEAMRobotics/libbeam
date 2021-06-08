@@ -12,7 +12,7 @@
 
 template <class T>
 using opt = beam::optional<T>;
-
+namespace beam_optimization {
 /**
  * @brief Ceres cost functor for camera projection
  * performs projection of 3D point into camera frame
@@ -169,3 +169,5 @@ private:
     return !in_domain;
   }
 };
+
+} // namespace beam_optimization

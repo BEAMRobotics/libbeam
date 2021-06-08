@@ -61,7 +61,7 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     }
 
     std::unique_ptr<ceres::CostFunction> cost_function(
-        CeresReprojectionCostFunction::Create(pixels[i].cast<double>(),
+        beam_optimization::CeresReprojectionCostFunction::Create(pixels[i].cast<double>(),
                                               points[i], cam));
 
     problem->AddResidualBlock(cost_function.release(), loss_function_.get(),
