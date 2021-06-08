@@ -2,10 +2,10 @@
 
 namespace beam_cv {
 
-GFTTDetector::GFTTDetector(int maxCorners, double qualityLevel,
+GFTTDetector::GFTTDetector(int num_features, double qualityLevel,
                            double minDistance, int blockSize,
                            bool useHarrisDetector, double k) {
-  this->max_corners_ = maxCorners;
+  this->num_features_ = num_features;
   this->quality_level_ = qualityLevel;
   this->min_distance_ = minDistance;
   this->block_size_ = blockSize;
@@ -21,8 +21,8 @@ std::vector<cv::KeyPoint> GFTTDetector::DetectFeatures(const cv::Mat& image) {
   // Detect features in image and return keypoints.
   this->GFTT_detector_->detect(image, keypoints);
   // Retain best keypoints, if specified.
-  if (this->max_corners_ != 0) {
-    cv::KeyPointsFilter::retainBest(keypoints, this->max_corners_);
+  if (this->num_features_ != 0) {
+    cv::KeyPointsFilter::retainBest(keypoints, this->num_features_);
   }
   return keypoints;
 }

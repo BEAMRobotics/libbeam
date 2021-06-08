@@ -10,8 +10,6 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 
-static bool outside_domain_default_{false};
-
 namespace beam_calibration {
 
 /**
@@ -52,46 +50,24 @@ public:
 
   /**
    * @brief Method for projecting a point into an image plane (continous)
-   * @param point 3d point to be projected [x,y,z]^T
-   * @param outside_domain optional parameter, set if point is outside camera
-   * model domain
+   * @param[in] in_point 3d point to be projected [x,y,z]^T
+   * @param[out] out_pixel pixel the point projects to
+   * @param[in] J optional param to compute the jacobian
+   * @param[out] in_image_plane true if the pixel is outside of the image plane
+   * @return whether the input point is in the domain of the function
    */
-  virtual beam::opt<Eigen::Vector2d>
-      ProjectPointPrecise(const Eigen::Vector3d& point,
-                          bool& outside_domain = outside_domain_default_) = 0;
-
-  /**
-   * @brief Method for projecting a point into an image plane
-   * @param point 3d point to be projected [x,y,z]^T
-   * @param outside_domain optional parameter, set if point is outside camera
-   * model domain
-   */
-  virtual beam::opt<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point,
-                   bool& outside_domain = outside_domain_default_) = 0;
-
-  /**
-   * @brief Overload projection function for computing jacobian of projection
-   * @param point 3d point to be projected [x,y,z]^T
-   * @param J 2 x 3 projection jacobian.
-   * For ProjectPoint: [u,v]^T = [P1(x, y, z), P2(x, y, z)]^T
-   *                   J = | dP1/dx , dP1/dy, dP1/dz |
-   *                       | dP2/dx , dP2/dy, dP2/dz |
-   * @param outside_domain optional parameter, set if point is outside camera
-   * model domain
-   */
-  virtual beam::opt<Eigen::Vector2i>
-      ProjectPoint(const Eigen::Vector3d& point, Eigen::MatrixXd& J,
-                   bool& outside_domain = outside_domain_default_) = 0;
+  virtual bool ProjectPoint(const Eigen::Vector3d& in_point,
+                            Eigen::Vector2d& out_pixel, bool& in_image_plane,
+                            std::shared_ptr<Eigen::MatrixXd> J = nullptr) = 0;
 
   /**
    * @brief Method back projecting
-   * @return Returns an unnormalized bearing vector where z = 1 to a pixel in
-   * the image, from camera center = [0,0,0]
-   * @param point [u = col, v = row]
+   * @param[in] in_pixel pixel to back project
+   * @param[out] out_point ray towards the input pixel
+   * @return return whether the input pixel is in the domain of the function
    */
-  virtual beam::opt<Eigen::Vector3d>
-      BackProject(const Eigen::Vector2i& pixel) = 0;
+  virtual bool BackProject(const Eigen::Vector2i& in_pixel,
+                                           Eigen::Vector3d& out_point) = 0;
 
   /**
    * @brief Method for setting the LadyBug camera ID

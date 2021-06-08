@@ -29,7 +29,7 @@ public:
    * and pixels in a circle (Bresenham radius 3) around this pixel.
    *  Recommended: 10. Must be greater than zero.
    */
-  GFTTDetector(int maxCorners = 1000, double qualityLevel = 0.01,
+  GFTTDetector(int num_features = 1000, double qualityLevel = 0.01,
                double minDistance = 1, int blockSize = 3,
                bool useHarrisDetector = false, double k = 0.04);
 
@@ -45,7 +45,7 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  int max_corners_{};
+  int num_features_{};
   double quality_level_{};
   double min_distance_{};
   int block_size_{};
