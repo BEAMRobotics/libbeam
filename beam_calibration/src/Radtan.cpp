@@ -46,13 +46,15 @@ bool Radtan::ProjectPoint(const Eigen::Vector3d& in_point,
                           std::shared_ptr<Eigen::MatrixXd> J) {
   // check domain of point
   if (in_point[2] <= 0) { return false; }
+
   // Project point
   const double x = in_point[0], y = in_point[1], z = in_point[2];
   const double rz = 1.0 / z;
+  out_pixel << (x * rz), (y * rz);
   Eigen::Vector2d tmp;
   tmp << (x * rz), (y * rz);
   // Distort point using radtan distortion model
-  out_pixel = DistortPixel(tmp);
+  out_pixel = DistortPixel(out_pixel);
   double xx = out_pixel[0], yy = out_pixel[1];
   out_pixel[0] = (fx_ * xx + cx_);
   out_pixel[1] = (fy_ * yy + cy_);

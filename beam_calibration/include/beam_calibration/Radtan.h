@@ -76,7 +76,7 @@ protected:
   /**
    * @brief Method to distort point
    * @return Vec2 distorted point
-   * @param pixel to undistort
+   * @param pixel to distort
    */
   Eigen::Vector2d DistortPixel(const Eigen::Vector2d& pixel);
 
