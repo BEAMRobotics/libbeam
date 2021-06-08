@@ -27,24 +27,14 @@ bool DoubleSphere::ProjectPoint(const Eigen::Vector3d& in_point,
                                 Eigen::Vector2d& out_pixel,
                                 bool& in_image_plane,
                                 std::shared_ptr<Eigen::MatrixXd> J) {
-  double w1;
-  if (alpha_ > 0.5) {
-    w1 = (1 - alpha_) / alpha_;
-  } else {
-    w1 = alpha_ / (1 - alpha_);
-  }
-  double w2 = (w1 + eps_) / sqrt(2 * w1 * eps_ + eps_ * eps_ + 1);
-
+  if (!this->InProjectionDomain(in_point)) { return false; }
   double Px = in_point[0];
   double Py = in_point[1];
   double Pz = in_point[2];
   double d1 = sqrt(Px * Px + Py * Py + Pz * Pz);
   double d2 = sqrt(Px * Px + Py * Py + (eps_ * d1 + Pz) * (eps_ * d1 + Pz));
 
-  // check pixels are valid for projection
-  if (in_point[2] <= -w2 * d1) { return false; }
   // project point
-
   out_pixel[0] =
       fx_ * Px / (alpha_ * d2 + (1 - alpha_) * (eps_ * d1 + Pz)) + cx_;
   out_pixel[1] =
@@ -104,6 +94,25 @@ bool DoubleSphere::BackProject(const Eigen::Vector2i& in_pixel,
   double A =
       (mz * eps_ + sqrt(mz * mz + (1 - eps_ * eps_) * r2)) / (mz * mz + r2);
   out_point = Eigen::Vector3d(A * mx, A * my, A * mz - eps_);
+  return true;
+}
+
+bool DoubleSphere::InProjectionDomain(const Eigen::Vector3d& point) {
+  double w1;
+  if (alpha_ > 0.5) {
+    w1 = (1 - alpha_) / alpha_;
+  } else {
+    w1 = alpha_ / (1 - alpha_);
+  }
+  double w2 = (w1 + eps_) / sqrt(2 * w1 * eps_ + eps_ * eps_ + 1);
+
+  double Px = point[0];
+  double Py = point[1];
+  double Pz = point[2];
+  double d1 = sqrt(Px * Px + Py * Py + Pz * Pz);
+
+  // check pixels are valid for projection
+  if (point[2] <= -w2 * d1) { return false; }
   return true;
 }
 

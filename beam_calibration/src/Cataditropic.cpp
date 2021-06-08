@@ -33,8 +33,9 @@ std::shared_ptr<CameraModel> Cataditropic::Clone() {
 
 bool Cataditropic::ProjectPoint(const Eigen::Vector3d& in_point,
                                 Eigen::Vector2d& out_pixel,
-                                bool& in_image_plane, std::shared_ptr<Eigen::MatrixXd> J) {
-  if (in_point(2) < 0) { return false; }
+                                bool& in_image_plane,
+                                std::shared_ptr<Eigen::MatrixXd> J) {
+  if (!this->InProjectionDomain(in_point)) { return false; }
   Eigen::Vector2d p_u, p_d;
   // Project points to the normalised plane
   double z = in_point(2) + xi_ * in_point.norm();
@@ -59,7 +60,7 @@ bool Cataditropic::ProjectPoint(const Eigen::Vector3d& in_point,
 bool Cataditropic::BackProject(const Eigen::Vector2i& in_pixel,
                                Eigen::Vector3d& out_point) {
   if (!PixelInImage(in_pixel)) { return false; }
-  double mx_d, my_d,  mx_u, my_u, rho2_d;
+  double mx_d, my_d, mx_u, my_u, rho2_d;
   // double lambda;
 
   // Lift points to normalised plane
@@ -90,6 +91,11 @@ bool Cataditropic::BackProject(const Eigen::Vector2i& in_pixel,
         1.0 - xi_ * (rho2_d + 1.0) /
                   (xi_ + sqrt(1.0 + (1.0 - xi_ * xi_) * rho2_d));
   }
+  return true;
+}
+
+bool Cataditropic::InProjectionDomain(const Eigen::Vector3d& point) {
+  if (point(2) < 0) { return false; }
   return true;
 }
 

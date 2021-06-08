@@ -45,7 +45,7 @@ bool Radtan::ProjectPoint(const Eigen::Vector3d& in_point,
                           Eigen::Vector2d& out_pixel, bool& in_image_plane,
                           std::shared_ptr<Eigen::MatrixXd> J) {
   // check domain of point
-  if (in_point[2] <= 0) { return false; }
+  if (!this->InProjectionDomain(in_point)) { return false; }
 
   // Project point
   const double x = in_point[0], y = in_point[1], z = in_point[2];
@@ -104,6 +104,12 @@ bool Radtan::BackProject(const Eigen::Vector2i& in_pixel,
   cv::undistortPoints(src, dst, K, dist_coeffs);
 
   out_point << dst[0].x, dst[0].y, 1;
+  return true;
+}
+
+bool Radtan::InProjectionDomain(const Eigen::Vector3d& point) {
+  // check pixels are valid for projection
+  if (point[2] <= 0) { return false; }
   return true;
 }
 

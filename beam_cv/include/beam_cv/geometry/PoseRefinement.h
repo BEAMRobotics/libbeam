@@ -43,7 +43,7 @@ public:
                  const std::shared_ptr<beam_calibration::CameraModel>& cam,
                  const std::vector<Eigen::Vector2i>& pixels,
                  const std::vector<Eigen::Vector3d>& points,
-                 std::string& report);
+                 std::string& report, bool remove_points_outside_domain = true);
 
 private:
   /**

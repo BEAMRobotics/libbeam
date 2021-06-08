@@ -67,7 +67,14 @@ public:
    * @return return whether the input pixel is in the domain of the function
    */
   virtual bool BackProject(const Eigen::Vector2i& in_pixel,
-                                           Eigen::Vector3d& out_point) = 0;
+                           Eigen::Vector3d& out_point) = 0;
+
+  /**
+   * @brief Method for checking if a 3d point is projectable
+   * @return Returns boolean
+   * @param point
+   */
+  virtual bool InProjectionDomain(const Eigen::Vector3d& point) = 0;
 
   /**
    * @brief Method for setting the LadyBug camera ID

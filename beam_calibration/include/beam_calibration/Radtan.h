@@ -72,6 +72,13 @@ public:
    */
   void UndistortImage(const cv::Mat& image_input, cv::Mat& image_output);
 
+  /**
+   * @brief Method for checking if a 3d point is projectable
+   * @return Returns boolean
+   * @param point
+   */
+  bool InProjectionDomain(const Eigen::Vector3d& point) override;
+
 protected:
   /**
    * @brief Method to distort point

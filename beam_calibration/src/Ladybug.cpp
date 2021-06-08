@@ -40,8 +40,8 @@ std::shared_ptr<CameraModel> Ladybug::Clone() {
 }
 
 bool Ladybug::ProjectPoint(const Eigen::Vector3d& in_point,
-                          Eigen::Vector2d& out_pixel, bool& in_image_plane,
-                          std::shared_ptr<Eigen::MatrixXd> J) {
+                           Eigen::Vector2d& out_pixel, bool& in_image_plane,
+                           std::shared_ptr<Eigen::MatrixXd> J) {
   double x = in_point[0];
   double y = in_point[1];
   double z = in_point[2];
@@ -73,7 +73,7 @@ bool Ladybug::ProjectPoint(const Eigen::Vector3d& in_point,
 }
 
 bool Ladybug::BackProject(const Eigen::Vector2i& in_pixel,
-                         Eigen::Vector3d& out_point) {
+                          Eigen::Vector3d& out_point) {
   Eigen::Vector2d pixel_out = {0, 0};
   lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, in_pixel[0],
                                   in_pixel[1], &pixel_out[0], &pixel_out[1]);
@@ -100,6 +100,13 @@ void Ladybug::LadybugCheckError() {
     BEAM_CRITICAL("Ladybug threw an error: {}",
                   ladybugErrorToString(lb_error_));
   }
+}
+
+bool Ladybug::InProjectionDomain(const Eigen::Vector3d& point) {
+  // ladybug is unique
+  Eigen::Vector2d pix;
+  bool in_image;
+  return this->ProjectPoint(point, pix, in_image);
 }
 
 } // namespace beam_calibration

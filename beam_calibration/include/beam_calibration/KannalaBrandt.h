@@ -56,6 +56,13 @@ public:
   bool BackProject(const Eigen::Vector2i& in_pixel,
                    Eigen::Vector3d& out_point) override;
 
+  /**
+   * @brief Method for checking if a 3d point is projectable
+   * @return Returns boolean
+   * @param point
+   */
+  bool InProjectionDomain(const Eigen::Vector3d& point) override;
+
 protected:
   double fx_;
   double fy_;

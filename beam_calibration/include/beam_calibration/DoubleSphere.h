@@ -43,9 +43,9 @@ public:
    * @param[out] in_image_plane true if the pixel is outside of the image plane
    * @return whether the input point is in the domain of the function
    */
-  bool ProjectPoint(const Eigen::Vector3d& in_point,
-                            Eigen::Vector2d& out_pixel, bool& in_image_plane,
-                            std::shared_ptr<Eigen::MatrixXd> J = nullptr) override;
+  bool ProjectPoint(const Eigen::Vector3d& in_point, Eigen::Vector2d& out_pixel,
+                    bool& in_image_plane,
+                    std::shared_ptr<Eigen::MatrixXd> J = nullptr) override;
 
   /**
    * @brief Method back projecting
@@ -54,7 +54,14 @@ public:
    * @return return whether the input pixel is in the domain of the function
    */
   bool BackProject(const Eigen::Vector2i& in_pixel,
-                                           Eigen::Vector3d& out_point) override;
+                   Eigen::Vector3d& out_point) override;
+
+  /**
+   * @brief Method for checking if a 3d point is projectable
+   * @return Returns boolean
+   * @param point
+   */
+  bool InProjectionDomain(const Eigen::Vector3d& point) override;
 
 protected:
   double fx_;

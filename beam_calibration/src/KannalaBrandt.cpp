@@ -27,10 +27,11 @@ std::shared_ptr<CameraModel> KannalaBrandt::Clone() {
 
 bool KannalaBrandt::ProjectPoint(const Eigen::Vector3d& in_point,
                                  Eigen::Vector2d& out_pixel,
-                                 bool& in_image_plane, std::shared_ptr<Eigen::MatrixXd> J) {
+                                 bool& in_image_plane,
+                                 std::shared_ptr<Eigen::MatrixXd> J) {
   double x = in_point[0], y = in_point[1], z = in_point[2];
 
-  if (z == 0) { return false; }
+  if (!this->InProjectionDomain(in_point)) { return false; }
 
   double x2 = x * x;
   double y2 = y * y;
@@ -138,6 +139,12 @@ bool KannalaBrandt::BackProject(const Eigen::Vector2i& in_pixel,
   out_point[0] = sin(th) * mx / ru;
   out_point[1] = sin(th) * my / ru;
   out_point[2] = cos(th);
+  return true;
+}
+
+bool KannalaBrandt::InProjectionDomain(const Eigen::Vector3d& point) {
+  // check pixels are valid for projection
+  if (point[2] == 0) { return false; }
   return true;
 }
 
