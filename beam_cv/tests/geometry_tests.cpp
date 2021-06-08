@@ -56,7 +56,8 @@ void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
     int x = rand() % cam->GetWidth();
     int y = rand() % cam->GetHeight();
     Eigen::Vector2i pixel(x, y);
-    Eigen::Vector3d point = cam->BackProject(pixel).value();
+    Eigen::Vector3d point;
+    cam->BackProject(pixel, point);
     double depth_min = 1;
     double depth_max = 15;
     double scalar = beam::randf(depth_max, depth_min);
@@ -209,10 +210,8 @@ TEST_CASE("Test P3P Absolute Pose Estimator") {
   std::vector<beam::opt<Eigen::Vector3d>> t_points =
       beam_cv::Triangulation::TriangulatePoints(cam, cam, Pl, Pr.value(),
                                                 frame1_matches, frame2_matches);
-  std::vector<Eigen::Vector3d> points;                                     
-  for(auto& p: t_points){
-    points.push_back(p.value());
-  }
+  std::vector<Eigen::Vector3d> points;
+  for (auto& p : t_points) { points.push_back(p.value()); }
 
   // find the pose
   std::vector<Eigen::Matrix4d> poses =

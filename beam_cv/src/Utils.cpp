@@ -240,14 +240,19 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
       Eigen::Vector3d pt1 = pt_h_1.head(3) / pt_h_1(3);
       Eigen::Vector3d pt2 = pt_h_2.head(3) / pt_h_2(3);
       // reproject triangulated points into each frame
-      beam::opt<Eigen::Vector2d> p1_rep = cam1->ProjectPointPrecise(pt1);
-      beam::opt<Eigen::Vector2d> p2_rep = cam2->ProjectPointPrecise(pt2);
-      if (!p1_rep.has_value() || !p2_rep.has_value()) { continue; }
+      bool in_image1 = false, in_image2 = false;
+      Eigen::Vector2d p1_rep, p2_rep;
+      if (!cam1->ProjectPoint(pt1, p1_rep, in_image1) ||
+          !cam2->ProjectPoint(pt2, p2_rep, in_image2)) {
+        continue;
+      } else if (!in_image1 || !in_image2) {
+        continue;
+      }
       // compute distance to actual pixel
       Eigen::Vector2d p1_d{p1_v[i][0], p1_v[i][1]};
       Eigen::Vector2d p2_d{p2_v[i][0], p2_v[i][1]};
-      double dist_1 = beam::distance(p1_rep.value(), p1_d);
-      double dist_2 = beam::distance(p2_rep.value(), p2_d);
+      double dist_1 = beam::distance(p1_rep, p1_d);
+      double dist_2 = beam::distance(p2_rep, p2_d);
       if (dist_1 < inlier_threshold && dist_2 < inlier_threshold) { inliers++; }
     }
   }
@@ -270,10 +275,16 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
     pt_h = T_cam_world * pt_h;
     Eigen::Vector3d ptc = pt_h.head(3) / pt_h(3);
 
-    beam::opt<Eigen::Vector2d> p = cam->ProjectPointPrecise(ptc);
-    if (!p.has_value()) { continue; }
+    bool in_image = false;
+    Eigen::Vector2d p;
+    if (!cam->ProjectPoint(ptc, p, in_image)) {
+      continue;
+    } else if (!in_image) {
+      continue;
+    }
+
     Eigen::Vector2d pd{pixels[i][0], pixels[i][1]};
-    double dist = beam::distance(p.value(), pd);
+    double dist = beam::distance(p, pd);
     if (dist < inlier_threshold) { inliers++; }
   }
   return inliers;

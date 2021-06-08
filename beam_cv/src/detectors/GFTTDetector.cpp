@@ -12,7 +12,7 @@ GFTTDetector::GFTTDetector(int num_features, double qualityLevel,
   this->use_harris_detector_ = useHarrisDetector;
   this->k_ = k;
   this->GFTT_detector_ = cv::GFTTDetector::create(
-      this->max_corners_, this->quality_level_, this->min_distance_,
+      this->num_features_, this->quality_level_, this->min_distance_,
       this->block_size_, this->use_harris_detector_, this->k_);
 }
 

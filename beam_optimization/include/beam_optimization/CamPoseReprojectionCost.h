@@ -28,8 +28,10 @@ struct CameraProjectionFunctor {
 
   bool operator()(const double* P, double* pixel) const {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
-    opt<Eigen::Vector2d> pixel_projected =
-        camera_model_->ProjectPointPrecise(P_CAMERA_eig);
+    bool in_image = false;
+    Eigen::Vector2d pixel_projected;
+    bool in_domain =
+        camera_model_->ProjectPoint(P_CAMERA_eig, pixel_projected, in_image);
 
     // get image dims in case projection fails
     uint16_t height =
@@ -37,9 +39,9 @@ struct CameraProjectionFunctor {
     uint16_t width =
         camera_model_->GetWidth() != 0 ? camera_model_->GetWidth() : 5000;
 
-    if (pixel_projected.has_value()) {
-      pixel[0] = pixel_projected.value()[0];
-      pixel[1] = pixel_projected.value()[1];
+    if (in_domain && in_image) {
+      pixel[0] = pixel_projected[0];
+      pixel[1] = pixel_projected[1];
     } else {
       // if the projection failed, set the projected point to
       // be the nearest edge point to the detected point
@@ -123,9 +125,11 @@ struct CeresReprojectionCostFunction {
     // check if projection is outside the domain of the camera model
     Eigen::Vector3d P_CAMERA_eig_check{*P_CAMERA_check_x, *P_CAMERA_check_y,
                                        *P_CAMERA_check_z};
-    bool outside_domain = false;
-    opt<Eigen::Vector2d> pixel_projected_check =
-        camera_model_->ProjectPointPrecise(P_CAMERA_eig_check, outside_domain);
+
+    bool in_image = false;
+    Eigen::Vector2d pixel_projected_check;
+    bool in_domain = camera_model_->ProjectPoint(
+        P_CAMERA_eig_check, pixel_projected_check, in_image);
 
     //  need to handle outside domain failure differently for ladybug camera
     //  model
@@ -135,8 +139,8 @@ struct CeresReprojectionCostFunction {
                    // viable solutions, error checking must be done in calling
                    // code
     else
-      return !outside_domain; // all other camera models have valid
-                              // out-of-domain conditions that should be avoided
+      return in_domain; // all other camera models have valid
+                        // out-of-domain conditions that should be avoided
   }
 
   // Factory to hide the construction of the CostFunction object from
@@ -158,9 +162,10 @@ struct CeresReprojectionCostFunction {
 private:
   bool checkDomain(const double* P) {
     Eigen::Vector3d P_CAMERA_eig{P[0], P[1], P[2]};
-    bool outside_domain = false;
-    opt<Eigen::Vector2d> pixel_projected =
-        camera_model_->ProjectPointPrecise(P_CAMERA_eig, outside_domain);
-    return outside_domain;
+    bool in_image = false;
+    Eigen::Vector2d pixel_projected;
+    bool in_domain =
+        camera_model_->ProjectPoint(P_CAMERA_eig, pixel_projected, in_image);
+    return !in_domain;
   }
 };

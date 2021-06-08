@@ -25,11 +25,11 @@ beam::opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
   for (int i = 0; i < N; i++) {
-    beam::opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
-    beam::opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
-    if (xpc.has_value() && xpr.has_value()) {
-      X_r.push_back(xpr.value());
-      X_c.push_back(xpc.value());
+    Eigen::Vector3d xpr;
+    Eigen::Vector3d xpc;
+    if (cam1->BackProject(p1_v[i], xpr) && cam2->BackProject(p2_v[i], xpc)) {
+      X_r.push_back(xpr);
+      X_c.push_back(xpc);
     } else {
       BEAM_CRITICAL("Invalid pixel input. Unable to back project.");
       return {};
@@ -76,11 +76,11 @@ beam::opt<std::vector<Eigen::Matrix3d>>
   std::vector<Eigen::Vector3d> X_r;
   std::vector<Eigen::Vector3d> X_c;
   for (int i = 0; i < N; i++) {
-    beam::opt<Eigen::Vector3d> xpr = cam1->BackProject(p1_v[i]);
-    beam::opt<Eigen::Vector3d> xpc = cam2->BackProject(p2_v[i]);
-    if (xpc.has_value() && xpr.has_value()) {
-      X_r.push_back(xpr.value());
-      X_c.push_back(xpc.value());
+    Eigen::Vector3d xpr;
+    Eigen::Vector3d xpc;
+    if (cam1->BackProject(p1_v[i], xpr) && cam2->BackProject(p2_v[i], xpc)) {
+      X_r.push_back(xpr);
+      X_c.push_back(xpc);
     } else {
       BEAM_CRITICAL("Invalid pixel input. Unable to back project.");
       return {};

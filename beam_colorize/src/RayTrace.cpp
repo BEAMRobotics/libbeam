@@ -55,8 +55,12 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 
   for (uint32_t i = 0; i < input->points.size(); i++) {
     point << input->points[i].x, input->points[i].y, input->points[i].z;
-    beam::opt<Eigen::Vector2i> coords = intrinsics->ProjectPoint(point);
-    if (!coords.has_value()) {
+    bool in_image = false;
+    Eigen::Vector2d coords;
+    if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
+      BEAM_WARN("Cannot project point.");
+      continue;
+    } else if(!in_image){
       BEAM_WARN("Cannot project point.");
       continue;
     }

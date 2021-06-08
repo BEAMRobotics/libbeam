@@ -15,7 +15,8 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   std::vector<Eigen::Vector3d> x;
   for (std::size_t i = 0; i < pixels.size(); ++i) {
     // back project and normalize each pixel before adding it to x
-    Eigen::Vector3d homogenized_pixel = cam->BackProject(pixels[i]).value();
+    Eigen::Vector3d homogenized_pixel;
+    cam->BackProject(pixels[i], homogenized_pixel);
     homogenized_pixel.normalize();
     x.push_back(homogenized_pixel);
   };
