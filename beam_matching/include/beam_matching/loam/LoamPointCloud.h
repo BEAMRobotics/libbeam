@@ -161,6 +161,12 @@ public:
    */
   void Merge(const LoamPointCloud& cloud);
 
+  /** 
+   * @brief print details of this cloud
+   * @param stream input stream
+   */
+  void Print(std::ostream& stream = std::cout) const;
+
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;
 

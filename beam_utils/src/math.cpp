@@ -583,4 +583,20 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v) {
   return T;
 }
 
+void OutputTransformInformation(const Eigen::Matrix4d& T,
+                                std::ostream& stream) {
+  Eigen::Quaterniond q;
+  Eigen::Vector3d t;
+  TransformMatrixToQuaternionAndTranslation(T, q, t);
+  Eigen::Matrix3d R = T.block(0, 0, 3, 3);
+  Eigen::Vector3d rpy = R.eulerAngles(0, 1, 2);
+  stream << "T: \n"
+         << T << "\n"
+         << "RPY (DEG): [" << Rad2Deg(rpy[0]) << ", " << Rad2Deg(rpy[1]) << ", "
+         << Rad2Deg(rpy[3]) << "]\n"
+         << "Quat (wxyz): [" << q.w() << ", " << q.x() << ", " << q.y() << ", "
+         << q.z() << "]\n"
+         << "Trans: [" << t[0] << ", " << t[1] << ", " << t[2] << "]\n";
+}
+
 } // namespace beam

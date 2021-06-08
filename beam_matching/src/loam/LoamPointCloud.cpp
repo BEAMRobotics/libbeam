@@ -158,7 +158,7 @@ void LoamPointCloud::Save(const std::string& output_path,
   }
 }
 
-void LoamPointCloud::Merge(const LoamPointCloud& cloud){
+void LoamPointCloud::Merge(const LoamPointCloud& cloud) {
   edges.strong.cloud += cloud.edges.strong.cloud;
   edges.strong.ClearKDTree();
 
@@ -170,6 +170,18 @@ void LoamPointCloud::Merge(const LoamPointCloud& cloud){
 
   surfaces.weak.cloud += cloud.surfaces.weak.cloud;
   surfaces.weak.ClearKDTree();
+}
+
+void LoamPointCloud::Print(std::ostream& stream) const {
+  stream << "Feature |  Type  | KdTree Empty | No. of Points   \n"
+         << " Edges  | strong | " << edges.strong.kdtree_empty << "          | "
+         << edges.strong.cloud.size() << "\n"
+         << " Edges  |  weak  | " << edges.weak.kdtree_empty << "          | "
+         << edges.weak.cloud.size() << "\n"
+         << "Surfaces| strong | " << surfaces.strong.kdtree_empty
+         << "          | " << surfaces.strong.cloud.size() << "\n"
+         << "Surfaces|  weak  | " << surfaces.weak.kdtree_empty
+         << "          | " << surfaces.weak.cloud.size() << "\n";
 }
 
 } // namespace beam_matching
