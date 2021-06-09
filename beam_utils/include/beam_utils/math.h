@@ -370,13 +370,16 @@ void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
  * set to true
  * @param must_pass_both if set, it will return true only if both angle and
  * translation thresholds are passed
+ * @param output_error_cause if set to true and this function returns false, it
+ * will output the cause of the error to cout
  * @return result
  */
 bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                            double angle_threshold_deg,
                            double translation_threshold_m,
                            bool is_threshold_minimum = true,
-                           bool must_pass_both = false);
+                           bool must_pass_both = false,
+                           bool output_error_cause = false);
 
 /**
  * @brief Wrapper around PassedMotionThreshold that sets is_threshold_minimum to
@@ -386,11 +389,14 @@ bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
  * @param T2 pose2
  * @param angle_threshold_deg maximum angle error in degrees
  * @param translation_threshold_m maximum translation error in meters
+ * @param output_error_cause if set to true and this function returns false, it
+ * will output the cause of the error to cout
  * @return result
  */
 bool ArePosesEqual(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                    double angle_threshold_deg = 1,
-                   double translation_threshold_m = 0.005);
+                   double translation_threshold_m = 0.005,
+                   bool output_error_cause = false);
 
 /**
  * @brief Wrapper around PassedMotionThreshold that sets is_threshold_minimum to
@@ -400,11 +406,14 @@ bool ArePosesEqual(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
  * @param T2 pose2
  * @param angle_threshold_deg minimum angle change in degrees
  * @param translation_threshold_m minimum translation change in meters
+ * @param output_error_cause if set to true and this function returns false, it
+ * will output the cause of the error to cout
  * @return result
  */
 bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                      double angle_threshold_deg = 1,
-                     double translation_threshold_m = 0.005);
+                     double translation_threshold_m = 0.005,
+                     bool output_error_cause = false);
 
 /**
  * @brief Converts an array of float containing a pose measurement [R | t] (of

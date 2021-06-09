@@ -530,7 +530,8 @@ void TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T,
 bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                            double angle_threshold_deg,
                            double translation_threshold_m,
-                           bool is_threshold_minimum, bool must_pass_both) {
+                           bool is_threshold_minimum, bool must_pass_both,
+                           bool output_error_cause) {
   Eigen::Matrix4d T_DIFF = beam::InvertTransform(T1) * T2;
   Eigen::Matrix3d R_DIFF = T_DIFF.block(0, 0, 3, 3);
   double angle =
@@ -538,35 +539,54 @@ bool PassedMotionThreshold(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
   double translation = T_DIFF.block(0, 3, 3, 1).norm();
 
   if (is_threshold_minimum) {
+    bool result1 = angle > angle_threshold_deg;
+    bool result2 = translation > translation_threshold_m;
+    if (!result1 && output_error_cause) {
+      std::cout << "Angle: " << angle
+                << " <= Threshold: " << angle_threshold_deg << "\n";
+    }
+    if (!result2 && output_error_cause) {
+      std::cout << "Trans: " << translation
+                << " <= Threshold: " << translation_threshold_m << "\n";
+    }
     if (must_pass_both) {
-      return angle > angle_threshold_deg &&
-             translation > translation_threshold_m;
+      return result1 && result2;
     } else {
-      return angle > angle_threshold_deg ||
-             translation > translation_threshold_m;
+      return result1 || result2;
     }
   } else {
+    bool result1 = angle < angle_threshold_deg;
+    bool result2 = translation < translation_threshold_m;
+    if (!result1 && output_error_cause) {
+      std::cout << "Angle: " << angle
+                << " >= Threshold: " << angle_threshold_deg << "\n";
+    }
+    if (!result2 && output_error_cause) {
+      std::cout << "Trans: " << translation
+                << " >= Threshold: " << translation_threshold_m << "\n";
+    }
     if (must_pass_both) {
-      return angle < angle_threshold_deg &&
-             translation < translation_threshold_m;
+      return result1 && result2;
     } else {
-      return angle < angle_threshold_deg ||
-             translation < translation_threshold_m;
+      return result1 || result2;
     }
   }
 }
 
 bool ArePosesEqual(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
-                   double angle_threshold_deg, double translation_threshold_m) {
+                   double angle_threshold_deg, double translation_threshold_m,
+                   bool output_error_cause) {
   return PassedMotionThreshold(T1, T2, angle_threshold_deg,
-                               translation_threshold_m, false, true);
+                               translation_threshold_m, false, true,
+                               output_error_cause);
 }
 
 bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
-                     double angle_threshold_deg,
-                     double translation_threshold_m) {
+                     double angle_threshold_deg, double translation_threshold_m,
+                     bool output_error_cause) {
   return PassedMotionThreshold(T1, T2, angle_threshold_deg,
-                               translation_threshold_m, true, false);
+                               translation_threshold_m, true, false,
+                               output_error_cause);
 }
 
 Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v) {
