@@ -33,14 +33,10 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
   x = svd.matrixV().col(A.cols() - 1);
   // check if result is in front of both cameras
-  Eigen::Vector4d T_cam1_world_x = T_cam1_world * x;
-  Eigen::Vector4d T_cam2_world_x = T_cam2_world * x;
-  Eigen::Vector3d T_cam1_world_xp = T_cam1_world_x.head(3) / T_cam1_world_x(3);
-  Eigen::Vector3d T_cam2_world_xp = T_cam2_world_x.head(3) / T_cam2_world_x(3);
-  if (T_cam1_world_xp[2] < 0 || T_cam2_world_xp[2] < 0) { return {}; }
-
-  // normalize result to be in euclidean coordinates
-  Eigen::Vector3d xp = x.head(3) / x(3);
+  Eigen::Vector3d T_cam1_world_x = (T_cam1_world * x).hnormalized();
+  Eigen::Vector3d T_cam2_world_x = (T_cam2_world * x).hnormalized();
+  if (T_cam1_world_x[2] < 0 || T_cam2_world_x[2] < 0) { return {}; }
+  Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
 
@@ -67,12 +63,10 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   x = svd.matrixV().col(A.cols() - 1);
   // check if result is in front of all cameras
   for (auto& T : T_cam_world) {
-    Eigen::Vector4d T_x = T * x;
-    Eigen::Vector3d T_xp = T_x.head(3) / T_x(3);
-    if (T_xp[2] < 0) { return {}; }
+    Eigen::Vector3d T_x = (T * x).hnormalized();
+    if (T_x[2] < 0) { return {}; }
   }
-  // normalize result to be in euclidean coordinates
-  Eigen::Vector3d xp = x.head(3) / x(3);
+  Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
 

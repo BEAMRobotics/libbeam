@@ -88,8 +88,6 @@ bool Radtan::ProjectPoint(const Eigen::Vector3d& in_point,
 
 bool Radtan::BackProject(const Eigen::Vector2i& in_pixel,
                          Eigen::Vector3d& out_point) {
-  if (!PixelInImage(in_pixel)) { return false; }
-
   cv::Point2f p(in_pixel[0], in_pixel[1]);
   std::vector<cv::Point2f> src = {p};
   std::vector<cv::Point2f> dst;

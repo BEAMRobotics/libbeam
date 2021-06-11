@@ -80,14 +80,13 @@ bool DoubleSphere::ProjectPoint(const Eigen::Vector3d& in_point,
 
 bool DoubleSphere::BackProject(const Eigen::Vector2i& in_pixel,
                                Eigen::Vector3d& out_point) {
-  if (!PixelInImage(in_pixel)) { return false; }
 
   double mx = (in_pixel[0] - cx_) / fx_;
   double my = (in_pixel[1] - cy_) / fy_;
   double r2 = mx * mx + my * my;
 
   // check pixels are valid for back projection
-  if (alpha_ > 0.5 && r2 > 1 / (2 * alpha_ - 1)) { return {}; }
+  if (alpha_ > 0.5 && r2 > 1 / (2 * alpha_ - 1)) { return false; }
 
   double mz = (1 - alpha_ * alpha_ * r2) /
               (alpha_ * sqrt(1 - (2 * alpha_ - 1) * r2) + 1 - alpha_);

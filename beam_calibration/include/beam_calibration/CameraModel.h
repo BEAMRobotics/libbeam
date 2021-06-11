@@ -10,6 +10,8 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 
+static bool default_bool = false;
+
 namespace beam_calibration {
 
 /**
@@ -49,7 +51,9 @@ public:
   virtual std::shared_ptr<CameraModel> Clone() = 0;
 
   /**
-   * @brief Method for projecting a point into an image plane (continous)
+   * @brief Method for projecting a point into an image plane, if the input
+   * point is outside of the valid projection domain, then the point will not be
+   * projected and will retain whatever value the input parameter has
    * @param[in] in_point 3d point to be projected [x,y,z]^T
    * @param[out] out_pixel pixel the point projects to
    * @param[in] J optional param to compute the jacobian
@@ -57,11 +61,13 @@ public:
    * @return whether the input point is in the domain of the function
    */
   virtual bool ProjectPoint(const Eigen::Vector3d& in_point,
-                            Eigen::Vector2d& out_pixel, bool& in_image_plane,
+                            Eigen::Vector2d& out_pixel,
+                            bool& in_image_plane = default_bool,
                             std::shared_ptr<Eigen::MatrixXd> J = nullptr) = 0;
 
   /**
-   * @brief Method back projecting
+   * @brief Method back projecting, if the input pixel is outside of back
+   * projection domain then it will not compute the back projection
    * @param[in] in_pixel pixel to back project
    * @param[out] out_point ray towards the input pixel
    * @return return whether the input pixel is in the domain of the function

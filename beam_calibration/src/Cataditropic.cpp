@@ -59,7 +59,6 @@ bool Cataditropic::ProjectPoint(const Eigen::Vector3d& in_point,
 
 bool Cataditropic::BackProject(const Eigen::Vector2i& in_pixel,
                                Eigen::Vector3d& out_point) {
-  if (!PixelInImage(in_pixel)) { return false; }
   double mx_d, my_d, mx_u, my_u, rho2_d;
   // double lambda;
 

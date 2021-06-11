@@ -109,7 +109,6 @@ bool KannalaBrandt::ProjectPoint(const Eigen::Vector3d& in_point,
 
 bool KannalaBrandt::BackProject(const Eigen::Vector2i& in_pixel,
                                 Eigen::Vector3d& out_point) {
-  if (!PixelInImage(in_pixel)) { return false; }
 
   double u = in_pixel[0], v = in_pixel[1];
   double mx = (u - cx_) / fx_, my = (v - cy_) / fy_;
