@@ -14,7 +14,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
-    src/Tracker.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
@@ -28,6 +27,8 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/detectors/GFTTDetector.cpp
     src/matchers/FLANNMatcher.cpp
     src/matchers/BFMatcher.cpp
+    src/trackers/Tracker.cpp
+    src/trackers/DescMatchingTracker.cpp
 )
 
 ############# Test files #############
