@@ -9,8 +9,8 @@
 #include <Eigen/Dense>
 
 #include <beam_calibration/CameraModel.h>
-#include <beam_utils/optional.h>
 #include <beam_cv/Utils.h>
+#include <beam_utils/optional.h>
 
 namespace beam_cv {
 
@@ -45,7 +45,8 @@ public:
   static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam,
       const std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d>& T_cam_world,
-      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels);
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+      double reprojection_threshold = -1.0);
 
   /**
    * @brief Triangulates a list of points given two camera models and
