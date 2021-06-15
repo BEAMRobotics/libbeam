@@ -26,11 +26,15 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
-
-    beam::opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
-    if (!coords.has_value()) { continue; }
-    uint16_t col = coords.value()(0, 0);
-    uint16_t row = coords.value()(1, 0);
+    bool in_image = false;
+    Eigen::Vector2d coords;
+    if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
+      continue;
+    } else if (!in_image) {
+      continue;
+    }
+    uint16_t col = coords(0, 0);
+    uint16_t row = coords(1, 0);
     cv::Vec3b colors = image_->at<cv::Vec3b>(row, col);
     uchar blue = colors.val[0];
     uchar green = colors.val[1];
@@ -72,11 +76,16 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
       continue; // make sure points aren't behind image plane
     }
 
-    beam::opt<Eigen::Vector2i> coords = intrinsics_->ProjectPoint(point);
-    if (!coords.has_value()) { continue; }
+    bool in_image = false;
+    Eigen::Vector2d coords;
+    if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
+      continue;
+    } else if (!in_image) {
+      continue;
+    }
 
-    uint16_t col = coords.value()(0, 0);
-    uint16_t row = coords.value()(1, 0);
+    uint16_t col = coords(0, 0);
+    uint16_t row = coords(1, 0);
     uchar color_scale = image_->at<uchar>(row, col);
     // ignore black colors, this happens at edges when images are undistored
     //      std::cout << "Color scale = " << color_scale << std::endl;

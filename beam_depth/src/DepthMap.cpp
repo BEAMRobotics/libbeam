@@ -7,7 +7,6 @@
 #include <beam_depth/Utils.h>
 #include <beam_utils/math.h>
 
-
 namespace beam_depth {
 
 DepthMap::DepthMap(std::shared_ptr<beam_calibration::CameraModel> model,
@@ -23,8 +22,8 @@ int DepthMap::ExtractDepthMap(float thresh) {
   }
   BEAM_INFO("Extracting Depth Image...");
   // create image with 3 channels for coordinates
-  depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
-                                           model_->GetWidth(), CV_32FC1, double(0));
+  depth_image_ = std::make_shared<cv::Mat>(
+      model_->GetHeight(), model_->GetWidth(), CV_32FC1, double(0));
 
   beam_cv::Raycast<pcl::PointXYZ> caster(cloud_, model_, depth_image_);
   min_depth_ = 1000, max_depth_ = 0;
@@ -37,7 +36,7 @@ int DepthMap::ExtractDepthMap(float thresh) {
                    pcl::PointXYZ origin(0, 0, 0);
                    float d = beam::distance(cloud->points[index], origin);
                    if (d > max_depth_) { max_depth_ = d; }
-                   if (d < min_depth_) { min_depth_  = d; }
+                   if (d < min_depth_) { min_depth_ = d; }
                    image->at<float>(position[0], position[1]) = d;
                    num_extracted++;
                  });
@@ -55,10 +54,15 @@ int DepthMap::ExtractDepthMapProjection(float thresh) {
     Eigen::Vector3d origin(0, 0, 0);
     Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
                           cloud_->points[i].z);
-    beam::opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
-    if (!coords.has_value()) { continue; }
+    bool in_image = false;
+    Eigen::Vector2d coords;
+    if (!model_->ProjectPoint(point, coords, in_image)) {
+      continue;
+    } else if (!in_image) {
+      continue;
+    }
     // if successful projeciton calculate distance and fill depth image
-    uint16_t col = coords.value()(0, 0), row = coords.value()(1, 0);
+    uint16_t col = coords(0, 0), row = coords(1, 0);
     float dist = beam::distance(point, origin);
     if ((depth_image_->at<float>(row, col) > dist ||
          depth_image_->at<float>(row, col) > dist) &&
@@ -95,10 +99,10 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
       float distance = depth_image_->at<float>(row, col);
       if (distance > 0) {
         Eigen::Vector2i pixel(col, row);
-        beam::opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
-        if (direction.has_value()) {
-          direction.value().normalize();
-          Eigen::Vector3d coords = distance * direction.value();
+        Eigen::Vector3d direction;
+        if (model_->BackProject(pixel, direction)) {
+          direction.normalize();
+          Eigen::Vector3d coords = distance * direction;
           pcl::PointXYZ point(coords[0], coords[1], coords[2]);
           dense_cloud->points.push_back(point);
         } else {
@@ -127,9 +131,9 @@ Eigen::Vector3d DepthMap::GetXYZ(const Eigen::Vector2i& pixel) {
     Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
     distance = depth_image_->at<float>(c[0], c[1]);
   }
-  beam::opt<Eigen::Vector3d> direction = model_->BackProject(pixel);
-  if (direction.has_value()) {
-    Eigen::Vector3d coords = distance * direction.value();
+  Eigen::Vector3d direction;
+  if (model_->BackProject(pixel, direction)) {
+    Eigen::Vector3d coords = distance * direction;
     return coords;
   } else {
     BEAM_WARN("Pixel cannot be back projected, skipping.");
@@ -150,14 +154,14 @@ float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
     distance = depth_image_->at<float>(c[0], c[1]);
   }
   Eigen::Vector2i left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
-  beam::opt<Eigen::Vector3d> dir_left = model_->BackProject(left);
-  beam::opt<Eigen::Vector3d> dir_right = model_->BackProject(right);
-  if (!dir_left.has_value() || !dir_right.has_value()) {
+  Eigen::Vector3d dir_left, dir_right;
+  if (!model_->BackProject(left, dir_left) ||
+      !model_->BackProject(right, dir_right)) {
     BEAM_ERROR("Cannot get pixel scale. Pixel invalid, cannot back project.");
     return 0;
   }
-  Eigen::Vector3d coords_left = distance * dir_left.value(),
-                  coords_right = distance * dir_right.value();
+  Eigen::Vector3d coords_left = distance * dir_left,
+                  coords_right = distance * dir_right;
   float area = beam::distance(coords_left, coords_right) *
                beam::distance(coords_left, coords_right);
   return area;

@@ -8,6 +8,7 @@
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_utils/optional.h>
+#include <beam_cv/Utils.h>
 
 namespace beam_cv {
 
@@ -28,8 +29,8 @@ public:
   static beam::opt<Eigen::Matrix3d> EssentialMatrix8Point(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-      const std::vector<Eigen::Vector2i>& p1_v,
-      const std::vector<Eigen::Vector2i>& p2_v);
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v);
 
   /**
    * @brief Computes the essential matrix for 2 cameras given associated pixels
@@ -38,11 +39,11 @@ public:
    * @param p1_v corresponding pixels in image 1 (min 7)
    * @param p2_v corresponding pixels in image 2 (min 7)
    */
-  static beam::opt<std::vector<Eigen::Matrix3d>> EssentialMatrix7Point(
+  static beam::opt<std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>> EssentialMatrix7Point(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-      const std::vector<Eigen::Vector2i>& p1_v,
-      const std::vector<Eigen::Vector2i>& p2_v);
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v);
 
   /**
    * @brief Performs RANSAC on the given estimator
@@ -60,8 +61,8 @@ public:
   static beam::opt<Eigen::Matrix4d> RANSACEstimator(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-      const std::vector<Eigen::Vector2i>& p1_v,
-      const std::vector<Eigen::Vector2i>& p2_v,
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v,
       EstimatorMethod method = EstimatorMethod::EIGHTPOINT,
       int max_iterations = 100, double inlier_threshold = 5.0, int seed = -1);
 
@@ -71,8 +72,8 @@ public:
    * @param R vector to return possible rotations
    * @param t vector to return possible translations
    */
-  static void RtFromE(const Eigen::Matrix3d& E, std::vector<Eigen::Matrix3d>& R,
-                      std::vector<Eigen::Vector3d>& t);
+  static void RtFromE(const Eigen::Matrix3d& E, std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>& R,
+                      std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& t);
 
   /**
    * @brief Returns only physically possible transformation from 4 possibilities
@@ -88,10 +89,10 @@ public:
   static int
       RecoverPose(const std::shared_ptr<beam_calibration::CameraModel>& cam1,
                   const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-                  const std::vector<Eigen::Vector2i>& p1_v,
-                  const std::vector<Eigen::Vector2i>& p2_v,
-                  const std::vector<Eigen::Matrix3d>& R,
-                  const std::vector<Eigen::Vector3d>& t,
+                  const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
+                  const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v,
+                  const std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>& R,
+                  const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& t,
                   beam::opt<Eigen::Matrix4d>& pose, double inlier_threshold = 10.0);
 };
 

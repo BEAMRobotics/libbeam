@@ -268,7 +268,7 @@ public:
     return unique_ids;
   }
 
-  /** @briefGet a sequence of measurements of a landmark from one sensor
+  /** @brief Get a sequence of measurements of a landmark from one sensor
    * @return a vector of landmark measurements sorted by time
    */
   Track GetTrack(const SensorIdType& s, const LandmarkIdType& id) const {

@@ -73,10 +73,15 @@ public:
       Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
                             cloud_->points[i].z);
 
-      beam::opt<Eigen::Vector2i> coords = model_->ProjectPoint(point);
-      if (!coords.has_value()) { continue; }
-      uint16_t col = coords.value()(0, 0);
-      uint16_t row = coords.value()(1, 0);
+      bool in_image = false;
+      Eigen::Vector2d coords;
+      if (!model_->ProjectPoint(point, coords, in_image)) {
+        continue;
+      } else if (!in_image) {
+        continue;
+      }
+      uint16_t col = coords(0, 0);
+      uint16_t row = coords(1, 0);
       hit_mask.at<uchar>(row, col) = 255;
     }
     // create kdtree
@@ -89,8 +94,8 @@ public:
           Eigen::Vector3d ray(0, 0, 0);
           // get direction vector
           Eigen::Vector2i input_point(col, row);
-          beam::opt<Eigen::Vector3d> point = model_->BackProject(input_point);
-          if (!point.has_value()) { return; }
+          Eigen::Vector3d point;
+          if (!model_->BackProject(input_point, point)) { return; }
           // while loop to ray trace
           uint16_t raypt = 0;
           while (raypt <= 20) {
@@ -113,9 +118,9 @@ public:
               break;
             } else {
               raypt++;
-              ray(0, 0) = ray(0, 0) + distance * point.value()(0, 0);
-              ray(1, 0) = ray(1, 0) + distance * point.value()(1, 0);
-              ray(2, 0) = ray(2, 0) + distance * point.value()(2, 0);
+              ray(0, 0) = ray(0, 0) + distance * point(0, 0);
+              ray(1, 0) = ray(1, 0) + distance * point(1, 0);
+              ray(2, 0) = ray(2, 0) + distance * point(2, 0);
             }
           }
         }

@@ -66,8 +66,8 @@ TEST_CASE("Test feature matching: ORB") {
   cv::Mat imL = LoadIm0();
   cv::Mat imR = LoadIm1();
 
-  std::vector<Eigen::Vector2i> pL_v;
-  std::vector<Eigen::Vector2i> pR_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
@@ -102,8 +102,8 @@ TEST_CASE("Test feature matching: SIFT") {
   cv::Mat imL = LoadIm0();
   cv::Mat imR = LoadIm1();
 
-  std::vector<Eigen::Vector2i> pL_v;
-  std::vector<Eigen::Vector2i> pR_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
@@ -137,8 +137,8 @@ TEST_CASE("Test feature matching: BRISK") {
   cv::Mat imL = LoadIm0();
   cv::Mat imR = LoadIm1();
 
-  std::vector<Eigen::Vector2i> pL_v;
-  std::vector<Eigen::Vector2i> pR_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 

@@ -29,7 +29,7 @@ Ladybug::Ladybug(const std::string& file_path) {
   intrinsics_ << focal_length_, focal_length_, cx_, cy_;
 }
 
-std::shared_ptr<CameraModel> Ladybug::Clone(){
+std::shared_ptr<CameraModel> Ladybug::Clone() {
   std::shared_ptr<Ladybug> clone = std::make_shared<Ladybug>();
   clone->type_ = CameraType::LADYBUG;
   clone->SetIntrinsics(this->GetIntrinsics());
@@ -39,19 +39,12 @@ std::shared_ptr<CameraModel> Ladybug::Clone(){
   return clone;
 }
 
-beam::opt<Eigen::Vector2d>
-    Ladybug::ProjectPointPrecise(const Eigen::Vector3d& point, bool& outside_domain) {
-  outside_domain = false;
-
-  // check if point is behind image plane
-  if (point[2] < 0) { 
-    outside_domain = true;
-    return {}; 
-  }
-
-  double x = point[0];
-  double y = point[1];
-  double z = point[2];
+bool Ladybug::ProjectPoint(const Eigen::Vector3d& in_point,
+                           Eigen::Vector2d& out_pixel, bool& in_image_plane,
+                           std::shared_ptr<Eigen::MatrixXd> J) {
+  double x = in_point[0];
+  double y = in_point[1];
+  double z = in_point[2];
 
   // project
   Eigen::Vector2d point_projected;
@@ -59,45 +52,35 @@ beam::opt<Eigen::Vector2d>
   point_projected[1] = focal_length_ * y / z + cy_;
 
   Eigen::Vector2d pixel_rectified(0, 0);
-  lb_error_ = ladybugUnrectifyPixel(lb_context_, cam_id_, point_projected[0],
-                                    point_projected[1], &pixel_rectified[0],
-                                    &pixel_rectified[1]);
+  lb_error_ =
+      ladybugUnrectifyPixel(lb_context_, cam_id_, point_projected[0],
+                            point_projected[1], &out_pixel[0], &out_pixel[1]);
 
-  //unrectify function returns (-1,-1) if point projects outside of field of view
-  if ((int)pixel_rectified[0] == -1 && (int)pixel_rectified[1] == -1) {
-    outside_domain = true; 
+  // unrectify function returns (-1,-1) if point projects outside of field of
+  // view
+  if ((int)out_pixel[0] == -1 && (int)out_pixel[1] == -1) {
+    in_image_plane = false;
+    return false;
+  } else {
+    in_image_plane = false;
   }
 
-  if (PixelInImage(pixel_rectified)) { return pixel_rectified; }
-  return {};
-}
-
-beam::opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point, bool& outside_domain) {
-  beam::opt<Eigen::Vector2d> pixel = ProjectPointPrecise(point, outside_domain);
-  if (pixel.has_value()) {
-    Eigen::Vector2i pixel_rounded;
-    pixel_rounded << std::round(pixel.value()[0]), std::round(pixel.value()[1]);
-    return pixel_rounded;
+  if (J) {
+    BEAM_WARN("Ladybug cannot be recalibrated, no effect on Jacobian.");
   }
-  return {};
+
+  return true;
 }
 
-beam::opt<Eigen::Vector2i> Ladybug::ProjectPoint(const Eigen::Vector3d& point,
-                                           Eigen::MatrixXd& J, bool& outside_domain) {
-  BEAM_WARN(
-      "Ladybug canot be re-calibrated, no effect on Jacobian matrix passed");
-  return ProjectPoint(point, outside_domain);
-}
-
-beam::opt<Eigen::Vector3d> Ladybug::BackProject(const Eigen::Vector2i& pixel) {
+bool Ladybug::BackProject(const Eigen::Vector2i& in_pixel,
+                          Eigen::Vector3d& out_point) {
   Eigen::Vector2d pixel_out = {0, 0};
-  Eigen::Vector3d out_point;
-  lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, pixel[0], pixel[1],
-                                  &pixel_out[0], &pixel_out[1]);
+  lb_error_ = ladybugRectifyPixel(lb_context_, cam_id_, in_pixel[0],
+                                  in_pixel[1], &pixel_out[0], &pixel_out[1]);
   out_point << (pixel_out[0] - cx_) / focal_length_,
       (pixel_out[1] - cy_) / focal_length_, 1;
   LadybugCheckError();
-  return out_point;
+  return true;
 }
 
 void Ladybug::SetCameraID(unsigned int id) {
@@ -117,6 +100,13 @@ void Ladybug::LadybugCheckError() {
     BEAM_CRITICAL("Ladybug threw an error: {}",
                   ladybugErrorToString(lb_error_));
   }
+}
+
+bool Ladybug::InProjectionDomain(const Eigen::Vector3d& point) {
+  // ladybug is unique
+  Eigen::Vector2d pix;
+  bool in_image;
+  return this->ProjectPoint(point, pix, in_image);
 }
 
 } // namespace beam_calibration

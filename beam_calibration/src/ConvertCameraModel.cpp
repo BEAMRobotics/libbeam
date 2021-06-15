@@ -91,37 +91,40 @@ void ConvertCameraModel::CreatePixelMap(
   int v_start = (output_model->GetHeight() - out_height_) / 2;
   for (int i = 0; i < out_height_; i++) {
     for (int j = 0; j < out_width_; j++) {
-      beam::opt<Eigen::Vector3d> point_back_projected =
-          output_model->BackProject(Eigen::Vector2i(j + u_start, i + v_start));
-      if (!point_back_projected.has_value()) {
+      Eigen::Vector3d point_back_projected;
+      if (!output_model->BackProject(Eigen::Vector2i(j + u_start, i + v_start),
+                                     point_back_projected)) {
         pixel_map_.at<cv::Vec2i>(i, j).val[0] = -1;
         pixel_map_.at<cv::Vec2i>(i, j).val[1] = -1;
         continue;
       }
 
-      beam::opt<Eigen::Vector2i> point_projected =
-          source_model->ProjectPoint(point_back_projected.value());
-      if (!point_projected.has_value()) {
+      Eigen::Vector2d point_projected;
+      bool in_image_plane = false;
+      if (!source_model->ProjectPoint(point_back_projected, point_projected,
+                                      in_image_plane)) {
         pixel_map_.at<cv::Vec2i>(i, j).val[0] = -1;
         pixel_map_.at<cv::Vec2i>(i, j).val[1] = -1;
         continue;
       }
+      if (in_image_plane) {
+        // take into account the size of the input image relative to the input
+        // model
+        int new_u =
+            point_projected[0] - (source_model->GetWidth() - src_width_) / 2;
+        int new_v =
+            point_projected[1] - (source_model->GetHeight() - src_height_) / 2;
 
-      // take into account the size of the input image relative to the input
-      // model
-      int new_u = point_projected.value()[0] -
-                  (source_model->GetWidth() - src_width_) / 2;
-      int new_v = point_projected.value()[1] -
-                  (source_model->GetHeight() - src_height_) / 2;
+        if (new_u < 0 || new_v < 0 || new_u > src_width_ ||
+            new_v > src_height_) {
+          pixel_map_.at<cv::Vec2i>(i, j).val[0] = -1;
+          pixel_map_.at<cv::Vec2i>(i, j).val[1] = -1;
+          continue;
+        }
 
-      if (new_u < 0 || new_v < 0 || new_u > src_width_ || new_v > src_height_) {
-        pixel_map_.at<cv::Vec2i>(i, j).val[0] = -1;
-        pixel_map_.at<cv::Vec2i>(i, j).val[1] = -1;
-        continue;
+        pixel_map_.at<cv::Vec2i>(i, j).val[0] = new_u;
+        pixel_map_.at<cv::Vec2i>(i, j).val[1] = new_v;
       }
-
-      pixel_map_.at<cv::Vec2i>(i, j).val[0] = new_u;
-      pixel_map_.at<cv::Vec2i>(i, j).val[1] = new_v;
     }
   }
   BEAM_INFO("Done.");
