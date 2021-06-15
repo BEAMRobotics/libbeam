@@ -32,8 +32,8 @@ PoseRefinement::PoseRefinement(const ceres::Solver::Options options) {
 Eigen::Matrix4d PoseRefinement::RefinePose(
     const Eigen::Matrix4d& estimate,
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
-    const std::vector<Eigen::Vector2i>& pixels,
-    const std::vector<Eigen::Vector3d>& points, std::string& report,
+    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points, std::string& report,
     bool remove_points_outside_domain) {
   // vector to store optimized pose quaternion and translation
   Eigen::Matrix3d estimate_r = estimate.block(0, 0, 3, 3);

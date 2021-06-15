@@ -89,7 +89,7 @@ uint32_t CameraModel::GetWidth() const {
   return image_width_;
 }
 
-const Eigen::VectorXd CameraModel::GetIntrinsics() const {
+const Eigen::VectorXd& CameraModel::GetIntrinsics() const {
   return intrinsics_;
 }
 

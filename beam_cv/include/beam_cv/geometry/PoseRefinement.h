@@ -6,7 +6,7 @@
 
 #include <Eigen/Geometry>
 #include <ceres/ceres.h>
-
+#include <beam_cv/Utils.h>
 #include <beam_calibration/CameraModel.h>
 
 namespace beam_cv {
@@ -41,8 +41,8 @@ public:
   Eigen::Matrix4d
       RefinePose(const Eigen::Matrix4d& estimate,
                  const std::shared_ptr<beam_calibration::CameraModel>& cam,
-                 const std::vector<Eigen::Vector2i>& pixels,
-                 const std::vector<Eigen::Vector3d>& points,
+                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+                 const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
                  std::string& report, bool remove_points_outside_domain = true);
 
 private:

@@ -140,7 +140,7 @@ public:
    * @brief Method for retrieving the intrinsic values of the model
    * @return intrinsics of the camera
    */
-  const Eigen::VectorXd GetIntrinsics() const;
+  const Eigen::VectorXd& GetIntrinsics() const;
 
   /**
    * @brief Method for retrieving the camera type
@@ -205,6 +205,9 @@ protected:
       {"KANNALABRANDT", CameraType::KANNALABRANDT},
       {"DOUBLESPHERE", CameraType::DOUBLESPHERE},
       {"CATADITROPIC", CameraType::CATADITROPIC}};
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 } // namespace beam_calibration

@@ -22,8 +22,8 @@
 #include <beam_calibration/Radtan.h>
 #include <beam_utils/math.h>
 
-void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
-                 std::vector<Eigen::Vector2i>& matches2) {
+void ReadMatches(std::string file, std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& matches1,
+                 std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& matches2) {
   // declare variables
   std::ifstream infile;
   std::string line;
@@ -50,8 +50,8 @@ void ReadMatches(std::string file, std::vector<Eigen::Vector2i>& matches1,
 }
 
 void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
-                        std::vector<Eigen::Vector2i>& pixels,
-                        std::vector<Eigen::Vector3d>& points, int n) {
+                        std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+                        std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points, int n) {
   for (int i = 0; i < n; i++) {
     int x = rand() % cam->GetWidth();
     int y = rand() % cam->GetHeight();
@@ -84,8 +84,8 @@ TEST_CASE("Test triangulation.") {
   std::string matches_loc = __FILE__;
   matches_loc.erase(matches_loc.end() - 24, matches_loc.end());
   matches_loc += "tests/test_data/matches.txt";
-  std::vector<Eigen::Vector2i> frame1_matches;
-  std::vector<Eigen::Vector2i> frame2_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame1_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
 
   int num_inliers = beam_cv::CheckInliers(cam, cam, frame1_matches,
@@ -109,14 +109,14 @@ TEST_CASE("Test 8 point Relative Pose Estimator.") {
   matches_loc.erase(matches_loc.end() - 24, matches_loc.end());
   matches_loc += "tests/test_data/matches.txt";
   // extract poses
-  std::vector<Eigen::Vector2i> frame1_matches;
-  std::vector<Eigen::Vector2i> frame2_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame1_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   beam::opt<Eigen::Matrix3d> E =
       beam_cv::RelativePoseEstimator::EssentialMatrix8Point(
           cam, cam, frame1_matches, frame2_matches);
-  std::vector<Eigen::Matrix3d> R;
-  std::vector<Eigen::Vector3d> t;
+  std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d> R;
+  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> t;
   beam_cv::RelativePoseEstimator::RtFromE(E.value(), R, t);
   beam::opt<Eigen::Matrix4d> pose;
   beam_cv::RelativePoseEstimator::RecoverPose(cam, cam, frame1_matches,
@@ -138,8 +138,8 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 7 Point") {
   matches_loc += "tests/test_data/matches.txt";
 
   // extract poses
-  std::vector<Eigen::Vector2i> frame1_matches;
-  std::vector<Eigen::Vector2i> frame2_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame1_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   BEAM_INFO("Starting 7 Point RANSAC");
   beam::tic(&t);
@@ -169,8 +169,8 @@ TEST_CASE("Test RANSAC Relative Pose estimator - 8 Point") {
   matches_loc += "tests/test_data/matches.txt";
 
   // extract poses
-  std::vector<Eigen::Vector2i> frame1_matches;
-  std::vector<Eigen::Vector2i> frame2_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame1_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   BEAM_INFO("Starting 8 Point RANSAC");
   beam::tic(&t);
@@ -198,8 +198,8 @@ TEST_CASE("Test P3P Absolute Pose Estimator") {
   matches_loc += "tests/test_data/matches.txt";
 
   // extract poses
-  std::vector<Eigen::Vector2i> frame1_matches;
-  std::vector<Eigen::Vector2i> frame2_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame1_matches;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> frame2_matches;
   ReadMatches(matches_loc, frame1_matches, frame2_matches);
   Eigen::Matrix4d Pl = Eigen::Matrix4d::Identity();
   beam::opt<Eigen::Matrix4d> Pr =
@@ -210,11 +210,11 @@ TEST_CASE("Test P3P Absolute Pose Estimator") {
   std::vector<beam::opt<Eigen::Vector3d>> t_points =
       beam_cv::Triangulation::TriangulatePoints(cam, cam, Pl, Pr.value(),
                                                 frame1_matches, frame2_matches);
-  std::vector<Eigen::Vector3d> points;
+  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points;
   for (auto& p : t_points) { points.push_back(p.value()); }
 
   // find the pose
-  std::vector<Eigen::Matrix4d> poses =
+  std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d> poses =
       beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, frame2_matches, points);
 
   // check if the solution was found
@@ -237,8 +237,8 @@ TEST_CASE("Test RANSAC Absolute Pose estimator.") {
       beam_calibration::CameraModel::Create(intrinsics_loc);
 
   // generate correspondences
-  std::vector<Eigen::Vector2i> pixels;
-  std::vector<Eigen::Vector3d> points;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels;
+  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points;
   GenerateP3PMatches(cam, pixels, points, 30);
 
   // add some noise

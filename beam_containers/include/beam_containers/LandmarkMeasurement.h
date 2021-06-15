@@ -30,23 +30,22 @@ struct LandmarkMeasurement {
   Eigen::Vector2d value;
   cv::Mat descriptor;
 
-  LandmarkMeasurement(const ros::Time& t, const uint8_t& s,
-                      const uint64_t& id, const uint64_t& img,
-                      const Eigen::Vector2d& v, const cv::Mat& desc)
+  LandmarkMeasurement(const ros::Time& t, const uint8_t& s, const uint64_t& id,
+                      const uint64_t& img, const Eigen::Vector2d& v,
+                      const cv::Mat& desc)
       : time_point{t},
         sensor_id{s},
         landmark_id{id},
         image{img},
         value{v},
         descriptor{desc} {}
-  
-  static ros::Time MinTime(){
-    return ros::TIME_MIN;
-  }
 
-  static ros::Time MaxTime(){
-    return ros::TIME_MAX;
-  }
+  static ros::Time MinTime() { return ros::TIME_MIN; }
+
+  static ros::Time MaxTime() { return ros::TIME_MAX; }
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 } // namespace beam_containers
