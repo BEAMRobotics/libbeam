@@ -190,7 +190,7 @@ inline Eigen::Matrix3d hat(const Eigen::Vector3d& w) {
 
 /** Exp map operation in lie algebra **/
 inline Eigen::Quaterniond expmap(const Eigen::Vector3d& w) {
-  Eigen::AngleAxisd aa(w.norm(), w.stableNormalized());
+  Eigen::AngleAxisd aa(w.norm(), w.normalized());
   Eigen::Quaterniond q;
   q = aa;
   return q;

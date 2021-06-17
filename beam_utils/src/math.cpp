@@ -306,7 +306,6 @@ void nwu2edn(const Vec3& nwu, Vec3& edn) {
 Eigen::Matrix3d RightJacobian(const Eigen::Vector3d& w) {
   static const double root2_eps = sqrt(std::numeric_limits<double>::epsilon());
   static const double root4_eps = sqrt(root2_eps);
-  static const double twopi = 2.0 * 3.14159265358979323846;
   static const double qdrt720 = sqrt(sqrt(720.0));
   static const double qdrt5040 = sqrt(sqrt(5040.0));
   static const double sqrt24 = sqrt(24.0);
