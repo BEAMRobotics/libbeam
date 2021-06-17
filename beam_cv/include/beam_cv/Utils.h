@@ -5,8 +5,6 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
-#include <cstdlib>
-
 #include <beam_calibration/CameraModel.h>
 #include <beam_cv/descriptors/Descriptor.h>
 #include <beam_cv/detectors/Detector.h>
@@ -106,8 +104,8 @@ std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>
  * @param keypoints input keypoints
  * @param vec_keypoints converted keypoints
  */
-std::vector<cv::Point2f>
-    ConvertKeypoints(const std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>& keypoints);
+std::vector<cv::Point2f> ConvertKeypoints(
+    const std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>& keypoints);
 
 /**
  * @brief computes number of inliers projections
@@ -159,10 +157,11 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
  * @param pixels associated pixels
  * @param T_cam_world transform to camera
  */
-int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
-                 const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-                 const Eigen::Matrix4d& T_cam_world, double inlier_threshold);
+int CheckInliers(
+    std::shared_ptr<beam_calibration::CameraModel> cam,
+    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
+    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+    const Eigen::Matrix4d& T_cam_world, double inlier_threshold);
 
 /**
  * @brief performs entire matching pipeline
