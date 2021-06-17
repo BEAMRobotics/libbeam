@@ -181,13 +181,6 @@ void nwu2ned(const Quaternion& nwu, Quaternion& ned);
 /** NWU to EDN coordinate system **/
 void nwu2edn(const Vec3& nwu, Vec3& edn);
 
-/** Hat map operation in lie algebra **/
-inline Eigen::Matrix3d hat(const Eigen::Vector3d& w) {
-  return (Eigen::Matrix3d() << 0, -w.z(), w.y(), w.z(), 0, -w.x(), -w.y(),
-          w.x(), 0)
-      .finished();
-}
-
 /** Exp map operation in lie algebra **/
 inline Eigen::Quaterniond expmap(const Eigen::Vector3d& w) {
   Eigen::AngleAxisd aa(w.norm(), w.normalized());
