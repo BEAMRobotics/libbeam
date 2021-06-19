@@ -181,31 +181,11 @@ void nwu2ned(const Quaternion& nwu, Quaternion& ned);
 /** NWU to EDN coordinate system **/
 void nwu2edn(const Vec3& nwu, Vec3& edn);
 
-/** Exp map operation in lie algebra **/
-inline Eigen::Quaterniond expmap(const Eigen::Vector3d& w) {
-  Eigen::AngleAxisd aa(w.norm(), w.normalized());
-  Eigen::Quaterniond q;
-  q = aa;
-  return q;
-}
-
-/** Log map operation in lie algebra **/
-inline Eigen::Vector3d logmap(const Eigen::Quaterniond& q) {
-  Eigen::AngleAxisd aa(q);
-  return aa.angle() * aa.axis();
-}
-
 /**
- * @brief Computes the right jacobian of a 3-vector
+ * @brief Computes the right jacobian of a 3-vector in Lie space
  * @param w vector to compute right jacobian of
  **/
 Eigen::Matrix3d RightJacobian(const Eigen::Vector3d& w);
-
-/**
- * @brief Computes the s2-tangential basis given 3-vector
- * @param x vector to compute s2-tangential basis of
- **/
-Eigen::Matrix<double, 3, 2> S2TangentialBasis(const Eigen::Vector3d& x);
 
 /**
  * @brief Round a matrix values to a certain precision.

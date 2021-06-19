@@ -170,7 +170,7 @@ Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint) {
 }
 
 cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint) {
-  cv::Point2f cv_keypoint((float)keypoint(0), (float)keypoint(1));
+  cv::Point2f cv_keypoint(static_cast<float>(keypoint(0)), static_cast<float>(keypoint(1)));
   return cv_keypoint;
 }
 
@@ -194,7 +194,8 @@ std::vector<cv::Point2f> ConvertKeypoints(
     const std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>& keypoints) {
   std::vector<cv::Point2f> cv_keypoints;
   for (const auto& k : keypoints) {
-    cv_keypoints.emplace_back((float)k(0), (float)k(1));
+    cv_keypoints.emplace_back(static_cast<float>(k(0)),
+                              static_cast<float>(k(1)));
   }
   return cv_keypoints;
 }

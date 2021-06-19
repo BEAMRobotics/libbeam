@@ -340,19 +340,9 @@ Eigen::Matrix3d RightJacobian(const Eigen::Vector3d& w) {
     }
   }
 
-  Eigen::Matrix3d hat_w = hat(w);
+  Eigen::Matrix3d hat_w = beam::SkewTransform(w);
   return Eigen::Matrix3d::Identity() - cos_term * hat_w +
          sin_term * hat_w * hat_w;
-}
-
-Eigen::Matrix<double, 3, 2> S2TangentialBasis(const Eigen::Vector3d& x) {
-  int d = 0;
-  for (int i = 1; i < 3; ++i) {
-    if (abs(x[i]) > abs(x[d])) d = i;
-  }
-  Eigen::Vector3d b1 = x.cross(Eigen::Vector3d::Unit((d + 1) % 3)).normalized();
-  Eigen::Vector3d b2 = x.cross(b1).normalized();
-  return (Eigen::Matrix<double, 3, 2>() << b1, b2).finished();
 }
 
 MatX RoundMatrix(const MatX& M, int precision) {
