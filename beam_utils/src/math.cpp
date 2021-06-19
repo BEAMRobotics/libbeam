@@ -303,7 +303,7 @@ void nwu2edn(const Vec3& nwu, Vec3& edn) {
   edn(2) = nwu(0);
 }
 
-Eigen::Matrix3d RightJacobian(const Eigen::Vector3d& w) {
+Eigen::Matrix3d RightJacobianOfSO3(const Eigen::Vector3d& w) {
   static const double root2_eps = sqrt(std::numeric_limits<double>::epsilon());
   static const double root4_eps = sqrt(root2_eps);
   static const double qdrt720 = sqrt(sqrt(720.0));

@@ -182,10 +182,17 @@ void nwu2ned(const Quaternion& nwu, Quaternion& ned);
 void nwu2edn(const Vec3& nwu, Vec3& edn);
 
 /**
- * @brief Computes the right jacobian of a 3-vector in Lie space
+ * @brief Computes the right jacobian of a 3-vector representing the exponential
+ * coordinates in SO(3).
+ * 
+ * The right jacobian of a 3-vector in Lie space is computed as:
+ * I - (1-cos(||w||))/(||w||^2)*[w]_x + (||w|| - sin(||w||))/(||w||^3)*[w]_x
+ *
+ * Jacobians on Lie groups are explained in detail on page 8 in:
+ *https://arxiv.org/pdf/1812.01537.pdf
  * @param w vector to compute right jacobian of
  **/
-Eigen::Matrix3d RightJacobian(const Eigen::Vector3d& w);
+Eigen::Matrix3d RightJacobianOfSO3(const Eigen::Vector3d& w);
 
 /**
  * @brief Round a matrix values to a certain precision.
