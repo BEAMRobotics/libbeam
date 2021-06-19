@@ -170,7 +170,7 @@ Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint) {
 }
 
 cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint) {
-  cv::Point2f cv_keypoint((float)keypoint(0), (float)keypoint(1));
+  cv::Point2f cv_keypoint(static_cast<float>(keypoint(0)), static_cast<float>(keypoint(1)));
   return cv_keypoint;
 }
 
@@ -190,11 +190,12 @@ std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>
   return vec_keypoints;
 }
 
-std::vector<cv::Point2f>
-    ConvertKeypoints(const std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>& keypoints) {
+std::vector<cv::Point2f> ConvertKeypoints(
+    const std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>& keypoints) {
   std::vector<cv::Point2f> cv_keypoints;
   for (const auto& k : keypoints) {
-    cv_keypoints.emplace_back((float)k(0), (float)k(1));
+    cv_keypoints.emplace_back(static_cast<float>(k(0)),
+                              static_cast<float>(k(1)));
   }
   return cv_keypoints;
 }
@@ -259,10 +260,11 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
   return inliers;
 }
 
-int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
-                 const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-                 const Eigen::Matrix4d& T_cam_world, double inlier_threshold) {
+int CheckInliers(
+    std::shared_ptr<beam_calibration::CameraModel> cam,
+    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
+    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+    const Eigen::Matrix4d& T_cam_world, double inlier_threshold) {
   if (points.size() != pixels.size()) {
     BEAM_WARN("Invalid input, number of points and pixels must match.");
     return -1;
@@ -295,7 +297,8 @@ void DetectComputeAndMatch(
     const std::shared_ptr<beam_cv::Descriptor>& descriptor,
     const std::shared_ptr<beam_cv::Detector>& detector,
     const std::shared_ptr<beam_cv::Matcher>& matcher,
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pL_v, std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pR_v) {
+    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pL_v,
+    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pR_v) {
   std::vector<cv::KeyPoint> kpL = detector->DetectFeatures(imL);
   cv::Mat descL = descriptor->ExtractDescriptors(imL, kpL);
 
