@@ -99,6 +99,14 @@ inline ros::Time ChronoToRosTime(const TimePoint& time_point) {
   return ros_time;
 }
 
+struct RosTimeHash
+{
+  std::size_t operator()(const ros::Time& k) const
+  {
+    return std::hash<uint64_t>()(k.toNSec());
+  }
+};
+
 /**
  * @brief Simple timer object
  */

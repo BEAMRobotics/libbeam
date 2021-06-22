@@ -8,14 +8,15 @@
 #include <numeric>
 
 namespace beam_cv {
-std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
+std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d> AbsolutePoseEstimator::P3PEstimator(
     std::shared_ptr<beam_calibration::CameraModel> cam,
-    std::vector<Eigen::Vector2i> pixels, std::vector<Eigen::Vector3d> points) {
+    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels, std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points) {
   // store normalized pixels coords
-  std::vector<Eigen::Vector3d> x;
+  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> x;
   for (std::size_t i = 0; i < pixels.size(); ++i) {
     // back project and normalize each pixel before adding it to x
-    Eigen::Vector3d homogenized_pixel = cam->BackProject(pixels[i]).value();
+    Eigen::Vector3d homogenized_pixel;
+    cam->BackProject(pixels[i], homogenized_pixel);
     homogenized_pixel.normalize();
     x.push_back(homogenized_pixel);
   };
@@ -111,7 +112,7 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
   double lambda1, lambda2, lambda3;
 
   // prep for output
-  std::vector<Eigen::Matrix4d> output;
+  std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d> output;
   Eigen::Matrix4d solution = Eigen::Matrix4d::Zero();
   solution(3, 3) = 1;
 
@@ -225,7 +226,7 @@ std::vector<Eigen::Matrix4d> AbsolutePoseEstimator::P3PEstimator(
 
 Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
     std::shared_ptr<beam_calibration::CameraModel> cam,
-    std::vector<Eigen::Vector2i> pixels, std::vector<Eigen::Vector3d> points,
+    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels, std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points,
     int max_iterations, double inlier_threshold, int seed) {
   // return nothing if input sizes do not match
   if (pixels.size() != points.size()) {
@@ -246,10 +247,10 @@ Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
     srand(seed);
   }
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    std::vector<Eigen::Vector2i> pixels_copy = pixels;
-    std::vector<Eigen::Vector3d> points_copy = points;
-    std::vector<Eigen::Vector2i> pixels_sample;
-    std::vector<Eigen::Vector3d> points_sample;
+    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels_copy = pixels;
+    std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points_copy = points;
+    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels_sample;
+    std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points_sample;
     // fill new point vectors with randomly sampled points from inputs
     int n = pixels_copy.size();
     for (uint32_t i = 0; i < 3; i++) {
@@ -262,7 +263,7 @@ Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
     }
 
     // perform p3p on the three samples correspondences
-    std::vector<Eigen::Matrix4d> poses =
+    std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d> poses =
         AbsolutePoseEstimator::P3PEstimator(cam, pixels_sample, points_sample);
 
     // check if any of the p3p solution poses have the most inliers

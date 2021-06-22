@@ -28,7 +28,7 @@ using AlignVec4d = Eigen::aligned_allocator<Eigen::Vector4d>;
 ceres::Solver::Options ceres_solver_options_;
 std::unique_ptr<ceres::LossFunction> loss_function_;
 std::unique_ptr<ceres::LocalParameterization> se3_parameterization_;
-bool output_results_{true};
+bool output_results_{false};
 
 std::shared_ptr<ceres::Problem> SetupCeresProblem() {
   // set ceres solver params
@@ -110,7 +110,6 @@ TEST_CASE("Test lb projection - no noise") {
   std::string file_location = __FILE__;
   file_location.erase(file_location.end() - 41, file_location.end());
   file_location += "/config/ladybug.conf";
-  std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
       beam_calibration::CameraModel::Create(file_location);
 
@@ -128,11 +127,13 @@ TEST_CASE("Test lb projection - no noise") {
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    beam::opt<Eigen::Vector2d> pixel =
-        camera_model->ProjectPointPrecise(point_transformed.hnormalized());
-    if (pixel.has_value()) {
+    Eigen::Vector2d pixel;
+    bool in_image = false;
+    bool in_domain = camera_model->ProjectPoint(point_transformed.hnormalized(),
+                                                pixel, in_image);
+    if (in_domain && in_image) {
       pixels_valid[i] = true;
-      pixels[i] = pixel.value();
+      pixels[i] = pixel;
     } else {
       pixels_valid[i] = false;
     }
@@ -147,10 +148,12 @@ TEST_CASE("Test lb projection - no noise") {
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      beam::opt<Eigen::Vector2d> perturbed_pixel =
-          camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
-      if (perturbed_pixel.has_value()) {
-        perturbed_pixels[i] = perturbed_pixel.value();
+      Eigen::Vector2d perturbed_pixel;
+      bool in_image = false;
+      bool in_domain = camera_model->ProjectPoint(
+          perturbed_points[i].hnormalized(), perturbed_pixel, in_image);
+      if (in_image && in_domain) {
+        perturbed_pixels[i] = perturbed_pixel;
       } else {
         Eigen::Vector2d zero(0, 0);
         perturbed_pixels[i] =
@@ -203,9 +206,11 @@ TEST_CASE("Test lb projection - no noise") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct:
-      beam::opt<Eigen::Vector2d> pixel_projected =
-          camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized());
-      REQUIRE(pixel_projected.value().isApprox(pixels[i], 1e-5));
+      Eigen::Vector2d pixel_projected;
+      bool in_image = false;
+      REQUIRE(camera_model->ProjectPoint((T_CW * points[i]).hnormalized(),
+                                         pixel_projected, in_image));
+      REQUIRE(pixel_projected.isApprox(pixels[i], 1e-5));
     }
   }
 
@@ -230,10 +235,13 @@ TEST_CASE("Test lb projection - no noise") {
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      beam::opt<Eigen::Vector2d> final_pixel =
-          camera_model->ProjectPointPrecise(final_points[i].hnormalized());
-      if (final_pixel.has_value()) {
-        final_pixels[i] = final_pixel.value();
+
+      Eigen::Vector2d final_pixel;
+      bool in_image = false;
+      bool in_domain = camera_model->ProjectPoint(final_points[i].hnormalized(),
+                                                  final_pixel, in_image);
+      if (in_image && in_domain) {
+        final_pixels[i] = final_pixel;
       } else {
         Eigen::Vector2d zero(0, 0);
         final_pixels[i] =
@@ -256,8 +264,7 @@ TEST_CASE("Test lb projection - no noise") {
     test_vis.endVis();
   }
 
-  REQUIRE(beam::RoundMatrix(T_CW, 5) == beam::RoundMatrix(T_CW_opt1, 5));
-  REQUIRE(beam::RoundMatrix(T_CW, 5) == beam::RoundMatrix(T_CW_opt2, 5));
+  REQUIRE(T_CW.isApprox(T_CW_opt1, 1e-3));
 }
 
 /******************************************************************************************************************/
@@ -292,7 +299,6 @@ TEST_CASE("Test lb projection - with noise") {
   std::string file_location = __FILE__;
   file_location.erase(file_location.end() - 41, file_location.end());
   file_location += "/config/ladybug.conf";
-  std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
       beam_calibration::CameraModel::Create(file_location);
 
@@ -310,19 +316,22 @@ TEST_CASE("Test lb projection - with noise") {
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    beam::opt<Eigen::Vector2d> pixel =
-        camera_model->ProjectPointPrecise(point_transformed.hnormalized());
-    if (pixel.has_value()) {
+
+    Eigen::Vector2d pixel;
+    bool in_image = false;
+    bool in_domain = camera_model->ProjectPoint(point_transformed.hnormalized(),
+                                                pixel, in_image);
+    if (in_image && in_domain) {
       // generate noise in the projected pixel (+/- 2 pixels)
       auto rng_x = std::mt19937(std::random_device{}());
       auto rng_y = std::mt19937(std::random_device{}());
       std::uniform_real_distribution<double> dist(0, 4.0);
       double noise_x = dist(rng_x) - 2;
       double noise_y = dist(rng_y) - 2;
-      pixel.value().x() += (int)noise_x;
-      pixel.value().y() += (int)noise_y;
+      pixel.x() += (int)noise_x;
+      pixel.y() += (int)noise_y;
       pixels_valid[i] = true;
-      pixels[i] = pixel.value();
+      pixels[i] = pixel;
     } else {
       pixels_valid[i] = false;
     }
@@ -337,10 +346,12 @@ TEST_CASE("Test lb projection - with noise") {
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      beam::opt<Eigen::Vector2d> perturbed_pixel =
-          camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
-      if (perturbed_pixel.has_value()) {
-        perturbed_pixels[i] = perturbed_pixel.value();
+      Eigen::Vector2d perturbed_pixel;
+      bool in_image = false;
+      bool in_domain = camera_model->ProjectPoint(
+          perturbed_points[i].hnormalized(), perturbed_pixel, in_image);
+      if (in_image && in_domain) {
+        perturbed_pixels[i] = perturbed_pixel;
       } else {
         Eigen::Vector2d zero(0, 0);
         perturbed_pixels[i] =
@@ -392,9 +403,11 @@ TEST_CASE("Test lb projection - with noise") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct (within the noise level):
-      beam::opt<Eigen::Vector2d> pixel_projected =
-          camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized());
-      REQUIRE(pixel_projected.value().isApprox(pixels[i], 2.1));
+      Eigen::Vector2d pixel_projected;
+      bool in_image = false;
+      REQUIRE(camera_model->ProjectPoint((T_CW * points[i]).hnormalized(),
+                                         pixel_projected, in_image));
+      REQUIRE(pixel_projected.isApprox(pixels[i], 2.1));
     }
   }
 
@@ -419,10 +432,12 @@ TEST_CASE("Test lb projection - with noise") {
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      beam::opt<Eigen::Vector2d> final_pixel =
-          camera_model->ProjectPointPrecise(final_points[i].hnormalized());
-      if (final_pixel.has_value()) {
-        final_pixels[i] = final_pixel.value();
+      Eigen::Vector2d final_pixel;
+      bool in_image = false;
+      bool in_domain = camera_model->ProjectPoint(final_points[i].hnormalized(),
+                                                  final_pixel, in_image);
+      if (in_image && in_domain) {
+        final_pixels[i] = final_pixel;
       } else {
         Eigen::Vector2d zero(0, 0);
         final_pixels[i] =
@@ -446,16 +461,16 @@ TEST_CASE("Test lb projection - with noise") {
   }
 
   // with noise, precision will be lower than perfect projection
-  REQUIRE(beam::RoundMatrix(T_CW, 1) == beam::RoundMatrix(T_CW_opt1, 1));
-  REQUIRE(beam::RoundMatrix(T_CW, 1) == beam::RoundMatrix(T_CW_opt2, 1));
+  REQUIRE(T_CW.isApprox(T_CW_opt1, 1e-1));
 }
 
-/******************************************************************************************************************/
-// TEST CASE 3
-// ladybug camera model projection with initial perturbed projection outside of
-// camera frame check convergence with perturbed cloud projecting out of the
-// camera frame (some points clipped)
-/******************************************************************************************************************/
+// /******************************************************************************************************************/
+// // TEST CASE 3
+// // ladybug camera model projection with initial perturbed projection outside
+// of
+// // camera frame check convergence with perturbed cloud projecting out of the
+// // camera frame (some points clipped)
+// /******************************************************************************************************************/
 
 TEST_CASE("Test lb projection - with clipping") {
   // create point clouds for results visualization
@@ -483,7 +498,6 @@ TEST_CASE("Test lb projection - with clipping") {
   std::string file_location = __FILE__;
   file_location.erase(file_location.end() - 41, file_location.end());
   file_location += "/config/ladybug.conf";
-  std::cout << file_location << std::endl;
   std::shared_ptr<beam_calibration::CameraModel> camera_model =
       beam_calibration::CameraModel::Create(file_location);
 
@@ -501,11 +515,13 @@ TEST_CASE("Test lb projection - with clipping") {
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
-    beam::opt<Eigen::Vector2d> pixel =
-        camera_model->ProjectPointPrecise(point_transformed.hnormalized());
-    if (pixel.has_value()) {
+    Eigen::Vector2d pixel;
+    bool in_image = false;
+    bool in_domain = camera_model->ProjectPoint(point_transformed.hnormalized(),
+                                                pixel, in_image);
+    if (in_image && in_domain) {
       pixels_valid[i] = true;
-      pixels[i] = pixel.value();
+      pixels[i] = pixel;
     } else {
       pixels_valid[i] = false;
     }
@@ -520,10 +536,13 @@ TEST_CASE("Test lb projection - with clipping") {
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
-      beam::opt<Eigen::Vector2d> perturbed_pixel =
-          camera_model->ProjectPointPrecise(perturbed_points[i].hnormalized());
-      if (perturbed_pixel.has_value()) {
-        perturbed_pixels[i] = perturbed_pixel.value();
+      Eigen::Vector2d perturbed_pixel;
+      bool in_image = false;
+      bool in_domain = camera_model->ProjectPoint(
+          perturbed_points[i].hnormalized(), perturbed_pixel, in_image);
+
+      if (in_image && in_domain) {
+        perturbed_pixels[i] = perturbed_pixel;
         printf("projected in frame \n");
       } else {
         printf("initial perturbed point projected out-of-frame \n");
@@ -577,9 +596,11 @@ TEST_CASE("Test lb projection - with clipping") {
                                  &(results_perturbed_init[0]));
 
       // Check that the inputs are correct (within the noise level):
-      beam::opt<Eigen::Vector2d> pixel_projected =
-          camera_model->ProjectPointPrecise((T_CW * points[i]).hnormalized());
-      REQUIRE(pixel_projected.value().isApprox(pixels[i], 1e-5));
+      Eigen::Vector2d pixel_projected;
+      bool in_image = false;
+      REQUIRE(camera_model->ProjectPoint((T_CW * points[i]).hnormalized(),
+                                         pixel_projected, in_image));
+      REQUIRE(pixel_projected.isApprox(pixels[i], 1e-5));
     }
   }
 
@@ -604,10 +625,12 @@ TEST_CASE("Test lb projection - with clipping") {
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
-      beam::opt<Eigen::Vector2d> final_pixel =
-          camera_model->ProjectPointPrecise(final_points[i].hnormalized());
-      if (final_pixel.has_value()) {
-        final_pixels[i] = final_pixel.value();
+      Eigen::Vector2d final_pixel;
+      bool in_image = false;
+      bool in_domain = camera_model->ProjectPoint(final_points[i].hnormalized(),
+                                                  final_pixel, in_image);
+      if (in_image && in_domain) {
+        final_pixels[i] = final_pixel;
       } else {
         Eigen::Vector2d zero(0, 0);
         final_pixels[i] =
@@ -631,8 +654,7 @@ TEST_CASE("Test lb projection - with clipping") {
   }
 
   // with noise, precision will be lower than perfect projection
-  REQUIRE(beam::RoundMatrix(T_CW, 5) == beam::RoundMatrix(T_CW_opt1, 5));
-  REQUIRE(beam::RoundMatrix(T_CW, 5) == beam::RoundMatrix(T_CW_opt2, 5));
+  REQUIRE(T_CW.isApprox(T_CW_opt1, 1e-3));
 }
 
 } // namespace beam_optimization

@@ -18,7 +18,7 @@ namespace beam_cv {
 class GFTTDetector : public Detector {
 public:
   struct Params {
-    int max_corners = 1000;
+    int num_features = 1000;
     double quality_level = 0.01;
     double min_distance = 1;
     int block_size = 3;
@@ -44,7 +44,7 @@ public:
    * @param use_harris_detector
    * @param k
    */
-  GFTTDetector(int max_corners = 1000, double quality_level = 0.01,
+  GFTTDetector(int num_features = 1000, double quality_level = 0.01,
                double min_distance = 1, int block_size = 3,
                bool use_harris_detector = false, double k = 0.04);
 
