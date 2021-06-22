@@ -5,52 +5,87 @@ namespace beam_cv {
 Tracker::Tracker(int window_size) : window_size_(window_size) {}
 
 void Tracker::TimestampImage(const ros::Time& current_time) {
-  auto img_count = img_times_.size();
-  img_times_[img_count] = current_time;
+  img_times_.insert(current_time.toNSec());
 }
 
 void Tracker::PurgeContainer() {
   // If in online mode - sliding window
   if (window_size_ == 0 || img_times_.size() <= window_size_) { return; }
 
-  size_t cleared_img_threshold = img_times_.size() - window_size_;
-
   // Need to remove all info at this particular image. Due to zero
   // indexing, subtract one for the requested image.
 
   // Get the time for this image.
-  auto time = img_times_.at(cleared_img_threshold);
+  auto iter = img_times_.rbegin();
+  std::advance(iter, window_size_);
+  ros::Time time;
+  time.fromNSec(*iter);
+  
   // Get all IDs at this time
   auto landmarks = landmarks_.GetLandmarkIDsInWindow(time, time);
+
   // Delete all landmarks in the container at this time.
   for (const auto& l : landmarks) { landmarks_.Erase(time, sensor_id_, l); }
 }
 
 std::vector<FeatureTrack> Tracker::GetTracks(const uint64_t img_num) const {
   std::vector<FeatureTrack> feature_tracks;
-  // Determine how many images have been added
-  size_t img_count = img_times_.size() - 1;
-  if (img_num > img_count) {
-    throw std::out_of_range("Image requested is in the future!");
-  } else if (window_size_ > 0 && img_num < cleared_img_threshold_) {
-    // for non-zero window_size_, the measurement container is periodically
-    // cleaned out. Therefore can only access images still with info.
-    throw std::out_of_range("Image requested is outside of maintained window!");
-  } else if (img_num > 0) {
-    // Find the time for this image
-    ros::Time img_time = img_times_.at(img_num);
-    // Extract all of the IDs visible at this time
-    auto landmark_ids = landmarks_.GetLandmarkIDsInWindow(img_time, img_time);
-    // For each ID, get the track.
-    for (const auto& l : landmark_ids) {
-      // Looking for track from first image.
-      ros::Time start_time = (img_times_.begin())->second;
-      FeatureTrack tracks =
-          landmarks_.GetTrackInWindow(sensor_id_, l, start_time, img_time);
-      // Emplace new feature track back into vector
-      feature_tracks.emplace_back(tracks);
-    }
+  if (img_times_.size() == 0) {
+    BEAM_WARN("No images added to tracker, cannot get tracks.");
+    return feature_tracks;
   }
+  if (img_times_.size() == 1) {
+    BEAM_WARN("Only one image added to the tracker, no tracks can be "
+              "generated. Returning empty tracks.");
+    return feature_tracks;
+  }
+  if (img_num > img_times_.size() - 1) {
+    BEAM_ERROR("Image requested is in the future. Returning empty tracks.");
+    return feature_tracks;
+  }
+
+  auto iter = img_times_.begin();
+  std::advance(iter, img_num);
+  ros::Time time;
+  time.fromNSec(*iter);
+  return GetTracks(time);
+}
+
+std::vector<FeatureTrack> Tracker::GetTracks(const ros::Time& stamp) const {
+  std::vector<FeatureTrack> feature_tracks;
+  // Determine how many images have been added
+  auto stamp_nsec = stamp.toNSec();
+
+  if (stamp_nsec < *img_times_.begin()) {
+    BEAM_ERROR("Requesting tracks for image time prior to the first image in "
+               "the tracker. Returning empty tracks.");
+    return feature_tracks;
+  } else if (stamp_nsec > *img_times_.rbegin()) {
+    BEAM_ERROR("Requesting tracks for image time after the last image in the "
+               "tracker. Returning empty tracks.");
+    return feature_tracks;
+  }
+  if (img_times_.find(stamp_nsec) == img_times_.end()) {
+    BEAM_ERROR("Image stamp requested is not stored in the tracker. Returning "
+               "empty tracks.");
+    return feature_tracks;
+  }
+
+  // Extract all of the IDs visible at this time
+  auto landmark_ids = landmarks_.GetLandmarkIDsInWindow(stamp, stamp);
+
+  // For each ID, get the track.
+  for (const auto& l : landmark_ids) {
+    // Looking for track from first image.
+    ros::Time start_time;
+    start_time.fromNSec(*img_times_.begin());
+    FeatureTrack tracks =
+        landmarks_.GetTrackInWindow(sensor_id_, l, start_time, stamp);
+
+    // Emplace new feature track back into vector
+    feature_tracks.emplace_back(tracks);
+  }
+
   return feature_tracks;
 }
 
@@ -65,8 +100,10 @@ std::vector<std::vector<FeatureTrack>>
          ++img_it) {
       // Add image to tracker
       AddImage(*img_it, ros::Time::now());
+
       // Get tracks from this image (first should return a null track)
       curr_track = GetTracks(num_images);
+
       // Add current image tracks to the list of feature tracks
       feature_tracks.push_back(curr_track);
       ++num_images;
@@ -94,9 +131,10 @@ std::vector<uint64_t>
 }
 
 FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
-  ros::Time start_time = (img_times_.begin())->second;
-  auto img_count = img_times_.size();
-  ros::Time end_time = img_times_[img_count - 1];
+  ros::Time start_time;
+  start_time.fromNSec(*img_times_.begin());
+  ros::Time end_time;
+  end_time.fromNSec(*img_times_.end());
   return landmarks_.GetTrackInWindow(sensor_id_, landmark_id, start_time,
                                      end_time);
 }
@@ -106,12 +144,14 @@ cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
   cv::Mat out_img = image;
   // Define colour for arrows
   cv::Scalar colour(0, 255, 255); // yellow
+
   // Draw all feature tracks on out_img
   for (const auto& ft : feature_tracks) {
     for (size_t i = 1; i < ft.size(); i++) {
       // Convert landmark values to cv::Point2f
       cv::Point2f prev = ConvertKeypoint(ft[i - 1].value);
       cv::Point2f curr = ConvertKeypoint(ft[i].value);
+
       // Draw arrowed line until end of feature track is reached
       cv::arrowedLine(out_img, prev, curr, colour, 2);
     }
@@ -119,9 +159,8 @@ cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
   return out_img;
 }
 
-uint64_t Tracker::GenerateFeatureID() const {
-  static uint64_t id = 0;
-  return id++;
+uint64_t Tracker::GenerateFeatureID() {
+  return id_++;
 }
 
 size_t Tracker::GetLandmarkContainerSize() {

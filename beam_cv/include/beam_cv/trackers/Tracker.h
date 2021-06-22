@@ -8,6 +8,7 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <set>
 
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
@@ -17,6 +18,33 @@
 namespace beam_cv {
 
 typedef std::vector<beam_containers::LandmarkMeasurement> FeatureTrack;
+
+/**
+ * @brief Enum class for different tracker types
+ */
+enum class TrackerType { DESCMATCHING = 0, KL };
+
+// Map for storing string input
+static std::map<std::string, TrackerType> TrackerTypeStringMap = {
+    {"DESCMATCHING", TrackerType::DESCMATCHING},
+    {"KL", TrackerType::KL}};
+
+// Map for storing int input
+static std::map<uint8_t, TrackerType> TrackerTypeIntMap = {
+    {0, TrackerType::DESCMATCHING},
+    {1, TrackerType::KL}};
+
+// function for listing types of Tracker available
+inline std::string GetTrackerTypes() {
+  std::string types;
+  for (auto it = TrackerTypeStringMap.begin(); it != TrackerTypeStringMap.end();
+       it++) {
+    types += it->first;
+    types += ", ";
+  }
+  types.erase(types.end() - 2, types.end());
+  return types;
+}
 
 /**
  * @brief Image tracker class base class. This class defines the interface and
@@ -41,13 +69,12 @@ public:
   /**
    * @brief Pure virtual method for tracking and adding tracked features in a
    * new image to the tracker. We assume that this function is called on images
-   * in sequence. 
-   * 
+   * in sequence.
+   *
    * IMPORTANT NOTE: this function must call PurgeContainer
-   * (defined in base class) after adding the new tracked features to the
-   * tracker.
-   * 
-   * @param image the image to add.
+   * (defined in base class)
+   *
+   * @param image the image to add. This needs to be a greyscal image
    * @param current_time the time at which the image was captured
    */
   virtual void AddImage(const cv::Mat& image,
@@ -55,7 +82,7 @@ public:
 
   /**
    * @brief Get the tracks of all features in the requested image from the
-   * sequence.
+   * sequence using the image number
    * @param img_num the number of the image to obtain tracks from
    * @return tracks corresponding to all detected landmarks in the image, from
    * the start of time to the given image.
@@ -63,7 +90,11 @@ public:
   std::vector<FeatureTrack> GetTracks(const size_t img_num) const;
 
   /**
-   * @brief todo: implement
+   * @brief Get the tracks of all features in the requested image from the
+   * sequence, using the timestamp of the image
+   * @param stamp the timstamp of the image to obtain tracks from
+   * @return tracks corresponding to all detected landmarks in the image, from
+   * the start of time to the given image.
    */
   std::vector<FeatureTrack> GetTracks(const ros::Time& stamp) const;
 
@@ -128,7 +159,7 @@ protected:
    * @brief Generate a new ID for each newly detected feature.
    * @return the assigned ID.
    */
-  uint64_t GenerateFeatureID() const;
+  uint64_t GenerateFeatureID();
 
   /**
    * @brief Register the current time with the current img_count
@@ -149,22 +180,18 @@ protected:
    */
   size_t window_size_;
 
-  /** If in sliding window mode, this represents the highest image number that
-   *  can be requested to extract tracks from.
-   */
-  size_t cleared_img_threshold_ = 0;
+  // The sensor ID. TODO: Expand this for use with multiple cams.
+  uint8_t sensor_id_ = 0;
 
-  // Correspondence maps
-  std::map<int, size_t> prev_ids_;
-  std::map<size_t, ros::Time> img_times_;
+  // vector of all image times
+  std::set<uint64_t> img_times_;
 
   // Measurement container variables
   beam_containers::LandmarkContainer<beam_containers::LandmarkMeasurement>
       landmarks_;
 
-  // The sensor ID. TODO: Expand this for use with multiple cams.
-  uint8_t sensor_id_ = 0;
-
+  // store current id
+  uint64_t id_{0};    
 };
 
 } // namespace beam_cv

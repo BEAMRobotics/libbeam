@@ -20,10 +20,9 @@
 
 namespace beam_cv {
 
-typedef std::vector<beam_containers::LandmarkMeasurement> FeatureTrack;
-
-/** Image tracker class.
- * The Tracker class is templated on a feature detector, descriptor, and matcher
+/** 
+ * @brief Image tracker class that uses descriptor matching
+ * The Tracker class requires a feature detector, descriptor, and matcher
  * to track features over a sequence of images.*/
 class DescMatchingTracker : public Tracker {
 public:
@@ -68,17 +67,6 @@ private:
                                 std::vector<cv::DMatch>& matches);
 
   /**
-   * @brief Register results of matching into the tracker
-   * @param current_time timestamp of image to register
-   * @param kp keypoints in the image
-   * @param desc descriptors in the image
-   * @param matches with the current top image
-   */
-  void Register(const ros::Time& current_time,
-                const std::vector<cv::KeyPoint>& kp, const cv::Mat& desc,
-                const std::vector<cv::DMatch>& matches);
-
-  /**
    * @brief Detects features and computes descriptors using the
    * detector and descriptor.
    * @param image
@@ -106,9 +94,12 @@ private:
   std::shared_ptr<beam_cv::Descriptor> descriptor_;
   std::shared_ptr<beam_cv::Matcher> matcher_;
 
-  // Keypoints and descriptors from the previous timestep
-  std::vector<cv::KeyPoint> prev_kp_;
+  // map from prev keypoint index -> unique keypoint id
+  std::map<int, size_t> prev_ids_; 
+
+  // Descriptors & keypoints from the previous timestep
   cv::Mat prev_desc_;
+  std::vector<cv::KeyPoint> prev_kp_;
 };
 
 } // namespace beam_cv

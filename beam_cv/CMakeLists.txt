@@ -18,17 +18,21 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
     src/geometry/PoseRefinement.cpp
+    src/descriptors/Descriptor.cpp
     src/descriptors/BRISKDescriptor.cpp
     src/descriptors/ORBDescriptor.cpp
     src/descriptors/SIFTDescriptor.cpp
+    src/detectors/Detector.cpp
     src/detectors/ORBDetector.cpp
     src/detectors/FASTDetector.cpp
     src/detectors/SIFTDetector.cpp
     src/detectors/GFTTDetector.cpp
+    src/matchers/Matcher.cpp
     src/matchers/FLANNMatcher.cpp
     src/matchers/BFMatcher.cpp
     src/trackers/Tracker.cpp
     src/trackers/DescMatchingTracker.cpp
+    src/trackers/KLTracker.cpp
 )
 
 ############# Test files #############
