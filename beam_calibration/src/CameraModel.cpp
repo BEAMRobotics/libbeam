@@ -5,20 +5,26 @@
 
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
+#include <beam_utils/log.h>
 
 namespace beam_calibration {
 
 std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
   std::shared_ptr<CameraModel> camera_model;
 
+  // check file exists
+  if (!boost::filesystem::exists(file_location)) {
+    BEAM_CRITICAL("Invalid file path for camera intialization. Input: {}",
+                  file_location);
+    throw std::runtime_error{"Invalid file path for camera intialization."};
+  }
+
   std::string file_ext = boost::filesystem::extension(file_location);
   if (file_ext == ".conf") {
     camera_model = std::make_shared<Ladybug>(file_location);
   } else if (file_ext == ".json") {
     // load JSON
-    json J;
+    nlohmann::json J;
     std::ifstream file(file_location);
     file >> J;
     std::string camera_type = J["camera_type"];
@@ -114,10 +120,10 @@ bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
 }
 
 void CameraModel::LoadJSON(const std::string& file_location) {
-  //BEAM_INFO("Loading file: {}", file_location);
+  // BEAM_INFO("Loading file: {}", file_location);
 
   // load file
-  json J;
+  nlohmann::json J;
   std::ifstream file(file_location);
   file >> J;
   // get string repr of class type
@@ -166,7 +172,7 @@ void CameraModel::WriteJSON(const std::string& file_location,
       std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   std::string cur_date = std::string(std::ctime(&date));
   // load file
-  json J;
+  nlohmann::json J;
   J["date"] = cur_date;
   if (method.empty()) {
     J["method"] = std::string("unkown");
