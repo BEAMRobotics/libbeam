@@ -31,7 +31,7 @@ GFTTDetector::GFTTDetector(const Params& params) : params_(params) {Setup();};
 GFTTDetector::GFTTDetector(int num_features, double quality_level,
                            double min_distance, int block_size,
                            bool use_harris_detector, double k) {
-  params_.num_features = num_features_;
+  params_.num_features = num_features;
   params_.quality_level = quality_level;
   params_.min_distance = min_distance;
   params_.block_size = block_size;

@@ -140,7 +140,7 @@ void KLTracker::RegisterKeypoints(const std::vector<uchar>& status,
         descriptor_->ExtractDescriptors(image, curr_kp_tmp);
 
     if (curr_kp_tmp.size() != curr_kp_.size()) {
-      uint32_t reduced_kp_counter{0};
+      int reduced_kp_counter{0};
       uint32_t total_keypoints = curr_kp_.size();
       int desc_mat_type = prev_desc_.type();
       curr_desc_ = cv::Mat(total_keypoints, prev_desc_.cols, desc_mat_type);
