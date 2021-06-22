@@ -18,8 +18,33 @@ namespace beam_cv {
  */
 class FASTDetector : public Detector {
 public:
+  struct Params {
+    // number of features to retain, 0 will keep all.
+    int num_features = 0;
+
+    //  Threshold on difference between intensity of the central pixel, and
+    //  pixels in a circle (Bresenham radius 3) around this pixel.
+    //  Recommended: 10. Must be greater than zero.
+    int threshold = 10;
+
+    // Removes keypoints in adjacent locations. Recommended: true
+    bool nonmax_suppression = true;
+
+    // Options: TYPE_9_16, TYPE_7_12, TYPE_5_8
+    int type = cv::FastFeatureDetector::TYPE_9_16;
+
+    // load params from json. If empty, it will use default params
+    void LoadFromJson(const std::string& config_path);
+  };
+
   /**
-   * @brief Constructor
+   * @brief Constructor that requires a params object
+   * @param params see struct above
+   */
+  FASTDetector(const Params& params);  
+  
+  /**
+   * @brief Constructor that specifies each param individually
    * @param num_features number of features to retain, 0 will keep all.
    * @param threshold Threshold on difference between intensity of the central
    * pixel, and pixels in a circle (Bresenham radius 3) around this pixel.
@@ -32,7 +57,7 @@ public:
    */
   FASTDetector(int num_features = 0, int threshold = 10,
                bool nonmax_suppression = true,
-               int type = cv::FastFeatureDetector::TYPE_9_16);
+               int type = cv::FastFeatureDetector::TYPE_9_16);             
 
   /**
    * @brief Default destructor
@@ -46,10 +71,10 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  int threshold_;
-  bool nonmax_suppression_;
-  int type_;
-  int num_features_;
+  // this gets called in each constructor
+  void Setup();
+
+  Params params_;
 
   /** The pointer to the wrapped cv::FastFeatureDetector object. */
   cv::Ptr<cv::FastFeatureDetector> fast_detector_;

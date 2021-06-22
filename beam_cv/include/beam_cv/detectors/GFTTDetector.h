@@ -17,21 +17,36 @@ namespace beam_cv {
  */
 class GFTTDetector : public Detector {
 public:
+  struct Params {
+    int max_corners = 1000;
+    double quality_level = 0.01;
+    double min_distance = 1;
+    int block_size = 3;
+    bool use_harris_detector = false;
+    double k = 0.04;
+
+    // load params from json. If empty, it will use default params
+    void LoadFromJson(const std::string& config_path);
+  };
+
   /**
-   * @brief Constructor
-   * @param num_features number of features to retain, 0 will keep all.
-   * @param threshold Threshold on difference between intensity of the central
-   * pixel, and pixels in a circle (Bresenham radius 3) around this pixel.
-   *  Recommended: 10. Must be greater than zero.
-   * @param nonmax_suppression Removes keypoints in adjacent locations.
-   *  Recommended: true
-   * @param type Threshold on difference between intensity of the central pixel,
-   * and pixels in a circle (Bresenham radius 3) around this pixel.
-   *  Recommended: 10. Must be greater than zero.
+   * @brief Constructor that requires a params object
+   * @param params see struct above
    */
-  GFTTDetector(int maxCorners = 1000, double qualityLevel = 0.01,
-               double minDistance = 1, int blockSize = 3,
-               bool useHarrisDetector = false, double k = 0.04);
+  GFTTDetector(const Params& params);
+
+  /**
+   * @brief Constructor that sets each param individually
+   * @param max_corners
+   * @param quality_level
+   * @param min_distance
+   * @param block_size
+   * @param use_harris_detector
+   * @param k
+   */
+  GFTTDetector(int max_corners = 1000, double quality_level = 0.01,
+               double min_distance = 1, int block_size = 3,
+               bool use_harris_detector = false, double k = 0.04);
 
   /**
    * @brief Default destructor
@@ -45,15 +60,12 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  int max_corners_{};
-  double quality_level_{};
-  double min_distance_{};
-  int block_size_{};
-  bool use_harris_detector_{};
-  double k_{};
+  // this gets called in each constructor
+  void Setup();
+
+  Params params_;
 
   /** The pointer to the wrapped cv::GFTTDetector object. */
   cv::Ptr<cv::GFTTDetector> GFTT_detector_;
-
 };
 } // namespace beam_cv
