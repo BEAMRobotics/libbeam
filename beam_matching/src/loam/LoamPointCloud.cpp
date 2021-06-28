@@ -111,7 +111,7 @@ void LoamPointCloud::TransformPointCloud(const Eigen::Matrix4d& T) {
 }
 
 void LoamPointCloud::Save(const std::string& output_path,
-                          bool combine_features) {
+                          bool combine_features) const {
   if (boost::filesystem::exists(output_path)) {
     BEAM_INFO("Saving Loam point cloud to: {}", output_path);
   } else {
@@ -121,8 +121,11 @@ void LoamPointCloud::Save(const std::string& output_path,
   }
 
   if (combine_features) {
-    PointCloud cloud_combined = edges.strong.cloud + edges.weak.cloud +
-                                surfaces.strong.cloud + surfaces.weak.cloud;
+    PointCloud cloud_combined = edges.strong.cloud;
+    cloud_combined += edges.weak.cloud;
+    cloud_combined += surfaces.strong.cloud;
+    cloud_combined += surfaces.weak.cloud;
+    
     if (cloud_combined.size() == 0) {
       BEAM_WARN("Loam cloud empty. Not saving cloud.");
       return;
@@ -182,6 +185,11 @@ void LoamPointCloud::Print(std::ostream& stream) const {
          << "          | " << surfaces.strong.cloud.size() << "\n"
          << "Surfaces|  weak  | " << surfaces.weak.kdtree_empty
          << "          | " << surfaces.weak.cloud.size() << "\n";
+}
+
+uint64_t LoamPointCloud::Size() const {
+  return edges.strong.cloud.size() + edges.weak.cloud.size() +
+         surfaces.strong.cloud.size() + surfaces.weak.cloud.size();
 }
 
 } // namespace beam_matching

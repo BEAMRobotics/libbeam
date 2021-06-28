@@ -153,7 +153,7 @@ public:
    * @param combine_features optionally specify if you want to combine all
    * features into a single cloud in addition to all feature clouds.
    */
-  void Save(const std::string& output_path, bool combine_features = false);
+  void Save(const std::string& output_path, bool combine_features = false) const;
 
   /**
    * @brief add a new loam pointcloud to this cloud. This will also clear all kd search trees.
@@ -166,6 +166,12 @@ public:
    * @param stream input stream
    */
   void Print(std::ostream& stream = std::cout) const;
+
+  /**
+   * @brief get the total number of features
+   * @return size of edges + size of surfaces (both strong and weak)
+   */
+  uint64_t Size() const;
 
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;
