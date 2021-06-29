@@ -32,26 +32,6 @@ add_definitions(${PCL_DEFINITIONS})
 
 ################ tests ##################
 
-add_executable(${PROJECT_NAME}_ceres_ladybug_tests
-  tests/src/ladybug_reprojection_tests.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_ceres_ladybug_tests
-  PUBLIC
-    include/beam_optimization
-    ${catkin_INCLUDE_DIRS}
-    ${PCl_INCLUDE_DIRS}
-)
-
-target_link_libraries(${PROJECT_NAME}_ceres_ladybug_tests
-  ${PROJECT_NAME}
-  Catch2::Catch2
-  ${CERES_LIBRARIES}
-  ${PCL_LIBRARY_DIRS}
-  test_utils
-  beam::utils
-)
-
 add_executable(${PROJECT_NAME}_ceres_radtan_tests
   tests/src/radtan_reprojection_tests.cpp
 )

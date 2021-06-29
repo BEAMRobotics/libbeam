@@ -1,25 +1,37 @@
 PROJECT(beam_calibration)
 
-BEAM_ADD_MODULE(${PROJECT_NAME}
-  DEPENDS
+SET(PROJECT_DEPENDS 
     beam::utils
     Boost::boost
     Catch2::Catch2
     catkin::catkin
     Eigen3::Eigen
-    Ladybug::Ladybug
     nlohmann_json::nlohmann_json
     yaml-cpp
     OpenCV::OpenCV
-  SOURCES
+  )
+
+SET(PROJECT_SOURCES
     src/TfTree.cpp
     src/ConvertCameraModel.cpp
     src/Radtan.cpp
     src/DoubleSphere.cpp
     src/CameraModel.cpp
-    src/Ladybug.cpp
     src/KannalaBrandt.cpp
     src/Cataditropic.cpp
+)  
+
+IF(BUILD_LADYBUG)
+   list(APPEND PROJECT_DEPENDS Ladybug::Ladybug)
+   list(APPEND PROJECT_SOURCES src/Ladybug.cpp)
+ENDIF()
+
+
+BEAM_ADD_MODULE(${PROJECT_NAME}
+  DEPENDS
+    ${PROJECT_DEPENDS}
+  SOURCES
+    ${PROJECT_SOURCES}
 )
 
 ################ tests ##################
@@ -103,18 +115,21 @@ target_link_libraries(${PROJECT_NAME}_convert_camera_models_tests
   Catch2::Catch2
 )
 
-add_executable(${PROJECT_NAME}_ladybug_tests
-  tests/ladybug_tests.cpp
-)
+IF(BUILD_LADYBUG)
+  add_executable(${PROJECT_NAME}_ladybug_tests
+    tests/ladybug_tests.cpp
+  )
 
-target_include_directories(${PROJECT_NAME}_ladybug_tests
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_ladybug_tests
-  ${PROJECT_NAME}
-  Catch2::Catch2
-)
+  target_include_directories(${PROJECT_NAME}_ladybug_tests
+    PUBLIC
+      include
+  )
+  target_link_libraries(${PROJECT_NAME}_ladybug_tests
+    ${PROJECT_NAME}
+    Catch2::Catch2
+  )
+ENDIF()
+
 
 file(COPY tests/run_all_tests.bash
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
