@@ -17,11 +17,32 @@ namespace beam_cv {
  */
 class ORBDetector : public Detector {
 public:
+  struct Params {
+    int num_features = 500;
+    float scale_factor = 1.2;
+    int num_levels = 8;
+    int edge_threshold = 31;
+    int score_type = cv::ORB::HARRIS_SCORE;
+    int fast_threshold = 20;
+
+    // load params from json. If empty, it will use default params
+    void LoadFromJson(const std::string& config_path);
+  };
+
+  /**
+   * @brief Constructor that requires a params object
+   * @param params see struct above
+   */
+  ORBDetector(const Params& params);
+
   /**
    * @brief Constructor
-   * @param tuple_size The number of points that compose the ORB descriptor.
-   * @param patch_size The size of the square patch used in the random point
-   * sampling to construct the descriptor
+   * @param num_features
+   * @param scale_factor
+   * @param num_levels
+   * @param edge_threshold
+   * @param score_type
+   * @param fast_threshold
    */
   ORBDetector(int num_features = 500, float scale_factor = 1.2,
               int num_levels = 8, int edge_threshold = 31,
@@ -39,12 +60,11 @@ public:
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  int num_features_;
-  float scale_factor_;
-  int num_levels_;
-  int edge_threshold_;
-  int score_type_;
-  int fast_threshold_;
+  // this gets called in each constructor
+  void Setup();
+
+  Params params_;
+
   /** The pointer to the wrapped cv::ORB object. */
   cv::Ptr<cv::ORB> orb_detector_;
 

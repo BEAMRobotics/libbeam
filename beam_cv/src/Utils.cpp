@@ -170,7 +170,8 @@ Eigen::Vector2d ConvertKeypoint(const cv::Point2f& keypoint) {
 }
 
 cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint) {
-  cv::Point2f cv_keypoint(static_cast<float>(keypoint(0)), static_cast<float>(keypoint(1)));
+  cv::Point2f cv_keypoint(static_cast<float>(keypoint(0)),
+                          static_cast<float>(keypoint(1)));
   return cv_keypoint;
 }
 
@@ -299,12 +300,14 @@ void DetectComputeAndMatch(
     const std::shared_ptr<beam_cv::Matcher>& matcher,
     std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pL_v,
     std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pR_v) {
-  std::vector<cv::KeyPoint> kpL = detector->DetectFeatures(imL);
-  cv::Mat descL = descriptor->ExtractDescriptors(imL, kpL);
-
-  std::vector<cv::KeyPoint> kpR = detector->DetectFeatures(imR);
-  cv::Mat descR = descriptor->ExtractDescriptors(imR, kpR);
-
+  std::vector<cv::KeyPoint> kpL;
+  cv::Mat descL;
+  DetectAndCompute(imL, descriptor, detector, kpL, descL);    
+  
+  std::vector<cv::KeyPoint> kpR;
+  cv::Mat descR;
+  DetectAndCompute(imR, descriptor, detector, kpR, descR);    
+  
   std::vector<cv::DMatch> matches =
       matcher->MatchDescriptors(descL, descR, kpL, kpR);
 
@@ -316,6 +319,15 @@ void DetectComputeAndMatch(
     pL_v.push_back(pL);
     pR_v.push_back(pR);
   }
+}
+
+void DetectAndCompute(const cv::Mat& image,
+                      const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+                      const std::shared_ptr<beam_cv::Detector>& detector,
+                      std::vector<cv::KeyPoint>& keypoints,
+                      cv::Mat& descriptors) {
+  keypoints = detector->DetectFeatures(image);
+  descriptors = descriptor->ExtractDescriptors(image, keypoints);
 }
 
 double
