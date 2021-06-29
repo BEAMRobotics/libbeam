@@ -126,12 +126,7 @@ public:
                        cv::InputArray mask = cv::noArray()) override;
 
 private:
-  Params params_;
-
   void Setup();
-
-  /** The pointer to the wrapped cv::FlannBasedMatcher object */
-  cv::Ptr<cv::FlannBasedMatcher> flann_matcher_;
 
   /** @brief Checks whether the desired configuration is valid
    *  @param check_config containing the desired configuration values.
@@ -153,6 +148,11 @@ private:
    */
   std::vector<cv::DMatch> FilterMatches(
       const std::vector<std::vector<cv::DMatch>>& matches) const override;
+
+  Params params_;
+
+  /** The pointer to the wrapped cv::FlannBasedMatcher object */
+  cv::Ptr<cv::FlannBasedMatcher> flann_matcher_;
 };
 
 } // namespace beam_cv

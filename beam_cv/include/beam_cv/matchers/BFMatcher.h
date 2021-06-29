@@ -77,8 +77,6 @@ public:
                        cv::InputArray mask = cv::noArray()) override;
 
 private:
-  Params params_;
-  cv::Ptr<cv::BFMatcher> bf_matcher_;
 
   void Setup();
 
@@ -97,6 +95,10 @@ private:
    */
   std::vector<cv::DMatch> FilterMatches(
       const std::vector<std::vector<cv::DMatch>>& matches) const override;
+
+
+  Params params_;
+  cv::Ptr<cv::BFMatcher> bf_matcher_;
 };
 
 } // namespace beam_cv

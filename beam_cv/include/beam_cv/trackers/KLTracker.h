@@ -158,7 +158,7 @@ private:
    * points begin. This is needed so that when we add new landmarks, we can add
    * the detection from the previous and current image
    */
-  uint32_t ExtactNewKeypoints(const cv::Mat& image);
+  uint32_t ExtractNewKeypoints(const cv::Mat& image);
 
   Params params_;
 

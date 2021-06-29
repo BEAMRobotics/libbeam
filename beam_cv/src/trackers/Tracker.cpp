@@ -134,7 +134,9 @@ FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
   ros::Time start_time;
   start_time.fromNSec(*img_times_.begin());
   ros::Time end_time;
-  end_time.fromNSec(*img_times_.end());
+  auto iter_last = img_times_.end();
+  iter_last--;
+  end_time.fromNSec(*iter_last);
   return landmarks_.GetTrackInWindow(sensor_id_, landmark_id, start_time,
                                      end_time);
 }

@@ -18,6 +18,7 @@ namespace beam_cv {
 class GFTTDetector : public Detector {
 public:
   struct Params {
+    // for docs, see opencv
     int num_features = 1000;
     double quality_level = 0.01;
     double min_distance = 1;

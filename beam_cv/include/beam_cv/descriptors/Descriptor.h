@@ -19,7 +19,7 @@ namespace beam_cv {
  */
 enum class DescriptorType { ORB = 0, SIFT, BRISK };
 
-// Map for storing binary descriptor types
+// vector for storing binary descriptor types
 static std::vector<DescriptorType> BinaryDescriptorTypes = {
     DescriptorType::ORB, DescriptorType::BRISK};
 
@@ -90,6 +90,8 @@ public:
     if (std::find(BinaryDescriptorTypes.begin(), BinaryDescriptorTypes.end(),
                   type) != BinaryDescriptorTypes.end()) {
       descriptor.convertTo(descriptor, CV_8U);
+    } else {
+      BEAM_ERROR("cannot create descriptor which is not of binary type.");
     }
     return descriptor;
   }

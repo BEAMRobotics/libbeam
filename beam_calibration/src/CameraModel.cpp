@@ -120,8 +120,6 @@ bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
 }
 
 void CameraModel::LoadJSON(const std::string& file_location) {
-  // BEAM_INFO("Loading file: {}", file_location);
-
   // load file
   nlohmann::json J;
   std::ifstream file(file_location);

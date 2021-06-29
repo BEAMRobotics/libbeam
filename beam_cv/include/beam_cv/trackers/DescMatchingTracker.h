@@ -67,17 +67,6 @@ private:
                                 std::vector<cv::DMatch>& matches);
 
   /**
-   * @brief Detects features and computes descriptors using the
-   * detector and descriptor.
-   * @param image
-   * @param keypoints
-   * @param descriptor
-   */
-  void DetectAndCompute(const cv::Mat& image,
-                        std::vector<cv::KeyPoint>& keypoints,
-                        cv::Mat& descriptor);
-
-  /**
    * @brief Registers the latest matched keypoints with IDs. Assigns a new ID
    * if one has not already been provided.
    * @param curr_kp the keypoints detected in the current image.

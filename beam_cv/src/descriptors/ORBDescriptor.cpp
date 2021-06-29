@@ -56,10 +56,10 @@ void ORBDescriptor::CheckConfig() {
   // Check that the value of tuple_size is between 2 and 4, and that
   // patch_size is greater than zero.
   if (params_.tuple_size < 2 || params_.tuple_size > 4) {
-    BEAM_CRITICAL("tuple_size_ is not an acceptable value!");
+    BEAM_ERROR("tuple_size_ is not an acceptable value!");
     throw std::invalid_argument("tuple_size is not an acceptable value!");
   } else if (params_.patch_size <= 0) {
-    BEAM_CRITICAL("patch_size_ is less than/ equal to zero!");
+    BEAM_ERROR("patch_size_ is less than/ equal to zero!");
     throw std::invalid_argument("patch_size is less than/ equal to zero!");
   }
 }

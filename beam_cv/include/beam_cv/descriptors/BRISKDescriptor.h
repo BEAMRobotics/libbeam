@@ -20,17 +20,17 @@ class BRISKDescriptor : public Descriptor {
 public:
   struct Params {
     /** defines the radius of each subsequent circle (in pixels).
-     *  All numbers must be positive. Cannot be empty. Recommended: radius_list
+     *  All numbers must be positive. Cannot be empty. Recommended: rlist
      * = {0.0, 2.47, 4.17, 6.29, 9.18} */
-    std::vector<float> rlist = {0.0, 2.47, 4.17, 6.29, 9.18};
+    std::vector<float> rlist{0.0, 2.47, 4.17, 6.29, 9.18};
 
-    /** number_list defines the number of points in each circle. Must
+    /** defines the number of points in each circle. Must
      * be the same size as radiusList. All numbers must be positive. Cannot be
-     * empty.  Recommended: number_list = {1, 10, 14, 15, 20}; */
-    std::vector<int> nlist = {1, 10, 14, 15, 20};
+     * empty.  Recommended: nlist = {1, 10, 14, 15, 20}; */
+    std::vector<int> nlist{1, 10, 14, 15, 20};
 
     /** d_max and d_min are threshold distances to classify a pair of
-     * points as a \a long pair or a \a short pair. Short pairs are not used in
+     * points as a long pair or a short pair. Short pairs are not used in
      * the brightness comparison, due to balancing effects of local gradients.
      * The long pairs are not used in the assembly of the bit vector descriptor.
      *  d_max specifies the maximum threshold for short pairs. The value of
@@ -57,11 +57,11 @@ public:
    * @param rlist defines the radius of each subsequent circle (in pixels).
    *  All numbers must be positive. Cannot be empty. Recommended: radius_list =
    * {0.0, 2.47, 4.17, 6.29, 9.18}
-   * @param nlist number_list defines the number of points in each circle. Must
+   * @param nlist defines the number of points in each circle. Must
    * be the same size as radiusList. All numbers must be positive. Cannot be
-   * empty.  Recommended: number_list = {1, 10, 14, 15, 20};
+   * empty.  Recommended: nlist = {1, 10, 14, 15, 20};
    * @param d_max d_max and d_min are threshold distances to classify a pair of
-   * points as a \a long pair or a \a short pair. Short pairs are not used in
+   * points as a long pair or a short pair. Short pairs are not used in
    * the brightness comparison, due to balancing effects of local gradients. The
    *  long pairs are not used in the assembly of the bit vector descriptor.
    *  d_max specifies the maximum threshold for short pairs. The value of
@@ -90,15 +90,16 @@ public:
                              std::vector<cv::KeyPoint>& keypoints);
 
 private:
-  // this gets called in each constructor
+  /** this gets called in each constructor */
   void Setup();
+
+  /** Checks whether the desired configuration is valid. */
+  void CheckConfig();
 
   Params params_;
 
   /** The pointer to the wrapped cv::BRISK object. */
   cv::Ptr<cv::BRISK> brisk_descriptor_;
 
-  /** Checks whether the desired configuration is valid. */
-  void CheckConfig();
 };
 } // namespace beam_cv

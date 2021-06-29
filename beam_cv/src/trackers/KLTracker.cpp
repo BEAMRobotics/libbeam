@@ -77,7 +77,7 @@ void KLTracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
   // Track keypoints
   std::vector<uchar> status;
   std::vector<float> err;
-  uint32_t new_points_start_id = ExtactNewKeypoints(image);
+  uint32_t new_points_start_id = ExtractNewKeypoints(image);
   cv::calcOpticalFlowPyrLK(prev_image_, image, prev_kp_, curr_kp_, status, err,
                            cv::Size(params_.win_size_u, params_.win_size_v),
                            params_.max_level, params_.criteria);
@@ -214,7 +214,7 @@ void KLTracker::AddPrevTrackedLandmarks(const std::vector<uchar>& status,
   }
 }
 
-uint32_t KLTracker::ExtactNewKeypoints(const cv::Mat& image) {
+uint32_t KLTracker::ExtractNewKeypoints(const cv::Mat& image) {
   if (tracked_features_count_ / curr_ids_.size() >=
       params_.keypoint_resample_percentage) {
     return prev_kp_.size();

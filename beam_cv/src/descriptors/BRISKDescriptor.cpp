@@ -9,7 +9,7 @@ void BRISKDescriptor::Params::LoadFromJson(const std::string& config_path) {
   if (config_path.empty()) { return; }
 
   if (!boost::filesystem::exists(config_path)) {
-    BEAM_ERROR("Invalid file path for SIFT descriptor params, using default "
+    BEAM_ERROR("Invalid file path for BRISK descriptor params, using default "
                "params. Input: {}",
                config_path);
     return;

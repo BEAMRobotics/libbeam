@@ -11,13 +11,6 @@ DescMatchingTracker::DescMatchingTracker(
       descriptor_(descriptor),
       matcher_(matcher) {}
 
-void DescMatchingTracker::DetectAndCompute(const cv::Mat& image,
-                                           std::vector<cv::KeyPoint>& keypoints,
-                                           cv::Mat& descriptor) {
-  keypoints = detector_->DetectFeatures(image);
-  descriptor = descriptor_->ExtractDescriptors(image, keypoints);
-}
-
 std::map<int, uint64_t> DescMatchingTracker::RegisterKeypoints(
     const std::vector<cv::KeyPoint>& curr_kp, const cv::Mat& curr_desc,
     const std::vector<cv::DMatch>& matches) {
@@ -83,7 +76,7 @@ std::map<int, uint64_t>
     return ids;
   } else {
     // Detect, describe, and match keypoints
-    DetectAndCompute(image, kp, desc);
+    DetectAndCompute(image, descriptor_, detector_, kp, desc);
     matches = matcher_->MatchDescriptors(prev_desc_, desc, prev_kp_, kp);
     // fill id map
     for (const auto& m : matches) {
@@ -104,14 +97,14 @@ void DescMatchingTracker::AddImage(const cv::Mat& image,
   // Check if this is the first image being tracked.
   if (img_times_.size() == 1) {
     // Detect features within first image. No tracks can be generated yet.
-    DetectAndCompute(image, prev_kp_, prev_desc_);
+    DetectAndCompute(image, descriptor_, detector_, prev_kp_, prev_desc_);
     return;
   }
 
   // Detect, describe, and match keypoints
   std::vector<cv::KeyPoint> curr_kp;
   cv::Mat curr_desc;
-  DetectAndCompute(image, curr_kp, curr_desc);
+  DetectAndCompute(image, descriptor_, detector_, curr_kp, curr_desc);
   std::vector<cv::DMatch> matches =
       matcher_->MatchDescriptors(prev_desc_, curr_desc, prev_kp_, curr_kp);
 

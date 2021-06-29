@@ -30,7 +30,7 @@ public:
     // Removes keypoints in adjacent locations. Recommended: true
     bool nonmax_suppression = true;
 
-    // Options: TYPE_9_16, TYPE_7_12, TYPE_5_8
+    // Options: TYPE_9_16, TYPE_7_12, TYPE_5_8. See opencv docs for more details
     int type = cv::FastFeatureDetector::TYPE_9_16;
 
     // load params from json. If empty, it will use default params
