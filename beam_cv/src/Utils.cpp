@@ -2,13 +2,15 @@
 
 #include <algorithm>
 
+#include <opencv2/highgui/highgui_c.h>
+
 #include <beam_cv/geometry/Triangulation.h>
 
 namespace beam_cv {
 
 cv::Mat AdaptiveHistogram(const cv::Mat& input) {
   cv::Mat lab_image;
-  cv::cvtColor(input, lab_image, CV_BGR2Lab);
+  cv::cvtColor(input, lab_image, cv::COLOR_BGR2Lab);
   std::vector<cv::Mat> lab_planes(6);
   cv::split(lab_image, lab_planes);
   cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
@@ -18,7 +20,7 @@ cv::Mat AdaptiveHistogram(const cv::Mat& input) {
   dst.copyTo(lab_planes[0]);
   cv::merge(lab_planes, lab_image);
   cv::Mat new_image;
-  cv::cvtColor(lab_image, new_image, CV_Lab2BGR);
+  cv::cvtColor(lab_image, new_image, cv::COLOR_BGR2Lab);
   return new_image;
 }
 
@@ -47,7 +49,7 @@ cv::Mat KMeans(const cv::Mat& input, int K) {
   image = data.reshape(3, image.rows);
   image.convertTo(image, CV_8UC1);
   cv::Mat grey;
-  cv::cvtColor(image, grey, CV_BGR2GRAY);
+  cv::cvtColor(image, grey, cv::COLOR_BGR2GRAY);
   cv::morphologyEx(grey, grey, cv::MORPH_CLOSE, cv::Mat::ones(5, 5, CV_8U));
   cv::resize(grey, grey, og);
   return grey;

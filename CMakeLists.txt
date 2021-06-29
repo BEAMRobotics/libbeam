@@ -36,7 +36,7 @@ FIND_PACKAGE(Boost 1.58.0 COMPONENTS system filesystem)
 FIND_PACKAGE(PCL 1.11.1 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
     surface segmentation features)
-FIND_PACKAGE(OpenCV 3.2.0 REQUIRED COMPONENTS)
+FIND_PACKAGE(OpenCV 4.5.2 REQUIRED COMPONENTS)
 FIND_PACKAGE(yaml-cpp REQUIRED)
 FIND_PACKAGE(Ceres 1.11)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
