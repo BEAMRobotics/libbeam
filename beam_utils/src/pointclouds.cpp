@@ -1,7 +1,7 @@
 #include <beam_utils/pointclouds.h>
 
 #include <pcl/common/transforms.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include <beam_utils/pcl_conversions.h>
 
 namespace beam {
 
@@ -14,7 +14,7 @@ sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
 
   // Convert to ros msg
   sensor_msgs::PointCloud2 ros_cloud;
-  pcl_conversions::fromPCL(cloud2, ros_cloud);
+  beam::pcl_conversions::fromPCL(cloud2, ros_cloud);
 
   // update header info
   ros_cloud.header.stamp = time;
@@ -28,7 +28,7 @@ PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
                        std::string& frame_id, uint32_t& seq) {
   // Convert from ROS to pcl pointcloud2
   pcl::PCLPointCloud2 cloud2;
-  pcl_conversions::toPCL(msg, cloud2);
+  beam::pcl_conversions::toPCL(msg, cloud2);
 
   // convert to pcl pointcloud
   PointCloudPtr cloud = std::make_shared<PointCloud>();
