@@ -8,9 +8,37 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/opencv.hpp>
 
+#include <beam_utils/log.h>
+
 namespace beam_cv {
 
-/** Representation of a generic keypoint detector
+/**
+ * @brief Enum class for different types of matchers
+ */
+enum class MatcherType { BF = 0, FLANN };
+
+  // Map for storing string input
+static std::map<std::string, MatcherType> MatcherTypeStringMap = {
+    {"BF", MatcherType::BF},
+    {"FLANN", MatcherType::FLANN}};
+
+// Map for storing int input
+static std::map<uint8_t, MatcherType> MatcherTypeIntMap = {
+    {0, MatcherType::BF},
+    {1, MatcherType::FLANN}};
+
+// function for listing types of detectors available
+inline std::string GetMatcherTypes(){
+  std::string types;
+  for (auto it = MatcherTypeStringMap.begin(); it != MatcherTypeStringMap.end(); it++){
+    types+=it->first;
+    types+=", ";
+  }
+  types.erase(types.end() - 2, types.end());
+  return types;
+}
+
+/** Representation of a generic keypoint matcher
  */
 class Matcher {
 public:
@@ -23,6 +51,11 @@ public:
    * @brief Default destructor
    */
   virtual ~Matcher() = default;
+
+  /**
+   * @brief Factory method to create matcher at runtime
+   */
+  static std::shared_ptr<Matcher> Create(MatcherType type, const std::string& file_path = "");  
 
   /** Remove outliers between matches using epipolar constraints
    *

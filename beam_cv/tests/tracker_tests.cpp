@@ -4,7 +4,7 @@
 #include <beam_cv/descriptors/Descriptors.h>
 #include <beam_cv/detectors/Detectors.h>
 #include <beam_cv/matchers/Matchers.h>
-#include <beam_cv/tracker/Tracker.h>
+#include <beam_cv/trackers/Trackers.h>
 
 #include <beam_utils/filesystem.h>
 #include <beam_utils/time.h>
@@ -37,7 +37,7 @@ std::vector<cv::Mat> ReadImageSequence() {
 TEST_CASE("Test adding images to tracker - FLANN Matcher.") {
   std::vector<cv::Mat> images = ReadImageSequence();
   ros::Time::init();
-  beam_cv::Tracker tracker(detector, descriptor, matcher1, 10);
+  beam_cv::DescMatchingTracker tracker(detector, descriptor, matcher1, 10);
   for (int i = 0; i < 10; i++) {
     tracker.AddImage(images[i], ros::Time::now());
   }
@@ -56,7 +56,7 @@ TEST_CASE("Test adding images to tracker - FLANN Matcher.") {
 TEST_CASE("Test adding images to tracker - Brute Force Matcher.") {
   std::vector<cv::Mat> images = ReadImageSequence();
   ros::Time::init();
-  beam_cv::Tracker tracker(detector, descriptor, matcher2, 10);
+  beam_cv::DescMatchingTracker tracker(detector, descriptor, matcher2, 10);
   for (int i = 0; i < 10; i++) {
     tracker.AddImage(images[i], ros::Time::now());
   }
@@ -75,7 +75,7 @@ TEST_CASE("Test adding images to tracker - Brute Force Matcher.") {
 TEST_CASE("Test adding images to tracker - Brute Force Matcher (no outlier removal).") {
   std::vector<cv::Mat> images = ReadImageSequence();
   ros::Time::init();
-  beam_cv::Tracker tracker(detector, descriptor, matcher3, 10);
+  beam_cv::DescMatchingTracker tracker(detector, descriptor, matcher3, 10);
   for (int i = 0; i < 10; i++) {
     tracker.AddImage(images[i], ros::Time::now());
   }
