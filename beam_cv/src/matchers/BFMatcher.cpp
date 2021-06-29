@@ -1,18 +1,74 @@
 #include <beam_cv/matchers/BFMatcher.h>
 
+#include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
+
 namespace beam_cv {
+
+void BFMatcher::Params::LoadFromJson(const std::string& config_path) {
+  if (config_path.empty()) { return; }
+
+  if (!boost::filesystem::exists(config_path)) {
+    BEAM_ERROR("Invalid file path for BF matcher params, using default "
+               "params. Input: {}",
+               config_path);
+    return;
+  }
+
+  nlohmann::json J;
+  std::ifstream file(config_path);
+  file >> J;
+
+  std::string norm_type_str = J["norm_type"];
+  if (norm_type_str == "NORM_L2") {
+    norm_type = cv::NORM_L2;
+  } else if (norm_type_str == "NORM_INF") {
+    norm_type = cv::NORM_INF;
+  } else if (norm_type_str == "NORM_L1") {
+    norm_type = cv::NORM_L1;
+  } else if (norm_type_str == "NORM_L2SQR") {
+    norm_type = cv::NORM_L2SQR;
+  } else if (norm_type_str == "NORM_HAMMING") {
+    norm_type = cv::NORM_HAMMING;
+  } else if (norm_type_str == "NORM_HAMMING2") {
+    norm_type = cv::NORM_HAMMING2;
+  } else if (norm_type_str == "NORM_TYPE_MASK") {
+    norm_type = cv::NORM_TYPE_MASK;
+  } else if (norm_type_str == "NORM_RELATIVE") {
+    norm_type = cv::NORM_RELATIVE;
+  } else if (norm_type_str == "NORM_MINMAX") {
+    norm_type = cv::NORM_MINMAX;
+  } else {
+    BEAM_ERROR(
+        "Invalid norm_type param given to BFMatcher. Using default: NORM_L2");
+    norm_type = cv::NORM_L2;
+  }
+
+  cross_check = J["cross_check"];
+  auto_remove_outliers = J["auto_remove_outliers"];
+  ratio_threshold = J["ratio_threshold"];
+  distance_threshold = J["distance_threshold"];
+  use_knn = J["use_knn"];
+}
+
+BFMatcher::BFMatcher(const Params& params) : params_(params) {
+  Setup();
+};
 
 BFMatcher::BFMatcher(int norm_type, bool cross_check, bool auto_remove_outliers,
                      double ratio_threshold, int distance_threshold,
                      bool use_knn) {
-  this->norm_type_ = norm_type;
-  this->auto_remove_outliers_ = auto_remove_outliers;
-  this->cross_check_ = cross_check;
-  this->ratio_threshold_ = ratio_threshold;
-  this->distance_threshold_ = distance_threshold;
-  this->use_knn_ = use_knn;
-  this->bf_matcher_ =
-      cv::BFMatcher::create(this->norm_type_, this->cross_check_);
+  params_.norm_type = norm_type;
+  params_.auto_remove_outliers = auto_remove_outliers;
+  params_.cross_check = cross_check;
+  params_.ratio_threshold = ratio_threshold;
+  params_.distance_threshold = distance_threshold;
+  params_.use_knn = use_knn;
+  Setup();
+}
+
+void BFMatcher::Setup() {
+  bf_matcher_ = cv::BFMatcher::create(params_.norm_type, params_.cross_check);
 }
 
 std::vector<cv::DMatch>
@@ -21,26 +77,30 @@ std::vector<cv::DMatch>
                                 const std::vector<cv::KeyPoint>& keypoints_2,
                                 cv::InputArray mask) {
   std::vector<cv::DMatch> filtered_matches;
+  if(keypoints_1.empty() || keypoints_2.empty()){
+    BEAM_WARN("Empty keypoints vector provided, not matching descriptors.");
+    return filtered_matches;
+  }
 
-  if (this->use_knn_) {
+  if (params_.use_knn) {
     std::vector<std::vector<cv::DMatch>> raw_matches;
     // Number of neighbours for the k-nearest neighbour search. Only used
     // for the ratio test, therefore only want 2.
     int k = 2;
-    this->bf_matcher_->knnMatch(descriptors_1, descriptors_2, raw_matches, k,
-                                   mask, false);
-    filtered_matches = this->FilterMatches(raw_matches);
+    bf_matcher_->knnMatch(descriptors_1, descriptors_2, raw_matches, k, mask,
+                          false);
+                          
+    filtered_matches = FilterMatches(raw_matches);
   } else {
-    std::vector<cv::DMatch> raw_matches;
     // Determine matches between sets of descriptors
-    this->bf_matcher_->match(descriptors_1, descriptors_2, raw_matches,
-                                mask);
-    filtered_matches = this->FilterMatches(raw_matches);
+    std::vector<cv::DMatch> raw_matches;
+    bf_matcher_->match(descriptors_1, descriptors_2, raw_matches, mask);
+    filtered_matches = FilterMatches(raw_matches);
   }
 
-  if (this->auto_remove_outliers_) {
+  if (params_.auto_remove_outliers) {
     std::vector<cv::DMatch> good_matches =
-        this->RemoveOutliers(filtered_matches, keypoints_1, keypoints_2);
+        RemoveOutliers(filtered_matches, keypoints_1, keypoints_2);
     return good_matches;
   }
   return filtered_matches;
@@ -84,7 +144,7 @@ std::vector<cv::DMatch>
   // Keep any match that is less than the rejection heuristic times minimum
   // distance
   for (auto& match : matches) {
-    if (match.distance <= this->distance_threshold_ * min_distance) {
+    if (match.distance <= params_.distance_threshold * min_distance) {
       filtered_matches.push_back(match);
     }
   }
@@ -98,7 +158,7 @@ std::vector<cv::DMatch> BFMatcher::FilterMatches(
     // Calculate ratio between two best matches. Accept if less than
     // ratio heuristic
     float ratio = match[0].distance / match[1].distance;
-    if (ratio <= this->ratio_threshold_) {
+    if (ratio <= params_.ratio_threshold) {
       filtered_matches.push_back(match[0]);
     }
   }

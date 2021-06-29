@@ -182,6 +182,21 @@ void DetectComputeAndMatch(
     std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pR_v);
 
 /**
+ * @brief Detects features and computes descriptors using the
+ * detector and descriptor.
+ * @param image input image
+ * @param descriptor ref to descriptor to use
+ * @param detector ref to detector to use
+ * @param keypoints ref to keypoints to fill in
+ * @param descriptors ref to descriptors to fill in
+ */
+void DetectAndCompute(const cv::Mat& image,
+                      const std::shared_ptr<beam_cv::Descriptor>& descriptor,
+                      const std::shared_ptr<beam_cv::Detector>& detector,
+                      std::vector<cv::KeyPoint>& keypoints,
+                      cv::Mat& descriptors);
+
+/**
  * @brief computes median distance between matches
  * @param matches vector of matches
  * @param keypoints_1 corresponding keypoints in left image

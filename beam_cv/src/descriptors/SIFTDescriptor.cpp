@@ -1,22 +1,51 @@
 #include <beam_cv/descriptors/SIFTDescriptor.h>
 
+#include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
+
 namespace beam_cv {
+
+void SIFTDescriptor::Params::LoadFromJson(const std::string& config_path) {
+  if (config_path.empty()) { return; }
+
+  if (!boost::filesystem::exists(config_path)) {
+    BEAM_ERROR("Invalid file path for SIFT descriptor params, using default "
+               "params. Input: {}",
+               config_path);
+    return;
+  }
+
+  nlohmann::json J;
+  std::ifstream file(config_path);
+  file >> J;
+  num_features = J["num_features"];
+  num_octave_layers = J["num_octave_layers"];
+  contrast_threshold = J["contrast_threshold"];
+  edge_threshold = J["edge_threshold"];
+  sigma = J["sigma"];
+}
+
+SIFTDescriptor::SIFTDescriptor(const Params& params) : params_(params) {Setup();};
 
 // Default constructor. Struct may be default or user defined.
 SIFTDescriptor::SIFTDescriptor(int num_features, int num_octave_layers,
                                double contrast_threshold, double edge_threshold,
                                double sigma) {
-  this->num_features_ = num_features;
-  this->num_octave_layers_ = num_octave_layers;
-  this->contrast_threshold_ = contrast_threshold;
-  this->edge_threshold_ = edge_threshold;
-  this->sigma_ = sigma;
-  // Ensure parameters are valid
-  this->CheckConfig();
+  params_.num_features = num_features;
+  params_.num_octave_layers = num_octave_layers;
+  params_.contrast_threshold = contrast_threshold;
+  params_.edge_threshold = edge_threshold;
+  params_.sigma = sigma;
+  Setup();
+}
 
-  this->sift_descriptor_ = cv::xfeatures2d::SIFT::create(
-      this->num_features_, this->num_octave_layers_, this->contrast_threshold_,
-      this->edge_threshold_, this->sigma_);
+void SIFTDescriptor::Setup(){
+  // Ensure parameters are valid
+  CheckConfig();
+
+  sift_descriptor_ = cv::xfeatures2d::SIFT::create(
+      params_.num_features, params_.num_octave_layers,
+      params_.contrast_threshold, params_.edge_threshold, params_.sigma);
 }
 
 void SIFTDescriptor::CheckConfig() {
@@ -27,7 +56,7 @@ cv::Mat
     SIFTDescriptor::ExtractDescriptors(const cv::Mat& image,
                                        std::vector<cv::KeyPoint>& keypoints) {
   cv::Mat descriptors;
-  this->sift_descriptor_->compute(image, keypoints, descriptors);
+  sift_descriptor_->compute(image, keypoints, descriptors);
   return descriptors;
 }
 } // namespace beam_cv

@@ -25,6 +25,44 @@ enum { KDTree = 1, KMeans = 2, Composite = 3, LSH = 4 };
  */
 class FLANNMatcher : public Matcher {
 public:
+  struct Params {
+    /** The FLANN method to use (described in the FLANN
+     * namespace). As a note, currently selecting a method will set up the FLANN
+     * matcher with default parameters.  Recommended: FLANN::KDTree.
+     * NOTE: This cannot be loaded from a json*/
+    int flann_method = FLANN::KDTree;
+
+    /** Specifies heuristic for the ratio test, illustrated
+     * by Dr. David G. Lowe in his paper _Distinctive Image Features from
+     * Scale-Invariant Keypoints_ (2004). The test takes the ratio of the
+     * closest keypoint distance to that of the second closest neighbour. If the
+     * ratio is less than the heuristic, it is discarded. Reccomended: 0.8 */
+    double ratio_threshold = 0.8;
+
+    /** Determines whether to automatically remove
+     * outliers using the method described in fm_method. */
+    bool auto_remove_outliers = true;
+
+    /** use k nearest neighbours */
+    bool use_knn = true;
+
+    /**  Method to find the fundamental matrix and remove outliers. */
+    int fm_method = cv::FM_RANSAC;
+
+    /** Specifies the distance threshold for good
+     * matches. */
+    int distance_threshold = 5;
+
+    // load params from json. If empty, it will use default params
+    void LoadFromJson(const std::string& config_path);
+  };
+
+  /**
+   * @brief Constructor that requires a params object
+   * @param params see struct above
+   */
+  FLANNMatcher(const Params& params);
+
   /** @brief Custom constructor. The user can also specify their own params or
    * use default.
    * @param flann_method The FLANN method to use (described in the FLANN
@@ -88,14 +126,7 @@ public:
                        cv::InputArray mask = cv::noArray()) override;
 
 private:
-  int flann_method_ = FLANN::KDTree;
-  bool use_knn_ = true;
-  double ratio_threshold_ = 0.8;
-  int distance_threshold_ = 5;
-  bool auto_remove_outliers_ = true;
-  int fm_method_ = cv::FM_RANSAC;
-  /** The pointer to the wrapped cv::FlannBasedMatcher object */
-  cv::Ptr<cv::FlannBasedMatcher> flann_matcher_;
+  void Setup();
 
   /** @brief Checks whether the desired configuration is valid
    *  @param check_config containing the desired configuration values.
@@ -117,6 +148,11 @@ private:
    */
   std::vector<cv::DMatch> FilterMatches(
       const std::vector<std::vector<cv::DMatch>>& matches) const override;
+
+  Params params_;
+
+  /** The pointer to the wrapped cv::FlannBasedMatcher object */
+  cv::Ptr<cv::FlannBasedMatcher> flann_matcher_;
 };
 
 } // namespace beam_cv
