@@ -247,8 +247,8 @@ inline void getMinMax3D(const pcl::PointCloud<PointT>& cloud, PointT& min_pt,
   else {
     for (size_t i = 0; i < cloud.points.size(); ++i) {
       // Check if the point is invalid
-      if (!pcl_isfinite(cloud.points[i].x) ||
-          !pcl_isfinite(cloud.points[i].y) || !pcl_isfinite(cloud.points[i].z))
+      if (!std::isfinite(cloud.points[i].x) ||
+          !std::isfinite(cloud.points[i].y) || !std::isfinite(cloud.points[i].z))
         continue;
       pcl::Array4fMapConst pt = cloud.points[i].getArray4fMap();
       min_p = min_p.min(pt);
