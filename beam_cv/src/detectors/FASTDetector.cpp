@@ -39,7 +39,7 @@ void FASTDetector::Params::LoadFromJson(const std::string& config_path) {
 FASTDetector::FASTDetector(const Params& params) : params_(params) {Setup();};
 
 FASTDetector::FASTDetector(int num_features, int threshold,
-                           bool nonmax_suppression, int type) {
+                           bool nonmax_suppression, cv::FastFeatureDetector::DetectorType type) {
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
   params_.type = type;

@@ -38,7 +38,7 @@ void ORBDetector::Params::LoadFromJson(const std::string& config_path) {
 ORBDetector::ORBDetector(const Params& params) : params_(params) {Setup();};
 
 ORBDetector::ORBDetector(int num_features, float scale_factor, int num_levels,
-                         int edge_threshold, int score_type,
+                         int edge_threshold, cv::ORB::ScoreType score_type,
                          int fast_threshold) {
   params_.num_features = num_features;
   params_.scale_factor = scale_factor;

@@ -57,7 +57,7 @@ public:
    */
   FASTDetector(int num_features = 0, int threshold = 10,
                bool nonmax_suppression = true,
-               int type = cv::FastFeatureDetector::TYPE_9_16);             
+               cv::FastFeatureDetector::DetectorType type = cv::FastFeatureDetector::TYPE_9_16);             
 
   /**
    * @brief Default destructor
