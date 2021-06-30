@@ -22,7 +22,7 @@ public:
     float scale_factor = 1.2;
     int num_levels = 8;
     int edge_threshold = 31;
-    int score_type = cv::ORB::HARRIS_SCORE;
+    cv::ORB::ScoreType score_type = cv::ORB::HARRIS_SCORE;
     int fast_threshold = 20;
 
     // load params from json. If empty, it will use default params
@@ -46,7 +46,7 @@ public:
    */
   ORBDetector(int num_features = 500, float scale_factor = 1.2,
               int num_levels = 8, int edge_threshold = 31,
-              int score_type = cv::ORB::HARRIS_SCORE, int fast_threshold = 20);
+              cv::ORB::ScoreType score_type = cv::ORB::HARRIS_SCORE, int fast_threshold = 20);
 
   /**
    * @brief Default destructor

@@ -42,7 +42,7 @@ void SIFTDetector::Setup(){
   // Ensure parameters are valid
   CheckConfig();
 
-  sift_detector_ = cv::xfeatures2d::SIFT::create(
+  sift_detector_ = cv::SIFT::create(
       params_.num_features, params_.n_octave_layers,
       params_.contrast_threshold, params_.edge_threshold, params_.sigma);
 }
