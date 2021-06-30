@@ -81,7 +81,8 @@ TEST(LoamParams, AngleBins) {
   params.number_of_beams = 3;
   params.fov_deg = 30;
   std::vector<double> bins = params.GetBeamAngleBinsDeg();
-  EXPECT_EQ(bins.size(), 2);
+  uint8_t expected_size = 2;
+  EXPECT_EQ(bins.size(), expected_size);
   EXPECT_EQ(bins[0], 7.5);
   EXPECT_EQ(bins[1], -7.5);
 }

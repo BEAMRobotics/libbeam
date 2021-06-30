@@ -50,7 +50,7 @@ public:
    * both resolutions are finer than the `min_res` class member, the
    * resolution is set to `min_res.`
    */
-  explicit NdtMatcher(Params params);
+  NdtMatcher(Params params);
   ~NdtMatcher();
 
   /**
