@@ -1,5 +1,7 @@
 #include <beam_cv/detectors/SIFTDetector.h>
 
+#include <fstream>
+
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 

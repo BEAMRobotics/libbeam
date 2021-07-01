@@ -2,13 +2,12 @@ PROJECT(beam_cv)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
+    OpenCV::OpenCV
     beam::calibration
     beam::containers
     beam::utils
     beam::optimization
-    OpenCV::OpenCV
     Eigen3::Eigen
-    OpenCV::OpenCV
     PCL::PCL
     Boost::boost
   SOURCES
