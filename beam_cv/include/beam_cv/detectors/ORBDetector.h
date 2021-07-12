@@ -18,12 +18,20 @@ namespace beam_cv {
 class ORBDetector : public Detector {
 public:
   struct Params {
+    // number of features to retain, 0 will keep all.
     int num_features = 500;
+
+    // for docs, see opencv
     float scale_factor = 1.2;
     int num_levels = 8;
     int edge_threshold = 31;
     int score_type = cv::ORB::HARRIS_SCORE;
     int fast_threshold = 20;
+
+    // number of columns in image grid
+    int grid_rows = 3;
+    // number of rows in image grid
+    int grid_cols = 2;
 
     // load params from json. If empty, it will use default params
     void LoadFromJson(const std::string& config_path);
@@ -37,27 +45,31 @@ public:
 
   /**
    * @brief Constructor
-   * @param num_features
+   * @param num_features number of features to retain, 0 will keep all.
    * @param scale_factor
    * @param num_levels
    * @param edge_threshold
    * @param score_type
    * @param fast_threshold
+   * @param grid_cols // number of columns in image grid
+   * @param grid_rows // number of rows in image grid
    */
   ORBDetector(int num_features = 500, float scale_factor = 1.2,
               int num_levels = 8, int edge_threshold = 31,
-              int score_type = cv::ORB::HARRIS_SCORE, int fast_threshold = 20);
+              int score_type = cv::ORB::HARRIS_SCORE, int fast_threshold = 20,
+              int grid_cols = 3, int grid_rows = 2);
 
   /**
    * @brief Default destructor
    */
   ~ORBDetector() override = default;
 
-  /** Detects features in an image.
-   *  @param image the image to detect features in.
-   *  @return a vector containing all of the keypoints found within the image.
+  /**
+   * @brief Detects features in one image grid space.
+   * @param image the image to detect features in.
+   * @return a vector containing all of the keypoints found within the image.
    */
-  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+  std::vector<cv::KeyPoint> DetectLocalFeatures(const cv::Mat& image);
 
 private:
   // this gets called in each constructor

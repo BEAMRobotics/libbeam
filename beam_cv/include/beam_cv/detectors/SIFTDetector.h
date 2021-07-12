@@ -47,6 +47,11 @@ public:
     // want to reduce the number.
     double sigma = 1.6;
 
+    // number of columns in image grid
+    int grid_rows = 3;
+    // number of rows in image grid
+    int grid_cols = 2;
+
     // load params from json. If empty, it will use default params
     void LoadFromJson(const std::string& config_path);
   };
@@ -74,21 +79,24 @@ public:
    * @param sigma The sigma of the Gaussian applied to the input image at the
    * octave #0. If your image is captured with a weak camera with soft lenses,
    * you might want to reduce the number.
+   * @param grid_cols // number of columns in image grid
+   * @param grid_rows // number of rows in image grid
    */
   SIFTDetector(int num_features = 0, int n_octave_layers = 3,
                double contrast_threshold = 0.04, double edge_threshold = 10,
-               double sigma = 1.6);
+               double sigma = 1.6, int grid_cols = 3, int grid_rows = 2);
 
   /**
    * @brief Default destructor
    */
   ~SIFTDetector() override = default;
 
-  /** Detects features in an image.
-   *  @param image the image to detect features in.
-   *  @return a vector containing all of the keypoints found within the image.
+  /**
+   * @brief Detects features in one image grid space.
+   * @param image the image to detect features in.
+   * @return a vector containing all of the keypoints found within the image.
    */
-  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+  std::vector<cv::KeyPoint> DetectLocalFeatures(const cv::Mat& image);
 
 private:
   // this gets called in each constructor

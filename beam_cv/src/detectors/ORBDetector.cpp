@@ -33,25 +33,35 @@ void ORBDetector::Params::LoadFromJson(const std::string& config_path) {
     score_type = cv::ORB::FAST_SCORE;
   }
   std::string fast_threshold = J["fast_threshold"];
+  grid_cols = J["grid_cols"];
+  grid_rows = J["grid_rows"];
 }
 
-ORBDetector::ORBDetector(const Params& params) : params_(params) {Setup();};
+ORBDetector::ORBDetector(const Params& params)
+    : Detector(params.grid_cols, params.grid_rows), params_(params) {
+  Setup();
+};
 
 ORBDetector::ORBDetector(int num_features, float scale_factor, int num_levels,
-                         int edge_threshold, int score_type,
-                         int fast_threshold) {
+                         int edge_threshold, int score_type, int fast_threshold,
+                         int grid_cols, int grid_rows) {
   params_.num_features = num_features;
   params_.scale_factor = scale_factor;
   params_.num_levels = num_levels;
   params_.edge_threshold = edge_threshold;
   params_.score_type = score_type;
   params_.fast_threshold = fast_threshold;
+  params_.grid_cols = grid_cols;
+  params_.grid_rows = grid_rows;
   Setup();
 }
 
-void ORBDetector::Setup(){
+void ORBDetector::Setup() {
   // Ensure parameters are valid
   CheckConfig();
+
+  int num_features_per_grid =
+      params_.num_features / (params_.grid_cols / params_.grid_rows);
 
   // Default parameters that should not be modified, and are not associated
   // with the descriptor. These values are the defaults recommended by OpenCV.
@@ -60,15 +70,16 @@ void ORBDetector::Setup(){
   int tuple_size = 2;
   int patch_size = 31;
 
-  orb_detector_ = cv::ORB::create(params_.num_features, params_.scale_factor,
+  orb_detector_ = cv::ORB::create(num_features_per_grid, params_.scale_factor,
                                   params_.num_levels, params_.edge_threshold,
                                   first_level, tuple_size, params_.score_type,
                                   patch_size, params_.fast_threshold);
 }
 
-std::vector<cv::KeyPoint> ORBDetector::DetectFeatures(const cv::Mat& image) {
-  std::vector<cv::KeyPoint> keypoints;
+std::vector<cv::KeyPoint>
+    ORBDetector::DetectLocalFeatures(const cv::Mat& image) {
   // Detect features in image and return keypoints.
+  std::vector<cv::KeyPoint> keypoints;
   orb_detector_->detect(image, keypoints);
   return keypoints;
 }

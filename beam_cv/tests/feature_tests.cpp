@@ -54,17 +54,17 @@ cv::Mat LoadIm0() {
   return cv::imread(im_loc, cv::IMREAD_COLOR);
 }
 
-TEST_CASE("Test feature matching: ORB") {
+std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
+std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
+
+cv::Mat imL = LoadIm0();
+cv::Mat imR = LoadIm1();
+
+TEST_CASE("Test matching: ORB Desc + ORB Det") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
       std::make_shared<beam_cv::ORBDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
-      std::make_shared<beam_cv::ORBDetector>(1000);
-
-  std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
-  std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
-
-  cv::Mat imL = LoadIm0();
-  cv::Mat imR = LoadIm1();
+      std::make_shared<beam_cv::ORBDetector>();
 
   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
@@ -90,17 +90,11 @@ TEST_CASE("Test feature matching: ORB") {
   REQUIRE(theta_deg < 10.0);
 }
 
-TEST_CASE("Test feature matching: SIFT") {
+TEST_CASE("Test matching: SIFT Desc + SIFT Det") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
       std::make_shared<beam_cv::SIFTDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
-      std::make_shared<beam_cv::GFTTDetector>();
-
-  std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
-  std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
-
-  cv::Mat imL = LoadIm0();
-  cv::Mat imR = LoadIm1();
+      std::make_shared<beam_cv::SIFTDetector>();
 
   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
@@ -125,17 +119,41 @@ TEST_CASE("Test feature matching: SIFT") {
   REQUIRE(theta_deg < 10.0);
 }
 
-TEST_CASE("Test feature matching: BRISK") {
+TEST_CASE("Test matching: SIFT Desc + GFTT Det") {
   std::shared_ptr<beam_cv::Descriptor> descriptor =
-      std::make_shared<beam_cv::BRISKDescriptor>();
+      std::make_shared<beam_cv::SIFTDescriptor>();
   std::shared_ptr<beam_cv::Detector> detector =
       std::make_shared<beam_cv::GFTTDetector>();
 
-  std::shared_ptr<beam_calibration::CameraModel> cam0 = LoadCam0();
-  std::shared_ptr<beam_calibration::CameraModel> cam1 = LoadCam1();
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
+  beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
+                                 pR_v);
 
-  cv::Mat imL = LoadIm0();
-  cv::Mat imR = LoadIm1();
+  beam::opt<Eigen::Matrix4d> T =
+      beam_cv::RelativePoseEstimator::RANSACEstimator(
+          cam1, cam0, pL_v, pR_v, beam_cv::EstimatorMethod::SEVENPOINT, 20, 5.0,
+          1);
+
+  Eigen::Quaterniond q(T.value().block<3, 3>(0, 0));
+  Eigen::Quaterniond identity(Eigen::Matrix3d::Identity());
+  double theta_rad = 2 * acos(abs(q.dot(identity)));
+  double theta_deg = beam::Rad2Deg(theta_rad);
+  if (T.has_value()) {
+    std::stringstream ss;
+    ss << T.value();
+    BEAM_INFO("Angle error: {}", theta_deg);
+    BEAM_INFO("Estimated pose:\n {}", ss.str());
+  }
+
+  REQUIRE(theta_deg < 10.0);
+}
+
+TEST_CASE("Test matching: BRISK Desc + FAST Det") {
+  std::shared_ptr<beam_cv::Descriptor> descriptor =
+      std::make_shared<beam_cv::BRISKDescriptor>();
+  std::shared_ptr<beam_cv::Detector> detector =
+      std::make_shared<beam_cv::FASTDetector>();
 
   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
