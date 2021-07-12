@@ -16,14 +16,13 @@ Class structure for image descriptor extractors, descriptors implemented:
 2. BRISK
 3. SIFT
 
-
 ## detectors
 
-Class structure for image detectors, detectors implemented:
+Class structure for image detectors using a gridded approach, detectors implemented:
 1. ORB
 2. FAST
 3. SIFT
-
+4. GFTT
 
 ## matchers
 
