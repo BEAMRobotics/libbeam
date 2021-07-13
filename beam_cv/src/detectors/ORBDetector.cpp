@@ -44,7 +44,7 @@ ORBDetector::ORBDetector(const Params& params)
 
 ORBDetector::ORBDetector(int num_features, float scale_factor, int num_levels,
                          int edge_threshold, int score_type, int fast_threshold,
-                         int grid_cols, int grid_rows) {
+                         int grid_cols, int grid_rows) : Detector(grid_cols, grid_rows){
   params_.num_features = num_features;
   params_.scale_factor = scale_factor;
   params_.num_levels = num_levels;

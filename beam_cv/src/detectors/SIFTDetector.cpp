@@ -34,7 +34,8 @@ SIFTDetector::SIFTDetector(const Params& params)
 
 SIFTDetector::SIFTDetector(int num_features, int n_octave_layers,
                            double contrast_threshold, double edge_threshold,
-                           double sigma, int grid_cols, int grid_rows) {
+                           double sigma, int grid_cols, int grid_rows)
+    : Detector(grid_cols, grid_rows) {
   params_.num_features = num_features;
   params_.n_octave_layers = n_octave_layers;
   params_.contrast_threshold = contrast_threshold;

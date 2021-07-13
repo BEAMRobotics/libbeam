@@ -44,7 +44,8 @@ FASTDetector::FASTDetector(const Params& params)
 
 FASTDetector::FASTDetector(int num_features, int threshold,
                            bool nonmax_suppression, int type, int grid_cols,
-                           int grid_rows) {
+                           int grid_rows)
+    : Detector(grid_cols, grid_rows) {
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
   params_.type = type;
