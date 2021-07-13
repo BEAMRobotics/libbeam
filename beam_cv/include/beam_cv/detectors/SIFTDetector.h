@@ -48,9 +48,9 @@ public:
     double sigma = 1.6;
 
     // number of columns in image grid
-    int grid_rows = 3;
+    int grid_cols = 3;
     // number of rows in image grid
-    int grid_cols = 2;
+    int grid_rows = 2;
 
     // load params from json. If empty, it will use default params
     void LoadFromJson(const std::string& config_path);

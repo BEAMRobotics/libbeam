@@ -30,9 +30,9 @@ void ORBDetector::Params::LoadFromJson(const std::string& config_path) {
   } else {
     BEAM_ERROR("Invalid score type param given to ORBDetector. Using default: "
                "HARRIS_SCORE");
-    score_type = cv::ORB::FAST_SCORE;
+    score_type = cv::ORB::HARRIS_SCORE;
   }
-  std::string fast_threshold = J["fast_threshold"];
+  fast_threshold = J["fast_threshold"];
   grid_cols = J["grid_cols"];
   grid_rows = J["grid_rows"];
 }
@@ -61,7 +61,7 @@ void ORBDetector::Setup() {
   CheckConfig();
 
   int num_features_per_grid =
-      params_.num_features / (params_.grid_cols / params_.grid_rows);
+      params_.num_features / (params_.grid_cols * params_.grid_rows);
 
   // Default parameters that should not be modified, and are not associated
   // with the descriptor. These values are the defaults recommended by OpenCV.

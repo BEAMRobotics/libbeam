@@ -43,14 +43,14 @@ GFTTDetector::GFTTDetector(int num_features, double quality_level,
   params_.block_size = block_size;
   params_.use_harris_detector = use_harris_detector;
   params_.k = k;
-  params_.grid_rows = grid_rows;
   params_.grid_cols = grid_cols;
+  params_.grid_rows = grid_rows;
   Setup();
 }
 
 void GFTTDetector::Setup() {
   int num_features_per_grid =
-      params_.num_features / (params_.grid_cols / params_.grid_rows);
+      params_.num_features / (params_.grid_cols * params_.grid_rows);
 
   GFTT_detector_ = cv::GFTTDetector::create(
       num_features_per_grid, params_.quality_level, params_.min_distance,

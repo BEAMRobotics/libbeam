@@ -29,9 +29,9 @@ public:
     double k = 0.04;
 
     // number of columns in image grid
-    int grid_rows = 3;
+    int grid_cols = 3;
     // number of rows in image grid
-    int grid_cols = 2;
+    int grid_rows = 2;
 
     // load params from json. If empty, it will use default params
     void LoadFromJson(const std::string& config_path);
@@ -57,7 +57,7 @@ public:
   GFTTDetector(int num_features = 1000, double quality_level = 0.01,
                double min_distance = 1, int block_size = 3,
                bool use_harris_detector = false, double k = 0.04,
-               int grid_rows = 3, int grid_cols = 2);
+               int grid_cols = 3, int grid_rows = 2);
 
   /**
    * @brief Default destructor

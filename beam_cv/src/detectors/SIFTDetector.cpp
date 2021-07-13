@@ -50,7 +50,7 @@ void SIFTDetector::Setup() {
   CheckConfig();
 
   int num_features_per_grid =
-      params_.num_features / (params_.grid_cols / params_.grid_rows);
+      params_.num_features / (params_.grid_cols * params_.grid_rows);
 
   sift_detector_ = cv::xfeatures2d::SIFT::create(
       num_features_per_grid, params_.n_octave_layers,

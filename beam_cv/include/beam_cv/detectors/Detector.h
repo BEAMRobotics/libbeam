@@ -62,17 +62,17 @@ public:
   static std::shared_ptr<Detector> Create(DetectorType type,
                                           const std::string& file_path = "");
 
-  /** Gridded feature keypoint detection. Calls DetectLocalFeatures defined in
-   * each derived class.  Returns a max of num_features_ keypoints.
+  /** @brief Gridded feature keypoint detection. Calls DetectLocalFeatures
+   * defined in each derived class.  Returns a max of num_features_ keypoints.
    *  @param image the image to detect features in.
    *  @return a vector of the detected keypoints.
    */
-  virtual std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image) = 0;
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
 
 private:
-  /** Detects keypoints in an image/grid space. Calls a different detector
-   * depending on the derived class.  Returns a max of num_features divided by
-   * grid spaces keypoints
+  /** @brief Detects keypoints in an image/grid space. Calls a different
+   * detector depending on the derived class.  Returns a max of num_features
+   * divided by grid spaces keypoints
    *  @param image the image to detect features in.
    *  @return a vector of the detected keypoints.
    */

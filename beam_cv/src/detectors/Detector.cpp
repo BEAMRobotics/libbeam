@@ -7,6 +7,9 @@
 
 namespace beam_cv {
 
+Detector::Detector(int grid_cols, int grid_rows)
+    : grid_cols_(grid_cols), grid_rows_(grid_rows) {}
+
 std::shared_ptr<Detector> Detector::Create(DetectorType type,
                                            const std::string& file_path) {
   // check input file path

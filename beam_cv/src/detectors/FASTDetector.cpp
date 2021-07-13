@@ -21,8 +21,6 @@ void FASTDetector::Params::LoadFromJson(const std::string& config_path) {
   num_features = J["num_features"];
   threshold = J["threshold"];
   nonmax_suppression = J["nonmax_suppression"];
-  grid_rows = J["grid_rows"];
-  grid_cols = J["grid_cols"];
   std::string type_str = J["type"];
   if (type_str == "TYPE_9_16") {
     type = cv::FastFeatureDetector::TYPE_9_16;
@@ -35,6 +33,8 @@ void FASTDetector::Params::LoadFromJson(const std::string& config_path) {
         "Invalid type param given to FastDetector. Using default: TYPE_9_16");
     type = cv::FastFeatureDetector::TYPE_9_16;
   }
+  grid_cols = J["grid_cols"];
+  grid_rows = J["grid_rows"];
 }
 
 FASTDetector::FASTDetector(const Params& params)
@@ -43,14 +43,14 @@ FASTDetector::FASTDetector(const Params& params)
 };
 
 FASTDetector::FASTDetector(int num_features, int threshold,
-                           bool nonmax_suppression, int type, int grid_rows,
-                           int grid_cols) {
+                           bool nonmax_suppression, int type, int grid_cols,
+                           int grid_rows) {
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
   params_.type = type;
   params_.num_features = num_features;
-  params_.grid_rows = grid_rows;
   params_.grid_cols = grid_cols;
+  params_.grid_rows = grid_rows;
   Setup();
 }
 
@@ -71,7 +71,7 @@ std::vector<cv::KeyPoint>
   // Retain best features since opencv fast does not have num features control.
   if (params_.num_features != 0) {
     int num_features_per_grid =
-        params_.num_features / (params_.grid_cols / params_.grid_rows);
+        params_.num_features / (params_.grid_cols * params_.grid_rows);
     cv::KeyPointsFilter::retainBest(keypoints, num_features_per_grid);
   }
 
