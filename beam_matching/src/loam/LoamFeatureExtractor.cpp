@@ -119,6 +119,13 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
     surface_points_less_flat_ += surf_points_less_flat_scanDS;
   }
 
+  if(corner_points_sharp_.empty()){
+    BEAM_WARN("Unable to extract sharp edge features from cloud.");
+  }
+  if(surface_points_flat_.empty()){
+    BEAM_WARN("Unable to extract flat surface features from cloud.");
+  }
+
   return LoamPointCloud(corner_points_sharp_, surface_points_flat_,
                         corner_points_less_sharp_, surface_points_less_flat_);
 }

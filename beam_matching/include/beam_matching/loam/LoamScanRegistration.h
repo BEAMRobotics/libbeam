@@ -109,7 +109,7 @@ private:
   Eigen::Matrix4d T_REF_TGT_prev_iter_{Eigen::Matrix4d::Identity()};
 
   // Debugging tools
-  std::string debug_output_path_{"/home/nick/tmp/loam_tests/"};
+  std::string debug_output_path_{"/home/nick/debug/loam_tests/"};
   bool output_results_{false};
 };
 
