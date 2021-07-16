@@ -3,7 +3,6 @@
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
-
 namespace beam_cv {
 
 void FASTDetector::Params::LoadFromJson(const std::string& config_path) {
@@ -34,34 +33,51 @@ void FASTDetector::Params::LoadFromJson(const std::string& config_path) {
         "Invalid type param given to FastDetector. Using default: TYPE_9_16");
     type = cv::FastFeatureDetector::TYPE_9_16;
   }
+  grid_cols = J["grid_cols"];
+  grid_rows = J["grid_rows"];
 }
 
-FASTDetector::FASTDetector(const Params& params) : params_(params) {Setup();};
+FASTDetector::FASTDetector(const Params& params)
+    : Detector(params.grid_cols, params.grid_rows), params_(params) {
+  Setup();
+};
 
 FASTDetector::FASTDetector(int num_features, int threshold,
-                           bool nonmax_suppression, int type) {
+                           bool nonmax_suppression, int type, int grid_cols,
+                           int grid_rows)
+    : Detector(grid_cols, grid_rows) {
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
   params_.type = type;
   params_.num_features = num_features;
+  params_.grid_cols = grid_cols;
+  params_.grid_rows = grid_rows;
   Setup();
 }
 
-void FASTDetector::Setup(){
+void FASTDetector::Setup() {
   // Ensure parameters are valid
   CheckConfig();
+
   fast_detector_ = cv::FastFeatureDetector::create(
       params_.threshold, params_.nonmax_suppression, params_.type);
 }
 
-std::vector<cv::KeyPoint> FASTDetector::DetectFeatures(const cv::Mat& image) {
-  std::vector<cv::KeyPoint> keypoints;
+std::vector<cv::KeyPoint>
+    FASTDetector::DetectLocalFeatures(const cv::Mat& image) {
   // Detect features in image and return keypoints.
+  std::vector<cv::KeyPoint> keypoints;
   fast_detector_->detect(image, keypoints);
-  // Retain best keypoints, if specified.
+
+  // Retain best features since opencv fast does not have num features control.
   if (params_.num_features != 0) {
-    cv::KeyPointsFilter::retainBest(keypoints, params_.num_features);
+    int num_features_per_grid =
+        params_.num_features / (params_.grid_cols * params_.grid_rows);
+    cv::KeyPointsFilter::retainBest(keypoints, num_features_per_grid);
+    // tied scores result in overages
+    keypoints.resize(num_features_per_grid);
   }
+
   return keypoints;
 }
 

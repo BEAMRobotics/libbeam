@@ -7,8 +7,11 @@
 
 namespace beam_cv {
 
-std::shared_ptr<Detector>
-    Detector::Create(DetectorType type, const std::string& file_path) {
+Detector::Detector(int grid_cols, int grid_rows)
+    : grid_cols_(grid_cols), grid_rows_(grid_rows) {}
+
+std::shared_ptr<Detector> Detector::Create(DetectorType type,
+                                           const std::string& file_path) {
   // check input file path
   std::string file_to_read = file_path;
   if (!boost::filesystem::exists(file_to_read) && !file_path.empty()) {
@@ -40,6 +43,31 @@ std::shared_ptr<Detector>
     params.LoadFromJson(file_to_read);
     return std::make_shared<ORBDetector>(params);
   }
+}
+
+std::vector<cv::KeyPoint> Detector::DetectFeatures(const cv::Mat& image) {
+  std::vector<cv::KeyPoint> local_keypoints;
+  std::vector<cv::KeyPoint> global_keypoints;
+
+  int grid_width = image.cols / grid_cols_;
+  int grid_height = image.rows / grid_rows_;
+
+  for (int y = 0; y + grid_height <= image.rows; y += grid_height) {
+    for (int x = 0; x + grid_width <= image.cols; x += grid_width) {
+      cv::Rect roi = cv::Rect(x, y, grid_width, grid_height);
+      cv::Mat grid = image(roi);
+      local_keypoints = DetectLocalFeatures(grid);
+
+      for (size_t i = 0; i < local_keypoints.size(); i++) {
+        // use iterator position to translate local global coords
+        cv::KeyPoint global_pt = local_keypoints[i];
+        global_pt.pt.x += x;
+        global_pt.pt.y += y;
+        global_keypoints.push_back(global_pt);
+      }
+    }
+  }
+  return global_keypoints;
 }
 
 } // namespace beam_cv

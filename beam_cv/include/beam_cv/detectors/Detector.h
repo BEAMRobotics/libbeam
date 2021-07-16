@@ -51,7 +51,7 @@ public:
   /**
    * @brief Default constructor
    */
-  Detector() = default;
+  Detector(int grid_cols, int grid_rows);
 
   /**
    * @brief Default destructor
@@ -62,12 +62,25 @@ public:
   static std::shared_ptr<Detector> Create(DetectorType type,
                                           const std::string& file_path = "");
 
-  /** Detects features in an image. Calls a different detector depending on
-   *  the derived class.
+  /** @brief Gridded feature keypoint detection. Calls DetectLocalFeatures
+   * defined in each derived class.  Returns a max of num_features_ keypoints.
    *  @param image the image to detect features in.
    *  @return a vector of the detected keypoints.
    */
-  virtual std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image) = 0;
+  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+
+private:
+  /** @brief Detects keypoints in an image/grid space. Calls a different
+   * detector depending on the derived class.  Returns a max of num_features
+   * divided by grid spaces keypoints
+   *  @param image the image to detect features in.
+   *  @return a vector of the detected keypoints.
+   */
+  virtual std::vector<cv::KeyPoint>
+      DetectLocalFeatures(const cv::Mat& image) = 0;
+
+  int grid_cols_ = 3;
+  int grid_rows_ = 2;
 };
 
 } // namespace beam_cv

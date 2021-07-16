@@ -33,6 +33,11 @@ public:
     // Options: TYPE_9_16, TYPE_7_12, TYPE_5_8. See opencv docs for more details
     int type = cv::FastFeatureDetector::TYPE_9_16;
 
+    // number of columns in image grid
+    int grid_cols = 3;
+    // number of rows in image grid
+    int grid_rows = 2;
+
     // load params from json. If empty, it will use default params
     void LoadFromJson(const std::string& config_path);
   };
@@ -41,8 +46,8 @@ public:
    * @brief Constructor that requires a params object
    * @param params see struct above
    */
-  FASTDetector(const Params& params);  
-  
+  FASTDetector(const Params& params);
+
   /**
    * @brief Constructor that specifies each param individually
    * @param num_features number of features to retain, 0 will keep all.
@@ -54,21 +59,24 @@ public:
    * @param type Threshold on difference between intensity of the central pixel,
    * and pixels in a circle (Bresenham radius 3) around this pixel.
    *  Recommended: 10. Must be greater than zero.
+   * @param grid_cols // number of columns in image grid
+   * @param grid_rows // number of rows in image grid
    */
   FASTDetector(int num_features = 0, int threshold = 10,
                bool nonmax_suppression = true,
-               int type = cv::FastFeatureDetector::TYPE_9_16);             
+               int type = cv::FastFeatureDetector::TYPE_9_16, int grid_cols = 3,
+               int grid_rows = 2);
 
   /**
    * @brief Default destructor
    */
   ~FASTDetector() override = default;
 
-  /** Detects features in an image.
+  /** @brief Detects features in one image grid space.
    *  @param image the image to detect features in.
    *  @return a vector containing all of the keypoints found within the image.
    */
-  std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+  std::vector<cv::KeyPoint> DetectLocalFeatures(const cv::Mat& image);
 
 private:
   // this gets called in each constructor
