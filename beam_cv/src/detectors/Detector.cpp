@@ -52,8 +52,8 @@ std::vector<cv::KeyPoint> Detector::DetectFeatures(const cv::Mat& image) {
   int grid_width = image.cols / grid_cols_;
   int grid_height = image.rows / grid_rows_;
 
-  for (int y = 0; y < image.rows; y += grid_height) {
-    for (int x = 0; x < image.cols; x += grid_width) {
+  for (int y = 0; y + grid_height <= image.rows; y += grid_height) {
+    for (int x = 0; x + grid_width <= image.cols; x += grid_width) {
       cv::Rect roi = cv::Rect(x, y, grid_width, grid_height);
       cv::Mat grid = image(roi);
       local_keypoints = DetectLocalFeatures(grid);

@@ -74,6 +74,8 @@ std::vector<cv::KeyPoint>
     int num_features_per_grid =
         params_.num_features / (params_.grid_cols * params_.grid_rows);
     cv::KeyPointsFilter::retainBest(keypoints, num_features_per_grid);
+    // tied scores result in overages
+    keypoints.resize(num_features_per_grid);
   }
 
   return keypoints;
