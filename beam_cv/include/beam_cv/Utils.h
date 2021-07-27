@@ -12,6 +12,8 @@
 #include <beam_utils/math.h>
 #include <beam_utils/optional.h>
 
+#include <sensor_msgs/Image.h>
+
 namespace beam_cv {
 
 typedef Eigen::aligned_allocator<Eigen::Vector4d> AlignVec4d;
@@ -205,6 +207,14 @@ void DetectAndCompute(const cv::Mat& image,
 double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
                                   const std::vector<cv::KeyPoint>& keypoints_1,
                                   const std::vector<cv::KeyPoint>& keypoints_2);
+
+/**
+ * @brief Converts a ROS Image to a cv::Mat by sharing the data or changing its
+ * endianness if needed
+ * @param source ros image message
+ * @return cv::Mat of image
+ */
+cv::Mat ImgToMat(const sensor_msgs::Image& source);
 
 /**
  * @brief This class provides a simple yet efficient Union-Find data structure

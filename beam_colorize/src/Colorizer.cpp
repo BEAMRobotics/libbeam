@@ -3,7 +3,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 
-#include <cv_bridge/cv_bridge.h>
+#include <beam_cv/Utils.h>
 
 #include "beam_colorize/Colorizer.h"
 #include "beam_colorize/Projection.h"
@@ -46,10 +46,7 @@ void Colorizer::SetImage(const cv::Mat& image_input) {
 }
 
 void Colorizer::SetImage(const sensor_msgs::Image& image_input) {
-  cv_bridge::CvImagePtr cv_img_ptr;
-  cv_img_ptr =
-      cv_bridge::toCvCopy(image_input, sensor_msgs::image_encodings::BGR8);
-  image_ = std::make_shared<cv::Mat>(cv_img_ptr->image);
+  image_ = std::make_shared<cv::Mat>(beam_cv::ImgToMat(image_input));
   image_initialized_ = true;
 }
 
