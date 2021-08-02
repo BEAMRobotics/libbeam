@@ -13,6 +13,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
+    src/OpenCVConversions.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp

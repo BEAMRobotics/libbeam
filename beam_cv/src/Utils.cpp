@@ -304,12 +304,12 @@ void DetectComputeAndMatch(
     std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pR_v) {
   std::vector<cv::KeyPoint> kpL;
   cv::Mat descL;
-  DetectAndCompute(imL, descriptor, detector, kpL, descL);    
-  
+  DetectAndCompute(imL, descriptor, detector, kpL, descL);
+
   std::vector<cv::KeyPoint> kpR;
   cv::Mat descR;
-  DetectAndCompute(imR, descriptor, detector, kpR, descR);    
-  
+  DetectAndCompute(imR, descriptor, detector, kpR, descR);
+
   std::vector<cv::DMatch> matches =
       matcher->MatchDescriptors(descL, descR, kpL, kpR);
 
