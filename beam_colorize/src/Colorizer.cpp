@@ -3,11 +3,10 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 
-#include <beam_cv/Utils.h>
-
 #include "beam_colorize/Colorizer.h"
 #include "beam_colorize/Projection.h"
 #include "beam_colorize/RayTrace.h"
+#include <beam_cv/OpenCVConversions.h>
 
 namespace beam_colorize {
 Colorizer::Colorizer() {
@@ -46,7 +45,8 @@ void Colorizer::SetImage(const cv::Mat& image_input) {
 }
 
 void Colorizer::SetImage(const sensor_msgs::Image& image_input) {
-  image_ = std::make_shared<cv::Mat>(beam_cv::ImgToMat(image_input));
+  image_ = std::make_shared<cv::Mat>(
+      beam_cv::OpenCVConversions::ImgToMat(image_input));
   image_initialized_ = true;
 }
 
