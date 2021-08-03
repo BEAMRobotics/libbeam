@@ -21,7 +21,8 @@ cv::Mat RosImgToMat(const sensor_msgs::Image& source);
  * @brief Converts a cv::Mat to a ROS Image
  * @param source cv mat image to convert
  * @param header ros header for the new image
- * @param encoding Image encoding ("mono8", "bgr8", etc.)
+ * @param encoding Image encoding ("mono8", "bgr8", etc.) See:
+ * http://docs.ros.org/en/jade/api/sensor_msgs/html/namespacesensor__msgs_1_1image__encodings.html
  * @return ros image
  */
 sensor_msgs::Image MatToRosImg(const cv::Mat source,
