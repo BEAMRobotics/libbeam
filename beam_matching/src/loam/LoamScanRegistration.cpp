@@ -33,6 +33,7 @@ bool LoamScanRegistration::RegisterScans(const LoamPointCloudPtr& ref,
 
   Setup();
   int iteration = 0;
+
   while (true) {
     if (!GetEdgeMeasurements()) {
       registration_successful_ = false;
@@ -47,6 +48,7 @@ bool LoamScanRegistration::RegisterScans(const LoamPointCloudPtr& ref,
       break;
     }
     OutputResults(iteration);
+
     if (HasConverged(iteration)) { break; }
     T_REF_TGT_prev_iter_ = T_REF_TGT_;
     iteration++;
@@ -98,12 +100,14 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
     // search for correspondence in strong fetures
     std::vector<int> point_search_ind;
     std::vector<float> point_search_sq_dist;
-    ref_->edges.strong.kdtree.nearestKSearch(search_pt, 2, point_search_ind,
-                                             point_search_sq_dist);
+    int num_returned = ref_->edges.strong.kdtree.nearestKSearch(
+        search_pt, 2, point_search_ind, point_search_sq_dist);
+    if (num_returned != 2) { BEAM_ERROR("Could not find 2 correspondences."); }
 
     // if both correspondences are close enough, add measurement, else check in
     // weak features
-    if (point_search_sq_dist[0] < params_->max_correspondence_distance &&
+    if (num_returned == 2 &&
+        point_search_sq_dist[0] < params_->max_correspondence_distance &&
         point_search_sq_dist[1] < params_->max_correspondence_distance) {
       EdgeMeasurement measurement;
 
@@ -120,15 +124,18 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
       continue;
     }
 
-    // search for correspondence in strong fetures
+    // search for correspondence in weak features
     point_search_ind.clear();
     point_search_sq_dist.clear();
-    ref_->edges.weak.kdtree.nearestKSearch(search_pt, 2, point_search_ind,
-                                           point_search_sq_dist);
+    num_returned = ref_->edges.weak.kdtree.nearestKSearch(
+        search_pt, 2, point_search_ind, point_search_sq_dist);
+
+    if (num_returned != 2) { BEAM_ERROR("Could not find 2 correspondences."); }
 
     // if both correspondences are close enough, add measurement, else skip
     // feature
-    if (point_search_sq_dist[0] < params_->max_correspondence_distance &&
+    if (num_returned == 2 &&
+        point_search_sq_dist[0] < params_->max_correspondence_distance &&
         point_search_sq_dist[1] < params_->max_correspondence_distance) {
       EdgeMeasurement measurement;
       measurement.query_pt =
@@ -275,6 +282,7 @@ bool LoamScanRegistration::Solve(int iteration) {
   // solve problem
   ceres::Solver::Summary ceres_summary;
   ceres::Solve(solver_options, problem.get(), &ceres_summary);
+
   if (params_->output_ceres_summary) {
     BEAM_INFO("Outputting ceres summary for iteration {}", iteration);
     std::string report = ceres_summary.FullReport();
@@ -313,8 +321,8 @@ bool LoamScanRegistration::HasConverged(int iteration) {
 }
 
 void LoamScanRegistration::OutputResults(int iteration) {
-  if(!output_results_){return;}
-  
+  if (!output_results_) { return; }
+
   if (!boost::filesystem::exists(debug_output_path_)) {
     BEAM_ERROR("Debug output path does not exist, not saving results.");
     return;

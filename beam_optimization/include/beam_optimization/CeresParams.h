@@ -37,11 +37,11 @@ public:
    * beam_optimization/config/CeresParamsDefault.json
    */
   CeresParams(const std::string& config_path) {
-    if(config_path.empty()){
+    if (config_path.empty()) {
       LoadDefaultParams();
       return;
     }
-    
+
     if (!boost::filesystem::exists(config_path)) {
       BEAM_ERROR(
           "Ceres config file does not exist: {}. Using default parameters.",
@@ -108,6 +108,16 @@ public:
     } else {
       problem_options_.cost_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
     }
+
+    nlohmann::json J_loss_function = J["loss_function"];
+    loss_function_type_ = J_loss_function["type"];
+    loss_function_scaling_ = J_loss_function["scaling"];
+    if (loss_function_types_.find(loss_function_type_) ==
+        loss_function_types_.end()) {
+      LOG_ERROR("Invalid loss function type, Options: HUBER, CAUCHY, NULL. "
+                "Using default: HUBER");
+      loss_function_type_ = "HUBER";
+    }
   }
 
   /**
@@ -149,11 +159,6 @@ public:
           new ceres::CauchyLoss(loss_function_scaling_));
     } else if (loss_function_type_ == "NULL") {
       loss_function = std::unique_ptr<ceres::LossFunction>(nullptr);
-    } else {
-      LOG_ERROR("Invalid preconditioner_type, Options: HUBER, CAUCHY, NULL. "
-                "Using default: HUBER");
-      loss_function = std::unique_ptr<ceres::LossFunction>(
-          new ceres::HuberLoss(loss_function_scaling_));
     }
     return std::move(loss_function);
   }
@@ -208,6 +213,12 @@ private:
       {"IDENTITY", ceres::IDENTITY},
       {"JACOBI", ceres::JACOBI},
       {"SCHUR_JACOBI", ceres::SCHUR_JACOBI},
+  };
+
+  std::set<std::string> loss_function_types_{
+      {"HUBER"},
+      {"CAUCHY"},
+      {"NULL"},
   };
 
   ceres::Problem::Options problem_options_;
