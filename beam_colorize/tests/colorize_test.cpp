@@ -32,7 +32,7 @@ void LoadColorizer(beam_colorize::ColorizerType type) {
   pcl::io::loadPCDFile<pcl::PointXYZ>(cloud_location, *cloud_);
   // load image
   std::string image_location = cur_dir + "test_data/259_mask.jpg";
-  image_ = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+  image_ = cv::imread(image_location, cv::IMREAD_COLOR);
   // init variables
   bool image_distorted = true;
   colorizer_->SetPointCloud(cloud_);
@@ -95,8 +95,8 @@ TEST_CASE("Test factory method") {
 
   std::string proj_test = "Projection", ray_test = "RayTrace";
 
-  REQUIRE(proj_type.find(proj_test) != -1);
-  REQUIRE(ray_type.find(ray_test) != -1);
+  REQUIRE(proj_type.find(proj_test) != std::string::npos);
+  REQUIRE(ray_type.find(ray_test) != std::string::npos);
 }
 
 TEST_CASE("Test setter functions") {
@@ -115,7 +115,7 @@ TEST_CASE("Test setter functions") {
   // load Image
   std::string image_location = cur_dir + "259_mask.jpg";
   cv::Mat image;
-  image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+  image = cv::imread(image_location, cv::IMREAD_COLOR);
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr XYZRGB_cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);

@@ -5,12 +5,13 @@
 #include "beam_utils/angles.h"
 #include "beam_utils/log.h"
 #include "beam_utils/math.h"
+#include <beam_utils/pcl_conversions.h>
+
 #include <fstream>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/radius_outlier_removal.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
-#include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
 
 namespace beam_mapping {
@@ -352,7 +353,7 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
     pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
         std::make_shared<pcl::PCLPointCloud2>();
     PointCloud::Ptr cloud_tmp = std::make_shared<PointCloud>();
-    pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
+    beam::pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
     pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
     PointCloud::Ptr cloud_cropped =
         this->CropPointCloud(cloud_tmp, lidar_number);

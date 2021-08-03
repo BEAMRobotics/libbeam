@@ -36,14 +36,17 @@ FIND_PACKAGE(Boost 1.58.0 COMPONENTS system filesystem)
 FIND_PACKAGE(PCL 1.11.1 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
     surface segmentation features)
-FIND_PACKAGE(OpenCV 3.2.0 REQUIRED COMPONENTS)
+FIND_PACKAGE(OpenCV 4.5.2 REQUIRED COMPONENTS)
 FIND_PACKAGE(yaml-cpp REQUIRED)
 FIND_PACKAGE(Ceres 1.11)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
-             roscpp std_msgs cv_bridge rosbag)
+             roscpp std_msgs rosbag)
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
-FIND_PACKAGE(Ladybug)
+
+IF(BUILD_LADYBUG)
+   FIND_PACKAGE(Ladybug)
+ENDIF()
 
 # Where dependencies do not provide IMPORTED targets, define them
 INCLUDE(cmake/ImportEigen3.cmake)

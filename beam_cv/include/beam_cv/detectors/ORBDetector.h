@@ -25,7 +25,7 @@ public:
     float scale_factor = 1.2;
     int num_levels = 8;
     int edge_threshold = 31;
-    int score_type = cv::ORB::HARRIS_SCORE;
+    cv::ORB::ScoreType score_type = cv::ORB::HARRIS_SCORE;
     int fast_threshold = 20;
 
     // number of columns in image grid
@@ -56,8 +56,8 @@ public:
    */
   ORBDetector(int num_features = 500, float scale_factor = 1.2,
               int num_levels = 8, int edge_threshold = 31,
-              int score_type = cv::ORB::HARRIS_SCORE, int fast_threshold = 20,
-              int grid_cols = 3, int grid_rows = 2);
+              cv::ORB::ScoreType score_type = cv::ORB::HARRIS_SCORE,
+              int fast_threshold = 20, int grid_cols = 3, int grid_rows = 2);
 
   /**
    * @brief Default destructor

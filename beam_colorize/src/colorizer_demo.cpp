@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
       // load Image
       std::string image_location = cur_dir + "259_mask.jpg";
       cv::Mat image;
-      image = cv::imread(image_location, CV_LOAD_IMAGE_COLOR);
+      image = cv::imread(image_location, cv::IMREAD_COLOR);
       if (!image.data) {
         BEAM_INFO("Could not open or find the image: {}", image_location);
         return -1;

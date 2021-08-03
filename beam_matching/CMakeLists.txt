@@ -73,6 +73,7 @@ target_link_libraries(${PROJECT_NAME}_gicp_tests
     Catch2::Catch2
 )
 
+#[[
 add_executable(${PROJECT_NAME}_multi_matcher_tests
   tests/multi_matcher_tests.cpp
 )
@@ -88,6 +89,7 @@ target_link_libraries(${PROJECT_NAME}_multi_matcher_tests
     Eigen3::Eigen
     Catch2::Catch2
 )
+]]
 
 # Copy the test data
 file(COPY tests/data tests/config DESTINATION ${PROJECT_BINARY_DIR}/tests)

@@ -31,7 +31,7 @@ public:
   };
 
   GicpMatcher() = default;
-  explicit GicpMatcher(const Params params);
+  GicpMatcher(const Params params);
 
   /**
    * @brief sets the parameters for the matcher

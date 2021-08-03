@@ -8,9 +8,6 @@
 
 namespace beam_matching {
 
-PointCloudPtr cld_;
-MultiMatcher<IcpMatcher, IcpMatcherParams> matcher_;
-
 void SetUp() {
   std::string test_path = __FILE__;
   std::string current_file = "multi_matcher_tests.cpp";
@@ -22,6 +19,9 @@ void SetUp() {
 }
 
 TEST_CASE("Test simultaneous matching") {
+  PointCloudPtr cld_;
+  MultiMatcher<IcpMatcher, IcpMatcherParams> matcher_;
+      
   SetUp();
   PointCloudPtr dupes[9];
   for (int i = 0; i < 9; i++) {

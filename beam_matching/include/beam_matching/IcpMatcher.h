@@ -78,7 +78,7 @@ public:
    * downsampled using a voxel filter, the argument is the edge length of
    * each voxel. If resolution is non-positive, no downsampling is used.
    */
-  explicit IcpMatcher(Params params);
+  IcpMatcher(Params params);
 
   ~IcpMatcher();
 

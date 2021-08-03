@@ -43,7 +43,7 @@ void SIFTDescriptor::Setup(){
   // Ensure parameters are valid
   CheckConfig();
 
-  sift_descriptor_ = cv::xfeatures2d::SIFT::create(
+  sift_descriptor_ = cv::SIFT::create(
       params_.num_features, params_.num_octave_layers,
       params_.contrast_threshold, params_.edge_threshold, params_.sigma);
 }

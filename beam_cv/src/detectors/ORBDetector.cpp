@@ -1,5 +1,7 @@
 #include <beam_cv/detectors/ORBDetector.h>
 
+#include <fstream>
+
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
@@ -43,8 +45,8 @@ ORBDetector::ORBDetector(const Params& params)
 };
 
 ORBDetector::ORBDetector(int num_features, float scale_factor, int num_levels,
-                         int edge_threshold, int score_type, int fast_threshold,
-                         int grid_cols, int grid_rows)
+                         int edge_threshold, cv::ORB::ScoreType score_type,
+                         int fast_threshold, int grid_cols, int grid_rows)
     : Detector(grid_cols, grid_rows) {
   params_.num_features = num_features;
   params_.scale_factor = scale_factor;

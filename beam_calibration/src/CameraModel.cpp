@@ -21,7 +21,8 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
 
   std::string file_ext = boost::filesystem::extension(file_location);
   if (file_ext == ".conf") {
-    camera_model = std::make_shared<Ladybug>(file_location);
+    BEAM_ERROR("Cannot use Create() factory method with ladybug model.");
+    throw std::runtime_error{"Invalid camera type."};
   } else if (file_ext == ".json") {
     // load JSON
     nlohmann::json J;

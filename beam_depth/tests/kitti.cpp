@@ -1,4 +1,4 @@
-#include <opencv/cv.h>
+#include <opencv2/core.hpp>
 
 #include "beam_depth/DepthCompletion.h"
 #include "beam_depth/DepthMap.h"

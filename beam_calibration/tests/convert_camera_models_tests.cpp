@@ -26,12 +26,12 @@ std::string GetDataPath(const std::string& filename) {
   return file_location;
 }
 
-std::shared_ptr<beam_calibration::CameraModel> LoadLadybugCameraModel() {
-  std::string intrinsics_location = GetDataPath("ladybug.conf");
-  std::shared_ptr<beam_calibration::CameraModel> camera_model =
-      std::make_shared<beam_calibration::Ladybug>(intrinsics_location);
-  return camera_model;
-}
+// std::shared_ptr<beam_calibration::CameraModel> LoadLadybugCameraModel() {
+//   std::string intrinsics_location = GetDataPath("ladybug.conf");
+//   std::shared_ptr<beam_calibration::CameraModel> camera_model =
+//       std::make_shared<beam_calibration::Ladybug>(intrinsics_location);
+//   return camera_model;
+// }
 
 std::shared_ptr<beam_calibration::CameraModel> LoadKBCameraModel() {
   std::string intrinsics_location = GetDataPath("KB_test.json");
@@ -250,46 +250,47 @@ TEST_CASE("Test distorting and undistoring a radtan simulation image") {
   REQUIRE(percent_correct > P);
 }
 
-TEST_CASE("Test undistorting a ladybug image") {
-  if (!run_ladybug_test_) {
-    REQUIRE(true);
-    return;
-  }
+// This commented out because we no longer require the ladybug model to be built 
+// TEST_CASE("Test undistorting a ladybug image") {
+//   if (!run_ladybug_test_) {
+//     REQUIRE(true);
+//     return;
+//   }
 
-  std::shared_ptr<beam_calibration::CameraModel> source_model =
-      LoadLadybugCameraModel();
+//   std::shared_ptr<beam_calibration::CameraModel> source_model =
+//       LoadLadybugCameraModel();
 
-  std::string image_path = GetDataPath("ladybug_undistort.png");
-  cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
+//   std::string image_path = GetDataPath("ladybug_undistort.png");
+//   cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
 
-  Eigen::Vector2i image_dims(source_model->GetHeight(),
-                             source_model->GetWidth());
+//   Eigen::Vector2i image_dims(source_model->GetHeight(),
+//                              source_model->GetWidth());
 
-  beam_calibration::ConvertCameraModel converter(source_model, image_dims,
-                                                 image_dims);
+//   beam_calibration::ConvertCameraModel converter(source_model, image_dims,
+//                                                  image_dims);
 
-  cv::Mat upsampled_image = converter.UpsampleImage(source_image);
+//   cv::Mat upsampled_image = converter.UpsampleImage(source_image);
 
-  cv::Mat output_image;
-  REQUIRE_NOTHROW(output_image =
-                      converter.ConvertImage<cv::Vec3b>(upsampled_image));
+//   cv::Mat output_image;
+//   REQUIRE_NOTHROW(output_image =
+//                       converter.ConvertImage<cv::Vec3b>(upsampled_image));
 
-  cv::Mat downsampled_image = converter.DownsampleImage(
-      output_image, Eigen::Vector2i(source_image.rows, source_image.cols));
+//   cv::Mat downsampled_image = converter.DownsampleImage(
+//       output_image, Eigen::Vector2i(source_image.rows, source_image.cols));
 
-  SaveImage("test_case_3_image_original.png", source_image);
-  SaveImage("test_case_3_image_upsampled.png", upsampled_image);
-  SaveImage("test_case_3_image_undistorted_downsampled.png", downsampled_image);
-  SaveImage("test_case_3_image_undistorted.png", output_image);
+//   SaveImage("test_case_3_image_original.png", source_image);
+//   SaveImage("test_case_3_image_upsampled.png", upsampled_image);
+//   SaveImage("test_case_3_image_undistorted_downsampled.png", downsampled_image);
+//   SaveImage("test_case_3_image_undistorted.png", output_image);
 
-  // Check the output image dimensions
-  REQUIRE(source_image.cols == downsampled_image.cols);
-  REQUIRE(source_image.rows == downsampled_image.rows);
-  REQUIRE(upsampled_image.cols == output_image.cols);
-  REQUIRE(upsampled_image.rows == output_image.rows);
-  REQUIRE(upsampled_image.cols == source_model->GetWidth());
-  REQUIRE(upsampled_image.rows == source_model->GetHeight());
-}
+//   // Check the output image dimensions
+//   REQUIRE(source_image.cols == downsampled_image.cols);
+//   REQUIRE(source_image.rows == downsampled_image.rows);
+//   REQUIRE(upsampled_image.cols == output_image.cols);
+//   REQUIRE(upsampled_image.rows == output_image.rows);
+//   REQUIRE(upsampled_image.cols == source_model->GetWidth());
+//   REQUIRE(upsampled_image.rows == source_model->GetHeight());
+// }
 
 TEST_CASE("Test undistorting a kannala brandt image") {
   if (!run_kb_test_) {

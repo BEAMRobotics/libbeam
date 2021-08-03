@@ -1,5 +1,7 @@
 #include <beam_cv/matchers/FLANNMatcher.h>
 
+#include <fstream>
+
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 

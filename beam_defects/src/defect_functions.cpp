@@ -1,4 +1,5 @@
 #include "beam_defects/defect_functions.h"
+#include <beam_utils/pointclouds.h>
 
 #include <pcl/filters/project_inliers.h>
 #include <pcl/sample_consensus/method_types.h>
@@ -201,7 +202,7 @@ float HullArea(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
 // calculate maximum length from a hull cloud
 float MaxLength(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
   pcl::PointXYZ minPt, maxPt;
-  pcl::getMinMax3D(*input_cloud, minPt, maxPt);
+  beam::getMinMax3D(*input_cloud, minPt, maxPt);
   double dx = maxPt.x - minPt.x;
   double dy = maxPt.y - minPt.y;
   double length = std::sqrt(pow(dx, 2) + pow(dy, 2));

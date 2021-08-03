@@ -1,6 +1,5 @@
 #!/bin/bash
 
-./beam_optimization_ceres_ladybug_tests
 ./beam_optimization_ceres_radtan_tests
 ./beam_optimization_ceres_point_to_line_tests
 ./beam_optimization_ceres_point_to_plane_tests
