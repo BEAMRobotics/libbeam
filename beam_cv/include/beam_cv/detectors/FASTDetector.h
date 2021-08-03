@@ -31,7 +31,8 @@ public:
     bool nonmax_suppression = true;
 
     // Options: TYPE_9_16, TYPE_7_12, TYPE_5_8. See opencv docs for more details
-    cv::FastFeatureDetector::DetectorType type = cv::FastFeatureDetector::TYPE_9_16;
+    cv::FastFeatureDetector::DetectorType type =
+        cv::FastFeatureDetector::TYPE_9_16;
 
     // number of columns in image grid
     int grid_cols = 3;
@@ -64,12 +65,9 @@ public:
    */
   FASTDetector(int num_features = 0, int threshold = 10,
                bool nonmax_suppression = true,
-<<<<<<< HEAD
-               cv::FastFeatureDetector::DetectorType type = cv::FastFeatureDetector::TYPE_9_16);             
-=======
-               int type = cv::FastFeatureDetector::TYPE_9_16, int grid_cols = 3,
-               int grid_rows = 2);
->>>>>>> origin/master
+               cv::FastFeatureDetector::DetectorType type =
+                   cv::FastFeatureDetector::TYPE_9_16,
+               int grid_cols = 3, int grid_rows = 2);
 
   /**
    * @brief Default destructor

@@ -45,13 +45,10 @@ FASTDetector::FASTDetector(const Params& params)
 };
 
 FASTDetector::FASTDetector(int num_features, int threshold,
-<<<<<<< HEAD
-                           bool nonmax_suppression, cv::FastFeatureDetector::DetectorType type) {
-=======
-                           bool nonmax_suppression, int type, int grid_cols,
-                           int grid_rows)
+                           bool nonmax_suppression,
+                           cv::FastFeatureDetector::DetectorType type,
+                           int grid_cols, int grid_rows)
     : Detector(grid_cols, grid_rows) {
->>>>>>> origin/master
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
   params_.type = type;
