@@ -46,7 +46,7 @@ void Colorizer::SetImage(const cv::Mat& image_input) {
 
 void Colorizer::SetImage(const sensor_msgs::Image& image_input) {
   image_ = std::make_shared<cv::Mat>(
-      beam_cv::OpenCVConversions::ImgToMat(image_input));
+      beam_cv::OpenCVConversions::RosImgToMat(image_input));
   image_initialized_ = true;
 }
 
