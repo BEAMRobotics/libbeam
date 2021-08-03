@@ -94,7 +94,6 @@ private:
   Params params_;
 
   /** The pointer to the wrapped cv::SIFT object. */
-  //cv::Ptr<cv::xfeatures2d::SIFT> sift_descriptor_;
   cv::Ptr<cv::SIFT> sift_descriptor_;
 
   /** Checks whether the desired configuration is valid. */

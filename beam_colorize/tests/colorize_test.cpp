@@ -95,8 +95,8 @@ TEST_CASE("Test factory method") {
 
   std::string proj_test = "Projection", ray_test = "RayTrace";
 
-  REQUIRE(proj_type.find(proj_test) != -1);
-  REQUIRE(ray_type.find(ray_test) != -1);
+  REQUIRE(proj_type.find(proj_test) != std::string::npos);
+  REQUIRE(ray_type.find(ray_test) != std::string::npos);
 }
 
 TEST_CASE("Test setter functions") {
