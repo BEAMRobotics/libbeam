@@ -1,5 +1,7 @@
 #include <beam_cv/OpenCVConversions.h>
 
+#include <regex>
+
 #include <boost/endian/conversion.hpp>
 #include <sensor_msgs/image_encodings.h>
 
@@ -53,16 +55,16 @@ int OpenCVConversions::GetCvType(const std::string& encoding) {
   if (encoding == enc::YUV422) return CV_8UC2;
 
   // Check all the generic content encodings
-  boost::cmatch m;
+  std::cmatch m;
 
-  if (boost::regex_match(
+  if (std::regex_match(
           encoding.c_str(), m,
-          boost::regex("(8U|8S|16U|16S|32S|32F|64F)C([0-9]+)"))) {
+          std::regex("(8U|8S|16U|16S|32S|32F|64F)C([0-9]+)"))) {
     return CV_MAKETYPE(DepthStrToInt(m[1].str()), atoi(m[2].str().c_str()));
   }
 
-  if (boost::regex_match(encoding.c_str(), m,
-                         boost::regex("(8U|8S|16U|16S|32S|32F|64F)"))) {
+  if (std::regex_match(encoding.c_str(), m,
+                         std::regex("(8U|8S|16U|16S|32S|32F|64F)"))) {
     return CV_MAKETYPE(DepthStrToInt(m[1].str()), 1);
   }
 

@@ -1,7 +1,6 @@
 #include <opencv2/opencv.hpp>
 
 #include <boost/make_shared.hpp>
-#include <boost/regex.hpp>
 #include <sensor_msgs/Image.h>
 
 namespace beam_cv {
