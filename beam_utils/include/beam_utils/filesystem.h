@@ -8,6 +8,8 @@
 #pragma once
 
 #include <beam_utils/log.h>
+#include <nlohmann/json.hpp>
+#include <Eigen/Dense>
 
 namespace beam {
 /** @addtogroup utils
@@ -35,7 +37,13 @@ std::vector<std::string> GetFiles(const std::string& directory,
                                   const std::string& extension = "",
                                   bool recursive = false);
 
+nlohmann::json TransformToJson(const Eigen::Matrix4d& T, const std::string& name);
 
+void AddTransformToJson(nlohmann::json& J, const Eigen::Matrix4d& T, const std::string& name);
+
+nlohmann::json ToJsonPoseObject(uint64_t t, const Eigen::Matrix4d& T);
+
+void AddPoseToJson(nlohmann::json& J, uint64_t t, const Eigen::Matrix4d& T);
 
 /** @} group utils */
 } // namespace beam

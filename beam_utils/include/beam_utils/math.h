@@ -184,7 +184,7 @@ void nwu2edn(const Vec3& nwu, Vec3& edn);
 /**
  * @brief Computes the right jacobian of a 3-vector representing the exponential
  * coordinates in SO(3).
- * 
+ *
  * The right jacobian of a 3-vector in Lie space is computed as:
  * I - (1-cos(||w||))/(||w||^2)*[w]_x + (||w|| - sin(||w||))/(||w||^3)*[w]_x
  *
@@ -429,8 +429,22 @@ bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                      bool output_error_cause = false);
 
 /**
- * @brief Converts an array of float containing a pose measurement [R | t] (of
- * size 3 x 4) to a 4 x 4 Eigen Matrix
+ * @brief Converts a vector of doubles containing a pose measurement [R | t] (of
+ * size 3 x 4) to a 4 x 4 Eigen Matrix. The pose vector assumes the 3 x 4 matrix
+ * is ordered left to right and top to bottom. Therefore, this will also work
+ * for a standard 4 x 4 transformation matrix, because the final 4 values in the
+ * matrix are unused.
+ * @param v vector of size 3 x 4 = 12
+ * @return T
+ */
+Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v);
+
+/**
+ * @brief Converts a vector of floats containing a pose measurement [R | t] (of
+ * size 3 x 4) to a 4 x 4 Eigen Matrix. The pose vector assumes the 3 x 4 matrix
+ * is ordered left to right and top to bottom. Therefore, this will also work
+ * for a standard 4 x 4 transformation matrix, because the final 4 values in the
+ * matrix are unused.
  * @param v vector of size 3 x 4 = 12
  * @return T
  */

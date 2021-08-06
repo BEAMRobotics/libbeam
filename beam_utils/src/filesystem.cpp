@@ -49,4 +49,35 @@ std::vector<std::string> GetFiles(const std::string& directory,
   return paths;
 }
 
+nlohmann::json TransformToJson(const Eigen::Matrix4d& T,
+                               const std::string& name) {
+  nlohmann::json J = {{name,
+                       {T(0, 0), T(0, 1), T(0, 2), T(0, 3), T(1, 0), T(1, 1),
+                        T(1, 2), T(1, 3), T(2, 0), T(2, 1), T(2, 2), T(2, 3),
+                        T(3, 0), T(3, 1), T(3, 2), T(3, 3)}}};
+  return J;
+}
+
+void AddTransformToJson(nlohmann::json& J, const Eigen::Matrix4d& T,
+                        const std::string& name) {
+  J.update(TransformToJson(T, name));
+}
+
+nlohmann::json ToJsonPoseObject(uint64_t t, const Eigen::Matrix4d& T) {
+  nlohmann::json pose_object = {
+      {"nsecs", t},
+      {"T",
+       {T(0, 0), T(0, 1), T(0, 2), T(0, 3), T(1, 0), T(1, 1), T(1, 2), T(1,
+       3),
+        T(2, 0), T(2, 1), T(2, 2), T(2, 3), T(3, 0), T(3, 1), T(3, 2),
+        T(3, 3)}}};
+  return pose_object;
+}
+
+void AddPoseToJson(nlohmann::json& J, uint64_t t, const Eigen::Matrix4d& T) {
+  J[t] = {T(0, 0), T(0, 1), T(0, 2), T(0, 3), T(1, 0), T(1, 1),
+          T(1, 2), T(1, 3), T(2, 0), T(2, 1), T(2, 2), T(2, 3),
+          T(3, 0), T(3, 1), T(3, 2), T(3, 3)};
+}
+
 } // namespace beam
