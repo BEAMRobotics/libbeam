@@ -1,10 +1,18 @@
 #pragma once
 
+#include <map>
+#include <iomanip>
+#include <fstream>
+
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/version.hpp>
+#include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
+
+#include <beam_utils/log.h>
 
 namespace beam_containers {
 
@@ -242,7 +250,8 @@ public:
 
   /** Get a list of all unique landmark IDs in the container */
   std::vector<LandmarkIdType> GetLandmarkIDs() const {
-    return this->GetLandmarkIDsInWindow(MeasurementType::MinTime(), MeasurementType::MaxTime());
+    return this->GetLandmarkIDsInWindow(MeasurementType::MinTime(),
+                                        MeasurementType::MaxTime());
   }
 
   /** @brief Get unique landmark IDs with measurements in the time window
@@ -272,7 +281,8 @@ public:
    * @return a vector of landmark measurements sorted by time
    */
   Track GetTrack(const SensorIdType& s, const LandmarkIdType& id) const {
-    return this->GetTrackInWindow(s, id, MeasurementType::MinTime(), MeasurementType::MaxTime());
+    return this->GetTrackInWindow(s, id, MeasurementType::MinTime(),
+                                  MeasurementType::MaxTime());
   };
 
   /** @brief Get a sequence of measurements of a landmark from one sensor, in
@@ -309,6 +319,77 @@ public:
     for (auto it = iter_begin; it != iter_end; ++it) { track.push_back(**it); }
     return track;
   };
+
+  /**
+   * @brief save all measurements in container to disk as json
+   * @param output_filename full path to output dir + filename. The directory of
+   * this output file must exist.
+   */
+  void SaveToJson(const std::string& output_filename) {
+    if (boost::filesystem::exists(output_filename)) {
+      BEAM_WARN("Overriding landmarks in: {}", output_filename);
+    }
+
+    if (boost::filesystem::extension(output_filename) != ".json") {
+      BEAM_ERROR("Output filename does not have a .json extension, not loading "
+                 "landmarks. Input: {}",
+                 output_filename);
+      return;
+    }
+
+    // create json
+    nlohmann::json J;
+
+    // Use the index sorted by landmark id
+    const auto& landmark_index = this->storage.template get<
+        typename internal::landmark_container<T>::landmark_index>();
+    auto unique_ids = std::vector<LandmarkIdType>{};
+    // Iterate over all measurements sorted by time first, then landmark_id.
+    // Copy landmark ids into a vector, skipping consecutive equal elements
+    for (auto& meas : landmark_index) {
+      if (unique_ids.empty() || meas.landmark_id != unique_ids.back()) {
+        unique_ids.push_back(meas.landmark_id);
+        J[std::to_string(meas.landmark_id)] = meas.ToJson();
+      }
+    }
+
+    std::ofstream file(output_filename);
+    file << std::setw(4) << J << std::endl;
+  }
+
+  /**
+   * @brief loam measurements from a json into container
+   * @param input_filename full path to input json file
+   * @return true if successful
+   */
+  bool LoadFromJason(const std::string& input_filename) {
+    if (!boost::filesystem::exists(input_filename)) {
+      BEAM_ERROR(
+          "Input filename does not exist, not loading landmarks. Input: {}",
+          input_filename);
+      return false;
+    }
+
+    if (boost::filesystem::extension(input_filename) != ".json") {
+      BEAM_ERROR("Input file does not have a .json extension, not loading "
+                 "landmarks. Input: {}",
+                 input_filename);
+      return false;
+    }
+
+    BEAM_INFO("Loading landmarks from {}", input_filename);
+
+    nlohmann::json J;
+    std::ifstream file(input_filename);
+    file >> J;
+
+    std::map<std::string, nlohmann::json> landmark_json_map = J;
+    for (auto iter = landmark_json_map.begin(); iter != landmark_json_map.end(); iter++){
+      MeasurementType meas;
+      meas.LoadFromJson(iter->second);
+      this->composite().insert(meas);
+    }
+  }
 
   // Iterators
 

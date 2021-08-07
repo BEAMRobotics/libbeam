@@ -1,5 +1,9 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <beam_utils/math.h>
 #include <beam_utils/time.h>
 
@@ -43,6 +47,33 @@ struct LandmarkMeasurement {
   static ros::Time MinTime() { return ros::TIME_MIN; }
 
   static ros::Time MaxTime() { return ros::TIME_MAX; }
+
+  nlohmann::json ToJson() {
+    nlohmann::json J;
+    J["timepoint"] = time_point.toNSec();
+    J["sensor_id"] = sensor_id;
+    J["landmark_id"] = landmark_id;
+    J["image"] = image;
+    J["value_u"] = value[0];
+    J["value_v"] = value[1];
+    std::vector<float> desc_vec(descriptor.begin<float>(),
+                                descriptor.end<float>());
+    J["descriptor"] = desc_vec;
+    return J;
+  }
+
+  void LoadFromJson(const nlohmann::json& J) {
+    time_point.fromNSec(J["timepoint"]);
+    sensor_id = J["sensor_id"];
+    landmark_id = J["landmark_id"];
+    image = J["image"];
+    value[0] = J["value_u"];
+    value[1] = J["value_v"];
+    std::vector<float> desc_vec = J["descriptor"];
+    descriptor = cv::Mat(1, desc_vec.size(), CV_32FC1, desc_vec.data());
+    descriptor.convertTo(descriptor, CV_8U);
+    return;
+  }
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
