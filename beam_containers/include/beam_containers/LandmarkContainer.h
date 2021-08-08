@@ -206,7 +206,7 @@ public:
    * sensor, and landmark id does not exist.
    * No interpolation is performed.
    */
-  ValueType Get(const TimeType& t, SensorIdType s, LandmarkIdType id) const {
+  ValueType GetValue(const TimeType& t, SensorIdType s, LandmarkIdType id) const {
     const auto& composite = this->composite();
     auto iter = composite.find(std::make_tuple(t, s, id));
     if (iter == composite.end()) {
@@ -214,6 +214,21 @@ public:
       throw std::out_of_range("LandmarkContainer::get");
     }
     return iter->value;
+  }
+
+    /** @brief Gets the full measurement from a time point, sensor id and landmark id
+   * @throw std::out_of_range if a measurement with exactly matching time,
+   * sensor, and landmark id does not exist.
+   * No interpolation is performed.
+   */
+  MeasurementType GetMeasurement(const TimeType& t, SensorIdType s, LandmarkIdType id) const {
+    const auto& composite = this->composite();
+    auto iter = composite.find(std::make_tuple(t, s, id));
+    if (iter == composite.end()) {
+      // Requested key is not in this container
+      throw std::out_of_range("LandmarkContainer::get");
+    }
+    return *iter;
   }
 
   /** @brief Get all measurements from the given sensor
@@ -362,7 +377,7 @@ public:
    * @param input_filename full path to input json file
    * @return true if successful
    */
-  bool LoadFromJason(const std::string& input_filename) {
+  bool LoadFromJson(const std::string& input_filename) {
     if (!boost::filesystem::exists(input_filename)) {
       BEAM_ERROR(
           "Input filename does not exist, not loading landmarks. Input: {}",
@@ -385,10 +400,11 @@ public:
 
     std::map<std::string, nlohmann::json> landmark_json_map = J;
     for (auto iter = landmark_json_map.begin(); iter != landmark_json_map.end(); iter++){
-      MeasurementType meas;
-      meas.LoadFromJson(iter->second);
+      MeasurementType meas(iter->second);
       this->composite().insert(meas);
     }
+
+    return true;
   }
 
   // Iterators
