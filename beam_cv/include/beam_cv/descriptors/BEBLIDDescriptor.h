@@ -29,7 +29,7 @@ public:
     float scale_factor = 1.00;
 
     /** Determines the number of bits in the descriptor. Should be
-     * either 0 (BEBLID::SIZE_512_BITS) or 1 (BEBLID::SIZE_256_BITS)
+     * either 100 (BEBLID::SIZE_512_BITS) or 101 (BEBLID::SIZE_256_BITS)
      */
     int n_bits = cv::xfeatures2d::BEBLID::SIZE_512_BITS;
 
@@ -51,7 +51,7 @@ public:
    *    6.25f is default and fits for KAZE, SURF detected keypoints
    *    5.00f should be the scale for AKAZE, MSD, GFTT, AGAST, FAST, BRISK keypoints
    * @param n_bits Determine the number of bits in the descriptor. Should be
-   * either 0 (BEBLID::SIZE_512_BITS) or 1 (BEBLID::SIZE_256_BITS)
+   * either 100 (BEBLID::SIZE_512_BITS) or 101 (BEBLID::SIZE_256_BITS)
    */
   BEBLIDDescriptor(float scale_factor = 1.00,
                    int n_bits = cv::xfeatures2d::BEBLID::SIZE_512_BITS);
