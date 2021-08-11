@@ -1,5 +1,8 @@
 #pragma once
 
+// #include <opencv2/core/eigen.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <beam_utils/math.h>
 #include <beam_utils/time.h>
 
