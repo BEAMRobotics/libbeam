@@ -115,7 +115,7 @@ std::vector<std::vector<FeatureTrack>>
 }
 
 Eigen::Vector2d Tracker::Get(const ros::Time& t, uint64_t landmark_id) const {
-  return landmarks_.Get(t, sensor_id_, landmark_id);
+  return landmarks_.GetValue(t, sensor_id_, landmark_id);
 }
 
 std::vector<uint64_t>

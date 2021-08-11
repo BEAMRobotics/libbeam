@@ -34,7 +34,6 @@ add_executable(${PROJECT_NAME}_demo
 target_include_directories(${PROJECT_NAME}_demo
   PUBLIC
     include
-    ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}_demo
   ${PROJECT_NAME}
