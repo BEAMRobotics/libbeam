@@ -2,4 +2,5 @@
 #include <beam_cv/descriptors/BRISKDescriptor.h>
 #include <beam_cv/descriptors/Descriptor.h>
 #include <beam_cv/descriptors/ORBDescriptor.h>
+#include <beam_cv/descriptors/BEBLIDDescriptor.h>
 #include <beam_cv/descriptors/SIFTDescriptor.h>
