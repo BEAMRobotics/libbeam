@@ -31,6 +31,10 @@ std::shared_ptr<Descriptor> Descriptor::Create(DescriptorType type,
     BRISKDescriptor::Params params;
     params.LoadFromJson(file_to_read);
     return std::make_shared<BRISKDescriptor>(params);
+  } else if (type == DescriptorType::BEBLID) {
+    BEBLIDDescriptor::Params params;
+    params.LoadFromJson(file_to_read);
+    return std::make_shared<BEBLIDDescriptor>(params);
   } else {
     BEAM_WARN("Input descriptor type not implemented. Using default.");
     ORBDescriptor::Params params;

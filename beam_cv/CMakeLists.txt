@@ -20,6 +20,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/geometry/PoseRefinement.cpp
     src/descriptors/Descriptor.cpp
     src/descriptors/BRISKDescriptor.cpp
+    src/descriptors/BEBLIDDescriptor.cpp
     src/descriptors/ORBDescriptor.cpp
     src/descriptors/SIFTDescriptor.cpp
     src/detectors/Detector.cpp

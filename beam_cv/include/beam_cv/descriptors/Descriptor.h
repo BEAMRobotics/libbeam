@@ -17,23 +17,25 @@ namespace beam_cv {
 /**
  * @brief Enum class for different types descriptors
  */
-enum class DescriptorType { ORB = 0, SIFT, BRISK };
+enum class DescriptorType { ORB = 0, SIFT, BRISK, BEBLID };
 
 // vector for storing binary descriptor types
 static std::vector<DescriptorType> BinaryDescriptorTypes = {
-    DescriptorType::ORB, DescriptorType::BRISK};
+    DescriptorType::ORB, DescriptorType::BRISK, DescriptorType::BEBLID};
 
 // Map for storing string input
 static std::map<std::string, DescriptorType> DescriptorTypeStringMap = {
     {"ORB", DescriptorType::ORB},
     {"SIFT", DescriptorType::SIFT},
-    {"BRISK", DescriptorType::BRISK}};
+    {"BRISK", DescriptorType::BRISK},
+    {"BEBLID", DescriptorType::BEBLID}};
 
 // Map for storing int input
 static std::map<uint8_t, DescriptorType> DescriptorTypeIntMap = {
     {0, DescriptorType::ORB},
     {1, DescriptorType::SIFT},
-    {2, DescriptorType::BRISK}};
+    {2, DescriptorType::BRISK},
+    {3, DescriptorType::BEBLID}};
 
 // function for listing types of Descriptor available
 inline std::string GetDescriptorTypes() {
