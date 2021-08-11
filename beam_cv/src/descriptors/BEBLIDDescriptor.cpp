@@ -46,7 +46,7 @@ void BEBLIDDescriptor::CheckConfig() {
   if (params_.n_bits != cv::xfeatures2d::BEBLID::SIZE_512_BITS &&
       params_.n_bits != cv::xfeatures2d::BEBLID::SIZE_256_BITS) {
     BEAM_ERROR("n_bits is not an acceptable value!");
-    throw std::invalid_argument("tuple_size is not an acceptable value!");
+    throw std::invalid_argument("n_bits is not an acceptable value!");
   } else if (params_.scale_factor < 1.0 || params_.scale_factor > 7.0) {
     BEAM_ERROR("scale_factor is not within acceptable range: [1.0, 7.0]");
     throw std::invalid_argument(
