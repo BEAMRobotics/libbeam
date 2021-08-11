@@ -4,10 +4,10 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     catkin::catkin
     PCL::PCL
+    OpenCV::OpenCV
     beam::calibration
     beam::containers
     beam::cv
-    OpenCV::OpenCV
   SOURCES
     src/Colorizer.cpp
     src/Projection.cpp
@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME}_demo
 target_link_libraries(${PROJECT_NAME}_demo
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
+  OpenCV::OpenCV
 )
 
 file(COPY tests/run_all_tests.bash
