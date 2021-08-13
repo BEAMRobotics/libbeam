@@ -44,8 +44,7 @@ private:
    * @return Reduced point cloud
    */
   std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-      ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-                  std::shared_ptr<beam_calibration::CameraModel>) const;
+      ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const;
 
 protected:
   double hit_threshold_ = 0.01;
