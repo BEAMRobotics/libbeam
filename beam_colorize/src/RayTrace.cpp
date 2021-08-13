@@ -45,8 +45,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
 
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
     RayTrace::ReduceCloud(
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr input,
-        std::shared_ptr<beam_calibration::CameraModel> intrinsics) const {
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const {
   // cloud to search on
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);
