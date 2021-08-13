@@ -665,6 +665,16 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
   return T;
 }
 
+std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T){
+  std::vector<double> v;
+  for (int i = 0; i < 4; i ++){
+    for (int j = 0; j < 4; j ++){
+      v.push_back(T(i,j));
+    }
+  }
+  return v;
+}
+
 void OutputTransformInformation(const Eigen::Matrix4d& T,
                                 std::ostream& stream) {
   Eigen::Quaterniond q;

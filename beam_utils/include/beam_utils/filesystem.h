@@ -16,10 +16,10 @@ namespace beam {
  *  @{ */
 
 /**
- * @brief returns true if the input string finishes with the extension specified by entension (e.g., ".json")
+ * @brief returns true if the input string finishes with the extension specified
+ * by entension (e.g., ".json")
  */
 bool HasExtension(const std::string& input, const std::string& extension);
-
 
 /**
  * @brief get the path to libbeam's root folder
@@ -37,9 +37,11 @@ std::vector<std::string> GetFiles(const std::string& directory,
                                   const std::string& extension = "",
                                   bool recursive = false);
 
-nlohmann::json TransformToJson(const Eigen::Matrix4d& T, const std::string& name);
+nlohmann::json TransformToJson(const Eigen::Matrix4d& T,
+                               const std::string& name);
 
-void AddTransformToJson(nlohmann::json& J, const Eigen::Matrix4d& T, const std::string& name);
+void AddTransformToJson(nlohmann::json& J, const Eigen::Matrix4d& T,
+                        const std::string& name);
 
 nlohmann::json ToJsonPoseObject(uint64_t t, const Eigen::Matrix4d& T);
 
@@ -47,4 +49,3 @@ void AddPoseToJson(nlohmann::json& J, uint64_t t, const Eigen::Matrix4d& T);
 
 /** @} group utils */
 } // namespace beam
-

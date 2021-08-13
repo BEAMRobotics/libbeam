@@ -449,6 +449,13 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v);
 Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
 
 /**
+ * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 doubles. The points are read from left to right, then down.
+ * @param T transform of size 4 x 4
+ * @return v vector of size 4 x 4 = 16
+ */
+ std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
+
+/**
  * @brief outputs transform to some stream with as the following:
  *
  *  T
