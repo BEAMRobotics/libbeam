@@ -20,7 +20,7 @@ void Tracker::PurgeContainer() {
   std::advance(iter, window_size_);
   ros::Time time;
   time.fromNSec(*iter);
-  
+
   // Get all IDs at this time
   auto landmarks = landmarks_.GetLandmarkIDsInWindow(time, time);
 
@@ -139,6 +139,13 @@ FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
   end_time.fromNSec(*iter_last);
   return landmarks_.GetTrackInWindow(sensor_id_, landmark_id, start_time,
                                      end_time);
+}
+
+cv::Mat Tracker::GetDescriptor(const ros::Time& stamp,
+                               const uint64_t& landmark_id) {
+  beam_containers::LandmarkMeasurement m =
+      landmarks_.GetMeasurement(stamp, sensor_id_, landmark_id);
+  return m.descriptor;
 }
 
 cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
