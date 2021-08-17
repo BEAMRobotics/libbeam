@@ -6,9 +6,9 @@
 #pragma once
 
 #include <chrono>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
@@ -142,11 +142,19 @@ public:
                                                const ros::Time& end) const;
 
   /**
-   *  @brief Get feature track of a given landmark
+   * @brief Get feature track of a given landmark
    * @param landmark_id to get track of
    * @return the vector of landmark measurements
    */
   FeatureTrack GetTrack(uint64_t landmark_id);
+
+  /**
+   * @brief Gets the descritpro for a specific landmark
+   * @param stamp timestamp of measurement
+   * @param landmark_id to get track of
+   * @return cv::Mat
+   */
+  cv::Mat GetDescriptor(const ros::Time& stamp, const uint64_t& landmark_id);
 
   /**
    * @brief Get the size of the LandmarkContainer
@@ -191,7 +199,7 @@ protected:
       landmarks_;
 
   // store current id
-  uint64_t id_{0};    
+  uint64_t id_{0};
 };
 
 } // namespace beam_cv
