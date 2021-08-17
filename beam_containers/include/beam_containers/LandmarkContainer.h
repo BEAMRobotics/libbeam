@@ -13,6 +13,7 @@
 #include <nlohmann/json.hpp>
 
 #include <beam_utils/log.h>
+#include <beam_utils/filesystem.h>
 
 namespace beam_containers {
 
@@ -373,31 +374,18 @@ public:
   }
 
   /**
-   * @brief loam measurements from a json into container
+   * @brief loam measurements from a json into container.
    * @param input_filename full path to input json file
    * @return true if successful
    */
   bool LoadFromJson(const std::string& input_filename) {
-    if (!boost::filesystem::exists(input_filename)) {
-      BEAM_ERROR(
-          "Input filename does not exist, not loading landmarks. Input: {}",
-          input_filename);
-      return false;
-    }
-
-    if (boost::filesystem::extension(input_filename) != ".json") {
-      BEAM_ERROR("Input file does not have a .json extension, not loading "
-                 "landmarks. Input: {}",
-                 input_filename);
-      return false;
-    }
-
-    BEAM_INFO("Loading landmarks from {}", input_filename);
-
     nlohmann::json J;
-    std::ifstream file(input_filename);
-    file >> J;
-
+    if(!beam::ReadJson(input_filename, J)){
+      return false;
+    }
+    
+    BEAM_INFO("Loading landmarks from {}", input_filename);
+    
     std::map<std::string, nlohmann::json> landmark_json_map = J;
     for (auto iter = landmark_json_map.begin(); iter != landmark_json_map.end(); iter++){
       MeasurementType meas(iter->second);
