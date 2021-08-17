@@ -227,11 +227,25 @@ Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B);
 beam::Vec3 RToLieAlgebra(const beam::Mat3 R);
 
 /**
+ * @brief Convert from quaternion to its associated Lie Algebra
+ * @param q quaternion
+ * @return 3x1 vector representing R in Lie Algebra space
+ **/
+beam::Vec3 QToLieAlgebra(const Quaternion& q);
+
+/**
  * @brief Convert from Lie Algebra to its associated rotation matrix
  * @param eps rotation in Lie Algebra space
  * @return rotation matrix
  **/
 beam::Mat3 LieAlgebraToR(const beam::Vec3 eps);
+
+/**
+ * @brief Convert from Lie Algebra to its associated quaternion
+ * @param eps rotation in Lie Algebra space
+ * @return quaternion
+ **/
+Quaternion LieAlgebraToQ(const beam::Vec3 eps);
 
 /**
  * @brief Linear interpolation of transformations using a method in Tim
@@ -449,11 +463,12 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v);
 Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
 
 /**
- * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 doubles. The points are read from left to right, then down.
+ * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 doubles. The
+ * points are read from left to right, then down.
  * @param T transform of size 4 x 4
  * @return v vector of size 4 x 4 = 16
  */
- std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
+std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
 
 /**
  * @brief outputs transform to some stream with as the following:
