@@ -207,7 +207,8 @@ public:
    * sensor, and landmark id does not exist.
    * No interpolation is performed.
    */
-  ValueType GetValue(const TimeType& t, SensorIdType s, LandmarkIdType id) const {
+  ValueType GetValue(const TimeType& t, SensorIdType s,
+                     LandmarkIdType id) const {
     const auto& composite = this->composite();
     auto iter = composite.find(std::make_tuple(t, s, id));
     if (iter == composite.end()) {
@@ -217,12 +218,14 @@ public:
     return iter->value;
   }
 
-    /** @brief Gets the full measurement from a time point, sensor id and landmark id
+  /** @brief Gets the full measurement from a time point, sensor id and landmark
+   * id
    * @throw std::out_of_range if a measurement with exactly matching time,
    * sensor, and landmark id does not exist.
    * No interpolation is performed.
    */
-  MeasurementType GetMeasurement(const TimeType& t, SensorIdType s, LandmarkIdType id) const {
+  MeasurementType GetMeasurement(const TimeType& t, SensorIdType s,
+                                 LandmarkIdType id) const {
     const auto& composite = this->composite();
     auto iter = composite.find(std::make_tuple(t, s, id));
     if (iter == composite.end()) {
@@ -376,18 +379,22 @@ public:
   /**
    * @brief loam measurements from a json into container.
    * @param input_filename full path to input json file
+   * @param output_info outputs read file location and any errors that occur
    * @return true if successful
    */
-  bool LoadFromJson(const std::string& input_filename) {
+  bool LoadFromJson(const std::string& input_filename,
+                    bool output_info = true) {
     nlohmann::json J;
-    if(!beam::ReadJson(input_filename, J)){
+    beam::JsonReadErrorType error_type;
+    if (!beam::ReadJson(input_filename, J, error_type, output_info)) {
       return false;
     }
-    
-    BEAM_INFO("Loading landmarks from {}", input_filename);
-    
+
+    if (output_info) { BEAM_INFO("Loading landmarks from {}", input_filename); }
+
     std::map<std::string, nlohmann::json> landmark_json_map = J;
-    for (auto iter = landmark_json_map.begin(); iter != landmark_json_map.end(); iter++){
+    for (auto iter = landmark_json_map.begin(); iter != landmark_json_map.end();
+         iter++) {
       MeasurementType meas(iter->second);
       this->composite().insert(meas);
     }
