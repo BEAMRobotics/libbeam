@@ -1,6 +1,7 @@
 #include <beam_utils/filesystem.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <boost/filesystem.hpp>
 
@@ -67,8 +68,7 @@ nlohmann::json ToJsonPoseObject(uint64_t t, const Eigen::Matrix4d& T) {
   nlohmann::json pose_object = {
       {"nsecs", t},
       {"T",
-       {T(0, 0), T(0, 1), T(0, 2), T(0, 3), T(1, 0), T(1, 1), T(1, 2), T(1,
-       3),
+       {T(0, 0), T(0, 1), T(0, 2), T(0, 3), T(1, 0), T(1, 1), T(1, 2), T(1, 3),
         T(2, 0), T(2, 1), T(2, 2), T(2, 3), T(3, 0), T(3, 1), T(3, 2),
         T(3, 3)}}};
   return pose_object;
@@ -76,8 +76,47 @@ nlohmann::json ToJsonPoseObject(uint64_t t, const Eigen::Matrix4d& T) {
 
 void AddPoseToJson(nlohmann::json& J, uint64_t t, const Eigen::Matrix4d& T) {
   J[std::to_string(t)] = {T(0, 0), T(0, 1), T(0, 2), T(0, 3), T(1, 0), T(1, 1),
-          T(1, 2), T(1, 3), T(2, 0), T(2, 1), T(2, 2), T(2, 3),
-          T(3, 0), T(3, 1), T(3, 2), T(3, 3)};
+                          T(1, 2), T(1, 3), T(2, 0), T(2, 1), T(2, 2), T(2, 3),
+                          T(3, 0), T(3, 1), T(3, 2), T(3, 3)};
+}
+
+bool ReadJson(const std::string& filename, nlohmann::json& J,
+              JsonReadErrorType& error_type, bool output_error) {
+  // check file exists
+  if (!boost::filesystem::exists(filename)) {
+    if (output_error) {
+      BEAM_ERROR("CheckJson failed - Json file does not exist. Input: {}",
+                 filename);
+    }
+    error_type = JsonReadErrorType::MISSING;
+    return false;
+  }
+
+  // check for correct file extension
+  if (!HasExtension(filename, ".json")) {
+    if (output_error) {
+      BEAM_ERROR("CheckJson failed - Invalid file extension. Input: {}",
+                 filename);
+    }
+    error_type = JsonReadErrorType::FILETYPE;
+    return false;
+  }
+
+  // load json and check that it's not empty
+  std::ifstream file(filename);
+  file >> J;
+
+  if (J.empty()) {
+    if (output_error) {
+      BEAM_ERROR("CheckJson failed - Json file is empty. Input: {}",
+                 filename);
+    }
+    error_type = JsonReadErrorType::EMPTY;
+    return false;
+  }
+
+  error_type = JsonReadErrorType::NONE;
+  return true;
 }
 
 } // namespace beam

@@ -16,6 +16,19 @@ namespace beam {
  *  @{ */
 
 /**
+ * @brief enum class for storing error types for the CheckJson function.
+ *
+ *  NONE: no error
+ *  MISSING: file does not exist
+ *  FILETYPE: file extension is not .json
+ *  EMPTY: json file is empty
+ *
+ */
+enum JsonReadErrorType { NONE, FILETYPE, MISSING, EMPTY };
+
+static JsonReadErrorType tmp_json_read_error_type_ = JsonReadErrorType::NONE;
+
+/**
  * @brief returns true if the input string finishes with the extension specified
  * by entension (e.g., ".json")
  */
@@ -46,6 +59,24 @@ void AddTransformToJson(nlohmann::json& J, const Eigen::Matrix4d& T,
 nlohmann::json ToJsonPoseObject(uint64_t t, const Eigen::Matrix4d& T);
 
 void AddPoseToJson(nlohmann::json& J, uint64_t t, const Eigen::Matrix4d& T);
+
+/**
+ * @brief reads a json and does some checks:
+ *
+ *  1. Check that file exists
+ *  2. Check that file has the .json extension
+ *  3. Check the json is not null
+ *
+ * @param filename full path to json
+ * @param J reference to json to fill
+ * @param error_type optional reference to enum class of error type
+ * @param output_error optional bool to set if you want this function to output
+ * the error type
+ * @return true if passed
+ */
+bool ReadJson(const std::string& filename, nlohmann::json& J,
+              JsonReadErrorType& error_type = tmp_json_read_error_type_,
+              bool output_error = true);
 
 /** @} group utils */
 } // namespace beam
