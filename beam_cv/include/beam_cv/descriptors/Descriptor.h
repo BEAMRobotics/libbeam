@@ -9,8 +9,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <beam_utils/utils.h>
 #include <beam_utils/log.h>
+#include <beam_utils/utils.h>
 
 namespace beam_cv {
 
@@ -96,6 +96,30 @@ public:
       BEAM_ERROR("cannot create descriptor which is not of binary type.");
     }
     return descriptor;
+  }
+
+  /** @brief Converts a descriptor into a float vector using the specified tytpe
+   *  @param descriptor opencv mat representing the descriptor
+   *  @param type desired descriptor type
+   *  @return cv mat of the descriptor in its associated encoding
+   */
+  static std::vector<float> ConvertDescriptor(cv::Mat descriptor,
+                                              DescriptorType type) {
+    std::vector<float> descriptor_v;
+    // if the type is a binary type then convert to uint8
+    if (std::find(BinaryDescriptorTypes.begin(), BinaryDescriptorTypes.end(),
+                  type) != BinaryDescriptorTypes.end()) {
+      for (int i = 0; i < descriptor.cols; i++) {
+        float val = (float)descriptor.at<uchar>(0, i);
+        descriptor_v.push_back(val);
+      }
+    } else {
+      for (int i = 0; i < descriptor.cols; i++) {
+        float val = descriptor.at<float>(0, i);
+        descriptor_v.push_back(val);
+      }
+    }
+    return descriptor_v;
   }
 };
 

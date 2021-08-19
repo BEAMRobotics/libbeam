@@ -408,8 +408,18 @@ Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d R) {
   return InvSkewTransform(R.log());
 }
 
+Eigen::Vector3d QToLieAlgebra(const Eigen::Quaterniond& q) {
+  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
+  return RToLieAlgebra(R);
+}
+
 Eigen::Matrix3d LieAlgebraToR(const Eigen::Vector3d eps) {
   return SkewTransform(eps).exp();
+}
+
+Eigen::Quaterniond LieAlgebraToQ(const Eigen::Vector3d eps) {
+  Eigen::Quaterniond q(LieAlgebraToR(eps));
+  return q.normalized();
 }
 
 beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
@@ -665,12 +675,10 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
   return T;
 }
 
-std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T){
+std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T) {
   std::vector<double> v;
-  for (int i = 0; i < 4; i ++){
-    for (int j = 0; j < 4; j ++){
-      v.push_back(T(i,j));
-    }
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) { v.push_back(T(i, j)); }
   }
   return v;
 }
