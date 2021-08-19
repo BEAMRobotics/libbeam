@@ -32,25 +32,24 @@ bool LoamScanRegistration::RegisterScans(const LoamPointCloudPtr& ref,
   T_REF_TGT_prev_iter_ = T_REF_TGT_;
 
   Setup();
-  
+
   int iteration = 0;
   while (true) {
-  
     if (!GetEdgeMeasurements()) {
       registration_successful_ = false;
       break;
     }
-  
+
     if (!GetSurfaceMeasurements()) {
       registration_successful_ = false;
       break;
     }
-    
+
     if (!Solve(iteration)) {
       registration_successful_ = false;
       break;
     }
-    
+
     OutputResults(iteration);
 
     if (HasConverged(iteration)) { break; }
@@ -93,9 +92,6 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
     BEAM_ERROR("Reference cloud has no edge features, aborting registration.");
     return false;
   }
-  if (ref_->edges.weak.cloud.size() > 0) {
-    ref_->edges.weak.BuildKDTree(false);
-  }
 
   for (size_t tgt_iter = 0; tgt_iter < tgt_features.size(); tgt_iter++) {
     auto& search_pt = tgt_features.points.at(tgt_iter);
@@ -120,15 +116,21 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
       measurement.query_pt =
           Eigen::Vector3d(query_pt.x, query_pt.y, query_pt.z);
 
-      auto& ref_pt1 = ref_->edges.strong.cloud.points.at(point_search_ind.at(0));
+      auto& ref_pt1 =
+          ref_->edges.strong.cloud.points.at(point_search_ind.at(0));
       measurement.ref_pt1 = Eigen::Vector3d(ref_pt1.x, ref_pt1.y, ref_pt1.z);
 
-      auto& ref_pt2 = ref_->edges.strong.cloud.points.at(point_search_ind.at(1));
+      auto& ref_pt2 =
+          ref_->edges.strong.cloud.points.at(point_search_ind.at(1));
       measurement.ref_pt2 = Eigen::Vector3d(ref_pt2.x, ref_pt2.y, ref_pt2.z);
 
       edge_measurements_.push_back(measurement);
       continue;
     }
+
+    // check if weak features exist, if not then skip feature
+    if (ref_->edges.weak.cloud.empty()) { continue; }
+    ref_->edges.weak.BuildKDTree(false);
 
     // search for correspondence in weak features
     point_search_ind.clear();
@@ -136,7 +138,7 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
     num_returned = ref_->edges.weak.kdtree.nearestKSearch(
         search_pt, 2, point_search_ind, point_search_sq_dist);
 
-    if (num_returned != 2) { return false; }
+    if (num_returned != 2) { continue; }
 
     // if both correspondences are close enough, add measurement, else skip
     // feature
@@ -179,14 +181,10 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
     return false;
   }
 
-  if (ref_->surfaces.weak.cloud.size() > 0) {
-    ref_->surfaces.weak.BuildKDTree(false);
-  }
-
   for (size_t tgt_iter = 0; tgt_iter < tgt_features.size(); tgt_iter++) {
     auto search_pt = tgt_features.points.at(tgt_iter);
     auto& query_pt = tgt_->surfaces.strong.cloud.at(tgt_iter);
-    
+
     // search for correspondence in strong fetures
     std::vector<int> point_search_ind;
     std::vector<float> point_search_sq_dist;
@@ -221,13 +219,17 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
       continue;
     }
 
+    // check weak features exist, if not then skip feature
+    if (ref_->surfaces.weak.cloud.empty()) { continue; }
+    ref_->surfaces.weak.BuildKDTree(false);
+
     // search for correspondence in weak fetures
     point_search_ind.clear();
     point_search_sq_dist.clear();
     num_returned = ref_->surfaces.weak.kdtree.nearestKSearch(
         search_pt, 3, point_search_ind, point_search_sq_dist);
 
-    if (num_returned != 3) { return false; }
+    if (num_returned != 3) { continue; }
 
     // if both correspondences are close enough, add measurement, else skip
     // feature
@@ -238,16 +240,18 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
       measurement.query_pt =
           Eigen::Vector3d(query_pt.x, query_pt.y, query_pt.z);
 
-      auto& ref_pt1 = ref_->surfaces.weak.cloud.points.at(point_search_ind.at(0));
+      auto& ref_pt1 =
+          ref_->surfaces.weak.cloud.points.at(point_search_ind.at(0));
       measurement.ref_pt1 = Eigen::Vector3d(ref_pt1.x, ref_pt1.y, ref_pt1.z);
 
-      auto& ref_pt2 = ref_->surfaces.weak.cloud.points.at(point_search_ind.at(1));
+      auto& ref_pt2 =
+          ref_->surfaces.weak.cloud.points.at(point_search_ind.at(1));
       measurement.ref_pt2 = Eigen::Vector3d(ref_pt2.x, ref_pt2.y, ref_pt2.z);
 
       auto& ref_pt3 =
           ref_->surfaces.weak.cloud.points.at(point_search_ind.at(2));
       measurement.ref_pt3 = Eigen::Vector3d(ref_pt3.x, ref_pt3.y, ref_pt3.z);
-      
+
       surface_measurements_.push_back(measurement);
     }
   }
@@ -255,6 +259,12 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
 }
 
 bool LoamScanRegistration::Solve(int iteration) {
+  if (params_->min_number_measurements >
+      edge_measurements_.size() + surface_measurements_.size()) {
+    BEAM_ERROR("Insufficient number of measurements for scan registration, aborting.");
+    return false;
+  }
+
   // setup problem
   ceres::Solver::Options solver_options =
       params_->optimizer_params.SolverOptions();
