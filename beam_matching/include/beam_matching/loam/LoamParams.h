@@ -91,6 +91,7 @@ public:
     max_correspondence_distance = J["max_correspondence_distance"];
     validate_correspondences = J["validate_correspondences"];
     iterate_correspondences = J["iterate_correspondences"];
+    min_number_measurements = J["min_number_measurements"];
     convergence_criteria_translation_m =
         J["convergence_criteria_translation_m"];
     convergence_criteria_rotation_deg = J["convergence_criteria_rotation_deg"];
@@ -166,6 +167,10 @@ public:
   /** Iteratively calculate correspondences after each pose solution is
    * estiamted. Set this to true when not confident on the initial estimate. */
   bool iterate_correspondences{true};
+
+  /** Minimum number of measurements (i.e. corresponding features between the
+   * two clouds) to perform registration. */
+  size_t min_number_measurements{30};
 
   /** Correspondence iteration will stop if change in translation is below this
    * criteria (and change in rotation is below rotation criteria). In Meters.
