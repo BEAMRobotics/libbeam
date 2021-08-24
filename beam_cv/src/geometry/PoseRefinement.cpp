@@ -25,6 +25,18 @@ PoseRefinement::PoseRefinement() {
   ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
 }
 
+PoseRefinement::PoseRefinement(double time_limit) {
+  // set ceres solver params
+  ceres_solver_options_.minimizer_progress_to_stdout = false;
+  ceres_solver_options_.max_num_iterations = 100;
+  ceres_solver_options_.max_solver_time_in_seconds = time_limit;
+  ceres_solver_options_.function_tolerance = 1e-8;
+  ceres_solver_options_.gradient_tolerance = 1e-10;
+  ceres_solver_options_.parameter_tolerance = 1e-8;
+  ceres_solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
+  ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
+}
+
 PoseRefinement::PoseRefinement(const ceres::Solver::Options options) {
   ceres_solver_options_ = options;
 }
@@ -33,8 +45,8 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     const Eigen::Matrix4d& estimate,
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points, std::string& report,
-    bool remove_points_outside_domain) {
+    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
+    std::string& report, bool remove_points_outside_domain) {
   // vector to store optimized pose quaternion and translation
   Eigen::Matrix3d estimate_r = estimate.block(0, 0, 3, 3);
   Eigen::Quaterniond estimate_q(estimate_r);
@@ -61,8 +73,8 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     }
 
     std::unique_ptr<ceres::CostFunction> cost_function(
-        beam_optimization::CeresReprojectionCostFunction::Create(pixels[i].cast<double>(),
-                                              points[i], cam));
+        beam_optimization::CeresReprojectionCostFunction::Create(
+            pixels[i].cast<double>(), points[i], cam));
 
     problem->AddResidualBlock(cost_function.release(), loss_function_.get(),
                               &(results[0]));
