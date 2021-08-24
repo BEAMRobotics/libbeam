@@ -5,9 +5,9 @@
 #pragma once
 
 #include <Eigen/Geometry>
-#include <ceres/ceres.h>
-#include <beam_cv/Utils.h>
 #include <beam_calibration/CameraModel.h>
+#include <beam_cv/Utils.h>
+#include <ceres/ceres.h>
 #include <string>
 
 static std::string default_string = std::string();
@@ -20,10 +20,18 @@ namespace beam_cv {
 
 class PoseRefinement {
 public:
+
   /**
    * @brief Default constructor - ceres solver options are set to defaults.
    */
   PoseRefinement();
+
+  /**
+   * @brief Default constructor - ceres solver options are set to defaults
+   * except for custom time limit.
+   * @param time_limit on optimization
+   */
+  PoseRefinement(double time_limit);
 
   /**
    * @brief Constructor for custom ceres solver options.
@@ -41,12 +49,13 @@ public:
    * @param report string to store ceres report
    * @returns Refined transformation matrix
    */
-  Eigen::Matrix4d
-      RefinePose(const Eigen::Matrix4d& estimate,
-                 const std::shared_ptr<beam_calibration::CameraModel>& cam,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-                 const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
-                 std::string& report = default_string, bool remove_points_outside_domain = true);
+  Eigen::Matrix4d RefinePose(
+      const Eigen::Matrix4d& estimate,
+      const std::shared_ptr<beam_calibration::CameraModel>& cam,
+      const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+      const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
+      std::string& report = default_string,
+      bool remove_points_outside_domain = true);
 
 private:
   /**
