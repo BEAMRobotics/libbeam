@@ -54,7 +54,7 @@ PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
     p.r = r;
     p.g = g;
     p.b = b;
-    cloud_col.points.push_back(p);
+    cloud_col.push_back(p);
   }
   return cloud_col;
 }
