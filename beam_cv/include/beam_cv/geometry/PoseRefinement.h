@@ -31,7 +31,7 @@ public:
    * except for custom time limit.
    * @param time_limit on optimization
    */
-  PoseRefinement(double time_limit);
+  PoseRefinement(double time_limit, bool is_silent = true);
 
   /**
    * @brief Constructor for custom ceres solver options.
