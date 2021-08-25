@@ -25,10 +25,13 @@ PoseRefinement::PoseRefinement() {
   ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
 }
 
-PoseRefinement::PoseRefinement(double time_limit) {
+PoseRefinement::PoseRefinement(double time_limit, bool is_silent) {
   // set ceres solver params
   ceres_solver_options_.minimizer_progress_to_stdout = false;
   ceres_solver_options_.max_num_iterations = 100;
+  if(is_silent){
+    ceres_solver_options_.logging_type = ceres::SILENT;
+  }
   ceres_solver_options_.max_solver_time_in_seconds = time_limit;
   ceres_solver_options_.function_tolerance = 1e-8;
   ceres_solver_options_.gradient_tolerance = 1e-10;
