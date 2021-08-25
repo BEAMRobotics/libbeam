@@ -50,9 +50,11 @@ bool LoamScanRegistration::RegisterScans(const LoamPointCloudPtr& ref,
       break;
     }
 
+    if (HasConverged(iteration)) {
+      OutputResults(iteration);
+      break;
+    }
     OutputResults(iteration);
-
-    if (HasConverged(iteration)) { break; }
     T_REF_TGT_prev_iter_ = T_REF_TGT_;
     iteration++;
   }
@@ -261,7 +263,8 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
 bool LoamScanRegistration::Solve(int iteration) {
   if (params_->min_number_measurements >
       edge_measurements_.size() + surface_measurements_.size()) {
-    BEAM_ERROR("Insufficient number of measurements for scan registration, aborting.");
+    BEAM_ERROR(
+        "Insufficient number of measurements for scan registration, aborting.");
     return false;
   }
 
@@ -319,35 +322,98 @@ bool LoamScanRegistration::Solve(int iteration) {
   // update current pose
   T_REF_TGT_ = beam::QuaternionAndTranslationToTransformMatrix(pose);
 
+  if (params_->output_optimization_summary) {
+    // add ceres results to summary
+    optimization_summary_.ceres_termination = ceres_summary.message;
+    optimization_summary_.ceres_residuals = ceres_summary.num_residuals;
+    optimization_summary_.ceres_iterations = ceres_summary.iterations.size();
+    optimization_summary_.ceres_initial_cost = ceres_summary.initial_cost;
+    optimization_summary_.ceres_final_cost = ceres_summary.final_cost;
+
+    // add measurement results to summary
+    optimization_summary_.correspondence_iteration_number = iteration;
+    optimization_summary_.surface_measurements = surface_measurements_.size();
+    optimization_summary_.edge_measurements = edge_measurements_.size();
+  }
+
   return ceres_summary.IsSolutionUsable();
 }
 
 bool LoamScanRegistration::HasConverged(int iteration) {
-  if (!params_->iterate_correspondences) { return true; }
-
-  if (iteration == 0) { return false; }
-
-  if (iteration >= params_->max_correspondence_iterations) { return true; }
+  if (!params_->iterate_correspondences) {
+    if (params_->output_optimization_summary) {
+      optimization_summary_.translation_change_m = 0;
+      optimization_summary_.rotation_change_deg = 0;
+      optimization_summary_.correspondence_termination =
+          "TERMINATE: Iterate correspondences set to false.";
+    }
+    return true;
+  } else if (iteration == 0) {
+    if (params_->output_optimization_summary) {
+      optimization_summary_.translation_change_m = 0;
+      optimization_summary_.rotation_change_deg = 0;
+      optimization_summary_.correspondence_termination =
+          "CONTINUE: at first iteration.";
+    }
+    return false;
+  } else if (iteration >= params_->max_correspondence_iterations) {
+    if (params_->output_optimization_summary) {
+      optimization_summary_.translation_change_m = 0;
+      optimization_summary_.rotation_change_deg = 0;
+      optimization_summary_.correspondence_termination =
+          "TERMINATE: reached max correspondence iterations.";
+    }
+    return true;
+  }
 
   Eigen::Matrix4d T_diff =
       beam::InvertTransform(T_REF_TGT_prev_iter_) * T_REF_TGT_;
 
-  Eigen::Vector3d t_diff = T_diff.block(0, 3, 3, 1);
-  if (t_diff.norm() > params_->convergence_criteria_translation_m) {
+  double t_diff_norm = T_diff.block(0, 3, 3, 1).norm();
+  if (t_diff_norm > params_->convergence_criteria_translation_m) {
+    if (params_->output_optimization_summary) {
+      optimization_summary_.translation_change_m = t_diff_norm;
+      optimization_summary_.rotation_change_deg = 0;
+      optimization_summary_.correspondence_termination =
+          "CONTINUE: change in translation larger than citeria (" +
+          std::to_string(params_->convergence_criteria_translation_m) + ").";
+    }
     return false;
   }
 
   Eigen::Matrix3d R_diff = T_diff.block(0, 0, 3, 3);
-  double angle = Eigen::AngleAxis<double>(R_diff).angle();
-  if (std::abs(angle) >
+  double angle_rad = Eigen::AngleAxis<double>(R_diff).angle();
+  if (std::abs(angle_rad) >
       beam::Deg2Rad(params_->convergence_criteria_rotation_deg)) {
+    if (params_->output_optimization_summary) {
+      optimization_summary_.translation_change_m = t_diff_norm;
+      optimization_summary_.rotation_change_deg =
+          beam::Rad2Deg(std::abs(angle_rad));
+      optimization_summary_.correspondence_termination =
+          "CONTINUE: change in rotation larger than citeria (" +
+          std::to_string(params_->convergence_criteria_rotation_deg) + ").";
+    }
     return false;
+  }
+
+  if (params_->output_optimization_summary) {
+    optimization_summary_.translation_change_m = t_diff_norm;
+    optimization_summary_.rotation_change_deg =
+        beam::Rad2Deg(std::abs(angle_rad));
+    optimization_summary_.correspondence_termination =
+        "TERMINATE: change in rotation is less than criteria (" +
+        std::to_string(params_->convergence_criteria_rotation_deg) +
+        ") and change in translation is less than criteria (" +
+        std::to_string(params_->convergence_criteria_translation_m) + ")";
   }
 
   return true;
 }
 
 void LoamScanRegistration::OutputResults(int iteration) {
+  if (params_->output_optimization_summary) { optimization_summary_.Print(); }
+
+  // output scan registration results
   if (!output_results_) { return; }
 
   if (!boost::filesystem::exists(debug_output_path_)) {
@@ -371,6 +437,21 @@ void LoamScanRegistration::OutputResults(int iteration) {
   LoamPointCloud target_initial = *tgt_;
   target_initial.TransformPointCloud(T_REF_TGT_prev_iter_);
   target_initial.Save(current_dir + "target_initial/", true);
+}
+
+void LoamScanRegistration::OptimizationSummary::Print() {
+  std::cout << "-------- OPTIMIZATION SUMMARY --------\n"
+            << "correspondence_iteration_number: "
+            << correspondence_iteration_number << "\n"
+            << "surface_measurements: " << surface_measurements << "\n"
+            << "edge_measurements: " << edge_measurements << "\n"
+            << "translation_change (meters): " << translation_change_m << "\n"
+            << "rotation_change (degrees): " << rotation_change_deg << "\n"
+            << "ceres_termination: " << ceres_termination << "\n"
+            << "ceres_initial_cost: " << ceres_initial_cost << "\n"
+            << "ceres_final_cost: " << ceres_final_cost << "\n"
+            << "correspondence_termination: " << correspondence_termination
+            << "\n";
 }
 
 } // namespace beam_matching
