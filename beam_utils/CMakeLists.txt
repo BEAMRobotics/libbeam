@@ -20,6 +20,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/polynomial.cpp
     src/optional.cpp
     src/pointclouds.cpp
+    src/simple_path_generator.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests
