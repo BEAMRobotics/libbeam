@@ -214,9 +214,14 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
         "Invalid pose file type. Valid extensions: .ply, .json"};
   }
 
-  poses_moving_frame_ = slam_poses_.moving_frame;
-  poses_fixed_frame_ = slam_poses_.fixed_frame;
+  if (poses_moving_frame_.empty()) {
+    poses_moving_frame_ = slam_poses_.moving_frame;
+  }
 
+  if (poses_fixed_frame_.empty()) {
+    poses_fixed_frame_ = slam_poses_.fixed_frame;
+  }
+  
   if (slam_poses_.GetBagName() != bag_file_name_) {
     BEAM_WARN("Bag file name from MapBuilder config file is not the same "
               "as the name listed in the pose file.\nMapBuilderConfig: "
@@ -262,8 +267,7 @@ PointCloud::Ptr
                                  std::vector<FilterParamsType> filter_params) {
   PointCloud::Ptr filtered_cloud = std::make_shared<PointCloud>(*cloud);
   for (uint8_t i = 0; i < filter_params.size(); i++) {
-    PointCloud::Ptr input_cloud =
-        std::make_shared<PointCloud>(*filtered_cloud);
+    PointCloud::Ptr input_cloud = std::make_shared<PointCloud>(*filtered_cloud);
     std::string filter_type = filter_params[i].first;
     std::vector<double> params = filter_params[i].second;
     if (filter_type == "DROR") {
@@ -313,7 +317,8 @@ bool MapBuilder::CheckPoseChange() {
                   (scan_pose_last_(2, 3) - scan_pose_current_(2, 3)) *
                       (scan_pose_last_(2, 3) - scan_pose_current_(2, 3));
 
-  double minRotSq = beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
+  double minRotSq =
+      beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
   Eigen::Vector3d eps1, eps2, diffSq;
   eps1 = beam::RToLieAlgebra(scan_pose_last_.rotation());
   eps2 = beam::RToLieAlgebra(scan_pose_current_.rotation());
