@@ -9,7 +9,7 @@ using json = nlohmann::json;
 
 namespace beam_calibration {
 
-void TfTree::LoadJSON(std::string& file_location) {
+void TfTree::LoadJSON(const std::string& file_location) {
   BEAM_INFO("Loading file: {}", file_location.c_str());
 
   json J;
@@ -69,22 +69,23 @@ void TfTree::LoadJSON(std::string& file_location) {
   BEAM_INFO("Saved {} transforms", calibration_counter);
 }
 
-void TfTree::AddTransform(Eigen::Affine3d& T, std::string& to_frame,
-                          std::string& from_frame) {
+void TfTree::AddTransform(const Eigen::Affine3d& T, const std::string& to_frame,
+                          const std::string& from_frame) {
   ros::Time time_stamp = this->start_time;
   geometry_msgs::TransformStamped T_ROS =
       EigenToROS(T, to_frame, from_frame, time_stamp);
   this->SetTransform(T_ROS, to_frame, from_frame, time_stamp, true);
 }
 
-void TfTree::AddTransform(Eigen::Affine3d& T, std::string& to_frame,
-                          std::string& from_frame, ros::Time& time_stamp) {
+void TfTree::AddTransform(const Eigen::Affine3d& T, const std::string& to_frame,
+                          const std::string& from_frame,
+                          const ros::Time& time_stamp) {
   geometry_msgs::TransformStamped T_ROS =
       EigenToROS(T, to_frame, from_frame, time_stamp);
   this->SetTransform(T_ROS, to_frame, from_frame, time_stamp, false);
 }
 
-void TfTree::AddTransform(geometry_msgs::TransformStamped& T_ROS,
+void TfTree::AddTransform(const geometry_msgs::TransformStamped& T_ROS,
                           bool is_static) {
   std::string to_frame = T_ROS.header.frame_id;
   std::string from_frame = T_ROS.child_frame_id;
@@ -92,34 +93,36 @@ void TfTree::AddTransform(geometry_msgs::TransformStamped& T_ROS,
   this->SetTransform(T_ROS, to_frame, from_frame, transform_time, is_static);
 }
 
-Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
-                                          std::string& from_frame) {
+Eigen::Affine3d TfTree::GetTransformEigen(const std::string& to_frame,
+                                          const std::string& from_frame) const {
   geometry_msgs::TransformStamped T_ROS;
   T_ROS = this->LookupTransform(to_frame, from_frame, this->start_time);
   Eigen::Affine3d T = this->ROSToEigen(T_ROS);
   return T;
 }
 
-Eigen::Affine3d TfTree::GetTransformEigen(std::string& to_frame,
-                                          std::string& from_frame,
-                                          ros::Time& lookup_time) {
+Eigen::Affine3d TfTree::GetTransformEigen(const std::string& to_frame,
+                                          const std::string& from_frame,
+                                          const ros::Time& lookup_time) const {
   geometry_msgs::TransformStamped T_ROS;
   T_ROS = this->LookupTransform(to_frame, from_frame, lookup_time);
   return this->ROSToEigen(T_ROS);
 }
 
 geometry_msgs::TransformStamped
-    TfTree::GetTransformROS(std::string& to_frame, std::string& from_frame,
-                            ros::Time& lookup_time) {
+    TfTree::GetTransformROS(const std::string& to_frame,
+                            const std::string& from_frame,
+                            const ros::Time& lookup_time) const {
   return this->LookupTransform(to_frame, from_frame, lookup_time);
 }
 
 geometry_msgs::TransformStamped
-    TfTree::GetTransformROS(std::string& to_frame, std::string& from_frame) {
+    TfTree::GetTransformROS(const std::string& to_frame,
+                            const std::string& from_frame) const {
   return this->LookupTransform(to_frame, from_frame, this->start_time);
 }
 
-std::string TfTree::GetCalibrationDate() {
+std::string TfTree::GetCalibrationDate() const {
   if (!is_calibration_date_set_) {
     throw std::runtime_error{"cannot retrieve calibration date, value not set"};
     BEAM_CRITICAL("cannot retrieve calibration date, value not set.");
@@ -127,21 +130,22 @@ std::string TfTree::GetCalibrationDate() {
   return calibration_date_;
 }
 
-void TfTree::SetCalibrationDate(std::string& calibration_date) {
+void TfTree::SetCalibrationDate(const std::string& calibration_date) {
   calibration_date_ = calibration_date;
   is_calibration_date_set_ = true;
 }
 
-void TfTree::Clear(){
+void TfTree::Clear() {
   Tree_.clear();
   frames_.clear();
   calibration_date_ = "";
   is_calibration_date_set_ = false;
 }
 
-geometry_msgs::TransformStamped TfTree::LookupTransform(std::string& to_frame,
-                                                        std::string& from_frame,
-                                                        ros::Time& time_stamp) {
+geometry_msgs::TransformStamped
+    TfTree::LookupTransform(const std::string& to_frame,
+                            const std::string& from_frame,
+                            const ros::Time& time_stamp) const {
   geometry_msgs::TransformStamped T_ROS;
   std::string transform_error;
   bool can_transform =
@@ -159,10 +163,10 @@ geometry_msgs::TransformStamped TfTree::LookupTransform(std::string& to_frame,
   return T_ROS;
 }
 
-geometry_msgs::TransformStamped TfTree::EigenToROS(Eigen::Affine3d& T,
-                                                   std::string& to_frame,
-                                                   std::string& from_frame,
-                                                   ros::Time& time_stamp) {
+geometry_msgs::TransformStamped
+    TfTree::EigenToROS(const Eigen::Affine3d& T, const std::string& to_frame,
+                       const std::string& from_frame,
+                       const ros::Time& time_stamp) const {
   if (!beam::IsTransformationMatrix(T.matrix())) {
     BEAM_CRITICAL("Invalid transformation matrix input");
     throw std::runtime_error{"Invalid transformation matrix"};
@@ -175,13 +179,15 @@ geometry_msgs::TransformStamped TfTree::EigenToROS(Eigen::Affine3d& T,
   return T_ROS;
 }
 
-Eigen::Affine3d TfTree::ROSToEigen(geometry_msgs::TransformStamped T_ROS) {
+Eigen::Affine3d
+    TfTree::ROSToEigen(const geometry_msgs::TransformStamped& T_ROS) const {
   return tf2::transformToEigen(T_ROS);
 }
 
-void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
-                          std::string& to_frame, std::string& from_frame,
-                          ros::Time& time_stamp, bool is_static) {
+void TfTree::SetTransform(const geometry_msgs::TransformStamped& T_ROS,
+                          const std::string& to_frame,
+                          const std::string& from_frame,
+                          const ros::Time& time_stamp, bool is_static) {
   /* ---------------------------------------------------------------------------
   here's the logic:
   if static and exact transform from child to parent exists, output error
@@ -219,11 +225,12 @@ void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
       tf2::Transform inverse_transform;
       tf2::fromMsg(T_ROS.transform, inverse_transform);
       inverse_transform = inverse_transform.inverse();
-      T_ROS.transform = tf2::toMsg(inverse_transform);
-      T_ROS.header.frame_id = from_frame;
-      T_ROS.child_frame_id = to_frame;
+      geometry_msgs::TransformStamped T_ROS_inv = T_ROS;
+      T_ROS_inv.transform = tf2::toMsg(inverse_transform);
+      T_ROS_inv.header.frame_id = from_frame;
+      T_ROS_inv.child_frame_id = to_frame;
 
-      if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+      if (!Tree_.setTransform(T_ROS_inv, "TfTree", is_static)) {
         BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
                       to_frame.c_str());
         throw std::runtime_error{"Cannot add transform."};
@@ -271,11 +278,12 @@ void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
       tf2::Transform inverse_transform;
       tf2::fromMsg(T_ROS.transform, inverse_transform);
       inverse_transform = inverse_transform.inverse();
-      T_ROS.transform = tf2::toMsg(inverse_transform);
-      T_ROS.header.frame_id = from_frame;
-      T_ROS.child_frame_id = to_frame;
+      geometry_msgs::TransformStamped T_ROS_inv = T_ROS;
+      T_ROS_inv.transform = tf2::toMsg(inverse_transform);
+      T_ROS_inv.header.frame_id = from_frame;
+      T_ROS_inv.child_frame_id = to_frame;
 
-      if (!Tree_.setTransform(T_ROS, "TfTree", is_static)) {
+      if (!Tree_.setTransform(T_ROS_inv, "TfTree", is_static)) {
         BEAM_CRITICAL("Cannot add transform from {} to {}", from_frame.c_str(),
                       to_frame.c_str());
         throw std::runtime_error{"Cannot add transform."};
@@ -295,7 +303,8 @@ void TfTree::SetTransform(geometry_msgs::TransformStamped& T_ROS,
   }
 }
 
-void TfTree::InsertFrame(std::string& to_frame, std::string& from_frame) {
+void TfTree::InsertFrame(const std::string& to_frame,
+                         const std::string& from_frame) {
   auto it = frames_.find(from_frame);
   if (it == frames_.end()) {
     // from_frame not added yet
