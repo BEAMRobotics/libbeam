@@ -97,6 +97,7 @@ public:
     convergence_criteria_rotation_deg = J["convergence_criteria_rotation_deg"];
     max_correspondence_iterations = J["max_correspondence_iterations"];
     output_ceres_summary = J["output_ceres_summary"];
+    output_optimization_summary = J["output_optimization_summary"];
     optimizer_params = beam_optimization::CeresParams(J["ceres_config"]);
   }
 
@@ -191,6 +192,9 @@ public:
 
   /** set to true to cout ceres summary at each iteration */
   bool output_ceres_summary{false};
+
+  /** set to true to cout optimization summaries for each iteration */
+  bool output_optimization_summary{false};
 
 private:
   std::vector<double> beam_angle_bins_;

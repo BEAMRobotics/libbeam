@@ -97,7 +97,26 @@ private:
     Eigen::Vector3d ref_pt3;
   };
 
+  /** struct to hold optimization summary for each iteration */
+  struct OptimizationSummary {
+    int correspondence_iteration_number{0};
+    int surface_measurements{0};
+    int edge_measurements{0};
+    double translation_change_m{0};
+    double rotation_change_deg{0};
+    std::string ceres_termination{};
+    int ceres_residuals{0};
+    int ceres_iterations{0};
+    double ceres_initial_cost{0};
+    double ceres_final_cost{0};
+    std::string correspondence_termination{};
+
+    void Print();
+  };
+
   LoamParamsPtr params_;
+
+  OptimizationSummary optimization_summary_;
 
   LoamPointCloudPtr ref_;
   LoamPointCloudPtr tgt_;
@@ -110,7 +129,7 @@ private:
 
   // Debugging tools
   std::string debug_output_path_{"/home/nick/debug/loam_tests/"};
-  bool output_results_{false};
+  bool output_results_{false}; // outputs scans before and after registration
 };
 
 /** @} group matching */

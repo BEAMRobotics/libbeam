@@ -2,6 +2,7 @@
 
 #include <pcl/common/transforms.h>
 #include <beam_utils/pcl_conversions.h>
+#include <beam_utils/math.h>
 
 namespace beam {
 
@@ -54,7 +55,7 @@ PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
     p.r = r;
     p.g = g;
     p.b = b;
-    cloud_col.points.push_back(p);
+    cloud_col.push_back(p);
   }
   return cloud_col;
 }
@@ -73,7 +74,7 @@ PointCloudCol AddFrameToCloud(const PointCloudCol& cloud,
 }
 
 void MergeFrameToCloud(PointCloudCol& cloud, const PointCloudCol& frame,
-                     const Eigen::Matrix4d& T) {
+                       const Eigen::Matrix4d& T) {
   if (T.isIdentity()) {
     cloud += frame;
   } else {
@@ -208,6 +209,16 @@ pcl::PointCloud<pcl::PointXYZRGBL>
     cur_length += increment;
   }
   return frame;
+}
+
+void AddNoiseToCloud(PointCloud& cloud, double max_pert, bool random_seed) {
+  if (random_seed) { srand(time(NULL)); }
+
+  for (size_t i = 0; i < cloud.size(); i++) {
+    cloud.points.at(i).x += beam::randf(max_pert, -max_pert);
+    cloud.points.at(i).y += beam::randf(max_pert, -max_pert);
+    cloud.points.at(i).z += beam::randf(max_pert, -max_pert);
+  }
 }
 
 } // namespace beam

@@ -248,7 +248,8 @@ inline void getMinMax3D(const pcl::PointCloud<PointT>& cloud, PointT& min_pt,
     for (size_t i = 0; i < cloud.points.size(); ++i) {
       // Check if the point is invalid
       if (!std::isfinite(cloud.points[i].x) ||
-          !std::isfinite(cloud.points[i].y) || !std::isfinite(cloud.points[i].z))
+          !std::isfinite(cloud.points[i].y) ||
+          !std::isfinite(cloud.points[i].z))
         continue;
       pcl::Array4fMapConst pt = cloud.points[i].getArray4fMap();
       min_p = min_p.min(pt);
@@ -262,6 +263,17 @@ inline void getMinMax3D(const pcl::PointCloud<PointT>& cloud, PointT& min_pt,
   max_pt.y = max_p[1];
   max_pt.z = max_p[2];
 }
+
+/**
+ * @brief add random noise to a pointcloud. This will add some perturbation
+ * between -max_pert and +max_pert for each axis (x,y,z) of each point
+ * @param cloud reference to cloud to update
+ * @param max_pert max perturbation (in m) of each axis for a point
+ * @param radom_seed if set to true, this will set the random seed based on the
+ * current time
+ */
+void AddNoiseToCloud(PointCloud& cloud, double max_pert = 0.01,
+                     bool random_seed = true);
 
 /** @} group utils */
 } // namespace beam
