@@ -82,6 +82,22 @@ void Poses::AddSinglePose(const Eigen::Affine3d& pose) {
   poses.push_back(pose);
 }
 
+bool Poses::ProcessXYZRPYT(double x, double y, double z, double roll,
+                           double pitch, double yaw, const ros::Time& time) {
+  Eigen::Affine3d TA;
+  Eigen::RowVector3d transl;
+  transl << x, y, z;
+  Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
+  Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
+  Eigen::Quaternion<double> q = rollAngle * pitchAngle * yawAngle;
+  TA.linear() = q.matrix();
+  TA.translation() = transl;
+  this->poses.push_back(TA);
+  this->time_stamps.push_back(time);
+  return true;
+}
+
 void Poses::WriteToJSON(const std::string output_dir) {
   if (poses.size() != time_stamps.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
@@ -241,7 +257,8 @@ void Poses::LoadFromTXT(const std::string input_pose_file_path) {
     std::getline(infile, line, ',');
     if (line.length() > 0) {
       try {
-        uint64_t n_sec = std::stod(line.substr(line.length() - 9, line.length()));
+        uint64_t n_sec =
+            std::stod(line.substr(line.length() - 9, line.length()));
         uint64_t sec = std::stod(line.substr(0, line.length() - 9));
         time_stamp_k.sec = sec;
         time_stamp_k.nsec = n_sec;
@@ -373,17 +390,8 @@ void Poses::LoadFromPLY(const std::string input_pose_file_path) {
     double time_since_start = vals[6];
     double time_stamp_sec = time_since_start + time_start;
     ros::Time t(time_stamp_sec);
-    Eigen::Affine3d TA;
-    Eigen::RowVector3d transl;
-    transl << x, y, z;
-    Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
-    Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
-    Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
-    Eigen::Quaternion<double> q = rollAngle * pitchAngle * yawAngle;
-    TA.linear() = q.matrix();
-    TA.translation() = transl;
-    this->poses.push_back(TA);
-    this->time_stamps.push_back(t);
+
+    ProcessXYZRPYT(x, y, z, roll, pitch, yaw, t);
   }
 }
 
@@ -417,6 +425,32 @@ void Poses::LoadFromBAG(const std::string bag_file_path,
   }
   BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
             message_counter);
+}
+
+void Poses::LoadFromPCD(const std::string input_pose_file_path) {
+  // creat cloud ptr
+  pcl::PointCloud<PointXYZIRPYT>::Ptr cloud(new pcl::PointCloud<PointXYZIRPYT>);
+
+  // load PCD
+  int pcl_loaded =
+      pcl::io::loadPCDFile<PointXYZIRPYT>(input_pose_file_path, *cloud);
+  if (pcl_loaded == -1) {
+    BEAM_CRITICAL("Cannot load poses from PCD file");
+    throw std::runtime_error{
+        "Check point type used in PCD. Cannot create pose file."};
+  }
+
+  // process PCD
+  for (const auto& point : *cloud) {
+    double x = point.x;
+    double y = point.y;
+    double z = point.z;
+    double roll = point.roll;
+    double pitch = point.pitch;
+    double yaw = point.yaw;
+    ros::Time time(point.time);
+    ProcessXYZRPYT(x, y, z, roll, pitch, yaw, time);
+  }
 }
 
 } // namespace beam_mapping

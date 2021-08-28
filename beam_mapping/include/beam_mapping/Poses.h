@@ -6,7 +6,36 @@
 
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 #include <ros/time.h>
+
+// TODO should generalize to any point type and move this to a better spot
+
+// port LVI-SAM point type.
+struct PointXYZIRPYT {
+  PCL_ADD_POINT4D
+  PCL_ADD_INTENSITY;
+  float roll;
+  float pitch;
+  float yaw;
+  double time;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointXYZIRPYT,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (float, roll, roll)
+    (float, pitch, pitch)
+    (float, yaw, yaw)
+    (double, time, time)
+    )
+// clang-format on
 
 namespace beam_mapping {
 /** @addtogroup mapping
@@ -171,6 +200,20 @@ public:
    */
   void LoadFromBAG(const std::string bag_file_path,
                    const std::string odom_topic);
+
+  /**
+   * @brief loads the pose file in PCD format
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromPCD(const std::string input_pose_file_path);
+
+  /**
+   * @brief converts x y z roll pitch yaw time to stamped pose
+   * @param input_pose_file_path full path to pose file
+   * @param true if successful
+   */
+  bool ProcessXYZRPYT(double x, double y, double z, double roll, double pitch,
+                      double yaw, const ros::Time& time);
 
   std::vector<ros::Time> time_stamps;
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> poses;
