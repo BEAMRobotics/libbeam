@@ -208,10 +208,13 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
     slam_poses_.LoadFromJSON(pose_file);
   } else if (pose_type == ".ply") {
     slam_poses_.LoadFromPLY(pose_file);
+  } else if (pose_type == ".pcd") {
+    slam_poses_.LoadFromPCD(pose_file);
   } else {
-    BEAM_CRITICAL("Invalid pose file type. Valid extensions: .ply, .json");
+    BEAM_CRITICAL(
+        "Invalid pose file type. Valid extensions: .ply, .json, .pcd");
     throw std::invalid_argument{
-        "Invalid pose file type. Valid extensions: .ply, .json"};
+        "Invalid pose file type. Valid extensions: .ply, .json, .pcd"};
   }
 
   if (poses_moving_frame_.empty()) {
@@ -221,7 +224,7 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
   if (poses_fixed_frame_.empty()) {
     poses_fixed_frame_ = slam_poses_.fixed_frame;
   }
-  
+
   if (slam_poses_.GetBagName() != bag_file_name_) {
     BEAM_WARN("Bag file name from MapBuilder config file is not the same "
               "as the name listed in the pose file.\nMapBuilderConfig: "

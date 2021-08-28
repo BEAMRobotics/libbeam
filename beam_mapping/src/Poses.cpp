@@ -448,8 +448,9 @@ void Poses::LoadFromPCD(const std::string input_pose_file_path) {
     double roll = point.roll;
     double pitch = point.pitch;
     double yaw = point.yaw;
-    ros::Time time(point.time);
-    ProcessXYZRPYT(x, y, z, roll, pitch, yaw, time);
+    double time = point.time;
+    ros::Time t(time);
+    ProcessXYZRPYT(x, y, z, roll, pitch, yaw, t);
   }
 }
 
