@@ -3,6 +3,8 @@
   "bag_file_path": "test.bag",
   "save_directory": "",
   "extrinsics_file": "test.json",
+  "moving_frame": "",
+  "fixed_frame": "",
   "intermediary_map_size": 4,
   "min_translation": 0.01,
   "min_rotation_deg": 5,

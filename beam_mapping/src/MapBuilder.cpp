@@ -149,6 +149,8 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
                                          bag_file_path_.rfind(".bag"));
   save_dir_ = J["save_directory"];
   extrinsics_file_ = J["extrinsics_file"];
+  poses_moving_frame_ = J["moving_frame"];
+  poses_fixed_frame_ = J["fixed_frame"];
   intermediary_map_size_ = J["intermediary_map_size"];
   min_translation_ = J["min_translation"];
   min_rotation_deg_ = J["min_rotation_deg"];
