@@ -10,6 +10,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     nlohmann_json::nlohmann_json
     PCL::PCL
   SOURCES
+    src/Filter.cpp  
     src/DROR.cpp
     src/CropBox.cpp
     src/VoxelDownsample.cpp

@@ -1,11 +1,4 @@
-#include "beam_mapping/MapBuilder.h"
-
-#include "beam_filtering/CropBox.h"
-#include "beam_filtering/DROR.h"
-#include "beam_utils/angles.h"
-#include "beam_utils/log.h"
-#include "beam_utils/math.h"
-#include <beam_utils/pcl_conversions.h>
+#include <beam_mapping/MapBuilder.h>
 
 #include <fstream>
 #include <pcl/common/transforms.h>
@@ -13,6 +6,12 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include <sensor_msgs/PointCloud2.h>
+
+#include <beam_filtering/Filters.h>
+#include <beam_utils/angles.h>
+#include <beam_utils/log.h>
+#include <beam_utils/math.h>
+#include <beam_utils/pcl_conversions.h>
 
 namespace beam_mapping {
 
@@ -249,12 +248,12 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
                                            uint8_t lidar_number) {
   if (!lidars_[lidar_number].use_cropbox) { return cloud; }
-  PointCloud::Ptr cropped_cloud = std::make_shared<PointCloud>();
-  beam_filtering::CropBox cropper;
+  beam_filtering::CropBox cropper<PointT>;
   cropper.SetMinVector(lidars_[lidar_number].cropbox_min);
   cropper.SetMaxVector(lidars_[lidar_number].cropbox_max);
-  cropper.Filter(*cloud, *cropped_cloud);
-  return cropped_cloud;
+  cropper.SetInputCloud(cloud);
+  cropper.Filter();
+  return std::make_shared<PointCloud>(cropper.GetFilteredCloud());
 }
 
 PointCloud::Ptr
@@ -267,12 +266,14 @@ PointCloud::Ptr
     std::string filter_type = filter_params[i].first;
     std::vector<double> params = filter_params[i].second;
     if (filter_type == "DROR") {
-      beam_filtering::DROR outlier_removal;
+      beam_filtering::DROR<PointType> outlier_removal;
       outlier_removal.SetRadiusMultiplier(params[0]);
       outlier_removal.SetAzimuthAngle(params[1]);
       outlier_removal.SetMinNeighbors(params[2]);
       outlier_removal.SetMinSearchRadius(params[3]);
-      outlier_removal.Filter(*input_cloud, *filtered_cloud);
+      outlier_removal.SetInputCloud(input_cloud);
+      outlier_removal.Filter();
+      *filtered_cloud = outlier_removal.GetFilteredCloud();
     } else if (filter_type == "ROR") {
       pcl::RadiusOutlierRemoval<PointT> outlier_removal;
       outlier_removal.setInputCloud(input_cloud);
@@ -280,16 +281,17 @@ PointCloud::Ptr
       outlier_removal.setMinNeighborsInRadius(params[1]);
       outlier_removal.filter(*filtered_cloud);
     } else if (filter_type == "VOXEL") {
-      pcl::VoxelGrid<PointT> downsampler;
-      downsampler.setLeafSize(params[0], params[1], params[2]);
-      downsampler.setInputCloud(input_cloud);
-      downsampler.filter(*filtered_cloud);
+      beam_filtering::VoxelDownsample<PointT> downsampler;
+      downsampler.SetVoxelSize(Eigen::Vector3f(params[0], params[1], params[2]));
+      downsampler.SetInputCloud(input_cloud);
+      downsampler.Filter();
+      *filtered_cloud = downsampler.GetFilteredCloud();
     } else if (filter_type == "CROPBOX") {
       Eigen::Vector3d min_vec(params[0], params[1], params[2]);
       Eigen::Vector3d max_vec(params[3], params[4], params[5]);
       Eigen::Vector3f min_vecf = min_vec.cast<float>();
       Eigen::Vector3f max_vecf = max_vec.cast<float>();
-      beam_filtering::CropBox cropper;
+      beam_filtering::CropBox cropper<PointT>;
       cropper.SetMinVector(min_vecf);
       cropper.SetMaxVector(max_vecf);
       if (params[6] == 1) {
@@ -297,7 +299,9 @@ PointCloud::Ptr
       } else {
         cropper.SetRemoveOutsidePoints(false);
       }
-      cropper.Filter(*input_cloud, *filtered_cloud);
+      cropper.SetInputCloud(input_cloud);
+      cropper.Filter();
+      *filtered_cloud = cropper.GetFilteredCloud();
     }
   }
   return filtered_cloud;
