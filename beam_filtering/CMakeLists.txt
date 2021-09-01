@@ -12,6 +12,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Filter.cpp  
     src/DROR.cpp
+    src/ROR.cpp
     src/CropBox.cpp
     src/VoxelDownsample.cpp
 )

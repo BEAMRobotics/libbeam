@@ -2,8 +2,6 @@
 
 #include <fstream>
 #include <pcl/common/transforms.h>
-#include <pcl/filters/radius_outlier_removal.h>
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -275,11 +273,12 @@ PointCloud::Ptr
       outlier_removal.Filter();
       *filtered_cloud = outlier_removal.GetFilteredCloud();
     } else if (filter_type == "ROR") {
-      pcl::RadiusOutlierRemoval<PointT> outlier_removal;
-      outlier_removal.setInputCloud(input_cloud);
-      outlier_removal.setRadiusSearch(params[0]);
-      outlier_removal.setMinNeighborsInRadius(params[1]);
-      outlier_removal.filter(*filtered_cloud);
+      beam_filtering::ROR<PointT> outlier_removal;
+      outlier_removal.SetRadiusSearch(params[0]);
+      outlier_removal.SetMinNeighbors(params[2]);
+      outlier_removal.SetInputCloud(input_cloud);
+      outlier_removal.Filter();
+      *filtered_cloud = outlier_removal.GetFilteredCloud();
     } else if (filter_type == "VOXEL") {
       beam_filtering::VoxelDownsample<PointT> downsampler;
       downsampler.SetVoxelSize(Eigen::Vector3f(params[0], params[1], params[2]));

@@ -13,7 +13,7 @@ namespace beam_filtering {
 /**
  * @brief Enum class for different types of filters we have implemented
  */
-enum class FilterType { CROPBOX = 0, DROR, VOXEL };
+enum class FilterType { CROPBOX = 0, DROR, ROR, VOXEL };
 
 /**
  * @brief Base class to define the interface for all beam filters, and provide
