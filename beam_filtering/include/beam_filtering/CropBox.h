@@ -141,7 +141,7 @@ public:
     // perform filtering
     for (auto p = this->input_cloud_->begin(); p != this->input_cloud_->end();
          p++) {
-      PointT point = pcl::transformPoint(p, T_box_cloud_);
+      PointT point = pcl::transformPoint(*p, T_box_cloud_);
 
       if (point.x < min_vec_[0] || point.y < min_vec_[1] ||
           point.z < min_vec_[2] || point.x > max_vec_[0] ||
@@ -149,11 +149,11 @@ public:
         if (remove_outside_points_) {
           continue;
         } else {
-          this->output_cloud_.push_back(p);
+          this->output_cloud_.push_back(*p);
         }
       } else {
         if (remove_outside_points_) {
-          this->output_cloud_.push_back(p);
+          this->output_cloud_.push_back(*p);
         } else {
           continue;
         }

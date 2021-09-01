@@ -248,7 +248,7 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
                                            uint8_t lidar_number) {
   if (!lidars_[lidar_number].use_cropbox) { return cloud; }
-  beam_filtering::CropBox cropper<PointT>;
+  beam_filtering::CropBox<PointT> cropper;
   cropper.SetMinVector(lidars_[lidar_number].cropbox_min);
   cropper.SetMaxVector(lidars_[lidar_number].cropbox_max);
   cropper.SetInputCloud(cloud);
@@ -266,7 +266,7 @@ PointCloud::Ptr
     std::string filter_type = filter_params[i].first;
     std::vector<double> params = filter_params[i].second;
     if (filter_type == "DROR") {
-      beam_filtering::DROR<PointType> outlier_removal;
+      beam_filtering::DROR<PointT> outlier_removal;
       outlier_removal.SetRadiusMultiplier(params[0]);
       outlier_removal.SetAzimuthAngle(params[1]);
       outlier_removal.SetMinNeighbors(params[2]);
@@ -291,7 +291,7 @@ PointCloud::Ptr
       Eigen::Vector3d max_vec(params[3], params[4], params[5]);
       Eigen::Vector3f min_vecf = min_vec.cast<float>();
       Eigen::Vector3f max_vecf = max_vec.cast<float>();
-      beam_filtering::CropBox cropper<PointT>;
+      beam_filtering::CropBox<PointT> cropper;
       cropper.SetMinVector(min_vecf);
       cropper.SetMaxVector(max_vecf);
       if (params[6] == 1) {

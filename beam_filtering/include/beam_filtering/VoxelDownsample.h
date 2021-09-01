@@ -149,7 +149,7 @@ private:
    * @return A pair of the split clouds.
    */
   inline std::pair<PointCloudTypePtr, PointCloudTypePtr>
-      SplitCloudInTwo(const PointCloudTypePtr& input_cloud,
+      SplitCloudInTwo(const PointCloudType& input_cloud,
                       int max_axis) {
     // Get mid point of cloud.
     PointT min;
@@ -163,7 +163,7 @@ private:
     PointCloudTypePtr cloud_1 =
         std::make_shared<PointCloudType>();
     PointCloudTypePtr cloud_2 =
-        std::make_shared<PointCloudTypePtr>();
+        std::make_shared<PointCloudType>();
     for (const PointT& point : input_cloud) {
       Eigen::Vector3f eigen_point(point.x, point.y, point.z);
       if (eigen_point[max_axis] < midpoint) {
