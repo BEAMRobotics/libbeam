@@ -75,8 +75,8 @@ std::vector<FilterParamsType> LoadFilterParamsVector(const nlohmann::json& J);
  */
 template <class PointT>
 inline pcl::PointCloud<PointT>
-    FilterPointCloud(pcl::PointCloud<PointT> cloud,
-                     std::vector<FilterParamsType> filter_params) {
+    FilterPointCloud(const pcl::PointCloud<PointT>& cloud,
+                     const std::vector<FilterParamsType>& filter_params) {
   pcl::PointCloud<PointT> filtered_cloud;
   for (uint8_t i = 0; i < filter_params.size(); i++) {
     std::shared_ptr<pcl::PointCloud<PointT>> input_cloud =
