@@ -275,7 +275,12 @@ void MapBuilder::SaveMaps() {
     std::string save_path = save_dir_ + dateandtime + "/" + dateandtime + "_" +
                             lidars_[i].frame + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
-    pcl::io::savePCDFileBinary(save_path, *maps_[i]);
+    std::string error_message{};
+    if (!beam::SavePointCloud<pcl::PointXYZI>(
+            save_path, *maps_[i], beam::PointCloudFileType::PCDBINARY,
+            error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
   }
   if (this->combine_lidar_scans_) {
     PointCloud::Ptr combined_map = std::make_shared<PointCloud>();
@@ -283,7 +288,12 @@ void MapBuilder::SaveMaps() {
     std::string save_path =
         save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";
     BEAM_INFO("Saving map to: {}", save_path);
-    pcl::io::savePCDFileBinary(save_path, *combined_map);
+    std::string error_message{};
+    if (!beam::SavePointCloud<pcl::PointXYZI>(
+            save_path, *combined_map, beam::PointCloudFileType::PCDBINARY,
+            error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
   }
 }
 

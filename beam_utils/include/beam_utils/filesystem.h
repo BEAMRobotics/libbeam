@@ -29,8 +29,16 @@ enum JsonReadErrorType { NONE, FILETYPE, MISSING, EMPTY };
 static JsonReadErrorType tmp_json_read_error_type_ = JsonReadErrorType::NONE;
 
 /**
+ * @brief method for getting a string of the file extension, e.g.: ".json". If
+ * there is no extension, the string will be empty
+ * @param input filename which can be a path
+ * @return extension
+ */
+std::string GetExtension(const std::string& input);
+
+/**
  * @brief returns true if the input string finishes with the extension specified
- * by entension (e.g., ".json")
+ * by entension (e.g., ".json"). This will also convert both strings to lower case
  */
 bool HasExtension(const std::string& input, const std::string& extension);
 

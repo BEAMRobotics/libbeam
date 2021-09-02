@@ -119,10 +119,10 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
     surface_points_less_flat_ += surf_points_less_flat_scanDS;
   }
 
-  if(corner_points_sharp_.empty()){
+  if (corner_points_sharp_.empty()) {
     BEAM_WARN("Unable to extract sharp edge features from cloud.");
   }
-  if(surface_points_flat_.empty()){
+  if (surface_points_flat_.empty()) {
     BEAM_WARN("Unable to extract flat surface features from cloud.");
   }
 
@@ -194,13 +194,22 @@ std::vector<PointCloud>
 
   // Save results
   if (output_scan_lines_ && cloud.size() > 0) {
+    std::string error_message{};
     for (size_t i = 0; i < scan_lines.size(); i++) {
       if (scan_lines[i].size() == 0) { continue; }
-      pcl::io::savePCDFileASCII(debug_output_path_ + "scan" +
-                                    std::to_string(i) + ".pcd",
-                                scan_lines[i]);
+      if (!beam::SavePointCloud<pcl::PointXYZ>(
+              debug_output_path_ + "scan" + std::to_string(i) + ".pcd",
+              scan_lines[i], beam::PointCloudFileType::PCDBINARY,
+              error_message)) {
+        BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+      }
     }
-    pcl::io::savePCDFileASCII(debug_output_path_ + "scan_orig.pcd", cloud);
+
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
+            debug_output_path_ + "scan_orig.pcd", cloud,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
   }
 
   return scan_lines;
@@ -219,9 +228,13 @@ void LoamFeatureExtractor::GetSortedScan(
   }
 
   // Save results
-  if (output_scan_lines_ && sorted_scan_.size() > 0) {
-    pcl::io::savePCDFileASCII(debug_output_path_ + "scan_sorted.pcd",
-                              sorted_scan_);
+  if (output_scan_lines_) {
+    std::string error_message{};
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
+            debug_output_path_ + "scan_sorted.pcd", sorted_scan_,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
   }
 }
 
