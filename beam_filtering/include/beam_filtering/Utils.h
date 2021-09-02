@@ -77,7 +77,7 @@ template <class PointT>
 inline pcl::PointCloud<PointT>
     FilterPointCloud(const pcl::PointCloud<PointT>& cloud,
                      const std::vector<FilterParamsType>& filter_params) {
-  pcl::PointCloud<PointT> filtered_cloud;
+  pcl::PointCloud<PointT> filtered_cloud = cloud;
   for (uint8_t i = 0; i < filter_params.size(); i++) {
     std::shared_ptr<pcl::PointCloud<PointT>> input_cloud =
         std::make_shared<pcl::PointCloud<PointT>>(filtered_cloud);
