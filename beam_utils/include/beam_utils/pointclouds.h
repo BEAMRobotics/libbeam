@@ -333,9 +333,10 @@ inline bool
     return false;
   }
 
-  // check file exists
-  if (!boost::filesystem::exists(filename)) {
-    error_type = "File does not exist. Input file: " + filename;
+  // check path exists
+  boost::filesystem::path path(filename);
+  if (!boost::filesystem::exists(path.parent_path())) {
+    error_type = "File path parent directory does not exist. Input file: " + filename;
     return false;
   }
 
