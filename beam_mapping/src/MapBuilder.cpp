@@ -5,7 +5,6 @@
 #include <pcl/io/pcd_io.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <beam_filtering/Filters.h>
 #include <beam_utils/angles.h>
 #include <beam_utils/log.h>
 #include <beam_utils/math.h>
@@ -13,7 +12,6 @@
 
 namespace beam_mapping {
 
-using FilterParamsType = std::pair<std::string, std::vector<double>>;
 using PointT = pcl::PointXYZI;
 using PointCloud = pcl::PointCloud<PointT>;
 
@@ -22,117 +20,6 @@ MapBuilder::MapBuilder(const std::string& config_file) {
   poses_moving_frame_ = "";
   poses_fixed_frame_ = "";
   this->LoadConfigFromJSON(config_file);
-}
-
-FilterParamsType MapBuilder::GetFilterParams(const auto& filter) {
-  std::string filter_type = filter["filter_type"];
-  std::vector<double> params;
-  bool success = true;
-  if (filter_type == "DROR") {
-    double radius_multiplier = filter["radius_multiplier"];
-    double azimuth_angle = filter["azimuth_angle"];
-    double min_neighbors = filter["min_neighbors"];
-    double min_search_radius = filter["min_search_radius"];
-    if (!(radius_multiplier >= 1)) {
-      BEAM_CRITICAL(
-          "Invalid radius_multiplier parameter in map builder config");
-      success = false;
-    }
-    if (!(azimuth_angle > 0.01)) {
-      BEAM_CRITICAL("Invalid azimuth_angle parameter in map builder config");
-      success = false;
-    }
-    if (!(min_neighbors > 1)) {
-      BEAM_CRITICAL("Invalid min_neighbors parameter in map builder config");
-      success = false;
-    }
-    if (!(min_search_radius > 0)) {
-      BEAM_CRITICAL(
-          "Invalid min_search_radius parameter in map builder config");
-      success = false;
-    }
-    params.push_back(radius_multiplier);
-    params.push_back(azimuth_angle);
-    params.push_back(min_neighbors);
-    params.push_back(min_search_radius);
-  } else if (filter_type == "ROR") {
-    double search_radius = filter["search_radius"];
-    double min_neighbors = filter["min_neighbors"];
-    if (!(search_radius > 0)) {
-      BEAM_CRITICAL("Invalid search_radius parameter in map builder config");
-      success = false;
-    }
-    if (!(min_neighbors > 1)) {
-      BEAM_CRITICAL("Invalid min_neighbors parameter in map builder config");
-      success = false;
-    }
-    params.push_back(search_radius);
-    params.push_back(min_neighbors);
-  } else if (filter_type == "VOXEL") {
-    std::vector<double> cell_size;
-    for (const auto param : filter["cell_size"]) { cell_size.push_back(param); }
-    if (cell_size.size() != 3) {
-      BEAM_CRITICAL("Invalid cell size parameter in voxel grid filter from map "
-                    "builder config");
-      success = false;
-    }
-    if (cell_size[0] < 0.001 || cell_size[2] < 0.001 || cell_size[2] < 0.001) {
-      BEAM_CRITICAL("Invalid cell_size parameter in map builder config");
-      success = false;
-    }
-    params = cell_size;
-  } else if (filter_type == "CROPBOX") {
-    std::vector<double> min, max;
-    for (const auto param : filter["min"]) { min.push_back(param); }
-    for (const auto param : filter["max"]) { max.push_back(param); }
-    double remove_outside_points = filter["remove_outside_points"];
-    if (!(remove_outside_points == 0 || remove_outside_points == 1)) {
-      BEAM_CRITICAL(
-          "Invalid remove_outside_points parameter in map builder config");
-      success = false;
-    }
-    if (min.size() != 3 || max.size() != 3) {
-      BEAM_CRITICAL(
-          "Invalid min or max parameter in cropbox from map builder config");
-      success = false;
-    }
-    params.push_back(min[0]);
-    params.push_back(min[1]);
-    params.push_back(min[2]);
-    params.push_back(max[0]);
-    params.push_back(max[1]);
-    params.push_back(max[2]);
-    params.push_back(remove_outside_points);
-  } else {
-    BEAM_CRITICAL("Invalid filter type in map builder config.");
-    success = false;
-  }
-
-  if (!success) {
-    BEAM_CRITICAL("Invalid filter params in map builder config, see bellow for "
-                  "options and requirements:");
-    std::cout << "FILTER TYPES SUPPORTED:\n"
-              << "----------------------:\n"
-              << "Type: DROR\n"
-              << "Required inputs:\n"
-              << "- radius_multiplier (required >= 1)\n"
-              << "- azimuth_angle (required > 0.01)\n"
-              << "- min_neighbors (required > 1)\n"
-              << "- min_search_radius (required > 0)\n"
-              << "Type: ROR\n"
-              << "Required inputs:\n"
-              << "- search_radius (required > 0)\n"
-              << "- min_neighbors (required > 1)\n"
-              << "Type: VOXEL\n"
-              << "Required inputs:\n"
-              << "- cell_size (required vector of size 3)\n"
-              << "Type: CROPBOX\n"
-              << "Required inputs:\n"
-              << "- min (required vector of size 3)\n"
-              << "- max (required vector of size 3)\n"
-              << "- remove_outside_points (required 0 or 1)";
-  }
-  return std::make_pair(filter_type, params);
 }
 
 void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
@@ -163,21 +50,10 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
     lidar_config.cropbox_max = max;
     lidars_.push_back(lidar_config);
   }
-  for (const auto& filter : J["input_filters"]) {
-    FilterParamsType input_filter;
-    input_filter = this->GetFilterParams(filter);
-    input_filters_.push_back(input_filter);
-  }
-  for (const auto& filter : J["intermediary_filters"]) {
-    FilterParamsType intermediary_filter;
-    intermediary_filter = this->GetFilterParams(filter);
-    intermediary_filters_.push_back(intermediary_filter);
-  }
-  for (const auto& filter : J["output_filters"]) {
-    FilterParamsType output_filter;
-    output_filter = this->GetFilterParams(filter);
-    output_filters_.push_back(output_filter);
-  }
+  input_filters_ = beam_filtering::LoadFilterParamsVector(J["input_filters"]);
+  intermediary_filters_ =
+      beam_filtering::LoadFilterParamsVector(J["intermediary_filters"]);
+  output_filters_ = beam_filtering::LoadFilterParamsVector(J["output_filters"]);
 }
 
 void MapBuilder::OverrideBagFile(const std::string& bag_file) {
@@ -254,58 +130,6 @@ PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
   return std::make_shared<PointCloud>(cropper.GetFilteredCloud());
 }
 
-PointCloud::Ptr
-    MapBuilder::FilterPointCloud(PointCloud::Ptr cloud,
-                                 std::vector<FilterParamsType> filter_params) {
-  PointCloud::Ptr filtered_cloud = std::make_shared<PointCloud>(*cloud);
-  for (uint8_t i = 0; i < filter_params.size(); i++) {
-    PointCloud::Ptr input_cloud =
-        std::make_shared<PointCloud>(*filtered_cloud);
-    std::string filter_type = filter_params[i].first;
-    std::vector<double> params = filter_params[i].second;
-    if (filter_type == "DROR") {
-      beam_filtering::DROR<PointT> outlier_removal;
-      outlier_removal.SetRadiusMultiplier(params[0]);
-      outlier_removal.SetAzimuthAngle(params[1]);
-      outlier_removal.SetMinNeighbors(params[2]);
-      outlier_removal.SetMinSearchRadius(params[3]);
-      outlier_removal.SetInputCloud(input_cloud);
-      outlier_removal.Filter();
-      *filtered_cloud = outlier_removal.GetFilteredCloud();
-    } else if (filter_type == "ROR") {
-      beam_filtering::ROR<PointT> outlier_removal;
-      outlier_removal.SetRadiusSearch(params[0]);
-      outlier_removal.SetMinNeighbors(params[2]);
-      outlier_removal.SetInputCloud(input_cloud);
-      outlier_removal.Filter();
-      *filtered_cloud = outlier_removal.GetFilteredCloud();
-    } else if (filter_type == "VOXEL") {
-      beam_filtering::VoxelDownsample<PointT> downsampler;
-      downsampler.SetVoxelSize(Eigen::Vector3f(params[0], params[1], params[2]));
-      downsampler.SetInputCloud(input_cloud);
-      downsampler.Filter();
-      *filtered_cloud = downsampler.GetFilteredCloud();
-    } else if (filter_type == "CROPBOX") {
-      Eigen::Vector3d min_vec(params[0], params[1], params[2]);
-      Eigen::Vector3d max_vec(params[3], params[4], params[5]);
-      Eigen::Vector3f min_vecf = min_vec.cast<float>();
-      Eigen::Vector3f max_vecf = max_vec.cast<float>();
-      beam_filtering::CropBox<PointT> cropper;
-      cropper.SetMinVector(min_vecf);
-      cropper.SetMaxVector(max_vecf);
-      if (params[6] == 1) {
-        cropper.SetRemoveOutsidePoints(true);
-      } else {
-        cropper.SetRemoveOutsidePoints(false);
-      }
-      cropper.SetInputCloud(input_cloud);
-      cropper.Filter();
-      *filtered_cloud = cropper.GetFilteredCloud();
-    }
-  }
-  return filtered_cloud;
-}
-
 bool MapBuilder::CheckPoseChange() {
   // calculate change in pose and check if rot or trans bigger than threshold
 
@@ -316,7 +140,8 @@ bool MapBuilder::CheckPoseChange() {
                   (scan_pose_last_(2, 3) - scan_pose_current_(2, 3)) *
                       (scan_pose_last_(2, 3) - scan_pose_current_(2, 3));
 
-  double minRotSq = beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
+  double minRotSq =
+      beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
   Eigen::Vector3d eps1, eps2, diffSq;
   eps1 = beam::RToLieAlgebra(scan_pose_last_.rotation());
   eps2 = beam::RToLieAlgebra(scan_pose_current_.rotation());
@@ -360,9 +185,9 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
     pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
     PointCloud::Ptr cloud_cropped =
         this->CropPointCloud(cloud_tmp, lidar_number);
-    PointCloud::Ptr cloud_filtered =
-        this->FilterPointCloud(cloud_cropped, input_filters_);
-    scans_.push_back(cloud_filtered);
+    PointCloud cloud_filtered =
+        beam_filtering::FilterPointCloud(*cloud_cropped, input_filters_);
+    scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
     interpolated_poses_.AddSinglePose(scan_pose_current_);
     interpolated_poses_.AddSingleTimeStamp(scan_time);
     scan_pose_last_ = scan_pose_current_;
@@ -427,8 +252,8 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
 
     if (intermediary_size == this->intermediary_map_size_ ||
         k == scans_.size()) {
-      *scan_intermediate_frame =
-          *this->FilterPointCloud(scan_intermediary, intermediary_filters_);
+      *scan_intermediate_frame = beam_filtering::FilterPointCloud(
+          *scan_intermediary, intermediary_filters_);
       pcl::transformPointCloud(*scan_intermediate_frame,
                                *intermediary_transformed, T_FIXED_INT);
       *scan_aggregate += *intermediary_transformed;
@@ -436,7 +261,9 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
       intermediary_size = 0;
     }
   }
-  maps_.push_back(this->FilterPointCloud(scan_aggregate, output_filters_));
+  PointCloud new_map =
+      beam_filtering::FilterPointCloud(*scan_aggregate, output_filters_);
+  maps_.push_back(std::make_shared<PointCloud>(new_map));
 }
 
 void MapBuilder::SaveMaps() {

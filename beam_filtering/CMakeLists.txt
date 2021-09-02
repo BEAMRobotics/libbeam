@@ -15,6 +15,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/ROR.cpp
     src/CropBox.cpp
     src/VoxelDownsample.cpp
+    src/Utils.cpp
 )
 
 ################ tests ##################
@@ -54,6 +55,19 @@ target_include_directories(${PROJECT_NAME}_voxeldownsample_tests
     include
 )
 target_link_libraries(${PROJECT_NAME}_voxeldownsample_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_utils_tests
+  tests/UtilsTests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_utils_tests
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_utils_tests
   ${PROJECT_NAME}
   Catch2::Catch2
 )

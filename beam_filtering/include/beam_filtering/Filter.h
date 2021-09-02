@@ -15,6 +15,25 @@ namespace beam_filtering {
  */
 enum class FilterType { CROPBOX = 0, DROR, ROR, VOXEL };
 
+// Map for storing string input
+static std::map<std::string, FilterType> FilterTypeStringMap = {
+    {"CROPBOX", FilterType::CROPBOX},
+    {"DROR", FilterType::DROR},
+    {"ROR", FilterType::ROR},
+    {"VOXEL", FilterType::VOXEL}};
+
+// function for listing types of Filters available
+inline std::string GetFilterTypes() {
+  std::string types;
+  for (auto it = FilterTypeStringMap.begin();
+       it != FilterTypeStringMap.end(); it++) {
+    types += it->first;
+    types += ", ";
+  }
+  types.erase(types.end() - 2, types.end());
+  return types;
+}
+
 /**
  * @brief Base class to define the interface for all beam filters, and provide
  * some utility functions. Since we need to template the filtering based on
