@@ -162,6 +162,13 @@ public:
    */
   size_t GetLandmarkContainerSize();
 
+  /**
+   * @brief Computes the average parallax between two frames
+   * @return parallax
+   */
+  double ComputeParallax(const ros::Time& frame1, const ros::Time& frame2,
+                         bool compute_median = false);
+
 protected:
   /**
    * @brief Generate a new ID for each newly detected feature.

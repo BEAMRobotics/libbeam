@@ -176,4 +176,32 @@ size_t Tracker::GetLandmarkContainerSize() {
   return landmarks_.size();
 }
 
+double Tracker::ComputeParallax(const ros::Time& frame1,
+                                const ros::Time& frame2, bool compute_median) {
+  std::vector<uint64_t> frame1_ids = GetLandmarkIDsInImage(frame1);
+  std::vector<uint64_t> frame2_ids = GetLandmarkIDsInImage(frame2);
+  double total_parallax = 0.0;
+  double num_correspondences = 0.0;
+  std::vector<double> parallaxes;
+  for (auto& id : frame1_ids) {
+    try {
+      Eigen::Vector2d p1 = Get(frame1, id);
+      Eigen::Vector2d p2 = Get(frame2, id);
+      double d = beam::distance(p1, p2);
+      if (compute_median) {
+        parallaxes.push_back(d);
+      } else {
+        total_parallax += d;
+        num_correspondences += 1.0;
+      }
+    } catch (const std::out_of_range& oor) {}
+  }
+  if (compute_median) {
+    std::sort(parallaxes.begin(), parallaxes.end());
+    return parallaxes[parallaxes.size() / 2];
+  } else {
+    return total_parallax / num_correspondences;
+  }
+}
+
 } // namespace beam_cv
