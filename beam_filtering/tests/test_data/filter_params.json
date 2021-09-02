@@ -1,0 +1,26 @@
+{
+  "filters":[
+    {
+      "filter_type": "DROR",
+      "radius_multiplier": 3,
+      "azimuth_angle": 0.04,
+      "min_neighbors": 4,
+      "min_search_radius": 0.02
+    },
+    {
+      "filter_type": "CROPBOX",
+      "min": [-0.3, -1, -1.5],
+      "max": [0.3, 1, 1.5],
+      "remove_outside_points": 0
+    },
+    {
+      "filter_type": "ROR",
+      "search_radius": 0.03,
+      "min_neighbors": 5
+    },
+    {
+      "filter_type": "VOXEL",
+      "cell_size": [0.051, 0.052, 0.053]
+    }
+  ]
+}

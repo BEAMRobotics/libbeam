@@ -17,9 +17,11 @@
 /**
  * @brief typedefs for commonly used pcl clouds
  */
-typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+typedef pcl::PointXYZRGB PointTypeCol;
+typedef pcl::PointXYZ PointType;
+typedef pcl::PointCloud<PointType> PointCloud;
 typedef std::shared_ptr<PointCloud> PointCloudPtr;
-typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudCol;
+typedef pcl::PointCloud<PointTypeCol> PointCloudCol;
 typedef std::shared_ptr<PointCloudCol> PointCloudColPtr;
 
 #endif // BEAM_PCL_TYPEDEF
