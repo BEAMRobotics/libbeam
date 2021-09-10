@@ -653,7 +653,7 @@ bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                                output_error_cause);
 }
 
-Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v) {
+Eigen::Matrix4f VectorToEigenTransform(const std::vector<float>& v) {
   Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
   T(0, 0) = v[0];
   T(0, 1) = v[1];
@@ -667,7 +667,7 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v) {
   T(2, 1) = v[9];
   T(2, 2) = v[10];
   T(2, 3) = v[11];
-  return T.cast<double>();
+  return T;
 }
 
 Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
@@ -689,6 +689,14 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
 
 std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T) {
   std::vector<double> v;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) { v.push_back(T(i, j)); }
+  }
+  return v;
+}
+
+std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T) {
+  std::vector<float> v;
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) { v.push_back(T(i, j)); }
   }

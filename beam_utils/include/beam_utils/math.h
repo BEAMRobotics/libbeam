@@ -474,7 +474,7 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v);
  * @param v vector of size 3 x 4 = 12
  * @return T
  */
-Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
+Eigen::Matrix4f VectorToEigenTransform(const std::vector<float>& v);
 
 /**
  * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 doubles. The
@@ -484,6 +484,13 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
  */
 std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
 
+/**
+ * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 floats. The
+ * points are read from left to right, then down.
+ * @param T transform of size 4 x 4
+ * @return v vector of size 4 x 4 = 16
+ */
+std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T);
 /**
  * @brief outputs transform to some stream with as the following:
  *
