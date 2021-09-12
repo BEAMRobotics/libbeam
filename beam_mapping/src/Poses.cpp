@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <nlohmann/json.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -313,7 +314,7 @@ void Poses::WriteToPLY(const std::string output_dir) {
   }
   BEAM_INFO("Saving poses to file: {}", output_file.c_str());
   std::ofstream fileply(output_file);
-  double t_start = time_stamps[0].toSec();
+  double t_start = time_stamps.at(0).toSec();
 
   fileply << "ply" << std::endl;
   fileply << "format ascii 1.0" << std::endl;
@@ -334,9 +335,9 @@ void Poses::WriteToPLY(const std::string output_dir) {
   fileply << "end_header" << std::endl;
 
   for (size_t k = 0; k < poses.size(); k++) {
-    Eigen::RowVector3d Tk = poses[k].translation();
-    Eigen::RowVector3d Mk = poses[k].rotation().eulerAngles(0, 1, 2);
-    double t = time_stamps[k].toSec() - t_start;
+    Eigen::RowVector3d Tk = poses.at(k).translation();
+    Eigen::RowVector3d Mk = poses.at(k).rotation().eulerAngles(0, 1, 2);
+    double t = time_stamps.at(k).toSec() - t_start;
     fileply << std::fixed << std::setprecision(6) << Tk[0] << " ";
     fileply << std::fixed << std::setprecision(6) << Tk[1] << " ";
     fileply << std::fixed << std::setprecision(6) << Tk[2] << " ";
@@ -416,13 +417,27 @@ void Poses::LoadFromBAG(const std::string bag_file_path,
     beam::OutputPercentComplete(message_counter, total_messages,
                                 output_message);
     auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-    if (fixed_frame.size() < 2) { fixed_frame = odom_msg->header.frame_id; }
-    if (moving_frame.size() < 2) { moving_frame = odom_msg->child_frame_id; }
-    time_stamps.push_back(odom_msg->header.stamp);
-    Eigen::Affine3d T_MOVING_FIXED;
-    Eigen::fromMsg(odom_msg->pose.pose, T_MOVING_FIXED);
-    poses.push_back(T_MOVING_FIXED);
+    if (odom_msg != NULL) {
+      if (fixed_frame.size() < 2) { fixed_frame = odom_msg->header.frame_id; }
+      if (moving_frame.size() < 2) { moving_frame = odom_msg->child_frame_id; }
+      time_stamps.push_back(odom_msg->header.stamp);
+      Eigen::Affine3d T_MOVING_FIXED;
+      Eigen::fromMsg(odom_msg->pose.pose, T_MOVING_FIXED);
+      poses.push_back(T_MOVING_FIXED);
+    }
+
+    // auto path_msg = iter->instantiate<nav_msgs::Path>();
+    // if (path_msg != NULL) {
+    //   //TODO get frame info
+    //   time_stamps.push_back(path_msg->header.stamp);
+    //   Eigen::Affine3d T_MOVING_FIXED;
+    //   geometry_msgs::PoseStamped pose_stamp = path_msg->poses;
+    //   Eigen::fromMsg(pose_stamp.pose, T_MOVING_FIXED);
+    //   poses.push_back(T_MOVING_FIXED);
+    // }
   }
+  moving_frame = "base_link";
+  fixed_frame = "odom";
   BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
             message_counter);
 }

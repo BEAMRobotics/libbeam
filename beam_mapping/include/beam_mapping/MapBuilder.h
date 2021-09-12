@@ -4,24 +4,21 @@
 
 #pragma once
 
-#include "beam_calibration/TfTree.h"
-#include "beam_mapping/Poses.h"
-#include "beam_utils/math.h"
-
-// PCL specific headers
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-
-// ROS headers
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+
+#include <beam_calibration/TfTree.h>
+#include <beam_mapping/Poses.h>
+#include <beam_utils/math.h>
+#include <beam_filtering/Utils.h>
 
 namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
-using FilterParamsType = std::pair<std::string, std::vector<double>>;
 using PointT = pcl::PointXYZI;
 using PointCloud = pcl::PointCloud<PointT>;
 
@@ -48,13 +45,6 @@ public:
    * @brief Default destructor
    */
   ~MapBuilder() = default;
-
-  /**
-   * @brief Method for getting the filter params
-   * @param filter
-   * @return filter_parameters
-   */
-  FilterParamsType GetFilterParams(const auto& filter);
 
   /**
    * @brief for overriding the bag file specified in the config file. This is
@@ -143,16 +133,6 @@ private:
   PointCloud::Ptr CropPointCloud(PointCloud::Ptr cloud, uint8_t lidar_number);
 
   /**
-   * @brief method for filtering a point cloud based on a list of filters with
-   * their associated parameters
-   * @param cloud point cloud to filter
-   * @param filter_params
-   * @return filtered_cloud
-   */
-  PointCloud::Ptr FilterPointCloud(PointCloud::Ptr cloud,
-                                   std::vector<FilterParamsType> filter_params);
-
-  /**
    * @brief method to load configuration from json
    * @param config_file full path to configuration file
    */
@@ -205,16 +185,16 @@ private:
   double min_rotation_deg_;
   bool combine_lidar_scans_;
   std::vector<LidarConfig> lidars_;
-  std::vector<FilterParamsType> input_filters_;
-  std::vector<FilterParamsType> intermediary_filters_;
-  std::vector<FilterParamsType> output_filters_;
+  std::vector<beam_filtering::FilterParamsType> input_filters_;
+  std::vector<beam_filtering::FilterParamsType> intermediary_filters_;
+  std::vector<beam_filtering::FilterParamsType> output_filters_;
 
   // New objects
   std::string poses_moving_frame_;
   std::string poses_fixed_frame_;
-  beam_mapping::Poses slam_poses_; 
+  beam_mapping::Poses slam_poses_;
   beam_mapping::Poses interpolated_poses_;
-  beam_calibration::TfTree trajectory_; 
+  beam_calibration::TfTree trajectory_;
   beam_calibration::TfTree extrinsics_;
   PointCloud::Ptr aggregate_;
   std::vector<PointCloud::Ptr> scans_;

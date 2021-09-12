@@ -217,7 +217,10 @@ public:
 
   std::vector<ros::Time> time_stamps;
   std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> poses;
-  std::string bag_name, pose_file_date, fixed_frame, moving_frame;
+  std::string bag_name;
+  std::string pose_file_date;
+  std::string fixed_frame;
+  std::string moving_frame;
 };
 
 /** @} group mapping */

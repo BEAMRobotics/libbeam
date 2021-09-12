@@ -35,10 +35,7 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   // check if result is in front of both cameras
   Eigen::Vector3d T_cam1_world_x = (T_cam1_world * x).hnormalized();
   Eigen::Vector3d T_cam2_world_x = (T_cam2_world * x).hnormalized();
-  if (T_cam1_world_x[2] < 0.01 || T_cam2_world_x[2] < 0.01 ||
-  T_cam1_world_x[2] > 100 || T_cam2_world_x[2] > 100) {
-    return {};
-  }
+  if (T_cam1_world_x[2] < 0.01 || T_cam2_world_x[2] < 0.01) { return {}; }
   Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
@@ -69,7 +66,7 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   for (uint16_t i = 0; i < T_cam_world.size(); i++) {
     Eigen::Vector3d T_x = (T_cam_world[i] * x).hnormalized();
     // check if its behind the image plane
-    if (T_x[2] < 0.01 || T_x[2] > 100) { return {}; }
+    if (T_x[2] < 0.01) { return {}; }
     // compute reprojection error
     if (reprojection_threshold != -1.0) {
       Eigen::Vector2d reproj_pixel;

@@ -63,7 +63,7 @@ TEST_CASE("Testing map building with PLY") {
   map_builder.OverridePoseFile(pose_file_path);
   map_builder.OverrideExtrinsicsFile(extrinsics_file_path);
   map_builder.OverrideOutputDir(output_dir_path);
-  std::string moving_frame = "hvlp_link";
+  std::string moving_frame = "vvlp_link";
   std::string fixed_frame = "odom";
   map_builder.SetPosesMovingFrame(moving_frame);
   map_builder.SetPosesFixedFrame(fixed_frame);

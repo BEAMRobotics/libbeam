@@ -120,44 +120,44 @@ void LoamPointCloud::Save(const std::string& output_path,
     return;
   }
 
+  std::string error_message{};
   if (combine_features) {
     PointCloud cloud_combined = edges.strong.cloud;
     cloud_combined += edges.weak.cloud;
     cloud_combined += surfaces.strong.cloud;
     cloud_combined += surfaces.weak.cloud;
-    
+
     if (cloud_combined.size() == 0) {
       BEAM_WARN("Loam cloud empty. Not saving cloud.");
       return;
     }
-    pcl::io::savePCDFileASCII(output_path + "combined_features.pcd",
-                              cloud_combined);
+
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
+            output_path + "combined_features.pcd", cloud_combined,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save loam cloud. Reason: {}", error_message);
+    }
   }
 
-  if (edges.strong.cloud.size() == 0) {
-    BEAM_WARN("Strong edge features are emtpy. Not saving cloud.");
-  } else {
-    pcl::io::savePCDFileASCII(output_path + "edge_features_strong.pcd",
-                              edges.strong.cloud);
+  if (!beam::SavePointCloud<pcl::PointXYZ>(
+          output_path + "edge_features_strong.pcd", edges.strong.cloud,
+          beam::PointCloudFileType::PCDBINARY, error_message)) {
+    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
   }
-  if (edges.weak.cloud.size() == 0) {
-    BEAM_WARN("Weak edge features are emtpy. Not saving cloud.");
-  } else {
-    pcl::io::savePCDFileASCII(output_path + "edge_features_weak.pcd",
-                              edges.weak.cloud);
+  if (!beam::SavePointCloud<pcl::PointXYZ>(
+          output_path + "edge_features_weak.pcd", edges.weak.cloud,
+          beam::PointCloudFileType::PCDBINARY, error_message)) {
+    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
   }
-  if (surfaces.strong.cloud.size() == 0) {
-    BEAM_WARN("Strong surface features are emtpy. Not saving cloud.");
-  } else {
-    pcl::io::savePCDFileASCII(output_path + "surface_features_strong.pcd",
-                              surfaces.strong.cloud);
+  if (!beam::SavePointCloud<pcl::PointXYZ>(
+          output_path + "surface_features_strong.pcd", surfaces.strong.cloud,
+          beam::PointCloudFileType::PCDBINARY, error_message)) {
+    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
   }
-
-  if (surfaces.weak.cloud.size() == 0) {
-    BEAM_WARN("Weak surface features are emtpy. Not saving cloud.");
-  } else {
-    pcl::io::savePCDFileASCII(output_path + "surface_features_weak.pcd",
-                              surfaces.weak.cloud);
+  if (!beam::SavePointCloud<pcl::PointXYZ>(
+          output_path + "surface_features_weak.pcd", surfaces.weak.cloud,
+          beam::PointCloudFileType::PCDBINARY, error_message)) {
+    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
   }
 }
 

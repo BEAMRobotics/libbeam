@@ -1,25 +1,27 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_filtering/CropBox.h"
-#include "beam_utils/math.h"
+
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 #include <pcl/common/transforms.h>
 
-using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+#include <beam_filtering/CropBox.h>
 
 TEST_CASE("Test invalid inputs and params i/o") {
   PointCloud::Ptr input_cloud = std::make_shared<PointCloud>();
   PointCloud::Ptr output_cloud = std::make_shared<PointCloud>();
-  beam_filtering::CropBox cropper;
-  REQUIRE_THROWS(cropper.Filter(*input_cloud, *output_cloud));
+  beam_filtering::CropBox<PointType> cropper;
+  cropper.SetInputCloud(input_cloud);
+  REQUIRE_THROWS(cropper.Filter());
+  *output_cloud = cropper.GetFilteredCloud();
   Eigen::Vector3f min_vec(-1, -1, -1);
   Eigen::Vector3f max_vec(1, 1, 1);
   cropper.SetMinVector(min_vec);
-  REQUIRE_THROWS(cropper.Filter(*input_cloud, *output_cloud));
+  REQUIRE_THROWS(cropper.Filter());
+  *output_cloud = cropper.GetFilteredCloud();
   cropper.SetMaxVector(max_vec);
   REQUIRE(cropper.GetMinVector() == min_vec);
   REQUIRE(cropper.GetMaxVector() == max_vec);
-  REQUIRE_NOTHROW(cropper.Filter(*input_cloud, *output_cloud));
+  REQUIRE_NOTHROW(cropper.Filter());
 }
 
 // function to return random double between -1 and 1 of precision "precision"
@@ -33,7 +35,7 @@ double GetRandNum(int precision) {
 TEST_CASE("Test cropper is working on real points") {
   PointCloud::Ptr input_cloud = std::make_shared<PointCloud>();
   PointCloud::Ptr output_cloud = std::make_shared<PointCloud>();
-  beam_filtering::CropBox cropper;
+  beam_filtering::CropBox<PointType> cropper;
   Eigen::Vector3f min_vec(-1, -1, -1);
   Eigen::Vector3f max_vec(1, 1, 1);
 
@@ -64,7 +66,9 @@ TEST_CASE("Test cropper is working on real points") {
 
   cropper.SetMinVector(min_vec);
   cropper.SetMaxVector(max_vec);
-  cropper.Filter(*input_cloud, *output_cloud);
+  cropper.SetInputCloud(input_cloud);
+  cropper.Filter();
+  *output_cloud = cropper.GetFilteredCloud();
   REQUIRE(input_cloud->points.size() == 150);
   REQUIRE(output_cloud->points.size() == 50);
 
@@ -81,17 +85,20 @@ TEST_CASE("Test cropper is working on real points") {
                            T_box_cloud.inverse());
 
   cropper.SetTransform(T_box_cloud);
-  cropper.Filter(*transformed_cloud, *output_cloud);
+  cropper.SetInputCloud(transformed_cloud);
+  cropper.Filter();
+  *output_cloud = cropper.GetFilteredCloud();
   REQUIRE(transformed_cloud->points.size() == 150);
   REQUIRE(output_cloud->points.size() == 50);
 
   // test removing inside points
-    beam_filtering::CropBox cropper2;
+    beam_filtering::CropBox<> cropper2;
     cropper2.SetMinVector(min_vec);
     cropper2.SetMaxVector(max_vec);
     cropper2.SetRemoveOutsidePoints(false);
-    PointCloud::Ptr output_cloud2 = std::make_shared<PointCloud>();
-    cropper2.Filter(*input_cloud, *output_cloud2);
+    cropper2.SetInputCloud(input_cloud);
+    cropper2.Filter();
+    PointCloud output_cloud2 = cropper2.GetFilteredCloud();
     REQUIRE(cropper2.GetRemoveOutsidePoints() == false);
-    REQUIRE(output_cloud2->points.size() == 100);
+    REQUIRE(output_cloud2.points.size() == 100);
 }

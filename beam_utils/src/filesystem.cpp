@@ -7,12 +7,25 @@
 
 namespace beam {
 
+std::string GetExtension(const std::string& input) {
+  return boost::filesystem::extension(input);
+}
+
 bool HasExtension(const std::string& input, const std::string& extension) {
-  std::string file_extension = input;
-  file_extension.erase(file_extension.end() - input.length(),
-                       file_extension.end() - extension.length());
-  if (file_extension != extension) { return false; }
-  return true;
+  // get extension
+  std::string extension_found = GetExtension(input);
+
+  // convert both to lowercase
+  std::string extension_search_lowercase = extension;
+  std::for_each(extension_search_lowercase.begin(),
+                extension_search_lowercase.end(),
+                [](char& c) { c = ::tolower(c); });
+  std::string extension_found_lowercase = extension_found;
+  std::for_each(extension_found_lowercase.begin(),
+                extension_found_lowercase.end(),
+                [](char& c) { c = ::tolower(c); });
+
+  return extension_found_lowercase == extension_search_lowercase;
 }
 
 std::string LibbeamRoot() {
@@ -108,8 +121,7 @@ bool ReadJson(const std::string& filename, nlohmann::json& J,
 
   if (J.empty()) {
     if (output_error) {
-      BEAM_ERROR("CheckJson failed - Json file is empty. Input: {}",
-                 filename);
+      BEAM_ERROR("CheckJson failed - Json file is empty. Input: {}", filename);
     }
     error_type = JsonReadErrorType::EMPTY;
     return false;

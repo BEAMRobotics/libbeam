@@ -45,7 +45,7 @@ int gcd(int a, int b) {
   return gcd(b, a % b);
 }
 
-void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
+void vec2mat(const std::vector<double>& x, int rows, int cols, MatX& y) {
   int idx;
 
   // setup
@@ -61,13 +61,13 @@ void vec2mat(std::vector<double> x, int rows, int cols, MatX& y) {
   }
 }
 
-void mat2vec(MatX A, std::vector<double>& x) {
+void mat2vec(const MatX& A, std::vector<double>& x) {
   for (int i = 0; i < A.cols(); i++) {
     for (int j = 0; j < A.rows(); j++) { x.push_back(A(i, j)); }
   }
 }
 
-void vec2mat(VecX x, int rows, int cols, MatX& y) {
+void vec2mat(const VecX& x, int rows, int cols, MatX& y) {
   int idx;
   // setup
   idx = 0;
@@ -82,13 +82,13 @@ void vec2mat(VecX x, int rows, int cols, MatX& y) {
   }
 }
 
-void mat2vec(MatX A, VecX& x) {
+void mat2vec(const MatX& A, VecX& x) {
   std::vector<double> x_p;
   beam::mat2vec(A, x_p);
   x = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(x_p.data(), x_p.size());
 }
 
-int euler2rot(Vec3 euler, int euler_seq, Mat3& R) {
+int euler2rot(const Vec3& euler, int euler_seq, Mat3& R) {
   double R11, R12, R13, R21, R22, R23, R31, R32, R33;
   double phi, theta, psi;
 
@@ -133,7 +133,7 @@ int euler2rot(Vec3 euler, int euler_seq, Mat3& R) {
   return 0;
 }
 
-int euler2quat(Vec3 euler, int euler_seq, Quaternion& q) {
+int euler2quat(const Vec3& euler, int euler_seq, Quaternion& q) {
   double alpha, beta, gamma;
   double c1, c2, c3, s1, s2, s3;
   double w, x, y, z;
@@ -180,7 +180,7 @@ int euler2quat(Vec3 euler, int euler_seq, Quaternion& q) {
   return 0;
 }
 
-int quat2euler(Quaternion q, int euler_seq, Vec3& euler) {
+int quat2euler(const Quaternion& q, int euler_seq, Vec3& euler) {
   double qw, qx, qy, qz;
   double qw2, qx2, qy2, qz2;
   double phi, theta, psi;
@@ -215,7 +215,7 @@ int quat2euler(Quaternion q, int euler_seq, Vec3& euler) {
   return 0;
 }
 
-int quat2rot(Quaternion q, Mat3& R) {
+int quat2rot(const Quaternion& q, Mat3& R) {
   double qw = q.w();
   double qx = q.x();
   double qy = q.y();
@@ -356,45 +356,55 @@ MatX RoundMatrix(const MatX& M, int precision) {
   return Mround;
 }
 
-bool IsTransformationMatrix(Eigen::Matrix4d T) {
+bool IsTransformationMatrix(const Eigen::Matrix4d& T, std::string& summary,
+                            int precision) {
   Eigen::Matrix3d R = T.block(0, 0, 3, 3);
-  bool homoFormValid, tValid;
 
-  // check translation for infinity or nan
-  if (std::isinf(T(0, 3)) || std::isinf(T(1, 3)) || std::isinf(T(2, 3)) ||
-      std::isnan(T(0, 3)) || std::isnan(T(1, 3)) || std::isnan(T(2, 3))) {
-    tValid = 0;
-  } else {
-    tValid = 1;
+  // check for infinity or nan
+  for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t j = 0; j < 4; j++) {
+      if (std::isinf(T(i, j))) {
+        summary = "Inf value found at coord. (" + std::to_string(i) +
+                  "" + std::to_string(j) + ").";
+        return false;
+      }
+      if (std::isnan(T(i, j))) {
+        summary = "nan value found at coord. (" + std::to_string(i) +
+                  "" + std::to_string(j) + ").";
+        return false;
+      }
+    }
   }
 
   // check that bottom row is [0 0 0 1]
-  if (T(3, 0) == 0 && T(3, 1) == 0 && T(3, 2) == 0 && T(3, 3) == 1) {
-    homoFormValid = 1;
-  } else {
-    homoFormValid = 0;
-  }
+  if (T(3, 0) != 0 || T(3, 1) != 0 || T(3, 2) != 0 || T(3, 3) != 1) {
+    summary = "Bottom row not equal to [0 0 0 1]";
+    return false;
+  } 
 
-  if (homoFormValid && tValid && IsRotationMatrix(R)) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return IsRotationMatrix(R, summary, precision);
 }
 
-bool IsRotationMatrix(Eigen::Matrix3d R) {
-  int precision = 3;
+bool IsRotationMatrix(const Eigen::Matrix3d& R, std::string& summary,
+                      int precision) {
   Eigen::Matrix3d shouldBeIdentity = RoundMatrix(R * R.transpose(), precision);
+  if(!shouldBeIdentity.isIdentity()){
+    summary = "R R^T != Identity";
+    return false;
+  }
+
   double detR = R.determinant();
   double detRRound = std::round(detR * precision) / precision;
-  if (shouldBeIdentity.isIdentity() && detRRound == 1) {
-    return 1;
-  } else {
-    return 0;
-  }
+  if (detRRound != 1) {
+    summary = "Det(R) != 1";
+    return false;
+  } 
+
+  return true;
 }
 
-Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B) {
+Eigen::MatrixXd KroneckerProduct(const Eigen::MatrixXd& A,
+                                 const Eigen::MatrixXd& B) {
   const int m = A.rows(), n = A.cols();
   const int p = B.rows(), q = B.cols();
   Eigen::MatrixXd C(p * m, q * n);
@@ -404,7 +414,7 @@ Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B) {
   return C;
 }
 
-Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d R) {
+Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d& R) {
   return InvSkewTransform(R.log());
 }
 
@@ -413,11 +423,11 @@ Eigen::Vector3d QToLieAlgebra(const Eigen::Quaterniond& q) {
   return RToLieAlgebra(R);
 }
 
-Eigen::Matrix3d LieAlgebraToR(const Eigen::Vector3d eps) {
+Eigen::Matrix3d LieAlgebraToR(const Eigen::Vector3d& eps) {
   return SkewTransform(eps).exp();
 }
 
-Eigen::Quaterniond LieAlgebraToQ(const Eigen::Vector3d eps) {
+Eigen::Quaterniond LieAlgebraToQ(const Eigen::Vector3d& eps) {
   Eigen::Quaterniond q(LieAlgebraToR(eps));
   return q.normalized();
 }
@@ -427,7 +437,7 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
                                 const beam::TimePoint& t) {
   double w2 = 1.0 * (t - t1) / (t2 - t1);
 
-  beam::Mat4 T1 = m1;
+  beam::Mat4 T1 = m1; 
   beam::Mat4 T2 = m2;
   beam::Mat4 T;
 
@@ -446,7 +456,7 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
   return T;
 }
 
-beam::Vec3 InvSkewTransform(const beam::Mat3 M) {
+beam::Vec3 InvSkewTransform(const beam::Mat3& M) {
   Eigen::Vector3d V;
   V(0) = M(2, 1);
   V(1) = M(0, 2);
@@ -454,7 +464,7 @@ beam::Vec3 InvSkewTransform(const beam::Mat3 M) {
   return V;
 }
 
-beam::Mat3 SkewTransform(const beam::Vec3 V) {
+beam::Mat3 SkewTransform(const beam::Vec3& V) {
   beam::Mat3 M;
   M(0, 0) = 0;
   M(0, 1) = -V(2, 0);
@@ -497,8 +507,10 @@ std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
   return std::make_pair(centroid, plane_normal);
 }
 
-beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
-                          beam::Vec3 plane_normal, beam::Vec3 plane_point) {
+beam::Vec3 IntersectPoint(const beam::Vec3& ray_vector,
+                          const beam::Vec3& ray_point,
+                          const beam::Vec3& plane_normal,
+                          const beam::Vec3& plane_point) {
   beam::Vec3 diff = ray_point - plane_point;
   double prod1 = diff.dot(plane_normal);
   double prod2 = ray_vector.dot(plane_normal);
@@ -641,7 +653,7 @@ bool PassedMinMotion(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2,
                                output_error_cause);
 }
 
-Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v) {
+Eigen::Matrix4f VectorToEigenTransform(const std::vector<float>& v) {
   Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
   T(0, 0) = v[0];
   T(0, 1) = v[1];
@@ -649,13 +661,13 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v) {
   T(0, 3) = v[3];
   T(1, 0) = v[4];
   T(1, 1) = v[5];
-  T(1, 3) = v[6];
+  T(1, 2) = v[6];
   T(1, 3) = v[7];
   T(2, 0) = v[8];
   T(2, 1) = v[9];
   T(2, 2) = v[10];
   T(2, 3) = v[11];
-  return T.cast<double>();
+  return T;
 }
 
 Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
@@ -666,7 +678,7 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
   T(0, 3) = v[3];
   T(1, 0) = v[4];
   T(1, 1) = v[5];
-  T(1, 3) = v[6];
+  T(1, 2) = v[6];
   T(1, 3) = v[7];
   T(2, 0) = v[8];
   T(2, 1) = v[9];
@@ -677,6 +689,14 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v) {
 
 std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T) {
   std::vector<double> v;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) { v.push_back(T(i, j)); }
+  }
+  return v;
+}
+
+std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T) {
+  std::vector<float> v;
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) { v.push_back(T(i, j)); }
   }

@@ -51,6 +51,8 @@ typedef Eigen::Affine3d Affine3;
 typedef Eigen::Quaterniond Quaternion;
 #endif // BEAM_EIGEN_TYPEDEF
 
+static std::string _tmp_string{};
+
 /**
  * Eigen vector comparator
  */
@@ -119,7 +121,7 @@ T distance(const P& lhs, const Eigen::Matrix<T, N, 1>& rhs) {
 }
 
 template <typename T>
-std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed) {
+std::vector<T> RandomSample(const std::vector<T>& input, uint32_t N, int seed) {
   srand(seed);
   std::vector<T> input_copy = input;
   // fill new point vectors with randomly sampled points from xs and xss
@@ -138,28 +140,28 @@ std::vector<T> RandomSample(std::vector<T>& input, uint32_t N, int seed) {
 int gcd(int a, int b);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
-void vec2mat(std::vector<double> x, int rows, int cols, MatX& y);
+void vec2mat(const std::vector<double>& x, int rows, int cols, MatX& y);
 
 /** Reshapes a matrix to a vector*/
-void mat2vec(MatX A, std::vector<double>& x);
+void mat2vec(const MatX& A, std::vector<double>& x);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
-void vec2mat(VecX x, int rows, int cols, MatX& y);
+void vec2mat(const VecX& x, int rows, int cols, MatX& y);
 
 /** Reshapes a matrix to a vector*/
-void mat2vec(MatX A, VecX& x);
+void mat2vec(const MatX& A, VecX& x);
 
 /** Convert euler angle to rotation matrix **/
-int euler2rot(Vec3 euler, int euler_seq, Mat3& R);
+int euler2rot(const Vec3& euler, int euler_seq, Mat3& R);
 
 /** Convert euler angle to quaternion **/
-int euler2quat(Vec3 euler, int euler_seq, Quaternion& q);
+int euler2quat(const Vec3& euler, int euler_seq, Quaternion& q);
 
 /** Convert quaternion to euler angles **/
-int quat2euler(Quaternion q, int euler_seq, Vec3& euler);
+int quat2euler(const Quaternion& q, int euler_seq, Vec3& euler);
 
 /** Convert quaternion to rotation matrix **/
-int quat2rot(Quaternion q, Mat3& R);
+int quat2rot(const Quaternion& q, Mat3& R);
 
 /** ENU to NWU coordinate system **/
 void enu2nwu(const Vec3& enu, Vec3& nwu);
@@ -202,14 +204,23 @@ MatX RoundMatrix(const MatX& M, int precision);
 /**
  * @brief check if a matrix is a valid transformation matrix
  * @param T tranformation
+ * @param summary reference to summary string
+ * @param precision when checking R R^T == I, we round to this number of, same
+ *with rounding det to make sure it is equal to 1 decimals
  **/
-bool IsTransformationMatrix(Eigen::Matrix4d T);
+bool IsTransformationMatrix(const Eigen::Matrix4d& T,
+                            std::string& summary = _tmp_string,
+                            int precision = 3);
 
 /**
  * @brief check if a matrix is a valid rotation matrix
  * @param R rotation matrix
+ * @param summary reference to summary string
+ * @param precision when checking R R^T == I, we round to this number of
+ *decimals
  **/
-bool IsRotationMatrix(Eigen::Matrix3d R);
+bool IsRotationMatrix(const Eigen::Matrix3d& R,
+                      std::string& summary = _tmp_string, int precision = 3);
 
 /**
  * @brief Computes kronecker product in brute force manner
@@ -217,14 +228,15 @@ bool IsRotationMatrix(Eigen::Matrix3d R);
  * @param B p x q input matrix
  * @return pm x qn matrix
  **/
-Eigen::MatrixXd KroneckerProduct(Eigen::MatrixXd A, Eigen::MatrixXd B);
+Eigen::MatrixXd KroneckerProduct(const Eigen::MatrixXd& A,
+                                 const Eigen::MatrixXd& B);
 
 /**
  * @brief Convert from rotation matrix to its associated Lie Algebra
  * @param R rotation matrix
  * @return 3x1 vector representing R in Lie Algebra space
  **/
-beam::Vec3 RToLieAlgebra(const beam::Mat3 R);
+beam::Vec3 RToLieAlgebra(const beam::Mat3& R);
 
 /**
  * @brief Convert from quaternion to its associated Lie Algebra
@@ -238,14 +250,14 @@ beam::Vec3 QToLieAlgebra(const Quaternion& q);
  * @param eps rotation in Lie Algebra space
  * @return rotation matrix
  **/
-beam::Mat3 LieAlgebraToR(const beam::Vec3 eps);
+beam::Mat3 LieAlgebraToR(const beam::Vec3& eps);
 
 /**
  * @brief Convert from Lie Algebra to its associated quaternion
  * @param eps rotation in Lie Algebra space
  * @return quaternion
  **/
-Quaternion LieAlgebraToQ(const beam::Vec3 eps);
+Quaternion LieAlgebraToQ(const beam::Vec3& eps);
 
 /**
  * @brief Linear interpolation of transformations using a method in Tim
@@ -266,14 +278,14 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
  * @param M 3x3 skew symmetric matrix
  * @return 3x1 vector
  **/
-beam::Vec3 InvSkewTransform(const beam::Mat3 M);
+beam::Vec3 InvSkewTransform(const beam::Mat3& M);
 
 /**
  * @brief Perform skew symmetric transform
  * @param V 3x1 vector
  * @return 3x3 skew symmetric matrix
  **/
-beam::Mat3 SkewTransform(const beam::Vec3 V);
+beam::Mat3 SkewTransform(const beam::Vec3& V);
 
 /**
  * @brief Inverts a 4x4 Transformation matrix by taking into account that
@@ -294,8 +306,10 @@ std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
  * @brief Computes intersection point of line and plane
  * @return {x,y,z}
  */
-beam::Vec3 IntersectPoint(beam::Vec3 ray_vector, beam::Vec3 ray_point,
-                          beam::Vec3 plane_normal, beam::Vec3 plane_point);
+beam::Vec3 IntersectPoint(const beam::Vec3& ray_vector,
+                          const beam::Vec3& ray_point,
+                          const beam::Vec3& plane_normal,
+                          const beam::Vec3& plane_point);
 
 /** Peturbs a transformation
  * @param[in] T_in the original transformation matrix
@@ -460,7 +474,7 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<double>& v);
  * @param v vector of size 3 x 4 = 12
  * @return T
  */
-Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
+Eigen::Matrix4f VectorToEigenTransform(const std::vector<float>& v);
 
 /**
  * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 doubles. The
@@ -470,6 +484,13 @@ Eigen::Matrix4d VectorToEigenTransform(const std::vector<float>& v);
  */
 std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
 
+/**
+ * @brief Converts an Eigen Matrix4d (transform) to a vector of 16 floats. The
+ * points are read from left to right, then down.
+ * @param T transform of size 4 x 4
+ * @return v vector of size 4 x 4 = 16
+ */
+std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T);
 /**
  * @brief outputs transform to some stream with as the following:
  *

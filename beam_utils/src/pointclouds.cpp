@@ -1,6 +1,7 @@
 #include <beam_utils/pointclouds.h>
 
 #include <pcl/common/transforms.h>
+
 #include <beam_utils/pcl_conversions.h>
 #include <beam_utils/math.h>
 
@@ -189,15 +190,9 @@ pcl::PointCloud<pcl::PointXYZRGBL>
     CreateFrameCol(const ros::Time& t, double increment, double length) {
   pcl::PointCloud<pcl::PointXYZRGBL> frame;
   double cur_length{0};
-  pcl::PointXYZRGBL pointX;
-  pcl::PointXYZRGBL pointY;
-  pcl::PointXYZRGBL pointZ;
-  pointX.r = 255;
-  pointY.g = 255;
-  pointZ.b = 255;
-  pointX.label = t.toSec();
-  pointY.label = t.toSec();
-  pointZ.label = t.toSec();
+  pcl::PointXYZRGBL pointX(0,0,0,255,0,0,t.toSec());
+  pcl::PointXYZRGBL pointY(0,0,0,0,255,0,t.toSec());
+  pcl::PointXYZRGBL pointZ(0,0,0,0,0,255,t.toSec());
 
   while (cur_length < length) {
     pointX.x = cur_length;

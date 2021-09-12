@@ -9,7 +9,10 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <beam_utils/filesystem.h>
 
 #ifndef BEAM_PCL_TYPEDEF
 #  define BEAM_PCL_TYPEDEF
@@ -17,9 +20,11 @@
 /**
  * @brief typedefs for commonly used pcl clouds
  */
-typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
+typedef pcl::PointXYZRGB PointTypeCol;
+typedef pcl::PointXYZ PointType;
+typedef pcl::PointCloud<PointType> PointCloud;
 typedef std::shared_ptr<PointCloud> PointCloudPtr;
-typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudCol;
+typedef pcl::PointCloud<PointTypeCol> PointCloudCol;
 typedef std::shared_ptr<PointCloudCol> PointCloudColPtr;
 
 #endif // BEAM_PCL_TYPEDEF
@@ -29,7 +34,7 @@ namespace beam {
  *  @{ */
 
 static ros::Time time_tmp = ros::Time(0);
-static std::string string_tmp = "";
+static std::string _string_tmp = "";
 static uint32_t seq_tmp = 0;
 
 /**
@@ -55,7 +60,7 @@ sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
  */
 PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg,
                        ros::Time& time = time_tmp,
-                       std::string& frame_id = string_tmp,
+                       std::string& frame_id = _string_tmp,
                        uint32_t& seq = seq_tmp);
 
 /**
@@ -274,6 +279,97 @@ inline void getMinMax3D(const pcl::PointCloud<PointT>& cloud, PointT& min_pt,
  */
 void AddNoiseToCloud(PointCloud& cloud, double max_pert = 0.01,
                      bool random_seed = true);
+
+enum PointCloudFileType { PCDBINARY, PCDASCII, PLYBINARY, PLYASCII };
+
+/** Map for storing string input */
+static std::map<std::string, PointCloudFileType> PointCloudFileTypeStringMap = {
+    {"PCDBINARY", PointCloudFileType::PCDBINARY},
+    {"PCDASCII", PointCloudFileType::PCDASCII},
+    {"PLYBINARY", PointCloudFileType::PLYBINARY},
+    {"PLYASCII", PointCloudFileType::PLYASCII}};
+
+/** Map for storing file extension with each type of point cloud file */
+static std::map<PointCloudFileType, std::string>
+    PointCloudFileTypeExtensionMap = {{PointCloudFileType::PCDBINARY, ".pcd"},
+                                      {PointCloudFileType::PCDASCII, ".pcd"},
+                                      {PointCloudFileType::PLYBINARY, ".ply"},
+                                      {PointCloudFileType::PLYASCII, ".ply"}};
+
+/** function for listing types of PointCloud files */
+inline std::string GetPointCloudFileTypes() {
+  std::string types;
+  for (auto it = PointCloudFileTypeStringMap.begin();
+       it != PointCloudFileTypeStringMap.end(); it++) {
+    types += it->first;
+    types += ", ";
+  }
+  types.erase(types.end() - 2, types.end());
+  return types;
+}
+
+/**
+ * @brief function for saving PCD point clouds. Using the regular pcl i/o will
+ * throw exceptions if the point clouds are empty, but we don't always want
+ * this. This is a wrapper around the pcl save functions to avoid that and save
+ * different types of file
+ * @param filename full path to file
+ * @param input_cloud
+ * @param file_type enum class for point cloud file type
+ * @param error_type string with the resulting error if save was unsuccessful
+ * @return true if successful
+ */
+template <class PointT>
+inline bool
+    SavePointCloud(const std::string& filename,
+                   const pcl::PointCloud<PointT>& cloud,
+                   PointCloudFileType file_type = PointCloudFileType::PCDBINARY,
+                   std::string& error_type = _string_tmp) {
+  // check extension
+  std::string extension_should_be = PointCloudFileTypeExtensionMap[file_type];
+  if (!HasExtension(filename, extension_should_be)) {
+    error_type = "Invalid file extension. Input file: " + filename +
+                 " . Extension should be: " + extension_should_be;
+    return false;
+  }
+
+  // check path exists
+  boost::filesystem::path path(filename);
+  if (!boost::filesystem::exists(path.parent_path())) {
+    error_type = "File path parent directory does not exist. Input file: " + filename;
+    return false;
+  }
+
+  // check pointcloud isn't empty
+  if (cloud.size() == 0) {
+    error_type = "Empty point cloud.";
+    return false;
+  }
+
+  // try to save cloud
+  pcl::PLYWriter writer;
+  try {
+    switch (file_type) {
+      case PointCloudFileType::PCDASCII:
+        pcl::io::savePCDFileASCII(filename, cloud);
+        break;
+      case PointCloudFileType::PCDBINARY:
+        pcl::io::savePCDFileBinary(filename, cloud);
+        break;
+      case PointCloudFileType::PLYASCII:
+        writer.write<PointT>(filename, cloud, false);
+        break;
+      case PointCloudFileType::PLYBINARY:
+        writer.write<PointT>(filename, cloud, true);
+        break;
+    }
+  } catch (pcl::PCLException& e) {
+    error_type = "Exception throw by pcl: " + std::string(e.detailedMessage());
+    return false;
+  }
+
+  return true;
+}
 
 /** @} group utils */
 } // namespace beam
