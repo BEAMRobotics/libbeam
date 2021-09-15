@@ -148,20 +148,26 @@ public:
 
   /**
    * @brief method for saving a loam pointcloud. It will output 4 separate
-   * clouds if all 4 features clouds are specified.
+   * clouds if all 4 features clouds are specified. If colors are not specified,
+   * all will be output as white.
    * @param output_path full path to output directory which must already exist
    * @param combine_features optionally specify if you want to combine all
    * features into a single cloud in addition to all feature clouds.
+   * @param r red color
+   * @param g green color
+   * @param b blue color
    */
-  void Save(const std::string& output_path, bool combine_features = false) const;
+  void Save(const std::string& output_path, bool combine_features = false,
+            uint8_t r = 255, uint8_t g = 255, uint8_t b = 255) const;
 
   /**
-   * @brief add a new loam pointcloud to this cloud. This will also clear all kd search trees.
+   * @brief add a new loam pointcloud to this cloud. This will also clear all kd
+   * search trees.
    * @param cloud new cloud to add
    */
   void Merge(const LoamPointCloud& cloud);
 
-  /** 
+  /**
    * @brief print details of this cloud
    * @param stream input stream
    */

@@ -61,7 +61,12 @@ public:
    * @briefruns the matcher, blocks until finished.
    * @return true if successful
    */
-  bool Match();
+  bool Match() override;
+
+  /**
+   * @brief see matcher.h for details
+   */
+  void SaveResults(const std::string& output_path) override;
 
 private:
   /**

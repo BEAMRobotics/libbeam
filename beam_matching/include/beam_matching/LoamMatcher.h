@@ -36,12 +36,13 @@ namespace beam_matching {
  *  @{ */
 
 /**
- * @brief derived Matcher class which wraps LoamScanRegistration to conform to the Matcher base class interface.
+ * @brief derived Matcher class which wraps LoamScanRegistration to conform to
+ * the Matcher base class interface.
  */
 class LoamMatcher : public Matcher<LoamPointCloudPtr> {
 public:
   using Params = LoamParams;
-  
+
   LoamMatcher();
 
   explicit LoamMatcher(const LoamParams& params);
@@ -70,13 +71,18 @@ public:
    * @brief runs the matcher, blocks until finished.
    * @return true if successful
    */
-  bool Match();
+  bool Match() override;
 
   /**
    * @brief gets the parameters for the matcher
    * @return LoamMatcherParams
    */
   LoamParamsPtr GetParams() { return params_; }
+
+  /**
+   * @brief see matcher.h for details
+   */
+  void SaveResults(const std::string& output_path) override;
 
 private:
   LoamPointCloudPtr ref_;
