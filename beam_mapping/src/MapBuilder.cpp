@@ -192,9 +192,6 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
     pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
     PointCloud cloud_filtered =
         beam_filtering::FilterPointCloud(*cloud_tmp, input_filters_);
-    std::cout << "Lidar no. : " << (int)lidar_number << "\n";
-    std::cout << "cloud_tmp.size(): " << cloud_tmp->size() << "\n";    
-    std::cout << "cloud_filtered.size(): " << cloud_filtered.size() << "\n";    
     scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
     interpolated_poses_.AddSinglePose(scan_pose_current_);
     interpolated_poses_.AddSingleTimeStamp(scan_time);
