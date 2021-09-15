@@ -12,9 +12,6 @@
 
 namespace beam_mapping {
 
-using PointT = pcl::PointXYZI;
-using PointCloud = pcl::PointCloud<PointT>;
-
 MapBuilder::MapBuilder(const std::string& config_file) {
   config_file_ = config_file;
   poses_moving_frame_ = "";
@@ -193,10 +190,11 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
     PointCloud::Ptr cloud_tmp = std::make_shared<PointCloud>();
     beam::pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
     pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
-    PointCloud::Ptr cloud_cropped =
-        this->CropPointCloud(cloud_tmp, lidar_number);
     PointCloud cloud_filtered =
-        beam_filtering::FilterPointCloud(*cloud_cropped, input_filters_);
+        beam_filtering::FilterPointCloud(*cloud_tmp, input_filters_);
+    std::cout << "Lidar no. : " << (int)lidar_number << "\n";
+    std::cout << "cloud_tmp.size(): " << cloud_tmp->size() << "\n";    
+    std::cout << "cloud_filtered.size(): " << cloud_filtered.size() << "\n";    
     scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
     interpolated_poses_.AddSinglePose(scan_pose_current_);
     interpolated_poses_.AddSingleTimeStamp(scan_time);
@@ -286,7 +284,7 @@ void MapBuilder::SaveMaps() {
                             lidars_[i].frame + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
-    if (!beam::SavePointCloud<pcl::PointXYZI>(
+    if (!beam::SavePointCloud<PointT>(
             save_path, *maps_[i], beam::PointCloudFileType::PCDBINARY,
             error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
@@ -299,7 +297,7 @@ void MapBuilder::SaveMaps() {
         save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
-    if (!beam::SavePointCloud<pcl::PointXYZI>(
+    if (!beam::SavePointCloud<PointT>(
             save_path, *combined_map, beam::PointCloudFileType::PCDBINARY,
             error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);

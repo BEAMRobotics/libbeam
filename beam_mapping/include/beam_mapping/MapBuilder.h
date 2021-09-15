@@ -19,7 +19,7 @@ namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
-using PointT = pcl::PointXYZI;
+using PointT = pcl::PointXYZ;
 using PointCloud = pcl::PointCloud<PointT>;
 
 /**
