@@ -454,4 +454,24 @@ void LoamScanRegistration::OptimizationSummary::Print() {
             << "\n";
 }
 
+void LoamScanRegistration::SaveResults(const std::string& output_path) {
+  if (!boost::filesystem::exists(output_path)) {
+    BEAM_WARN(
+        "Output path does not exist, cannot save matcher results. Input: {}",
+        output_path);
+    return;
+  }
+
+  boost::filesystem::create_directory(output_path + "referece_cloud/");
+  boost::filesystem::create_directory(output_path + "target_initial/");
+  boost::filesystem::create_directory(output_path + "target_aligned/");
+
+  ref_->Save(output_path + "referece_cloud/", true, 0, 0, 255);
+  ref_->Save(output_path + "target_initial/", true, 255, 0, 0);
+
+  LoamPointCloud target_aligned = *tgt_;
+  target_aligned.TransformPointCloud(T_REF_TGT_);
+  target_aligned.Save(output_path + "target_aligned/", true, 0, 255, 0);
+}
+
 } // namespace beam_matching

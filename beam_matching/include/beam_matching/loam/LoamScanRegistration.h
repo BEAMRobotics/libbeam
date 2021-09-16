@@ -66,6 +66,23 @@ public:
    */
   Eigen::Matrix4d GetT_REF_TGT();
 
+  /**
+   * @brief Pure virtual function for saving results. Stores the results as 3
+   * separate clouds:
+   *
+   *  (1) reference cloud (blue points)
+   *
+   *  (2) target cloud initial: target cloud transformed into the reference
+   *  cloud frame using the initial guess of it's relative pose. Since this
+   *  matcher class doesn't allow you to provide an initial guess, the target
+   *  cloud should already be in the reference frame using some guess.
+   *
+   *  (3) target cloud refined: target cloud transformed into the reference
+   *  cloud frame using the refined pose (or transform calculated herein)
+   *
+   */
+  void SaveResults(const std::string& output_path);
+
 private:
   void Setup();
 
@@ -129,7 +146,11 @@ private:
 
   // Debugging tools
   std::string debug_output_path_{"/home/nick/debug/loam_tests/"};
-  bool output_results_{false}; // outputs scans before and after registration
+
+  /* outputs scans before and after registration. This is diffent than running
+   * the OutputResults private function which outputs results for each
+   * iteration. */
+  bool output_results_{false};
 };
 
 /** @} group matching */

@@ -23,7 +23,7 @@ template <typename T>
 class Matcher {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  /** 
+  /**
    * @brief This constructor takes an argument in order to adjust how much
    * downsampling is done before matching is attempted. Pointclouds are
    * downsampled using a voxel filter.
@@ -31,15 +31,15 @@ public:
    */
   Matcher(float res) : resolution_(res) {}
 
-  /** 
-   * @brief Default constructor. Sets up the instance of the matcher to attempt to
-   * match using the full resolution of each point cloud (if possible).
+  /**
+   * @brief Default constructor. Sets up the instance of the matcher to attempt
+   * to match using the full resolution of each point cloud (if possible).
    */
   Matcher() { resolution_ = -1; }
 
   virtual ~Matcher() {}
 
-  /** 
+  /**
    * @brief Returns T_TARGET_REF
    */
   Eigen::Affine3d GetResult() { return this->result_; };
@@ -68,16 +68,86 @@ public:
     this->SetTarget(target);
   };
 
-  /** @brief Actually performs the match. Any heavy processing is done here.
+  /**
+   * @brief Actually performs the match. Any heavy processing is done here.
    * @returns true if match was successful, false if match was not successful
    */
-  virtual bool Match() { return 0; }
+  virtual bool Match() = 0;
 
   virtual void EstimateInfo() {
     this->information_ = Eigen::Matrix<double, 6, 6>::Identity(6, 6);
   }
 
+  /**
+   * @brief Pure virtual function for saving results. Stores the results as 3
+   * separate clouds:
+   *
+   *  (1) reference cloud (blue points)
+   *
+   *  (2) target cloud initial: target cloud transformed into the reference
+   *  cloud frame using the initial guess of it's relative pose. Since this
+   *  matcher class doesn't allow you to provide an initial guess, the target
+   *  cloud should already be in the reference frame using some guess.
+   *
+   *  (3) target cloud refined: target cloud transformed into the reference
+   *  cloud frame using the refined pose (or transform calculated herein)
+   *
+   */
+  virtual void SaveResults(const std::string& output_path) = 0;
+
 protected:
+  /**
+   * @brief for pcl::PointCloud<pcl::PointXYZ> (which is most of the case for
+   * matchers) this function can be called as an implementation to the above
+   * SaveResults()
+   */
+  inline void SaveResultsPCLXYZ(const std::string& output_path,
+                                const PointCloudPtr& ref,
+                                const PointCloudPtr& target) {
+    // check dir exits
+    if (!boost::filesystem::exists(output_path)) {
+      BEAM_WARN(
+          "Output path does not exist, cannot save matcher results. Input: {}",
+          output_path);
+      return;
+    }
+
+    // transform tgt cloud
+    PointCloud tgt_aligned;
+    Eigen::Matrix4d T_REF_TGT = result_.matrix();
+    pcl::transformPointCloud(*target, tgt_aligned, T_REF_TGT);
+
+    // color pointclouds and add frames
+    PointCloudCol ref_col = beam::ColorPointCloud(*ref, 0, 0, 255);
+    PointCloudCol tgt_init_col = beam::ColorPointCloud(*ref, 255, 0, 0);
+    PointCloudCol tgt_align_col = beam::ColorPointCloud(tgt_aligned, 0, 255, 0);
+
+    // add frames to clouds
+    PointCloudCol frame = beam::CreateFrameCol();
+    beam::MergeFrameToCloud(ref_col, frame, Eigen::Matrix4d::Identity());
+    beam::MergeFrameToCloud(tgt_align_col, frame, Eigen::Matrix4d::Identity());
+    beam::MergeFrameToCloud(tgt_align_col, frame, T_REF_TGT);
+
+    std::string error_type;
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "reference.pcd", ref_col,
+            beam::PointCloudFileType::PCDBINARY, error_type)) {
+      BEAM_WARN("Cannot save reference scan. Reason: {}", error_type);
+    }
+
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "target_initial.pcd", tgt_init_col,
+            beam::PointCloudFileType::PCDBINARY, error_type)) {
+      BEAM_WARN("Cannot save initial target scan. Reason: {}", error_type);
+    }
+
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "target_aligned.pcd", tgt_align_col,
+            beam::PointCloudFileType::PCDBINARY, error_type)) {
+      BEAM_WARN("Cannot save aligned target scan. Reason: {}", error_type);
+    }
+  }
+
   /**
    * The edge length (in the same distance-units as those used in the
    * pointcloud) of a downsampling voxel filter. If no downsampling is
@@ -88,7 +158,8 @@ protected:
   /**
    * The transformation calculated by the scan registration algorithm. It is
    * the transformation needed to transform the target pointcloud to the
-   * reference pointcloud in the reference frame of the reference pointcloud.
+   * reference pointcloud in the reference frame of the reference pointcloud
+   * (T_REF_TGT).
    */
   Eigen::Affine3d result_;
 

@@ -110,8 +110,8 @@ void LoamPointCloud::TransformPointCloud(const Eigen::Matrix4d& T) {
   }
 }
 
-void LoamPointCloud::Save(const std::string& output_path,
-                          bool combine_features) const {
+void LoamPointCloud::Save(const std::string& output_path, bool combine_features,
+                          uint8_t r, uint8_t g, uint8_t b) const {
   if (boost::filesystem::exists(output_path)) {
     BEAM_INFO("Saving Loam point cloud to: {}", output_path);
   } else {
@@ -120,44 +120,85 @@ void LoamPointCloud::Save(const std::string& output_path,
     return;
   }
 
-  std::string error_message{};
+  PointCloud cloud_combined;
   if (combine_features) {
-    PointCloud cloud_combined = edges.strong.cloud;
+    cloud_combined = edges.strong.cloud;
     cloud_combined += edges.weak.cloud;
     cloud_combined += surfaces.strong.cloud;
     cloud_combined += surfaces.weak.cloud;
-
     if (cloud_combined.size() == 0) {
       BEAM_WARN("Loam cloud empty. Not saving cloud.");
       return;
     }
+  }
+
+  // output all as white if colors not specified
+  if (r == 255 && g == 255 && b == 255) {
+    std::string error_message{};
+    if (combine_features) {
+      if (!beam::SavePointCloud<pcl::PointXYZ>(
+              output_path + "combined_features.pcd", cloud_combined,
+              beam::PointCloudFileType::PCDBINARY, error_message)) {
+        BEAM_ERROR("Unable to save loam cloud. Reason: {}", error_message);
+      }
+    }
 
     if (!beam::SavePointCloud<pcl::PointXYZ>(
-            output_path + "combined_features.pcd", cloud_combined,
+            output_path + "edge_features_strong.pcd", edges.strong.cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
-      BEAM_ERROR("Unable to save loam cloud. Reason: {}", error_message);
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
-  }
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
+            output_path + "edge_features_weak.pcd", edges.weak.cloud,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
+            output_path + "surface_features_strong.pcd", surfaces.strong.cloud,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
+            output_path + "surface_features_weak.pcd", surfaces.weak.cloud,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
+  } else {
+    PointCloudCol cloud_col;
+    std::string error_message{};
+    if (combine_features) {
+      cloud_col = beam::ColorPointCloud(cloud_combined, r, g, b);
+      if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+              output_path + "combined_features.pcd", cloud_col,
+              beam::PointCloudFileType::PCDBINARY, error_message)) {
+        BEAM_ERROR("Unable to save loam cloud. Reason: {}", error_message);
+      }
+    }
 
-  if (!beam::SavePointCloud<pcl::PointXYZ>(
-          output_path + "edge_features_strong.pcd", edges.strong.cloud,
-          beam::PointCloudFileType::PCDBINARY, error_message)) {
-    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
-  }
-  if (!beam::SavePointCloud<pcl::PointXYZ>(
-          output_path + "edge_features_weak.pcd", edges.weak.cloud,
-          beam::PointCloudFileType::PCDBINARY, error_message)) {
-    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
-  }
-  if (!beam::SavePointCloud<pcl::PointXYZ>(
-          output_path + "surface_features_strong.pcd", surfaces.strong.cloud,
-          beam::PointCloudFileType::PCDBINARY, error_message)) {
-    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
-  }
-  if (!beam::SavePointCloud<pcl::PointXYZ>(
-          output_path + "surface_features_weak.pcd", surfaces.weak.cloud,
-          beam::PointCloudFileType::PCDBINARY, error_message)) {
-    BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    cloud_col = beam::ColorPointCloud(edges.strong.cloud, r, g, b);
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "edge_features_strong.pcd", cloud_col,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
+    cloud_col = beam::ColorPointCloud(edges.weak.cloud, r, g, b);
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "edge_features_weak.pcd", cloud_col,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
+    cloud_col = beam::ColorPointCloud(surfaces.strong.cloud, r, g, b);
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "surface_features_strong.pcd", cloud_col,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
+    cloud_col = beam::ColorPointCloud(surfaces.weak.cloud, r, g, b);
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            output_path + "surface_features_weak.pcd", cloud_col,
+            beam::PointCloudFileType::PCDBINARY, error_message)) {
+      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
+    }
   }
 }
 

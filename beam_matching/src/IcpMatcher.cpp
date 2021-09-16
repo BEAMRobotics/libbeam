@@ -10,6 +10,7 @@
 
 #include <beam_utils/log.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
 
@@ -174,28 +175,29 @@ void IcpMatcher::EstimateInfo() {
   }
 }
 
-// This is an implementation of the Haralick or Censi covariance approximation
-// for ICP. The core idea behind this is that the covariance of the cost f'n J
-// wrt optimization variable x is:
-//    cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
-
-// Idea was taken from
-// https://censi.science/pub/research/2007-icra-icpcov.pdf
-
-// This is an implementation for euler angles, what is below is a cleaned up
-// version of
-// http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7153246
-
-//@INPROCEEDINGS{3d_icp_cov,
-// author={Prakhya, S.M. and Liu Bingbing and Yan Rui and Weisi Lin},
-//        booktitle={Machine Vision Applications (MVA), 2015 14th IAPR
-//        International Conference on},
-//        title={A closed-form estimate of 3D ICP covariance},
-//        year={2015},
-//        pages={526-529},
-//        doi={10.1109/MVA.2015.7153246},
-//        month={May},}
-
+/**
+ * This is an implementation of the Haralick or Censi covariance approximation
+ * for ICP. The core idea behind this is that the covariance of the cost f'n J
+ * wrt optimization variable x is:
+ *   cov(x) ~= (d2J/dx2)^-1*(d2J/dzdx)*cov(z)*(d2J/dzdx)'*(d2J/dx2)^-1
+ *
+ * Idea was taken from
+ * https://censi.science/pub/research/2007-icra-icpcov.pdf
+ *
+ * This is an implementation for euler angles, what is below is a cleaned up
+ * version of
+ * http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7153246
+ *
+ * @INPROCEEDINGS{3d_icp_cov,
+ * author={Prakhya, S.M. and Liu Bingbing and Yan Rui and Weisi Lin},
+ *       booktitle={Machine Vision Applications (MVA), 2015 14th IAPR
+ *       International Conference on},
+ *       title={A closed-form estimate of 3D ICP covariance},
+ *       year={2015},
+ *       pages={526-529},
+ *       doi={10.1109/MVA.2015.7153246},
+ *       month={May},}
+ */
 void IcpMatcher::EstimateCensi() {
   auto& ref = this->ref_;
   auto& target = this->target_;
@@ -433,10 +435,11 @@ void IcpMatcher::EstimateCensi() {
   }
 }
 
-/// 3D formulation of the approach by Lu & Milios
-/// http://www-robotics.usc.edu/~gaurav/CS547/milios_map.pdf
-/// Implementation from PCL
-
+/**
+ * 3D formulation of the approach by Lu & Milios
+ * http://www-robotics.usc.edu/~gaurav/CS547/milios_map.pdf
+ * Implementation from PCL
+ */
 void IcpMatcher::EstimateLUMold() {
   auto& source_trans = this->final_;
   PointCloudPtr targetc;
@@ -562,7 +565,7 @@ void IcpMatcher::EstimateLUMold() {
   this->information_ = edgeCov;
 }
 
-// Taken from the Lu and Milios matcher in PCL
+/** Taken from the Lu and Milios matcher in PCL */
 void IcpMatcher::EstimateLUM() {
   auto& ref = this->final_;
   PointCloudPtr targetc;
@@ -668,6 +671,10 @@ void IcpMatcher::EstimateLUM() {
 
     this->information_ = MM * (1.0f / ss);
   }
+}
+
+void IcpMatcher::SaveResults(const std::string& output_path) {
+  SaveResultsPCLXYZ(output_path, ref_, target_);
 }
 
 } // namespace beam_matching

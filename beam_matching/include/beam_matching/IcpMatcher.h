@@ -104,7 +104,7 @@ public:
    * @brief runs the matcher, blocks until finished.
    * @return true if successful
    */
-  bool Match();
+  bool Match() override;
 
   /**
    * @brief runs covariance estimator, blocks until finished.
@@ -116,6 +116,11 @@ public:
    * @return IcpMatcher Params
    */
   Params GetParams() { return params_; }
+
+  /**
+   * @brief see matcher.h for details
+   */
+  void SaveResults(const std::string& output_path) override;
 
 private:
   /**

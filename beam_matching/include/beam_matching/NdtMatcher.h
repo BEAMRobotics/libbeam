@@ -82,7 +82,12 @@ public:
    * Note that this version of ndt is SLOW
    * Returns true if successful
    */
-  bool Match();
+  bool Match() override;
+
+  /**
+   * @brief see matcher.h for details
+   */
+  void SaveResults(const std::string& output_path) override;
 
 private:
   /**
