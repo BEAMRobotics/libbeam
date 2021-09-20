@@ -46,7 +46,7 @@ public:
       const std::shared_ptr<beam_calibration::CameraModel>& cam,
       const std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d>& T_cam_world,
       const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-      double reprojection_threshold = -1.0);
+      double reprojection_threshold = -1.0, double max_dist = 100);
 
   /**
    * @brief Triangulates a list of points given two camera models and
