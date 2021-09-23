@@ -33,7 +33,6 @@ void TfTree::LoadJSON(const std::string& file_location) {
     for (const auto& calibration : J["calibrations"]) {
       calibration_counter++;
       value_counter = 0;
-      int i = 0, j = 0;
 
       std::string to_frame = calibration["to_frame"];
       std::string from_frame = calibration["from_frame"];
