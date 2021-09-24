@@ -45,7 +45,7 @@ static uint32_t seq_tmp = 0;
  * @param seq scan number
  * @return ros pointcloud
  */
-sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
+sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
                                   const ros::Time& time = ros::Time(0),
                                   const std::string& frame_id = "",
                                   uint32_t seq = 0);
@@ -58,10 +58,19 @@ sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
  * @param seq scan number
  * @return pcl point cloud
  */
-PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg,
-                       ros::Time& time = time_tmp,
-                       std::string& frame_id = _string_tmp,
-                       uint32_t& seq = seq_tmp);
+PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg,
+                    ros::Time& time = time_tmp,
+                    std::string& frame_id = _string_tmp,
+                    uint32_t& seq = seq_tmp);
+
+/**
+ * @brief convert a vector of floats to a pcl pointcloud xyz. This also checks
+ * that the number of points is divisible by 3 to make sure the correct format
+ * is used, otherwise it returns an empty cloud
+ * @param points points to add to cloud
+ * @return pointcloud
+ */
+PointCloud VectorToPclCloud(const std::vector<float>& points);
 
 /**
  * @brief Add RGB color to a pcl pointcloud
@@ -336,7 +345,8 @@ inline bool
   // check path exists
   boost::filesystem::path path(filename);
   if (!boost::filesystem::exists(path.parent_path())) {
-    error_type = "File path parent directory does not exist. Input file: " + filename;
+    error_type =
+        "File path parent directory does not exist. Input file: " + filename;
     return false;
   }
 
