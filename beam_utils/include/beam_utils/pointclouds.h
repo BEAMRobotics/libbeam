@@ -12,6 +12,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/Vector3.h>
 #include <beam_utils/filesystem.h>
 
 #ifndef BEAM_PCL_TYPEDEF
@@ -64,13 +65,18 @@ PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg,
                     uint32_t& seq = seq_tmp);
 
 /**
- * @brief convert a vector of floats to a pcl pointcloud xyz. This also checks
- * that the number of points is divisible by 3 to make sure the correct format
- * is used, otherwise it returns an empty cloud
- * @param points points to add to cloud
- * @return pointcloud
+ * @brief Convert from a pcl pointcloud to a vector of ros vectors
+ * @param cloud pcl pointcloud
+ * @return ros vector
  */
-PointCloud VectorToPclCloud(const std::vector<float>& points);
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud);
+
+/**
+ * @brief Convert from a vector of ros vectors to a pcl pointcloud
+ * @param vector ros vector
+ * @return cloud
+ */
+PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector);
 
 /**
  * @brief Add RGB color to a pcl pointcloud

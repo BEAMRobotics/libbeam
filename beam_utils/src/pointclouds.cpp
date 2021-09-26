@@ -44,24 +44,26 @@ PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
   return cloud;
 }
 
-PointCloud VectorToPclCloud(const std::vector<float>& points) {
-  PointCloud cloud;
-
-  // check dimensions of points first
-  if (points.size() % 3 != 0) {
-    BEAM_ERROR("Invalid size of lidar points. Total number of values is not "
-               "divisible by 3. Skipping lidar measurement.");
-    return cloud;
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud) {
+  std::vector<geometry_msgs::Vector3> cloud_vec;
+  for (const pcl::PointXYZ& p : cloud) {
+    geometry_msgs::Vector3 point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud_vec.push_back(point);
   }
+  return cloud_vec;
+}
 
-  uint32_t point_counter = 0;
-  while (point_counter < points.size()) {
-    pcl::PointXYZ p;
-    p.x = points[point_counter];
-    p.y = points[point_counter + 1];
-    p.z = points[point_counter + 2];
-    cloud.push_back(p);
-    point_counter += 3;
+PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector){
+    PointCloud cloud;
+  for (const geometry_msgs::Vector3& p : vector) {
+    pcl::PointXYZ point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud.push_back(point);
   }
   return cloud;
 }
