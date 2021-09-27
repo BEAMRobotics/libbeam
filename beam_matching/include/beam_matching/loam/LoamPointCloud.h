@@ -179,6 +179,13 @@ public:
    */
   uint64_t Size() const;
 
+  /**
+   * @brief determine if all clouds are empty. This is more efficient than using
+   * Size() != 0 or Size() > 0;
+   * @return true if all 4 feature clouds are empty, false otherwise.
+   */
+  bool Empty() const;
+
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;
 

@@ -203,15 +203,17 @@ void LoamPointCloud::Save(const std::string& output_path, bool combine_features,
 }
 
 void LoamPointCloud::Merge(const LoamPointCloud& cloud) {
+  if (cloud.Size() == 0) { return; }
+
   edges.strong.cloud += cloud.edges.strong.cloud;
   edges.strong.ClearKDTree();
 
   edges.weak.cloud += cloud.edges.weak.cloud;
   edges.weak.ClearKDTree();
-
+  
   surfaces.strong.cloud += cloud.surfaces.strong.cloud;
   surfaces.strong.ClearKDTree();
-
+  
   surfaces.weak.cloud += cloud.surfaces.weak.cloud;
   surfaces.weak.ClearKDTree();
 }
@@ -231,6 +233,14 @@ void LoamPointCloud::Print(std::ostream& stream) const {
 uint64_t LoamPointCloud::Size() const {
   return edges.strong.cloud.size() + edges.weak.cloud.size() +
          surfaces.strong.cloud.size() + surfaces.weak.cloud.size();
+}
+
+bool LoamPointCloud::Empty() const {
+  if(!edges.strong.cloud.empty()){return false;}
+  if(!edges.weak.cloud.empty()){return false;}
+  if(!surfaces.strong.cloud.empty()){return false;}
+  if(!surfaces.weak.cloud.empty()){return false;}
+  return true;
 }
 
 } // namespace beam_matching
