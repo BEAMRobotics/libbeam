@@ -30,10 +30,10 @@ public:
    * @param points 3d locations of 3 features
    * @returns Up to 4 transformation matrices
    */
-  static std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d>
+  static std::vector<Eigen::Matrix4d, beam::AlignMat4d>
       P3PEstimator(std::shared_ptr<beam_calibration::CameraModel> cam,
-                   std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels,
-                   std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points);
+                   std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels,
+                   std::vector<Eigen::Vector3d, beam::AlignVec3d> points);
 
   /**
    * @brief RANSAC wrapper for P3PEstimator.  Finds the camera pose with the
@@ -51,7 +51,7 @@ public:
    */
   static Eigen::Matrix4d RANSACEstimator(
       std::shared_ptr<beam_calibration::CameraModel> cam,
-      std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels, std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points,
+      std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels, std::vector<Eigen::Vector3d, beam::AlignVec3d> points,
       int max_iterations = 100, double inlier_threshold = 5.0, int seed = -1);
 
   /**

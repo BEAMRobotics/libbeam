@@ -4,7 +4,6 @@
 #include <catch2/catch.hpp>
 #include <boost/filesystem.hpp>
 
-
 TEST_CASE("Test Tree building and retrieving") {
   int round_precision = 7;
   beam_calibration::TfTree Tree;
@@ -12,15 +11,13 @@ TEST_CASE("Test Tree building and retrieving") {
   Eigen::Affine3d TA_BASELINK_HVLP, TA_X1_HVLP, TA_BASELINK_X1_calc,
       TA_BASELINK_X1_lookup;
 
-  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100,
-                     0.00000, 1.00000, 0.00000, 0.00000,
-                     0.00000, 0.00000, 1.00000, 0.35200,
-                     0.00000, 0.00000, 0.00000, 1.00000;
+  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100, 0.00000, 1.00000,
+      0.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.35200, 0.00000, 0.00000,
+      0.00000, 1.00000;
 
-  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800,
-               0.00000, 1.00000, 0.00000, 0.00000,
-               1.00000, 0.00000, 0.00000, -0.0400,
-               0.00000, 0.00000, 0.00000,  1.00000;
+  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800, 0.00000, 1.00000, 0.00000,
+      0.00000, 1.00000, 0.00000, 0.00000, -0.0400, 0.00000, 0.00000, 0.00000,
+      1.00000;
 
   TA_BASELINK_HVLP.matrix() = T_BASELINK_HVLP;
   TA_X1_HVLP.matrix() = T_X1_HVLP;
@@ -28,82 +25,83 @@ TEST_CASE("Test Tree building and retrieving") {
   std::string to_frame1 = "BASELINK";
   std::string from_frame1 = "HVLP";
   Tree.AddTransform(TA_BASELINK_HVLP, to_frame1, from_frame1);
-  Eigen::Affine3d TA_BASELINK_HVLP_lookup = Tree.GetTransformEigen(to_frame1, from_frame1);
+  Eigen::Affine3d TA_BASELINK_HVLP_lookup =
+      Tree.GetTransformEigen(to_frame1, from_frame1);
   REQUIRE(TA_BASELINK_HVLP.matrix() ==
-         beam::RoundMatrix(TA_BASELINK_HVLP_lookup.matrix(), round_precision));
+          beam::RoundMatrix(TA_BASELINK_HVLP_lookup.matrix(), round_precision));
 
   std::string to_frame2 = "X1";
   std::string from_frame2 = "HVLP";
   Tree.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
-  Eigen::Affine3d T_X1_HVLP_lookup = Tree.GetTransformEigen(to_frame2, from_frame2);
+  Eigen::Affine3d T_X1_HVLP_lookup =
+      Tree.GetTransformEigen(to_frame2, from_frame2);
   REQUIRE(T_X1_HVLP.matrix() ==
-         beam::RoundMatrix(T_X1_HVLP_lookup.matrix(), round_precision));
+          beam::RoundMatrix(T_X1_HVLP_lookup.matrix(), round_precision));
 
   std::string to_frame3 = "BASELINK";
   std::string from_frame3 = "X1";
-  TA_BASELINK_X1_calc.matrix() = TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
+  TA_BASELINK_X1_calc.matrix() =
+      TA_BASELINK_HVLP.matrix() * TA_X1_HVLP.matrix().inverse();
   TA_BASELINK_X1_lookup = Tree.GetTransformEigen(to_frame3, from_frame3);
   REQUIRE(beam::RoundMatrix(TA_BASELINK_X1_calc.matrix(), round_precision) ==
           beam::RoundMatrix(TA_BASELINK_X1_lookup.matrix(), round_precision));
-  REQUIRE_THROWS(Tree.AddTransform(TA_BASELINK_X1_calc, to_frame3, from_frame3));
+  REQUIRE_THROWS(
+      Tree.AddTransform(TA_BASELINK_X1_calc, to_frame3, from_frame3));
 
   std::string calib_date = "2018_12_20";
   Tree.SetCalibrationDate(calib_date);
   REQUIRE(Tree.GetCalibrationDate() == calib_date);
 }
 
-TEST_CASE("Testing multiple parent case"){
+TEST_CASE("Testing multiple parent case") {
   beam_calibration::TfTree Tree1, Tree2;
   beam::Mat4 T_HVLP_BASELINK, T_X1_HVLP, T_X1_IMU1;
   Eigen::Affine3d TA_HVLP_BASELINK, TA_X1_HVLP, TA_X1_IMU1, TA_IMU1_X1, T;
 
-  T_HVLP_BASELINK << 1.00000, 0.00000, 0.00000, -0.2100,
-                     0.00000, 1.00000, 0.00000, 0.00000,
-                     0.00000, 0.00000, 1.00000, -0.35200,
-                     0.00000, 0.00000, 0.00000, 1.00000;
+  T_HVLP_BASELINK << 1.00000, 0.00000, 0.00000, -0.2100, 0.00000, 1.00000,
+      0.00000, 0.00000, 0.00000, 0.00000, 1.00000, -0.35200, 0.00000, 0.00000,
+      0.00000, 1.00000;
 
-  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800,
-               0.00000, 1.00000, 0.00000, 0.00000,
-               1.00000, 0.00000, 0.00000, -0.0400,
-               0.00000, 0.00000, 0.00000,  1.00000;
+  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800, 0.00000, 1.00000, 0.00000,
+      0.00000, 1.00000, 0.00000, 0.00000, -0.0400, 0.00000, 0.00000, 0.00000,
+      1.00000;
 
-  T_X1_IMU1 << 0.00000,   0.00000,  -1.00000,  0.00000,
-              -1.00000,   0.00000,   0.00000,  0.00000,
-               0.00000,   1.00000,   0.00000,  -0.0900,
-               0.00000,   0.00000,   0.00000,  1.00000;
+  T_X1_IMU1 << 0.00000, 0.00000, -1.00000, 0.00000, -1.00000, 0.00000, 0.00000,
+      0.00000, 0.00000, 1.00000, 0.00000, -0.0900, 0.00000, 0.00000, 0.00000,
+      1.00000;
 
-   TA_HVLP_BASELINK.matrix() = T_HVLP_BASELINK;
-   TA_X1_HVLP.matrix() = T_X1_HVLP;
-   TA_X1_IMU1.matrix() = T_X1_IMU1;
-   TA_IMU1_X1 = TA_X1_IMU1.inverse();
-   std::string to_frame1 = "HVLP";
-   std::string from_frame1 = "BASELINK";
-   std::string to_frame2 = "X1";
-   std::string from_frame2 = "HVLP";
-   std::string to_frame3 = "X1";
-   std::string from_frame3 = "IMU1";
+  TA_HVLP_BASELINK.matrix() = T_HVLP_BASELINK;
+  TA_X1_HVLP.matrix() = T_X1_HVLP;
+  TA_X1_IMU1.matrix() = T_X1_IMU1;
+  TA_IMU1_X1 = TA_X1_IMU1.inverse();
+  std::string to_frame1 = "HVLP";
+  std::string from_frame1 = "BASELINK";
+  std::string to_frame2 = "X1";
+  std::string from_frame2 = "HVLP";
+  std::string to_frame3 = "X1";
+  std::string from_frame3 = "IMU1";
 
-   Tree1.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
-   Tree1.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
-   REQUIRE_NOTHROW(T = Tree1.GetTransformEigen(to_frame2, from_frame1));
-   Tree1.AddTransform(TA_X1_IMU1, to_frame3, from_frame3);
-   REQUIRE_NOTHROW(T = Tree1.GetTransformEigen(to_frame2, from_frame1));
-   //
-   // Tree2.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
-   // Tree2.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
-   // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(to_frame2, from_frame1));
-   // Tree2.AddTransform(TA_IMU1_X1, from_frame3, to_frame3);
-   // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(to_frame2, from_frame1));
-   // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(from_frame1, from_frame3));
+  Tree1.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
+  Tree1.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
+  REQUIRE_NOTHROW(T = Tree1.GetTransformEigen(to_frame2, from_frame1));
+  Tree1.AddTransform(TA_X1_IMU1, to_frame3, from_frame3);
+  REQUIRE_NOTHROW(T = Tree1.GetTransformEigen(to_frame2, from_frame1));
+  //
+  // Tree2.AddTransform(TA_HVLP_BASELINK, to_frame1, from_frame1);
+  // Tree2.AddTransform(TA_X1_HVLP, to_frame2, from_frame2);
+  // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(to_frame2, from_frame1));
+  // Tree2.AddTransform(TA_IMU1_X1, from_frame3, to_frame3);
+  // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(to_frame2, from_frame1));
+  // REQUIRE_NOTHROW(T = Tree2.GetTransformEigen(from_frame1, from_frame3));
 }
 
-TEST_CASE("Test multiple parent + interpolation for TransformStamped"){
+TEST_CASE("Test multiple parent + interpolation for TransformStamped") {
   beam_calibration::TfTree Tree, TreeStatic;
   geometry_msgs::TransformStamped tf_msg1A, tf_msg1B, tf_msg1C, tf_msg2,
-                                  tf_msg_lookup1, tf_msg_lookup2;
+      tf_msg_lookup1, tf_msg_lookup2;
 
   ros::Time transform_time1(1, 0), transform_time2(2, 0),
-            lookup_time1(1, 500000000), lookup_time2(3, 0);
+      lookup_time1(1, 500000000), lookup_time2(3, 0);
 
   std::string from_frame = "hvlp_link";
   std::string to_frame1 = "X1_link";
@@ -147,31 +145,26 @@ TEST_CASE("Test multiple parent + interpolation for TransformStamped"){
 
   Tree.AddTransform(tf_msg1A, false);
   Tree.AddTransform(tf_msg1B, false);
-  REQUIRE_NOTHROW(tf_msg_lookup1 = Tree.GetTransformROS(to_frame1,
-                                                       from_frame,
-                                                       lookup_time1));
+  REQUIRE_NOTHROW(tf_msg_lookup1 = Tree.GetTransformROS(to_frame1, from_frame,
+                                                        lookup_time1));
 
-  REQUIRE_THROWS(tf_msg_lookup2 = Tree.GetTransformROS(to_frame1,
-                                                       from_frame,
-                                                       lookup_time2));
+  REQUIRE_THROWS(tf_msg_lookup2 =
+                     Tree.GetTransformROS(to_frame1, from_frame, lookup_time2));
 
   REQUIRE(tf_msg_lookup1.transform.translation.z == 1.5);
 
-  REQUIRE_NOTHROW(tf_msg_lookup2 = Tree.GetTransformROS(to_frame1,
-                                                       from_frame,
-                                                       transform_time1));
+  REQUIRE_NOTHROW(tf_msg_lookup2 = Tree.GetTransformROS(to_frame1, from_frame,
+                                                        transform_time1));
   Tree.AddTransform(tf_msg2, false);
-  REQUIRE_NOTHROW(tf_msg_lookup1 = Tree.GetTransformROS(to_frame2,
-                                                       from_frame,
-                                                       transform_time1));
+  REQUIRE_NOTHROW(tf_msg_lookup1 = Tree.GetTransformROS(to_frame2, from_frame,
+                                                        transform_time1));
   TreeStatic.AddTransform(tf_msg1A, true);
   TreeStatic.AddTransform(tf_msg2, true);
-  REQUIRE_NOTHROW(tf_msg_lookup2 = TreeStatic.GetTransformROS(to_frame2,
-                                                             from_frame,
-                                                             transform_time1));
+  REQUIRE_NOTHROW(tf_msg_lookup2 = TreeStatic.GetTransformROS(
+                      to_frame2, from_frame, transform_time1));
 }
 
-TEST_CASE("Test same dynamic transform case with same timestamp"){
+TEST_CASE("Test same dynamic transform case with same timestamp") {
   beam_calibration::TfTree Tree;
   geometry_msgs::TransformStamped tf_msg1, tf_msg2, tf_msg;
   ros::Time::init();
@@ -206,29 +199,26 @@ TEST_CASE("Test same dynamic transform case with same timestamp"){
 
   Tree.AddTransform(tf_msg1);
   Tree.AddTransform(tf_msg2);
-  REQUIRE_NOTHROW(tf_msg = Tree.GetTransformROS(to_frame,
-                                             from_frame,
-                                             transform_time));
+  REQUIRE_NOTHROW(
+      tf_msg = Tree.GetTransformROS(to_frame, from_frame, transform_time));
 }
 
-TEST_CASE("Test loading tree from .json"){
+TEST_CASE("Test loading tree from .json") {
   // create empty objects
   beam_calibration::TfTree Tree;
   beam::Mat4 T_BASELINK_HVLP, T_X1_HVLP, T_BASELINK_HVLP_JSON, T_X1_HVLP_JSON,
-             T_BASELINK_X1, T_BASELINK_X1_JSON;
+      T_BASELINK_X1, T_BASELINK_X1_JSON;
   int round_precision = 7;
 
   // add true data
   std::string calib_date = "2018_12_20";
-  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100,
-                     0.00000, 1.00000, 0.00000, 0.00000,
-                     0.00000, 0.00000, 1.00000, 0.35200,
-                     0.00000, 0.00000, 0.00000, 1.00000;
+  T_BASELINK_HVLP << 1.00000, 0.00000, 0.00000, 0.2100, 0.00000, 1.00000,
+      0.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.35200, 0.00000, 0.00000,
+      0.00000, 1.00000;
 
-  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800,
-               0.00000, 1.00000, 0.00000, 0.00000,
-               1.00000, 0.00000, 0.00000, -0.0400,
-               0.00000, 0.00000, 0.00000,  1.00000;
+  T_X1_HVLP << 0.00000, 0.00000, -1.00000, -0.0800, 0.00000, 1.00000, 0.00000,
+      0.00000, 1.00000, 0.00000, 0.00000, -0.0400, 0.00000, 0.00000, 0.00000,
+      1.00000;
 
   T_BASELINK_X1 = T_BASELINK_HVLP * T_X1_HVLP.inverse();
 
@@ -248,7 +238,8 @@ TEST_CASE("Test loading tree from .json"){
   std::string to_frame3 = "BASELINK";
   std::string from_frame3 = "X1";
 
-  T_BASELINK_HVLP_JSON = Tree.GetTransformEigen(to_frame1, from_frame1).matrix();
+  T_BASELINK_HVLP_JSON =
+      Tree.GetTransformEigen(to_frame1, from_frame1).matrix();
   T_X1_HVLP_JSON = Tree.GetTransformEigen(to_frame2, from_frame2).matrix();
   T_BASELINK_X1_JSON = Tree.GetTransformEigen(to_frame3, from_frame3).matrix();
 

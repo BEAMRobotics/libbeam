@@ -42,8 +42,8 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
 
 beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
-    const std::vector<Eigen::Matrix4d, beam_cv::AlignMat4d>& T_cam_world,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+    const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& T_cam_world,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
     double reprojection_threshold, double max_dist) {
   if (pixels.size() != T_cam_world.size()) { return {}; }
   int rows = pixels.size() * 2;
@@ -86,8 +86,8 @@ std::vector<beam::opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v) {
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v) {
   // loop through point vector and perform single point triangulation
   std::vector<beam::opt<Eigen::Vector3d>> result_pts3d;
   for (uint32_t i = 0; i < p1_v.size(); i++) {

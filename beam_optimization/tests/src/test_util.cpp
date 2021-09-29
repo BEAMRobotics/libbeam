@@ -16,15 +16,17 @@ void OutputTransformInformation(const Eigen::Matrix4d& T,
   Eigen::Vector3d rpy = R.eulerAngles(0, 1, 2);
   std::cout << transform_name << ":\n"
             << T << "\n"
-            << "rpy (deg): [" << beam::Rad2Deg(beam::WrapToPi(rpy[0]))
-            << ", " << beam::Rad2Deg(beam::WrapToPi(rpy[1])) << ", "
+            << "rpy (deg): [" << beam::Rad2Deg(beam::WrapToPi(rpy[0])) << ", "
+            << beam::Rad2Deg(beam::WrapToPi(rpy[1])) << ", "
             << beam::Rad2Deg(beam::WrapToPi(rpy[2])) << "]\n";
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector4d, AlignVec4d> &points) {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(
+    const std::vector<Eigen::Vector4d, beam::AlignVec4d>& points) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
 
-  for (uint16_t i = 0; i < points.size(); i ++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     pcl::PointXYZ to_add = EigenPointToPCL(points.at(i).head(3));
     return_cloud->push_back(to_add);
   }
@@ -32,10 +34,12 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vect
   return return_cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector4d> &points) {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+    MakePointCloud(const std::vector<Eigen::Vector4d>& points) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
 
-  for (uint16_t i = 0; i < points.size(); i ++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     pcl::PointXYZ to_add = EigenPointToPCL(points.at(i).head(3));
     return_cloud->push_back(to_add);
   }
@@ -43,10 +47,12 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vect
   return return_cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector2d, AlignVec2d> &points) {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(
+    const std::vector<Eigen::Vector2d, beam::AlignVec2d>& points) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
 
-  for (uint16_t i = 0; i < points.size(); i ++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     pcl::PointXYZ to_add;
     to_add.x = points.at(i).x();
     to_add.y = points.at(i).y();
@@ -55,13 +61,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vect
   }
 
   return return_cloud;
-
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector2d> &points) {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+    MakePointCloud(const std::vector<Eigen::Vector2d>& points) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
 
-  for (uint16_t i = 0; i < points.size(); i ++) {
+  for (uint16_t i = 0; i < points.size(); i++) {
     pcl::PointXYZ to_add;
     to_add.x = points.at(i).x();
     to_add.y = points.at(i).y();
@@ -70,7 +77,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vect
   }
 
   return return_cloud;
-
 }
 
-}} // namespace beam_optimization::util
+}} // namespace beam_optimization::test_util

@@ -8,6 +8,8 @@
 #include <Eigen/StdVector>
 #include <ros/time.h>
 
+#include <beam_utils/math.h>
+
 namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
@@ -102,16 +104,13 @@ public:
    * @brief for setting poses
    * @param _poses transforms from fixed frame to moving frame
    */
-  void SetPoses(
-      const std::vector<Eigen::Affine3d,
-                        Eigen::aligned_allocator<Eigen::Affine3d>>& _poses);
+  void SetPoses(const std::vector<Eigen::Affine3d, beam::AlignAff3d>& _poses);
 
   /**
    * @brief for getting the poses
    * @return poses transforms from fixed frame to moving frame
    */
-  std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
-      GetPoses();
+  std::vector<Eigen::Affine3d, beam::AlignAff3d> GetPoses();
 
   /**
    * @brief for adding a single pose
@@ -173,7 +172,7 @@ public:
                    const std::string odom_topic);
 
   std::vector<ros::Time> time_stamps;
-  std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> poses;
+  std::vector<Eigen::Affine3d, beam::AlignAff3d> poses;
   std::string bag_name, pose_file_date, fixed_frame, moving_frame;
 };
 

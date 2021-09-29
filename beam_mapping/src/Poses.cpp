@@ -1,16 +1,16 @@
-#include "beam_mapping/Poses.h"
+#include <beam_mapping/Poses.h>
 
-#include "beam_utils/log.h"
-#include "beam_utils/math.h"
-
-#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
+
+#include <boost/filesystem.hpp>
 #include <nav_msgs/Odometry.h>
 #include <nlohmann/json.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <tf2_eigen/tf2_eigen.h>
+
+#include <beam_utils/log.h>
 
 namespace beam_mapping {
 
@@ -68,13 +68,11 @@ void Poses::AddSingleTimeStamp(const ros::Time& _time_stamp) {
 }
 
 void Poses::SetPoses(
-    const std::vector<Eigen::Affine3d,
-                      Eigen::aligned_allocator<Eigen::Affine3d>>& _poses) {
+    const std::vector<Eigen::Affine3d, beam::AlignAff3d>& _poses) {
   poses = _poses;
 }
 
-std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
-    Poses::GetPoses() {
+std::vector<Eigen::Affine3d, beam::AlignAff3d> Poses::GetPoses() {
   return poses;
 }
 
@@ -241,7 +239,8 @@ void Poses::LoadFromTXT(const std::string input_pose_file_path) {
     std::getline(infile, line, ',');
     if (line.length() > 0) {
       try {
-        uint64_t n_sec = std::stod(line.substr(line.length() - 9, line.length()));
+        uint64_t n_sec =
+            std::stod(line.substr(line.length() - 9, line.length()));
         uint64_t sec = std::stod(line.substr(0, line.length() - 9));
         time_stamp_k.sec = sec;
         time_stamp_k.nsec = n_sec;

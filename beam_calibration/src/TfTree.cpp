@@ -15,7 +15,6 @@ void TfTree::LoadJSON(const std::string& file_location) {
   BEAM_INFO("Loading file: {}", file_location);
 
   int calibration_counter = 0;
-  int value_counter = 0;
   std::string type;
   std::string date;
   std::string method;
@@ -32,7 +31,6 @@ void TfTree::LoadJSON(const std::string& file_location) {
     method = J["method"];
     for (const auto& calibration : J["calibrations"]) {
       calibration_counter++;
-      value_counter = 0;
 
       std::string to_frame = calibration["to_frame"];
       std::string from_frame = calibration["from_frame"];

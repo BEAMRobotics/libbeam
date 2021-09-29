@@ -14,16 +14,16 @@ namespace beam_cv {
 beam::opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v) {
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v) {
   if (p2_v.size() < 8 || p1_v.size() < 8 || p1_v.size() != p2_v.size()) {
     BEAM_CRITICAL("Invalid number of input point matches.");
     return {};
   }
   int N = p2_v.size();
   // normalize input points via back projection
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> X_r;
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> X_c;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> X_r;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> X_c;
   for (int i = 0; i < N; i++) {
     Eigen::Vector3d xpr;
     Eigen::Vector3d xpc;
@@ -61,20 +61,20 @@ beam::opt<Eigen::Matrix3d> RelativePoseEstimator::EssentialMatrix8Point(
   return E;
 }
 
-beam::opt<std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>>
+beam::opt<std::vector<Eigen::Matrix3d, beam::AlignMat3d>>
     RelativePoseEstimator::EssentialMatrix7Point(
         const std::shared_ptr<beam_calibration::CameraModel>& cam1,
         const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-        const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-        const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v) {
+        const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+        const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v) {
   if (p2_v.size() < 7 || p1_v.size() < 7 || p1_v.size() != p2_v.size()) {
     BEAM_CRITICAL("Invalid number of input point matches.");
     return {};
   }
   int N = p2_v.size();
   // normalize input points via back projection
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> X_r;
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> X_c;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> X_r;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> X_c;
   for (int i = 0; i < N; i++) {
     Eigen::Vector3d xpr;
     Eigen::Vector3d xpc;
@@ -104,7 +104,7 @@ beam::opt<std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>>
   Eigen::VectorXd fvec1 = svd.matrixV().col(7);
   Eigen::VectorXd fvec2 = svd.matrixV().col(8);
 
-  std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d> Fmat(2);
+  std::vector<Eigen::Matrix3d, beam::AlignMat3d> Fmat(2);
   Fmat[0] << fvec1(0), fvec1(3), fvec1(6), fvec1(1), fvec1(4), fvec1(7),
       fvec1(2), fvec1(5), fvec1(8);
   Fmat[1] << fvec2(0), fvec2(3), fvec2(6), fvec2(1), fvec2(4), fvec2(7),
@@ -135,7 +135,7 @@ beam::opt<std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>>
   Eigen::VectorXd roots;
   beam::JenkinsTraubSolver solver(coefficients, &roots, NULL);
   solver.ExtractRoots();
-  std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d> E;
+  std::vector<Eigen::Matrix3d, beam::AlignMat3d> E;
   // check sign consistency
   for (int i = 0; i < roots.size(); ++i) {
     Eigen::Matrix3d Ftmp = roots(i) * Fmat[0] + (1 - roots(i)) * Fmat[1];
@@ -158,8 +158,8 @@ beam::opt<std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>>
 beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v, EstimatorMethod method,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v, EstimatorMethod method,
     int max_iterations, double inlier_threshold, int seed) {
   if (p2_v.size() != p1_v.size()) {
     BEAM_CRITICAL("Point match vectors are not of the same size.");
@@ -188,10 +188,10 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   Eigen::Matrix4d current_pose;
   bool found_valid = false;
   for (int epoch = 0; epoch < max_iterations; epoch++) {
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pr_copy = p1_v;
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pc_copy = p2_v;
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> sampled_pr;
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> sampled_pc;
+    std::vector<Eigen::Vector2i, beam::AlignVec2i> pr_copy = p1_v;
+    std::vector<Eigen::Vector2i, beam::AlignVec2i> pc_copy = p2_v;
+    std::vector<Eigen::Vector2i, beam::AlignVec2i> sampled_pr;
+    std::vector<Eigen::Vector2i, beam::AlignVec2i> sampled_pc;
     // fill new point vectors with randomly sampled points from xs and xss
     int n = pr_copy.size();
     for (uint32_t i = 0; i < N; i++) {
@@ -203,14 +203,14 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       n--;
     }
     // perform estimation of the given method
-    std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d> Evec;
+    std::vector<Eigen::Matrix3d, beam::AlignMat3d> Evec;
     if (method == EstimatorMethod::EIGHTPOINT) {
       beam::opt<Eigen::Matrix3d> E =
           RelativePoseEstimator::EssentialMatrix8Point(cam1, cam2, sampled_pr,
                                                        sampled_pc);
       if (E.has_value()) { Evec.push_back(E.value()); }
     } else if (method == EstimatorMethod::SEVENPOINT) {
-      beam::opt<std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>> E =
+      beam::opt<std::vector<Eigen::Matrix3d, beam::AlignMat3d>> E =
           RelativePoseEstimator::EssentialMatrix7Point(cam1, cam2, sampled_pr,
                                                        sampled_pc);
       if (E.has_value()) { Evec = E.value(); }
@@ -220,8 +220,8 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     }
 
     for (auto& E : Evec) {
-      std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d> R;
-      std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> t;
+      std::vector<Eigen::Matrix3d, beam::AlignMat3d> R;
+      std::vector<Eigen::Vector3d, beam::AlignVec3d> t;
       RelativePoseEstimator::RtFromE(E, R, t);
       beam::opt<Eigen::Matrix4d> pose;
       int inliers = RelativePoseEstimator::RecoverPose(
@@ -245,8 +245,8 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
 }
 
 void RelativePoseEstimator::RtFromE(const Eigen::Matrix3d& E,
-                                    std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>& R,
-                                    std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& t) {
+                                    std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
+                                    std::vector<Eigen::Vector3d, beam::AlignVec3d>& t) {
   Eigen::JacobiSVD<Eigen::Matrix3d> E_svd(E, Eigen::ComputeFullU |
                                                  Eigen::ComputeFullV);
   Eigen::Matrix3d U, V;
@@ -270,10 +270,10 @@ void RelativePoseEstimator::RtFromE(const Eigen::Matrix3d& E,
 int RelativePoseEstimator::RecoverPose(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v,
-    const std::vector<Eigen::Matrix3d, beam_cv::AlignMat3d>& R,
-    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& t, beam::opt<Eigen::Matrix4d>& pose,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
+    const std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
+    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& t, beam::opt<Eigen::Matrix4d>& pose,
     double inlier_threshold) {
   Eigen::Matrix4d T_cam2_world;
   // iterate through each possibility

@@ -66,8 +66,8 @@ TEST_CASE("Test matching: ORB Desc + ORB Det") {
   std::shared_ptr<beam_cv::Detector> detector =
       std::make_shared<beam_cv::ORBDetector>();
 
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
@@ -96,8 +96,8 @@ TEST_CASE("Test matching: BEBLID Desc + ORB Det") {
   std::shared_ptr<beam_cv::Detector> detector =
       std::make_shared<beam_cv::ORBDetector>();
 
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
@@ -126,8 +126,8 @@ TEST_CASE("Test matching: SIFT Desc + SIFT Det") {
   std::shared_ptr<beam_cv::Detector> detector =
       std::make_shared<beam_cv::SIFTDetector>();
 
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
@@ -155,8 +155,8 @@ TEST_CASE("Test matching: SIFT Desc + GFTT Det") {
   std::shared_ptr<beam_cv::Detector> detector =
       std::make_shared<beam_cv::GFTTDetector>();
 
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 
@@ -185,8 +185,8 @@ TEST_CASE("Test matching: BRISK Desc + FAST Det") {
   std::shared_ptr<beam_cv::Detector> detector =
       std::make_shared<beam_cv::FASTDetector>();
 
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pL_v;
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pR_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pL_v;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pR_v;
   beam_cv::DetectComputeAndMatch(imL, imR, descriptor, detector, matcher, pL_v,
                                  pR_v);
 

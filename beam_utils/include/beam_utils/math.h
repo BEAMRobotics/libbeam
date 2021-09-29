@@ -49,6 +49,15 @@ typedef Eigen::MatrixXd MatX;
 typedef Eigen::Affine3d Affine3;
 
 typedef Eigen::Quaterniond Quaternion;
+
+typedef Eigen::aligned_allocator<Eigen::Vector4d> AlignVec4d;
+typedef Eigen::aligned_allocator<Eigen::Vector3d> AlignVec3d;
+typedef Eigen::aligned_allocator<Eigen::Vector2d> AlignVec2d;
+typedef Eigen::aligned_allocator<Eigen::Vector2i> AlignVec2i;
+typedef Eigen::aligned_allocator<Eigen::Matrix3d> AlignMat3d;
+typedef Eigen::aligned_allocator<Eigen::Matrix4d> AlignMat4d;
+typedef Eigen::aligned_allocator<Eigen::Affine3d> AlignAff3d;
+
 #endif // BEAM_EIGEN_TYPEDEF
 
 static std::string _tmp_string{};
@@ -294,6 +303,16 @@ beam::Mat3 SkewTransform(const beam::Vec3& V);
  * @return 4x4 inverted transformation matrix
  **/
 Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T);
+
+/**
+ * @brief Average a set of transforms by converting each to lie algebra space,
+ *summing their quantities in this space, then dividing all by the number of
+ *transforms and converting back to Lie Group
+ * @param transforms vector of matrix4d transforms
+ * @return averaged transform
+ **/
+Eigen::Matrix4d AverageTransforms(
+    const std::vector<Eigen::Matrix4d, AlignMat4d>& transforms);
 
 /**
  * @brief Fits plane to set of points

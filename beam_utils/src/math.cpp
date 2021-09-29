@@ -364,13 +364,13 @@ bool IsTransformationMatrix(const Eigen::Matrix4d& T, std::string& summary,
   for (uint8_t i = 0; i < 4; i++) {
     for (uint8_t j = 0; j < 4; j++) {
       if (std::isinf(T(i, j))) {
-        summary = "Inf value found at coord. (" + std::to_string(i) +
-                  "" + std::to_string(j) + ").";
+        summary = "Inf value found at coord. (" + std::to_string(i) + "" +
+                  std::to_string(j) + ").";
         return false;
       }
       if (std::isnan(T(i, j))) {
-        summary = "nan value found at coord. (" + std::to_string(i) +
-                  "" + std::to_string(j) + ").";
+        summary = "nan value found at coord. (" + std::to_string(i) + "" +
+                  std::to_string(j) + ").";
         return false;
       }
     }
@@ -380,7 +380,7 @@ bool IsTransformationMatrix(const Eigen::Matrix4d& T, std::string& summary,
   if (T(3, 0) != 0 || T(3, 1) != 0 || T(3, 2) != 0 || T(3, 3) != 1) {
     summary = "Bottom row not equal to [0 0 0 1]";
     return false;
-  } 
+  }
 
   return IsRotationMatrix(R, summary, precision);
 }
@@ -388,7 +388,7 @@ bool IsTransformationMatrix(const Eigen::Matrix4d& T, std::string& summary,
 bool IsRotationMatrix(const Eigen::Matrix3d& R, std::string& summary,
                       int precision) {
   Eigen::Matrix3d shouldBeIdentity = RoundMatrix(R * R.transpose(), precision);
-  if(!shouldBeIdentity.isIdentity()){
+  if (!shouldBeIdentity.isIdentity()) {
     summary = "R R^T != Identity";
     return false;
   }
@@ -398,7 +398,7 @@ bool IsRotationMatrix(const Eigen::Matrix3d& R, std::string& summary,
   if (detRRound != 1) {
     summary = "Det(R) != 1";
     return false;
-  } 
+  }
 
   return true;
 }
@@ -437,7 +437,7 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
                                 const beam::TimePoint& t) {
   double w2 = 1.0 * (t - t1) / (t2 - t1);
 
-  beam::Mat4 T1 = m1; 
+  beam::Mat4 T1 = m1;
   beam::Mat4 T2 = m2;
   beam::Mat4 T;
 
@@ -485,6 +485,32 @@ Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T) {
   T_inv.block(0, 3, 3, 1) =
       -T.block(0, 0, 3, 3).transpose() * T.block(0, 3, 3, 1);
   return T_inv;
+}
+
+Eigen::Matrix4d AverageTransforms(
+    const std::vector<Eigen::Matrix4d, AlignMat4d>& transforms) {
+  if (transforms.size() == 1) { return transforms[0]; }
+
+  std::vector<double> sum(6);
+  for (const Eigen::Matrix4d T : transforms) {
+    Eigen::Vector3d r = beam::RToLieAlgebra(T.block(0, 0, 3, 3));
+    sum[0] += T(0, 3);
+    sum[1] += T(1, 3);
+    sum[2] += T(2, 3);
+    sum[3] += r[0];
+    sum[4] += r[1];
+    sum[5] += r[2];
+  }
+
+  Eigen::Matrix4d T_AVG = Eigen::Matrix4d::Identity();
+  Eigen::Vector3d r(sum[3] / transforms.size(), sum[4] / transforms.size(),
+                    sum[5] / transforms.size());
+  T_AVG.block(0, 0, 3, 3) = beam::LieAlgebraToR(r);
+  T_AVG(0, 3) = sum[0] / transforms.size();
+  T_AVG(1, 3) = sum[1] / transforms.size();
+  T_AVG(2, 3) = sum[2] / transforms.size();
+
+  return T_AVG;
 }
 
 std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {

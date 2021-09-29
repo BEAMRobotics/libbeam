@@ -14,12 +14,6 @@
 
 namespace beam_cv {
 
-typedef Eigen::aligned_allocator<Eigen::Vector4d> AlignVec4d;
-typedef Eigen::aligned_allocator<Eigen::Vector3d> AlignVec3d;
-typedef Eigen::aligned_allocator<Eigen::Vector2d> AlignVec2d;
-typedef Eigen::aligned_allocator<Eigen::Vector2i> AlignVec2i;
-typedef Eigen::aligned_allocator<Eigen::Matrix3d> AlignMat3d;
-typedef Eigen::aligned_allocator<Eigen::Matrix4d> AlignMat4d;
 /**
  * @brief Method to perform histogram equalization
  * @param input image
@@ -90,14 +84,14 @@ cv::Point2f ConvertKeypoint(const Eigen::Vector2d& keypoint);
  * @param keypoints input keypoints
  * @param vec_keypoints converted keypoints
  */
-std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>
+std::vector<Eigen::Vector2d, beam::AlignVec2d>
     ConvertKeypoints(const std::vector<cv::KeyPoint>& keypoints);
 
 /** @brief Convert a vector of cv::Point2f to a vector of Eigen::Vector2d
  * @param keypoints input keypoints
  * @param vec_keypoints converted keypoints
  */
-std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>
+std::vector<Eigen::Vector2d, beam::AlignVec2d>
     ConvertKeypoints(const std::vector<cv::Point2f>& keypoints);
 
 /** @brief Convert a vector of Eigen::Vector2d to a vector of cv::Point2f
@@ -105,7 +99,7 @@ std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>
  * @param vec_keypoints converted keypoints
  */
 std::vector<cv::Point2f> ConvertKeypoints(
-    const std::vector<Eigen::Vector2d, beam_cv::AlignVec2d>& keypoints);
+    const std::vector<Eigen::Vector2d, beam::AlignVec2d>& keypoints);
 
 /**
  * @brief computes number of inliers projections
@@ -122,8 +116,8 @@ std::vector<cv::Point2f> ConvertKeypoints(
  */
 int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
                  std::shared_ptr<beam_calibration::CameraModel> cam2,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
                  const Eigen::Matrix4d& T_cam1_world,
                  const Eigen::Matrix4d& T_cam2_world, double inlier_threshold);
 
@@ -144,8 +138,8 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
  */
 int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
                  std::shared_ptr<beam_calibration::CameraModel> cam2,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p1_v,
-                 const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p2_v,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
                  const std::vector<beam::opt<Eigen::Vector3d>>& points,
                  const Eigen::Matrix4d& T_cam1_world,
                  const Eigen::Matrix4d& T_cam2_world, double inlier_threshold);
@@ -159,8 +153,8 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
  */
 int CheckInliers(
     std::shared_ptr<beam_calibration::CameraModel> cam,
-    const std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
-    const std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
+    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
     const Eigen::Matrix4d& T_cam_world, double inlier_threshold);
 
 /**
@@ -178,8 +172,8 @@ void DetectComputeAndMatch(
     const std::shared_ptr<beam_cv::Descriptor>& descriptor,
     const std::shared_ptr<beam_cv::Detector>& detector,
     const std::shared_ptr<beam_cv::Matcher>& matcher,
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pL_v,
-    std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pR_v);
+    std::vector<Eigen::Vector2i, beam::AlignVec2i>& pL_v,
+    std::vector<Eigen::Vector2i, beam::AlignVec2i>& pR_v);
 
 /**
  * @brief Detects features and computes descriptors using the

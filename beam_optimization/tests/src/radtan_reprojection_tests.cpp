@@ -21,8 +21,7 @@ namespace beam_optimization {
 
 const bool VISUALIZATION = false;
 
-using AlignVec2d = Eigen::aligned_allocator<Eigen::Vector2d>;
-using AlignVec4d = Eigen::aligned_allocator<Eigen::Vector4d>;
+using namespace beam;
 
 ceres::Solver::Options ceres_solver_options_;
 std::unique_ptr<ceres::LossFunction> loss_function_;
@@ -95,7 +94,7 @@ TEST_CASE("Test rt projection - no noise") {
   beam::Visualizer test_vis("test_1_vis");
 
   // create keypoints
-  std::vector<Eigen::Vector4d, AlignVec4d> points;
+  std::vector<Eigen::Vector4d, beam::AlignVec4d> points;
   double max_distance_x = 2, max_distance_y = 2, max_distance_z = 4;
   for (int i = 0; i < 80; i++) {
     double x = ((double)std::rand() / (RAND_MAX)-0.5) * 2 * max_distance_x;
@@ -121,7 +120,7 @@ TEST_CASE("Test rt projection - no noise") {
   Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);
 
   // create projected (detected) points - no noise
-  std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
+  std::vector<Eigen::Vector2d, beam::AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
@@ -141,8 +140,8 @@ TEST_CASE("Test rt projection - no noise") {
   if (VISUALIZATION) {
     target_cloud = test_util::MakePointCloud(pixels);
 
-    std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
@@ -228,8 +227,8 @@ TEST_CASE("Test rt projection - no noise") {
       beam::QuaternionAndTranslationToTransformMatrix(results_perturbed_init);
 
   if (VISUALIZATION) {
-    std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> final_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> final_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
@@ -284,7 +283,7 @@ TEST_CASE("Test rt projection - with noise") {
   beam::Visualizer test2_vis("test_2_vis");
 
   // create keypoints
-  std::vector<Eigen::Vector4d, AlignVec4d> points;
+  std::vector<Eigen::Vector4d, beam::AlignVec4d> points;
   double max_distance_x = 2, max_distance_y = 2, max_distance_z = 4;
   for (int i = 0; i < 80; i++) {
     double x = ((double)std::rand() / (RAND_MAX)-0.5) * 2 * max_distance_x;
@@ -311,7 +310,7 @@ TEST_CASE("Test rt projection - with noise") {
   Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);
 
   // create projected (detected) points - with noise
-  std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
+  std::vector<Eigen::Vector2d, beam::AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
@@ -340,8 +339,8 @@ TEST_CASE("Test rt projection - with noise") {
   if (VISUALIZATION) {
     target_cloud = test_util::MakePointCloud(pixels);
 
-    std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
@@ -426,8 +425,8 @@ TEST_CASE("Test rt projection - with noise") {
       beam::QuaternionAndTranslationToTransformMatrix(results_perturbed_init);
 
   if (VISUALIZATION) {
-    std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> final_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> final_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
@@ -483,7 +482,7 @@ TEST_CASE("Test rt projection - with clipping") {
 
   // create keypoints (larger spread than other test cases so perturbation for
   // clipping doesn't have to be too great)
-  std::vector<Eigen::Vector4d, AlignVec4d> points;
+  std::vector<Eigen::Vector4d, beam::AlignVec4d> points;
   double max_distance_x = 4, max_distance_y = 4, max_distance_z = 4;
   for (int i = 0; i < 80; i++) {
     double x = ((double)std::rand() / (RAND_MAX)-0.5) * 2 * max_distance_x;
@@ -509,7 +508,7 @@ TEST_CASE("Test rt projection - with clipping") {
   Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);
 
   // create projected (detected) points - no noise
-  std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
+  std::vector<Eigen::Vector2d, beam::AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
@@ -529,8 +528,8 @@ TEST_CASE("Test rt projection - with clipping") {
   if (VISUALIZATION) {
     target_cloud = test_util::MakePointCloud(pixels);
 
-    std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
@@ -618,8 +617,8 @@ TEST_CASE("Test rt projection - with clipping") {
       beam::QuaternionAndTranslationToTransformMatrix(results_perturbed_init);
 
   if (VISUALIZATION) {
-    std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> final_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> final_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
@@ -675,7 +674,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
 
   // create keypoints (larger spread than other test cases so perturbation for
   // clipping doesn't have to be too great)
-  std::vector<Eigen::Vector4d, AlignVec4d> points;
+  std::vector<Eigen::Vector4d, beam::AlignVec4d> points;
   double max_distance_x = 4, max_distance_y = 4, max_distance_z = 4;
   for (int i = 0; i < 80; i++) {
     double x = ((double)std::rand() / (RAND_MAX)-0.5) * 2 * max_distance_x;
@@ -703,7 +702,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
   Eigen::Matrix4d T_CW_pert = beam::PerturbTransformDegM(T_CW, perturbation);
 
   // create projected (detected) points - no noise
-  std::vector<Eigen::Vector2d, AlignVec2d> pixels(points.size());
+  std::vector<Eigen::Vector2d, beam::AlignVec2d> pixels(points.size());
   std::vector<bool> pixels_valid(points.size());
   for (size_t i = 0; i < points.size(); i++) {
     Eigen::Vector4d point_transformed = T_CW * points[i];
@@ -723,8 +722,8 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
   if (VISUALIZATION) {
     target_cloud = test_util::MakePointCloud(pixels);
 
-    std::vector<Eigen::Vector4d, AlignVec4d> perturbed_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> perturbed_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       perturbed_points[i] = T_CW_pert * points[i];
@@ -810,8 +809,8 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
       beam::QuaternionAndTranslationToTransformMatrix(results_perturbed_init);
 
   if (VISUALIZATION) {
-    std::vector<Eigen::Vector4d, AlignVec4d> final_points(points.size());
-    std::vector<Eigen::Vector2d, AlignVec2d> final_pixels(points.size());
+    std::vector<Eigen::Vector4d, beam::AlignVec4d> final_points(points.size());
+    std::vector<Eigen::Vector2d, beam::AlignVec2d> final_pixels(points.size());
 
     for (size_t i = 0; i < points.size(); i++) {
       final_points[i] = T_CW_opt2 * points[i];
