@@ -30,6 +30,7 @@ class MapBuilder {
     std::string topic;
     std::string frame;
     bool use_cropbox;
+    bool remove_outside_points;
     Eigen::Vector3f cropbox_min;
     Eigen::Vector3f cropbox_max;
   };
@@ -130,7 +131,7 @@ private:
    * @param lidar_number used for getting crop box parameters
    * @return cropped_cloud
    */
-  PointCloud::Ptr CropPointCloud(PointCloud::Ptr cloud, uint8_t lidar_number);
+  PointCloud CropLidarRaw(const PointCloud& cloud, uint8_t lidar_number);
 
   /**
    * @brief method to load configuration from json

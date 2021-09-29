@@ -41,6 +41,7 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
     lidar_config.topic = lidar["topic"];
     lidar_config.frame = lidar["frame"];
     lidar_config.use_cropbox = lidar["use_cropbox"];
+    lidar_config.remove_outside_points = lidar["remove_outside_points"];
     std::vector<float> min_ = lidar["cropbox_min"];
     std::vector<float> max_ = lidar["cropbox_max"];
     Eigen::Vector3f min(min_[0], min_[1], min_[2]);
@@ -126,15 +127,16 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
   }
 }
 
-PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
-                                           uint8_t lidar_number) {
+PointCloud MapBuilder::CropLidarRaw(const PointCloud& cloud,
+                                    uint8_t lidar_number) {
   if (!lidars_[lidar_number].use_cropbox) { return cloud; }
   beam_filtering::CropBox<PointT> cropper;
   cropper.SetMinVector(lidars_[lidar_number].cropbox_min);
   cropper.SetMaxVector(lidars_[lidar_number].cropbox_max);
-  cropper.SetInputCloud(cloud);
+  cropper.SetRemoveOutsidePoints(lidars_[lidar_number].remove_outside_points);
+  cropper.SetInputCloud(std::make_shared<PointCloud>(cloud));
   cropper.Filter();
-  return std::make_shared<PointCloud>(cropper.GetFilteredCloud());
+  return cropper.GetFilteredCloud();
 }
 
 bool MapBuilder::CheckPoseChange() {
@@ -187,11 +189,12 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
   if (save_scan) {
     pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
         std::make_shared<pcl::PCLPointCloud2>();
-    PointCloud::Ptr cloud_tmp = std::make_shared<PointCloud>();
+    PointCloud cloud_tmp;
     beam::pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
-    pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
+    pcl::fromPCLPointCloud2(*pcl_pc2_tmp, cloud_tmp);
+    PointCloud cloud_cropped = CropLidarRaw(cloud_tmp, lidar_number);
     PointCloud cloud_filtered =
-        beam_filtering::FilterPointCloud(*cloud_tmp, input_filters_);
+        beam_filtering::FilterPointCloud(cloud_cropped, input_filters_);
     scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
     interpolated_poses_.AddSinglePose(scan_pose_current_);
     interpolated_poses_.AddSingleTimeStamp(scan_time);
@@ -281,9 +284,9 @@ void MapBuilder::SaveMaps() {
                             lidars_[i].frame + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
-    if (!beam::SavePointCloud<PointT>(
-            save_path, *maps_[i], beam::PointCloudFileType::PCDBINARY,
-            error_message)) {
+    if (!beam::SavePointCloud<PointT>(save_path, *maps_[i],
+                                      beam::PointCloudFileType::PCDBINARY,
+                                      error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
   }
@@ -294,9 +297,9 @@ void MapBuilder::SaveMaps() {
         save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
-    if (!beam::SavePointCloud<PointT>(
-            save_path, *combined_map, beam::PointCloudFileType::PCDBINARY,
-            error_message)) {
+    if (!beam::SavePointCloud<PointT>(save_path, *combined_map,
+                                      beam::PointCloudFileType::PCDBINARY,
+                                      error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
   }
