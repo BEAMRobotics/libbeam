@@ -45,8 +45,7 @@ TEST_CASE("Test projection and back project with random points") {
   double max_y = 2;
   double min_z = 2;
   double max_z = 10;
-  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
-      points;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
   for (int i = 0; i < numRandomCases1; i++) {
     double x = fRand(min_x, max_x);
     double y = fRand(min_y, max_y);
@@ -85,8 +84,7 @@ TEST_CASE("Test projection and back project with random pixels") {
   double min_v = 0;
   double max_v = h;
 
-  std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i>>
-      pixels;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
   for (int i = 0; i < numRandomCases1; i++) {
     double u = fRand(min_u, max_u);
     double v = fRand(min_v, max_v);
@@ -123,8 +121,7 @@ TEST_CASE("Test projection and back project with invalid points/pixels") {
   double min_v = -h;
   double max_v = 2 * h;
 
-  std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i>>
-      pixels;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
   while (pixels.size() < numRandomCases1) {
     double u = fRand(min_u, max_u);
     double v = fRand(min_v, max_v);
@@ -188,8 +185,7 @@ TEST_CASE("Test jacobian") {
   double max_y = 1;
   double min_z = 2;
   double max_z = 10;
-  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
-      points;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
   for (int i = 0; i < numRandomCases1; i++) {
     double x = fRand(min_x, max_x);
     double y = fRand(min_y, max_y);

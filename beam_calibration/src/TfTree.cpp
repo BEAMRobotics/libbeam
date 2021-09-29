@@ -1,72 +1,66 @@
-#include "beam_calibration/TfTree.h"
+#include <beam_calibration/TfTree.h>
 
-#include <beam_utils/log.h>
 #include <fstream>
 #include <iostream>
+
 #include <tf2_eigen/tf2_eigen.h>
 
-using json = nlohmann::json;
+#include <beam_utils/log.h>
+#include <beam_utils/math.h>
+#include <beam_utils/filesystem.h>
 
 namespace beam_calibration {
 
 void TfTree::LoadJSON(const std::string& file_location) {
-  BEAM_INFO("Loading file: {}", file_location.c_str());
+  BEAM_INFO("Loading file: {}", file_location);
 
-  json J;
-  int calibration_counter = 0, value_counter = 0;
-  std::string type, date, method, to_frame, from_frame;
-  beam::Mat4 T;
-  Eigen::Affine3d TA;
+  int calibration_counter = 0;
+  std::string type;
+  std::string date;
+  std::string method;
 
-  std::ifstream file(file_location);
-  file >> J;
+  nlohmann::json J;
+  if (!beam::ReadJson(file_location, J)) {
+    BEAM_ERROR("Cannot read json tf tree object");
+    throw std::runtime_error{"Cannot read tftree json file."};
+  }
 
-  type = J["type"];
-  date = J["date"];
-  method = J["method"];
+  try {
+    type = J["type"];
+    date = J["date"];
+    method = J["method"];
+    for (const auto& calibration : J["calibrations"]) {
+      calibration_counter++;
+
+      std::string to_frame = calibration["to_frame"];
+      std::string from_frame = calibration["from_frame"];
+      std::vector<double> T_vec = calibration["transform"];
+      Eigen::Matrix4d T = beam::VectorToEigenTransform(T_vec);
+      std::string result;
+      if (!beam::IsTransformationMatrix(T, result)) {
+        BEAM_ERROR("Invalid transformation matrix read, not adding transform. "
+                   "reason: {}",
+                   result);
+        continue;
+      }
+      AddTransform(Eigen::Affine3d(T), to_frame, from_frame);
+    }
+  } catch (...) {
+    BEAM_ERROR("Cannot read tftree json: one or more missing params.");
+    throw std::runtime_error{"Cannot read tftree json file."};
+  }
+
+  BEAM_INFO("Saved {} transforms", calibration_counter);
 
   if (type != "extrinsic_calibration") {
     BEAM_CRITICAL(
         "Attempting to create TfTree with invalid json type. Type: {}",
         type.c_str());
-    throw std::invalid_argument{
+    throw std::runtime_error{
         "Attempting to create TfTree with invalid json type"};
-    return;
   }
 
   SetCalibrationDate(date);
-
-  BEAM_INFO("Type: {}", type.c_str());
-  BEAM_INFO("Date: {}", date.c_str());
-  BEAM_INFO("Method: {}", method.c_str());
-
-  for (const auto& calibration : J["calibrations"]) {
-    calibration_counter++;
-    value_counter = 0;
-    int i = 0, j = 0;
-
-    to_frame = calibration["to_frame"];
-    from_frame = calibration["from_frame"];
-
-    for (const auto& value : calibration["transform"]) {
-      value_counter++;
-      T(i, j) = value.get<double>();
-      if (j == 3) {
-        i++;
-        j = 0;
-      } else {
-        j++;
-      }
-    }
-    if (value_counter != 16) {
-      BEAM_CRITICAL("Invalid transform matrix in .json file.");
-      throw std::invalid_argument{"Invalid transform matrix in .json file."};
-      return;
-    }
-    TA.matrix() = T;
-    this->AddTransform(TA, to_frame, from_frame);
-  }
-  BEAM_INFO("Saved {} transforms", calibration_counter);
 }
 
 void TfTree::AddTransform(const Eigen::Affine3d& T, const std::string& to_frame,

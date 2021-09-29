@@ -12,6 +12,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/Vector3.h>
 #include <beam_utils/filesystem.h>
 
 #ifndef BEAM_PCL_TYPEDEF
@@ -45,7 +46,7 @@ static uint32_t seq_tmp = 0;
  * @param seq scan number
  * @return ros pointcloud
  */
-sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
+sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
                                   const ros::Time& time = ros::Time(0),
                                   const std::string& frame_id = "",
                                   uint32_t seq = 0);
@@ -58,10 +59,24 @@ sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
  * @param seq scan number
  * @return pcl point cloud
  */
-PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg,
-                       ros::Time& time = time_tmp,
-                       std::string& frame_id = _string_tmp,
-                       uint32_t& seq = seq_tmp);
+PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg,
+                    ros::Time& time = time_tmp,
+                    std::string& frame_id = _string_tmp,
+                    uint32_t& seq = seq_tmp);
+
+/**
+ * @brief Convert from a pcl pointcloud to a vector of ros vectors
+ * @param cloud pcl pointcloud
+ * @return ros vector
+ */
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud);
+
+/**
+ * @brief Convert from a vector of ros vectors to a pcl pointcloud
+ * @param vector ros vector
+ * @return cloud
+ */
+PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector);
 
 /**
  * @brief Add RGB color to a pcl pointcloud
@@ -336,7 +351,8 @@ inline bool
   // check path exists
   boost::filesystem::path path(filename);
   if (!boost::filesystem::exists(path.parent_path())) {
-    error_type = "File path parent directory does not exist. Input file: " + filename;
+    error_type =
+        "File path parent directory does not exist. Input file: " + filename;
     return false;
   }
 

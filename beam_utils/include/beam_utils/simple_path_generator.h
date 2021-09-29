@@ -43,7 +43,7 @@ public:
    */
   SimplePathGenerator(
       const std::vector<Eigen::Vector3d,
-                        Eigen::aligned_allocator<Eigen::Vector3d>>& nodes,
+                        beam::AlignVec3d>& nodes,
       double delta = 0.001);
 
   /**

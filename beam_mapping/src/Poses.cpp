@@ -1,17 +1,17 @@
-#include "beam_mapping/Poses.h"
+#include <beam_mapping/Poses.h>
 
-#include "beam_utils/log.h"
-#include "beam_utils/math.h"
-
-#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
+
+#include <boost/filesystem.hpp>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <nlohmann/json.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <tf2_eigen/tf2_eigen.h>
+
+#include <beam_utils/log.h>
 
 namespace beam_mapping {
 
@@ -69,13 +69,11 @@ void Poses::AddSingleTimeStamp(const ros::Time& _time_stamp) {
 }
 
 void Poses::SetPoses(
-    const std::vector<Eigen::Affine3d,
-                      Eigen::aligned_allocator<Eigen::Affine3d>>& _poses) {
+    const std::vector<Eigen::Affine3d, beam::AlignAff3d>& _poses) {
   poses = _poses;
 }
 
-std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
-    Poses::GetPoses() {
+std::vector<Eigen::Affine3d, beam::AlignAff3d> Poses::GetPoses() {
   return poses;
 }
 

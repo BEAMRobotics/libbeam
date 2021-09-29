@@ -5,17 +5,9 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include "beam_calibration/CameraModel.h"
+#include <beam_calibration/CameraModel.h>
 
-namespace beam_optimization {
-
-typedef Eigen::aligned_allocator<Eigen::Vector4d> AlignVec4d;
-typedef Eigen::aligned_allocator<Eigen::Vector3d> AlignVec3d;
-typedef Eigen::aligned_allocator<Eigen::Vector2d> AlignVec2d;
-typedef Eigen::aligned_allocator<Eigen::Affine3d> AlignAff3d;
-typedef Eigen::aligned_allocator<Eigen::Matrix4d> AlignMat4d;
-
-namespace test_util {
+namespace beam_optimization { namespace test_util {
 
 void OutputTransformInformation(const Eigen::Affine3d& T,
                                 const std::string& transform_name);
@@ -23,12 +15,15 @@ void OutputTransformInformation(const Eigen::Affine3d& T,
 void OutputTransformInformation(const Eigen::Matrix4d& T,
                                 const std::string& transform_name);
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector4d, AlignVec4d> &points);
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector4d> &points);
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+    MakePointCloud(const std::vector<Eigen::Vector4d, beam::AlignVec4d>& points);
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+    MakePointCloud(const std::vector<Eigen::Vector4d>& points);
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector2d, AlignVec2d> &points);
-pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(const std::vector<Eigen::Vector2d> &points);
-
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+    MakePointCloud(const std::vector<Eigen::Vector2d, beam::AlignVec2d>& points);
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+    MakePointCloud(const std::vector<Eigen::Vector2d>& points);
 
 inline Eigen::Vector3d PCLPointToEigen(const pcl::PointXYZ& pt_in) {
   return Eigen::Vector3d(pt_in.x, pt_in.y, pt_in.z);
@@ -53,6 +48,4 @@ inline pcl::PointXY EigenPixelToPCL(const Eigen::Vector2d& pt_in) {
   return pt_out;
 }
 
-} // namespace util
-
-} // namespace beam_optimization
+}} // namespace beam_optimization::test_util

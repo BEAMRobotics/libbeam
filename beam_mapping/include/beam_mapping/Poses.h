@@ -10,7 +10,7 @@
 #include <pcl/point_types.h>
 #include <ros/time.h>
 
-// TODO should generalize to any point type and move this to a better spot
+#include <beam_utils/math.h>
 
 // port LVI-SAM point type.
 struct PointXYZIRPYT {
@@ -36,6 +36,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
     (double, time, time)
     )
 // clang-format on
+
 
 namespace beam_mapping {
 /** @addtogroup mapping
@@ -131,16 +132,13 @@ public:
    * @brief for setting poses
    * @param _poses transforms from fixed frame to moving frame
    */
-  void SetPoses(
-      const std::vector<Eigen::Affine3d,
-                        Eigen::aligned_allocator<Eigen::Affine3d>>& _poses);
+  void SetPoses(const std::vector<Eigen::Affine3d, beam::AlignAff3d>& _poses);
 
   /**
    * @brief for getting the poses
    * @return poses transforms from fixed frame to moving frame
    */
-  std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>
-      GetPoses();
+  std::vector<Eigen::Affine3d, beam::AlignAff3d> GetPoses();
 
   /**
    * @brief for adding a single pose

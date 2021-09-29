@@ -250,7 +250,7 @@ TEST_CASE("Test distorting and undistoring a radtan simulation image") {
   REQUIRE(percent_correct > P);
 }
 
-// This commented out because we no longer require the ladybug model to be built 
+// This commented out because we no longer require the ladybug model to be built
 // TEST_CASE("Test undistorting a ladybug image") {
 //   if (!run_ladybug_test_) {
 //     REQUIRE(true);
@@ -280,8 +280,9 @@ TEST_CASE("Test distorting and undistoring a radtan simulation image") {
 
 //   SaveImage("test_case_3_image_original.png", source_image);
 //   SaveImage("test_case_3_image_upsampled.png", upsampled_image);
-//   SaveImage("test_case_3_image_undistorted_downsampled.png", downsampled_image);
-//   SaveImage("test_case_3_image_undistorted.png", output_image);
+//   SaveImage("test_case_3_image_undistorted_downsampled.png",
+//   downsampled_image); SaveImage("test_case_3_image_undistorted.png",
+//   output_image);
 
 //   // Check the output image dimensions
 //   REQUIRE(source_image.cols == downsampled_image.cols);

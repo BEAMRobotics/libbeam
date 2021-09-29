@@ -7,12 +7,12 @@
 
 namespace beam {
 
-sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
+sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
                                   const ros::Time& time,
                                   const std::string& frame_id, uint32_t seq) {
   // Convert to pointcloud2 data type
   pcl::PCLPointCloud2 cloud2;
-  pcl::toPCLPointCloud2(*cloud, cloud2);
+  pcl::toPCLPointCloud2(cloud, cloud2);
 
   // Convert to ros msg
   sensor_msgs::PointCloud2 ros_cloud;
@@ -26,21 +26,45 @@ sensor_msgs::PointCloud2 PCLToROS(const PointCloudPtr& cloud,
   return ros_cloud;
 }
 
-PointCloudPtr ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
-                       std::string& frame_id, uint32_t& seq) {
+PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
+                    std::string& frame_id, uint32_t& seq) {
   // Convert from ROS to pcl pointcloud2
   pcl::PCLPointCloud2 cloud2;
   beam::pcl_conversions::toPCL(msg, cloud2);
 
   // convert to pcl pointcloud
-  PointCloudPtr cloud = std::make_shared<PointCloud>();
-  pcl::fromPCLPointCloud2(cloud2, *cloud);
+  PointCloud cloud;
+  pcl::fromPCLPointCloud2(cloud2, cloud);
 
   // get info from header
   time = msg.header.stamp;
   frame_id = msg.header.frame_id;
   seq = msg.header.seq;
 
+  return cloud;
+}
+
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud) {
+  std::vector<geometry_msgs::Vector3> cloud_vec;
+  for (const pcl::PointXYZ& p : cloud) {
+    geometry_msgs::Vector3 point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud_vec.push_back(point);
+  }
+  return cloud_vec;
+}
+
+PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector){
+    PointCloud cloud;
+  for (const geometry_msgs::Vector3& p : vector) {
+    pcl::PointXYZ point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud.push_back(point);
+  }
   return cloud;
 }
 
@@ -190,9 +214,9 @@ pcl::PointCloud<pcl::PointXYZRGBL>
     CreateFrameCol(const ros::Time& t, double increment, double length) {
   pcl::PointCloud<pcl::PointXYZRGBL> frame;
   double cur_length{0};
-  pcl::PointXYZRGBL pointX(0,0,0,255,0,0,t.toSec());
-  pcl::PointXYZRGBL pointY(0,0,0,0,255,0,t.toSec());
-  pcl::PointXYZRGBL pointZ(0,0,0,0,0,255,t.toSec());
+  pcl::PointXYZRGBL pointX(0, 0, 0, 255, 0, 0, t.toSec());
+  pcl::PointXYZRGBL pointY(0, 0, 0, 0, 255, 0, t.toSec());
+  pcl::PointXYZRGBL pointZ(0, 0, 0, 0, 0, 255, t.toSec());
 
   while (cur_length < length) {
     pointX.x = cur_length;

@@ -15,8 +15,8 @@
 std::shared_ptr<beam_calibration::CameraModel> cam;
 
 void GenerateCorrespondences(std::shared_ptr<beam_calibration::CameraModel> cam,
-                             std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-                             std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points, int n) {
+                             std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+                             std::vector<Eigen::Vector3d, beam::AlignVec3d>& points, int n) {
   for (int i = 0; i < n; i++) {
     int x = rand() % cam->GetWidth();
     int y = rand() % cam->GetHeight();
@@ -32,8 +32,8 @@ void GenerateCorrespondences(std::shared_ptr<beam_calibration::CameraModel> cam,
   }
 }
 
-void PerturbCorrespondences(std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels,
-                            std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points,
+void PerturbCorrespondences(std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+                            std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
                             int pixel_pert, double point_pert) {
   for (size_t i = 0; i < pixels.size(); i++) {
     for (int j = 0; j < pixels[i].size(); j++) {
@@ -47,11 +47,11 @@ void PerturbCorrespondences(std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& p
   }
 }
 
-void ReadCorrespondences(std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels1,
-                         std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points1,
+void ReadCorrespondences(std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels1,
+                         std::vector<Eigen::Vector3d, beam::AlignVec3d>& points1,
                          Eigen::Matrix4d& pose1,
-                         std::vector<Eigen::Vector2i, beam_cv::AlignVec2i>& pixels2,
-                         std::vector<Eigen::Vector3d, beam_cv::AlignVec3d>& points2,
+                         std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels2,
+                         std::vector<Eigen::Vector3d, beam::AlignVec3d>& points2,
                          Eigen::Matrix4d& pose2) {
   std::string location = __FILE__;
   location.erase(location.end() - 31, location.end());
@@ -139,8 +139,8 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
   cam = beam_calibration::CameraModel::Create(intrinsics_loc);
 
   // generate correspondences
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels1, pixels2;
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points1, points2;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels1, pixels2;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points1, points2;
   Eigen::Matrix4d pose1, pose2;
   ReadCorrespondences(pixels1, points1, pose1, pixels2, points2, pose2);
 
@@ -178,8 +178,8 @@ TEST_CASE("Refine given perfect correspondences, perfect pose.") {
   cam = beam_calibration::CameraModel::Create(intrinsics_loc);
 
   // generate correspondences
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels;
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
   GenerateCorrespondences(cam, pixels, points, 30);
 
   // refine pose
@@ -195,8 +195,8 @@ TEST_CASE("Refine given perfect correspondences, perfect pose.") {
 
 TEST_CASE("Refine given perfect correspondences, perturbed pose.") {
   // generate correspondences
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels;
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
   GenerateCorrespondences(cam, pixels, points, 30);
 
   // randomly perturb pose to use as initial estimate
@@ -218,8 +218,8 @@ TEST_CASE("Refine given perfect correspondences, perturbed pose.") {
 
 TEST_CASE("Refine given perturbed pixels and points, perturbed pose.") {
   // generate correspondences
-  std::vector<Eigen::Vector2i, beam_cv::AlignVec2i> pixels;
-  std::vector<Eigen::Vector3d, beam_cv::AlignVec3d> points;
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
   GenerateCorrespondences(cam, pixels, points, 30);
 
   // randomly perturb pose to use as initial estimate

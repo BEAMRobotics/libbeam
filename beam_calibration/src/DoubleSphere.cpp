@@ -80,7 +80,6 @@ bool DoubleSphere::ProjectPoint(const Eigen::Vector3d& in_point,
 
 bool DoubleSphere::BackProject(const Eigen::Vector2i& in_pixel,
                                Eigen::Vector3d& out_point) {
-
   double mx = (in_pixel[0] - cx_) / fx_;
   double my = (in_pixel[1] - cy_) / fy_;
   double r2 = mx * mx + my * my;
