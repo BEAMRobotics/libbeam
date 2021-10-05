@@ -72,6 +72,12 @@ public:
    */
   LoamPointCloud ExtractFeatures(const PointCloud& cloud);
 
+  /**
+   * @brief If this is called, the following will get saved: one point cloud for
+   * each extracted scan line and the original scan
+   */
+  void SaveScanLines(const std::string& debug_output_path);
+
 private:
   void Reset();
 
@@ -121,8 +127,7 @@ private:
   PointCloud surface_points_less_flat_;
 
   // DEBUG TOOLS
-  bool output_scan_lines_{false};
-  std::string debug_output_path_{"/home/nick/tmp/loam_tests/"};
+  std::string debug_output_path_;
 };
 
 /** @} group matching */
