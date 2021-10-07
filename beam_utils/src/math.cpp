@@ -745,4 +745,18 @@ void OutputTransformInformation(const Eigen::Matrix4d& T,
          << "Trans: [" << t[0] << ", " << t[1] << ", " << t[2] << "]\n";
 }
 
+std::string TransformationMatrixToString(const Eigen::Matrix4d &T){
+    Eigen::Matrix3d R = T.block<3, 3>(0, 0);
+  Eigen::Vector3d p = T.block<3, 1>(0, 3).transpose();
+  Eigen::Vector3d ea = R.eulerAngles(2, 1, 0);
+  std::string output;
+  output += "Roll: " + std::to_string(ea[0]);
+  output += ", Pitch: " + std::to_string(ea[1]);
+  output += ", Yaw: " + std::to_string(ea[2]);
+  output += ", x: " + std::to_string(p[0]);
+  output += ", y: " + std::to_string(p[1]);
+  output += ", z: " + std::to_string(p[2]);
+  return output;
+}
+
 } // namespace beam

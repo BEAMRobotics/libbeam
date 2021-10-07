@@ -510,6 +510,7 @@ std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
  * @return v vector of size 4 x 4 = 16
  */
 std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T);
+
 /**
  * @brief outputs transform to some stream with as the following:
  *
@@ -523,6 +524,13 @@ std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T);
  */
 void OutputTransformInformation(const Eigen::Matrix4d& T,
                                 std::ostream& stream = std::cout);
+
+/**
+ * @brief Returns a string representation of a transformation matrix as:
+ *  Roll: _, Pitch: _, Yaw: _, x: _, y: _, z: _
+ * @param T transform 
+ */
+std::string TransformationMatrixToString(const Eigen::Matrix4d &T);
 
 /** @} group utils */
 } // namespace beam
