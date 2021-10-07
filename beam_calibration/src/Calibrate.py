@@ -7,21 +7,30 @@ from collections import OrderedDict
 import datetime
 
 def main():
-    if(len(sys.argv) != 5):
+    if(len(sys.argv) != 8):
         print("Invalid number of arguments.")
-        print("Usage:\n python Calibrator.py [camera_model] [height] [width] [frame_id]")
+        print("Usage:\n python Calibrator.py [path_to_images] [camera_model] [height] [width] [frame_id] [image_extension] [convert_to_gray]")
+        print("\n path_to_images: full path to images directory")
+        print("\n camera_model: equidistant (KB - fisheye) or radtan (pinhole with radtan dist)")
+        print("\n height: checkerboard height")
+        print("\n width: checkerboard width")
+        print("\n frame_id: to assign to intrinsics json")
+        print("\n image_extension: .jpg, .jpeg, or .png")
+        print("\n convert_to_gray: set to true if images are not mono or grayscale")
         sys.exit()
     method = sys.argv[1]
-    path = raw_input("Enter path to folder containing images: ")
-    height = int(sys.argv[2])
-    width = int(sys.argv[3])
-    frame_id = sys.argv[4]
+    path = sys.argv[2]
+    height = int(sys.argv[3])
+    width = int(sys.argv[4])
+    frame_id = sys.argv[5]
+    image_extension = sys.argv[6]
+    convert_to_gray = bool(sys.argv[7])
     if method == "equidistant":
-        calibrateFisheye(path, height, width, frame_id)
+        calibrateFisheye(path, height, width, frame_id, image_extension, convert_to_gray)
     elif method == "radtan":
-        calibrateRadtan(path, height, width, frame_id)
+        calibrateRadtan(path, height, width, frame_id, image_extension, convert_to_gray)
 
-def calibrateRadtan(path, height, width, frame_id):
+def calibrateRadtan(path, height, width, frame_id, image_extension, convert_to_gray):
 # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
@@ -30,13 +39,15 @@ def calibrateRadtan(path, height, width, frame_id):
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
-    images = glob.glob(path + '/*.png')
+    images = glob.glob(path + '/*' + image_extension)
     gray = None
     _img_shape = None
     for fname in images:
         print(fname)
         img = cv2.imread(fname)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = img
+        if convert_to_gray:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         if _img_shape == None:
             _img_shape = img.shape[:2]
@@ -64,7 +75,7 @@ def calibrateRadtan(path, height, width, frame_id):
     saveToJson(intrinsics, coeffs, model, _img_shape, frame_id)
 
 
-def calibrateFisheye(path, height, width, frame_id):
+def calibrateFisheye(path, height, width, frame_id, image_extension, convert_to_gray):
     CHECKERBOARD = (height,width)
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -78,11 +89,15 @@ def calibrateFisheye(path, height, width, frame_id):
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob(path + '/*.png')
+    images = glob.glob(path + '/*' + image_extension)
+    print('Looking for images in: ' + images)
 
     for fname in images:
+        print('reading image: ' + fname)
         img = cv2.imread(fname)
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        gray = img
+        if convert_to_gray:
+            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
         if _img_shape == None:
             _img_shape = img.shape[:2]
