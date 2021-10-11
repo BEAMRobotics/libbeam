@@ -117,14 +117,16 @@ public:
     return beam_angle_bins_;
   }
 
-  /** @brief Used to separate cloud into rings of points. Point smoothness is
-   * calculated by searching neighbors on the same ring. If the cloud is
-   * aggregated over multiple scans, then multiple rings of points will be
-   * used.*/
+  /** @brief Used to separate cloud into rings of points if clouds are not
+   * provided as pcl::PointXYZL (where the label is the ring number). Point
+   * smoothness is calculated by searching neighbors on the same ring. If the
+   * cloud is aggregated over multiple scans, then multiple rings of points will
+   * be used.*/
   int number_of_beams{16};
 
-  /** @brief Used allong with number_of_beams to separate cloud into rings of
-   * points*/
+  /** @brief Used along with number_of_beams to separate cloud into rings of
+   * points if clouds are not provided as pcl::PointXYZL (where the label is the
+   * ring number)*/
   double fov_deg{30};
 
   /** The number of (equally sized) regions used to distribute the feature

@@ -12,13 +12,34 @@ LoamFeatureExtractor::LoamFeatureExtractor(const LoamParamsPtr& params)
     : params_(params) {}
 
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
-  Reset();
   std::vector<PointCloud> scan_lines = GetScanLines(cloud);
   if (static_cast<int>(scan_lines.size()) != params_->number_of_beams) {
     BEAM_WARN("Number of scan lines extracted is not equal to the specified "
               "number of lidar beams, please confirm lidar settings (number of "
               "beams and FOV).");
   }
+  return ExtractFeaturesFromScanLines(scan_lines);
+}
+
+LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
+    const pcl::PointCloud<pcl::PointXYZL>& cloud) {
+  // get scan lines based on label
+  std::vector<PointCloud> scan_lines(params_->number_of_beams);
+  for (const pcl::PointXYZL& p : cloud) {
+    if (p.label > params_->number_of_beams - 1) {
+      BEAM_WARN("Point ring (label) is greater than specified number of beams, "
+                "not using point.");
+      continue;
+    }
+    scan_lines.at(p.label).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+  }
+
+  return ExtractFeaturesFromScanLines(scan_lines);
+}
+
+LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
+    const std::vector<PointCloud>& scan_lines) {
+  Reset();
   GetSortedScan(scan_lines);
 
   // extract features from individual scans
@@ -238,7 +259,6 @@ void LoamFeatureExtractor::GetSortedScan(
     range.second = cloud_size > 0 ? cloud_size - 1 : 0;
     scan_indices_.push_back(range);
   }
-
 }
 
 void LoamFeatureExtractor::SetScanBuffersFor(size_t start_idx, size_t end_idx) {

@@ -73,12 +73,24 @@ public:
   LoamPointCloud ExtractFeatures(const PointCloud& cloud);
 
   /**
+   * @brief overload of the function above, where scan lines are separated based
+   * on label, instead of calculating estimated ring based on beam angle and FOV
+   * of sensor.
+   * @param pointcloud pcl pointcloud of type pcl::PointXYZL where the label
+   * field is the scan ring number
+   * @return loam pointcloud in lidar frame
+   */
+  LoamPointCloud ExtractFeatures(const pcl::PointCloud<pcl::PointXYZL>& cloud);
+
+  /**
    * @brief If this is called, the following will get saved: one point cloud for
    * each extracted scan line and the original scan
    */
   void SaveScanLines(const std::string& debug_output_path);
 
 private:
+  LoamPointCloud ExtractFeaturesFromScanLines(const std::vector<PointCloud>& scan_lines);
+
   void Reset();
 
   std::vector<PointCloud> GetScanLines(const PointCloud& cloud);
