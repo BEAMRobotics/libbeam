@@ -22,16 +22,32 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
 }
 
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
-    const pcl::PointCloud<pcl::PointXYZL>& cloud) {
+    const pcl::PointCloud<PointXYZIRT>& cloud) {
   // get scan lines based on label
   std::vector<PointCloud> scan_lines(params_->number_of_beams);
-  for (const pcl::PointXYZL& p : cloud) {
-    if (p.label > params_->number_of_beams - 1) {
-      BEAM_WARN("Point ring (label) is greater than specified number of beams, "
+  for (const auto& p : cloud) {
+    if (p.ring > params_->number_of_beams - 1) {
+      BEAM_WARN("Point ring number is greater than specified number of beams, "
                 "not using point.");
       continue;
     }
-    scan_lines.at(p.label).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+    scan_lines.at(p.ring).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+  }
+
+  return ExtractFeaturesFromScanLines(scan_lines);
+}
+
+LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
+    const pcl::PointCloud<PointXYZITRRNR>& cloud) {
+  // get scan lines based on label
+  std::vector<PointCloud> scan_lines(params_->number_of_beams);
+  for (const auto& p : cloud) {
+    if (p.ring > params_->number_of_beams - 1) {
+      BEAM_WARN("Point ring number is greater than specified number of beams, "
+                "not using point.");
+      continue;
+    }
+    scan_lines.at(p.ring).push_back(pcl::PointXYZ(p.x, p.y, p.z));
   }
 
   return ExtractFeaturesFromScanLines(scan_lines);
