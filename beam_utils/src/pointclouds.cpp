@@ -44,6 +44,40 @@ PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg, ros::Time& time,
   return cloud;
 }
 
+void ROSToPCL(pcl::PointCloud<PointXYZIRT>& cloud_out,
+              const sensor_msgs::PointCloud2& msg, ros::Time& time,
+              std::string& frame_id, uint32_t& seq) {
+  // Convert from ROS to pcl pointcloud2
+  pcl::PCLPointCloud2 cloud2;
+  beam::pcl_conversions::toPCL(msg, cloud2);
+
+  // convert to pcl pointcloud
+  PointCloud cloud;
+  pcl::fromPCLPointCloud2(cloud2, cloud_out);
+
+  // get info from header
+  time = msg.header.stamp;
+  frame_id = msg.header.frame_id;
+  seq = msg.header.seq;
+}
+
+void ROSToPCL(pcl::PointCloud<PointXYZITRRNR>& cloud_out,
+              const sensor_msgs::PointCloud2& msg, ros::Time& time,
+              std::string& frame_id, uint32_t& seq) {
+  // Convert from ROS to pcl pointcloud2
+  pcl::PCLPointCloud2 cloud2;
+  beam::pcl_conversions::toPCL(msg, cloud2);
+
+  // convert to pcl pointcloud
+  PointCloud cloud;
+  pcl::fromPCLPointCloud2(cloud2, cloud_out);
+
+  // get info from header
+  time = msg.header.stamp;
+  frame_id = msg.header.frame_id;
+  seq = msg.header.seq;
+}
+
 std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud) {
   std::vector<geometry_msgs::Vector3> cloud_vec;
   for (const pcl::PointXYZ& p : cloud) {
@@ -56,8 +90,8 @@ std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud) {
   return cloud_vec;
 }
 
-PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector){
-    PointCloud cloud;
+PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector) {
+  PointCloud cloud;
   for (const geometry_msgs::Vector3& p : vector) {
     pcl::PointXYZ point;
     point.x = p.x;
