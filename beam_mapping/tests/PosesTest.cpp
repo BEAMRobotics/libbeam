@@ -25,7 +25,7 @@ TEST_CASE("Test JSON read and write functionality") {
   REQUIRE(poses_read.GetFixedFrame() == "odom");
   REQUIRE(poses_read.GetMovingFrame() == "vvlp_link");
 
-  beam::Mat4 T1, T2, T3;
+  Eigen::Matrix4d T1, T2, T3;
   T1 << 1, 5.973908991266297e-17, 1.060206815998276e-16, 2.408428785093423e-19,
       -5.973908887784716e-17, 1, -2.655218167731045e-17, -3.961611144079579e-18,
       -1.060206819694939e-16, 2.655218081096116e-17, 1, -7.551404631739263e-18,

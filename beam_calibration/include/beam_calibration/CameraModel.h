@@ -4,11 +4,14 @@
 
 #pragma once
 
-#include <beam_utils/utils.h>
+#include <fstream>
 
-#include <beam_utils/optional.h>
+#include <Eigen/Dense>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
+
+#include <beam_utils/optional.h>
+#include <beam_utils/log.h>
 
 static bool default_bool = false;
 

@@ -50,7 +50,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   std::vector<int> indices;
-  beam::Vec3 point;
+  Eigen::Vector3d point;
 
   for (uint32_t i = 0; i < input->points.size(); i++) {
     point << input->points[i].x, input->points[i].y, input->points[i].z;

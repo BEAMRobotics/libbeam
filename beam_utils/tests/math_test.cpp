@@ -21,16 +21,15 @@ TEST_CASE("Median", "[Math.h]") {
 }
 
 TEST_CASE("Distance", "[Math.h]") {
-  beam::Vec3 point1(0, 0, 0);
-  beam::Vec3 point2(100, 20, 30);
-  beam::Vec3 point3(100, 10, 20);
+  Eigen::Vector3d point1(0, 0, 0);
+  Eigen::Vector3d point2(100, 20, 30);
+  Eigen::Vector3d point3(100, 10, 20);
   REQUIRE(beam::distance(point1, point2) == Approx(106.301).epsilon(0.01));
   REQUIRE(beam::distance(point1, point3) == Approx(102.47).epsilon(0.01));
   REQUIRE(beam::distance(point3, point2) == Approx(14.1421).epsilon(0.01));
 }
 
 TEST_CASE("RoundMatrix", "[Math.h]") {
-  // beam::Mat2 matrix2x2, matrix2x2round3, matrix2x2round2;
   Eigen::MatrixXd matrix2x2(2, 2), matrix2x2round3(2, 2), matrix2x2round2(2, 2);
   matrix2x2 << 0.0041, 0.0045, 0.0061, 0.0077;
   matrix2x2round3 << 0.004, 0.005, 0.006, 0.008;

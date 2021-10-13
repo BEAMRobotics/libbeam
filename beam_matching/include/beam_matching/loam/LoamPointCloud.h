@@ -24,9 +24,9 @@
 
 #pragma once
 
+#include <pcl/kdtree/kdtree_flann.h>
 #include <beam_matching/Matcher.h>
 #include <beam_utils/pointclouds.h>
-#include <pcl/kdtree/kdtree_flann.h>
 
 namespace beam_matching {
 /** @addtogroup matching
