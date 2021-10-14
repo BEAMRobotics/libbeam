@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+
+// MAKE SURE OPENCV IS INCLUDED AFTER FLANN
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_containers/PointBridge.h>

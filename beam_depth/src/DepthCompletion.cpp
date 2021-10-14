@@ -31,7 +31,7 @@ void DepthInterpolation(int window_width, int window_height, float threshold,
       for (std::vector<int> window : windows) {
         int start_x = window[0], end_x = window[1], start_y = window[2],
             end_y = window[3];
-        beam::Vec2 point_f;
+        Eigen::Vector2d point_f;
         float min_dist = sqrt((window_width * window_width) +
                               (window_height * window_height));
         float found_depth = 0.0;

@@ -6,6 +6,7 @@
 #include <pcl/point_types.h>
 
 #include <beam_calibration/CameraModel.h>
+#include <beam_utils/math.h>
 
 namespace beam_optimization { namespace test_util {
 
@@ -17,13 +18,9 @@ void OutputTransformInformation(const Eigen::Matrix4d& T,
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr
     MakePointCloud(const std::vector<Eigen::Vector4d, beam::AlignVec4d>& points);
-pcl::PointCloud<pcl::PointXYZ>::Ptr
-    MakePointCloud(const std::vector<Eigen::Vector4d>& points);
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr
     MakePointCloud(const std::vector<Eigen::Vector2d, beam::AlignVec2d>& points);
-pcl::PointCloud<pcl::PointXYZ>::Ptr
-    MakePointCloud(const std::vector<Eigen::Vector2d>& points);
 
 inline Eigen::Vector3d PCLPointToEigen(const pcl::PointXYZ& pt_in) {
   return Eigen::Vector3d(pt_in.x, pt_in.y, pt_in.z);

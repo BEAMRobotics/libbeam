@@ -7,7 +7,7 @@
 TEST_CASE("Test Tree building and retrieving") {
   int round_precision = 7;
   beam_calibration::TfTree Tree;
-  beam::Mat4 T_BASELINK_HVLP, T_X1_HVLP;
+  Eigen::Matrix4d T_BASELINK_HVLP, T_X1_HVLP;
   Eigen::Affine3d TA_BASELINK_HVLP, TA_X1_HVLP, TA_BASELINK_X1_calc,
       TA_BASELINK_X1_lookup;
 
@@ -55,7 +55,7 @@ TEST_CASE("Test Tree building and retrieving") {
 
 TEST_CASE("Testing multiple parent case") {
   beam_calibration::TfTree Tree1, Tree2;
-  beam::Mat4 T_HVLP_BASELINK, T_X1_HVLP, T_X1_IMU1;
+  Eigen::Matrix4d T_HVLP_BASELINK, T_X1_HVLP, T_X1_IMU1;
   Eigen::Affine3d TA_HVLP_BASELINK, TA_X1_HVLP, TA_X1_IMU1, TA_IMU1_X1, T;
 
   T_HVLP_BASELINK << 1.00000, 0.00000, 0.00000, -0.2100, 0.00000, 1.00000,
@@ -206,7 +206,7 @@ TEST_CASE("Test same dynamic transform case with same timestamp") {
 TEST_CASE("Test loading tree from .json") {
   // create empty objects
   beam_calibration::TfTree Tree;
-  beam::Mat4 T_BASELINK_HVLP, T_X1_HVLP, T_BASELINK_HVLP_JSON, T_X1_HVLP_JSON,
+  Eigen::Matrix4d T_BASELINK_HVLP, T_X1_HVLP, T_BASELINK_HVLP_JSON, T_X1_HVLP_JSON,
       T_BASELINK_X1, T_BASELINK_X1_JSON;
   int round_precision = 7;
 
