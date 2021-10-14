@@ -1,6 +1,14 @@
 #pragma once
 
+#include <fstream>
+#include <string>
+#include <math.h>
+#include <thread>
+#include <mutex>
+#include <chrono>
 #include <cstdint>
+#include <atomic>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/transforms.h>
@@ -11,14 +19,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/registration/correspondence_estimation.h>
 #include <nlohmann/json.hpp>
-#include <fstream>
-#include <string>
-#include <math.h>
-#include <thread>
-#include <mutex>
-#include <chrono>
 #include <boost/make_shared.hpp>
-#include <atomic>
 
 namespace beam { 
 

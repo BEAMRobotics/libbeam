@@ -14,6 +14,7 @@
 #include <pcl/io/ply_io.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Vector3.h>
+
 #include <beam_utils/filesystem.h>
 
 // Create point types of different lidars
