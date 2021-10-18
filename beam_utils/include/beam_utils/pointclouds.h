@@ -7,13 +7,51 @@
 
 #pragma once
 
+#define PCL_NO_PRECOMPILE
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Vector3.h>
+
 #include <beam_utils/filesystem.h>
+
+// Create point types of different lidars
+// Velodyne
+struct PointXYZIRT {
+  PCL_ADD_POINT4D
+  PCL_ADD_INTENSITY;
+  std::uint16_t ring;
+  float time;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointXYZIRT, (float, x, x)(float, y, y)(float, z, z)
+    (float, intensity, intensity)(std::uint16_t, ring, ring)(float, time, time))
+// clang-format on
+
+// Ouster
+struct PointXYZITRRNR {
+  PCL_ADD_POINT4D;
+  float intensity;
+  std::uint32_t time;
+  std::uint16_t reflectivity;
+  std::uint8_t ring;
+  std::uint16_t noise;
+  std::uint32_t range;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointXYZITRRNR, (float, x, x)(float, y, y)(float, z, z)
+    (float, intensity, intensity)(std::uint32_t, time, time)
+    (std::uint16_t, reflectivity, reflectivity)(std::uint8_t, ring, ring)
+    (std::uint16_t, noise, noise)(std::uint32_t, range, range))
+// clang-format on
 
 #ifndef BEAM_PCL_TYPEDEF
 #  define BEAM_PCL_TYPEDEF
@@ -53,7 +91,7 @@ sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
 
 /**
  * @brief Convert from a ROS pointcloud to a pcl pointcloud
- * @param cloud ros pointcloud
+ * @param msg ros pointcloud
  * @param time stamp
  * @param frame_id frame associated with the lidar
  * @param seq scan number
@@ -63,6 +101,45 @@ PointCloud ROSToPCL(const sensor_msgs::PointCloud2& msg,
                     ros::Time& time = time_tmp,
                     std::string& frame_id = _string_tmp,
                     uint32_t& seq = seq_tmp);
+
+/**
+ * @brief Convert from a ROS pointcloud to a pcl pointcloud
+ * @param cloud_out output cloud to fill in
+ * @param cloud ros pointcloud
+ * @param time stamp
+ * @param frame_id frame associated with the lidar
+ * @param seq scan number
+ * @return pcl point cloud
+ */
+void ROSToPCL(PointCloud& cloud_out, const sensor_msgs::PointCloud2& msg,
+              ros::Time& time = time_tmp, std::string& frame_id = _string_tmp,
+              uint32_t& seq = seq_tmp);
+
+/**
+ * @brief Convert from a ROS pointcloud to a pcl pointcloud
+ * @param cloud_out output cloud to fill in
+ * @param cloud ros pointcloud
+ * @param time stamp
+ * @param frame_id frame associated with the lidar
+ * @param seq scan number
+ * @return pcl point cloud
+ */
+void ROSToPCL(pcl::PointCloud<PointXYZIRT>& cloud_out, const sensor_msgs::PointCloud2& msg,
+              ros::Time& time = time_tmp, std::string& frame_id = _string_tmp,
+              uint32_t& seq = seq_tmp);
+
+/**
+ * @brief Convert from a ROS pointcloud to a pcl pointcloud
+ * @param cloud_out output cloud to fill in
+ * @param cloud ros pointcloud
+ * @param time stamp
+ * @param frame_id frame associated with the lidar
+ * @param seq scan number
+ * @return pcl point cloud
+ */
+void ROSToPCL(pcl::PointCloud<PointXYZITRRNR>& cloud_out, const sensor_msgs::PointCloud2& msg,
+              ros::Time& time = time_tmp, std::string& frame_id = _string_tmp,
+              uint32_t& seq = seq_tmp);              
 
 /**
  * @brief Convert from a pcl pointcloud to a vector of ros vectors

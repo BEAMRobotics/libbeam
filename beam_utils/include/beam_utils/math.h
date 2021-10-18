@@ -30,25 +30,6 @@ namespace beam {
 
 #ifndef BEAM_EIGEN_TYPEDEF
 #  define BEAM_EIGEN_TYPEDEF
-typedef Eigen::Vector2d Vec2;
-typedef Eigen::Vector3d Vec3;
-typedef Eigen::Vector4d Vec4;
-typedef Eigen::Matrix<double, 5, 1> Vec5;
-typedef Eigen::Matrix<double, 6, 1> Vec6;
-typedef Eigen::VectorXd VecX;
-
-typedef Eigen::Matrix2d Mat2;
-typedef Eigen::Matrix3d Mat3;
-typedef Eigen::Matrix4d Mat4;
-typedef Eigen::Matrix<double, 5, 5> Mat5;
-typedef Eigen::Matrix<double, 6, 6> Mat6;
-typedef Eigen::Matrix<double, 7, 7> Mat7;
-typedef Eigen::Matrix<double, 9, 9> Mat9;
-typedef Eigen::MatrixXd MatX;
-
-typedef Eigen::Affine3d Affine3;
-
-typedef Eigen::Quaterniond Quaternion;
 
 typedef Eigen::aligned_allocator<Eigen::Vector4d> AlignVec4d;
 typedef Eigen::aligned_allocator<Eigen::Vector3d> AlignVec3d;
@@ -66,7 +47,7 @@ static std::string _tmp_string{};
  * Eigen vector comparator
  */
 struct VecComparator {
-  bool operator()(const VecX& a, const VecX& b) const {
+  bool operator()(const Eigen::VectorXd& a, const Eigen::VectorXd& b) const {
     return std::lexicographical_compare(a.data(), a.data() + a.size(), b.data(),
                                         b.data() + b.size());
   }
@@ -76,7 +57,7 @@ struct VecComparator {
  * Eigen matrix comparator
  */
 struct MatComparator {
-  bool operator()(const MatX& a, const MatX& b) const {
+  bool operator()(const Eigen::MatrixXd& a, const Eigen::MatrixXd& b) const {
     return std::lexicographical_compare(a.data(), a.data() + a.size(), b.data(),
                                         b.data() + b.size());
   }
@@ -149,46 +130,46 @@ std::vector<T> RandomSample(const std::vector<T>& input, uint32_t N, int seed) {
 int gcd(int a, int b);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
-void vec2mat(const std::vector<double>& x, int rows, int cols, MatX& y);
+void vec2mat(const std::vector<double>& x, int rows, int cols, Eigen::MatrixXd& y);
 
 /** Reshapes a matrix to a vector*/
-void mat2vec(const MatX& A, std::vector<double>& x);
+void mat2vec(const Eigen::MatrixXd& A, std::vector<double>& x);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
-void vec2mat(const VecX& x, int rows, int cols, MatX& y);
+void vec2mat(const Eigen::VectorXd& x, int rows, int cols, Eigen::MatrixXd& y);
 
 /** Reshapes a matrix to a vector*/
-void mat2vec(const MatX& A, VecX& x);
+void mat2vec(const Eigen::MatrixXd& A, Eigen::VectorXd& x);
 
 /** Convert euler angle to rotation matrix **/
-int euler2rot(const Vec3& euler, int euler_seq, Mat3& R);
+int euler2rot(const Eigen::Vector3d& euler, int euler_seq, Eigen::Matrix3d& R);
 
 /** Convert euler angle to quaternion **/
-int euler2quat(const Vec3& euler, int euler_seq, Quaternion& q);
+int euler2quat(const Eigen::Vector3d& euler, int euler_seq, Eigen::Quaterniond& q);
 
 /** Convert quaternion to euler angles **/
-int quat2euler(const Quaternion& q, int euler_seq, Vec3& euler);
+int quat2euler(const Eigen::Quaterniond& q, int euler_seq, Eigen::Vector3d& euler);
 
 /** Convert quaternion to rotation matrix **/
-int quat2rot(const Quaternion& q, Mat3& R);
+int quat2rot(const Eigen::Quaterniond& q, Eigen::Matrix3d& R);
 
 /** ENU to NWU coordinate system **/
-void enu2nwu(const Vec3& enu, Vec3& nwu);
+void enu2nwu(const Eigen::Vector3d& enu, Eigen::Vector3d& nwu);
 
 /** NED to ENU coordinate system **/
-void ned2enu(const Vec3& ned, Vec3& enu);
+void ned2enu(const Eigen::Vector3d& ned, Eigen::Vector3d& enu);
 
 /** NED to NWU coordinate system **/
-void ned2nwu(const Quaternion& ned, Quaternion& enu);
+void ned2nwu(const Eigen::Quaterniond& ned, Eigen::Quaterniond& enu);
 
 /** NWU to ENU coordinate system **/
-void nwu2enu(const Vec3& nwu, Vec3& enu);
+void nwu2enu(const Eigen::Vector3d& nwu, Eigen::Vector3d& enu);
 
 /** NWU to NED coordinate system **/
-void nwu2ned(const Quaternion& nwu, Quaternion& ned);
+void nwu2ned(const Eigen::Quaterniond& nwu, Eigen::Quaterniond& ned);
 
 /** NWU to EDN coordinate system **/
-void nwu2edn(const Vec3& nwu, Vec3& edn);
+void nwu2edn(const Eigen::Vector3d& nwu, Eigen::Vector3d& edn);
 
 /**
  * @brief Computes the right jacobian of a 3-vector representing the exponential
@@ -208,7 +189,7 @@ Eigen::Matrix3d RightJacobianOfSO3(const Eigen::Vector3d& w);
  * @param precision = 100 would round to the second decimal point (i.e. 1.126
  *= 1.13)
  **/
-MatX RoundMatrix(const MatX& M, int precision);
+Eigen::MatrixXd RoundMatrix(const Eigen::MatrixXd& M, int precision);
 
 /**
  * @brief check if a matrix is a valid transformation matrix
@@ -245,28 +226,28 @@ Eigen::MatrixXd KroneckerProduct(const Eigen::MatrixXd& A,
  * @param R rotation matrix
  * @return 3x1 vector representing R in Lie Algebra space
  **/
-beam::Vec3 RToLieAlgebra(const beam::Mat3& R);
+Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d& R);
 
 /**
  * @brief Convert from quaternion to its associated Lie Algebra
  * @param q quaternion
  * @return 3x1 vector representing R in Lie Algebra space
  **/
-beam::Vec3 QToLieAlgebra(const Quaternion& q);
+Eigen::Vector3d QToLieAlgebra(const Eigen::Quaterniond& q);
 
 /**
  * @brief Convert from Lie Algebra to its associated rotation matrix
  * @param eps rotation in Lie Algebra space
  * @return rotation matrix
  **/
-beam::Mat3 LieAlgebraToR(const beam::Vec3& eps);
+Eigen::Matrix3d LieAlgebraToR(const Eigen::Vector3d& eps);
 
 /**
  * @brief Convert from Lie Algebra to its associated quaternion
  * @param eps rotation in Lie Algebra space
  * @return quaternion
  **/
-Quaternion LieAlgebraToQ(const beam::Vec3& eps);
+Eigen::Quaterniond LieAlgebraToQ(const Eigen::Vector3d& eps);
 
 /**
  * @brief Linear interpolation of transformations using a method in Tim
@@ -278,23 +259,25 @@ Quaternion LieAlgebraToQ(const beam::Vec3& eps);
  * @param t time point that you want to interpolate at
  * @return interpolated transformation matrix
  **/
-beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
-                                const beam::Mat4& m2, const beam::TimePoint& t2,
-                                const beam::TimePoint& t);
+Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
+                                     const beam::TimePoint& t1,
+                                     const Eigen::Matrix4d& m2,
+                                     const beam::TimePoint& t2,
+                                     const beam::TimePoint& t);
 
 /**
  * @brief Perform inverse of skew symmetric transform
  * @param M 3x3 skew symmetric matrix
  * @return 3x1 vector
  **/
-beam::Vec3 InvSkewTransform(const beam::Mat3& M);
+Eigen::Vector3d InvSkewTransform(const Eigen::Matrix3d& M);
 
 /**
  * @brief Perform skew symmetric transform
  * @param V 3x1 vector
  * @return 3x3 skew symmetric matrix
  **/
-beam::Mat3 SkewTransform(const beam::Vec3& V);
+Eigen::Matrix3d SkewTransform(const Eigen::Vector3d& V);
 
 /**
  * @brief Inverts a 4x4 Transformation matrix by taking into account that
@@ -319,16 +302,17 @@ Eigen::Matrix4d AverageTransforms(
  * @return <centroid,normal>
  * @param vector of points
  */
-std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c);
+std::pair<Eigen::Vector3d, Eigen::Vector3d>
+    FitPlane(const std::vector<Eigen::Vector3d>& c);
 
 /**
  * @brief Computes intersection point of line and plane
  * @return {x,y,z}
  */
-beam::Vec3 IntersectPoint(const beam::Vec3& ray_vector,
-                          const beam::Vec3& ray_point,
-                          const beam::Vec3& plane_normal,
-                          const beam::Vec3& plane_point);
+Eigen::Vector3d IntersectPoint(const Eigen::Vector3d& ray_vector,
+                               const Eigen::Vector3d& ray_point,
+                               const Eigen::Vector3d& plane_normal,
+                               const Eigen::Vector3d& plane_point);
 
 /** Peturbs a transformation
  * @param[in] T_in the original transformation matrix
@@ -510,6 +494,7 @@ std::vector<double> EigenTransformToVector(const Eigen::Matrix4d& T);
  * @return v vector of size 4 x 4 = 16
  */
 std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T);
+
 /**
  * @brief outputs transform to some stream with as the following:
  *
@@ -523,6 +508,13 @@ std::vector<float> EigenTransformToVector(const Eigen::Matrix4f& T);
  */
 void OutputTransformInformation(const Eigen::Matrix4d& T,
                                 std::ostream& stream = std::cout);
+
+/**
+ * @brief Returns a string representation of a transformation matrix as:
+ *  Roll: _, Pitch: _, Yaw: _, x: _, y: _, z: _
+ * @param T transform
+ */
+std::string TransformationMatrixToString(const Eigen::Matrix4d& T);
 
 /** @} group utils */
 } // namespace beam

@@ -26,6 +26,7 @@
 
 #include <beam_matching/loam/LoamParams.h>
 #include <beam_matching/loam/LoamPointCloud.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
 /** @addtogroup matching
@@ -72,7 +73,36 @@ public:
    */
   LoamPointCloud ExtractFeatures(const PointCloud& cloud);
 
+  /**
+   * @brief overload of the function above, where scan lines are separated based
+   * on ring label, instead of calculating estimated ring based on beam angle
+   * and FOV of sensor.
+   * @param pointcloud pcl pointcloud of type PointXYZIRT (defined above)
+   * @return loam pointcloud in lidar frame
+   */
+  LoamPointCloud
+      ExtractFeatures(const pcl::PointCloud<PointXYZIRT>& cloud);
+
+  /**
+   * @brief overload of the function above, where scan lines are separated based
+   * on ring label, instead of calculating estimated ring based on beam angle
+   * and FOV of sensor.
+   * @param pointcloud pcl pointcloud of type PointXYZITRRNR
+   * @return loam pointcloud in lidar frame
+   */
+  LoamPointCloud
+      ExtractFeatures(const pcl::PointCloud<PointXYZITRRNR>& cloud);
+
+  /**
+   * @brief If this is called, the following will get saved: one point cloud for
+   * each extracted scan line and the original scan
+   */
+  void SaveScanLines(const std::string& debug_output_path);
+
 private:
+  LoamPointCloud
+      ExtractFeaturesFromScanLines(const std::vector<PointCloud>& scan_lines);
+
   void Reset();
 
   std::vector<PointCloud> GetScanLines(const PointCloud& cloud);
@@ -121,8 +151,7 @@ private:
   PointCloud surface_points_less_flat_;
 
   // DEBUG TOOLS
-  bool output_scan_lines_{false};
-  std::string debug_output_path_{"/home/nick/tmp/loam_tests/"};
+  std::string debug_output_path_;
 };
 
 /** @} group matching */

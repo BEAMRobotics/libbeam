@@ -4,8 +4,11 @@
 
 #pragma once
 
-#include <beam_filtering/Filters.h>
 #include <nlohmann/json.hpp>
+#include <pcl/impl/point_types.hpp>
+
+#include <beam_filtering/Filters.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_filtering {
 /// @addtogroup filtering

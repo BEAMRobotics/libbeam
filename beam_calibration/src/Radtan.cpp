@@ -119,7 +119,7 @@ void Radtan::UndistortImage(const cv::Mat& image_input, cv::Mat& image_output) {
   cv::eigen2cv(camera_matrix, K);
   cv::Mat R = cv::Mat::eye(3, 3, CV_32F);
   // convert eigen to cv mat
-  beam::VecX new_coeffs(5);
+  Eigen::VectorXd new_coeffs(5);
   new_coeffs << k1_, k2_, 0, p1_, p2_;
   cv::Mat D(1, 5, CV_8UC1);
   cv::eigen2cv(new_coeffs, D);

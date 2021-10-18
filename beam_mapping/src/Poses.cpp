@@ -116,7 +116,7 @@ void Poses::WriteToJSON(const std::string output_dir) {
   J_string = J.dump();
   J_poses_string = "{\"poses\": []}";
   for (size_t k = 0; k < poses.size(); k++) {
-    beam::Mat4 Tk = poses[k].matrix();
+    Eigen::Matrix4d Tk = poses[k].matrix();
     J_pose_k = {{"time_stamp_sec", time_stamps[k].sec},
                 {"time_stamp_nsec", time_stamps[k].nsec},
                 {"transform",
@@ -169,7 +169,7 @@ void Poses::LoadFromJSON(const std::string input_pose_file_path) {
     ros::Time time_stamp_k;
     time_stamp_k.sec = pose["time_stamp_sec"];
     time_stamp_k.nsec = pose["time_stamp_nsec"];
-    beam::Mat4 T_k;
+    Eigen::Matrix4d T_k;
     int i = 0, j = 0;
     int value_counter = 0;
     for (const auto& value : pose["transform"]) {
@@ -217,7 +217,7 @@ void Poses::WriteToTXT(const std::string output_dir) {
 
   std::ofstream outfile(output_file);
   for (size_t k = 0; k < poses.size(); k++) {
-    beam::Mat4 Tk = poses[k].matrix();
+    Eigen::Matrix4d Tk = poses[k].matrix();
     std::stringstream line;
     line << time_stamps[k].sec;
     // get num digits in nsec

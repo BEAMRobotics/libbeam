@@ -7,15 +7,17 @@
 
 #pragma once
 
-#include <beam_utils/log.h>
 #include <chrono>
 #include <ctime>
 #include <iostream>
+#include <string>
+#include <sys/time.h>
+
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <std_msgs/Header.h>
-#include <string>
-#include <sys/time.h>
+
+#include <beam_utils/log.h>
 
 namespace beam {
 /** @addtogroup utils

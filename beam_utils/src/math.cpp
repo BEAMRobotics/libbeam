@@ -45,7 +45,8 @@ int gcd(int a, int b) {
   return gcd(b, a % b);
 }
 
-void vec2mat(const std::vector<double>& x, int rows, int cols, MatX& y) {
+void vec2mat(const std::vector<double>& x, int rows, int cols,
+             Eigen::MatrixXd& y) {
   int idx;
 
   // setup
@@ -61,13 +62,13 @@ void vec2mat(const std::vector<double>& x, int rows, int cols, MatX& y) {
   }
 }
 
-void mat2vec(const MatX& A, std::vector<double>& x) {
+void mat2vec(const Eigen::MatrixXd& A, std::vector<double>& x) {
   for (int i = 0; i < A.cols(); i++) {
     for (int j = 0; j < A.rows(); j++) { x.push_back(A(i, j)); }
   }
 }
 
-void vec2mat(const VecX& x, int rows, int cols, MatX& y) {
+void vec2mat(const Eigen::VectorXd& x, int rows, int cols, Eigen::MatrixXd& y) {
   int idx;
   // setup
   idx = 0;
@@ -82,13 +83,13 @@ void vec2mat(const VecX& x, int rows, int cols, MatX& y) {
   }
 }
 
-void mat2vec(const MatX& A, VecX& x) {
+void mat2vec(const Eigen::MatrixXd& A, Eigen::VectorXd& x) {
   std::vector<double> x_p;
   beam::mat2vec(A, x_p);
   x = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(x_p.data(), x_p.size());
 }
 
-int euler2rot(const Vec3& euler, int euler_seq, Mat3& R) {
+int euler2rot(const Eigen::Vector3d& euler, int euler_seq, Eigen::Matrix3d& R) {
   double R11, R12, R13, R21, R22, R23, R31, R32, R33;
   double phi, theta, psi;
 
@@ -133,7 +134,8 @@ int euler2rot(const Vec3& euler, int euler_seq, Mat3& R) {
   return 0;
 }
 
-int euler2quat(const Vec3& euler, int euler_seq, Quaternion& q) {
+int euler2quat(const Eigen::Vector3d& euler, int euler_seq,
+               Eigen::Quaterniond& q) {
   double alpha, beta, gamma;
   double c1, c2, c3, s1, s2, s3;
   double w, x, y, z;
@@ -180,7 +182,8 @@ int euler2quat(const Vec3& euler, int euler_seq, Quaternion& q) {
   return 0;
 }
 
-int quat2euler(const Quaternion& q, int euler_seq, Vec3& euler) {
+int quat2euler(const Eigen::Quaterniond& q, int euler_seq,
+               Eigen::Vector3d& euler) {
   double qw, qx, qy, qz;
   double qw2, qx2, qy2, qz2;
   double phi, theta, psi;
@@ -215,7 +218,7 @@ int quat2euler(const Quaternion& q, int euler_seq, Vec3& euler) {
   return 0;
 }
 
-int quat2rot(const Quaternion& q, Mat3& R) {
+int quat2rot(const Eigen::Quaterniond& q, Eigen::Matrix3d& R) {
   double qw = q.w();
   double qx = q.x();
   double qy = q.y();
@@ -257,7 +260,7 @@ int quat2rot(const Quaternion& q, Mat3& R) {
   return 0;
 }
 
-void enu2nwu(const Vec3& enu, Vec3& nwu) {
+void enu2nwu(const Eigen::Vector3d& enu, Eigen::Vector3d& nwu) {
   // ENU: (x - right, y - forward, z - up)
   // NWU: (x - forward, y - left, z - up)
   nwu(0) = enu(1);
@@ -265,7 +268,7 @@ void enu2nwu(const Vec3& enu, Vec3& nwu) {
   nwu(2) = enu(2);
 }
 
-void ned2enu(const Vec3& ned, Vec3& enu) {
+void ned2enu(const Eigen::Vector3d& ned, Eigen::Vector3d& enu) {
   // NED: (x - forward, y - right, z - down)
   // ENU: (x - right, y - forward, z - up)
   enu(0) = ned(1);
@@ -273,14 +276,14 @@ void ned2enu(const Vec3& ned, Vec3& enu) {
   enu(2) = -ned(2);
 }
 
-void ned2nwu(const Quaternion& ned, Quaternion& nwu) {
+void ned2nwu(const Eigen::Quaterniond& ned, Eigen::Quaterniond& nwu) {
   nwu.w() = ned.w();
   nwu.x() = ned.x();
   nwu.y() = -ned.y();
   nwu.z() = -ned.z();
 }
 
-void nwu2enu(const Vec3& nwu, Vec3& enu) {
+void nwu2enu(const Eigen::Vector3d& nwu, Eigen::Vector3d& enu) {
   // NWU: (x - forward, y - left, z - up)
   // ENU: (x - right, y - forward, z - up)
   enu(0) = -nwu(1);
@@ -288,14 +291,14 @@ void nwu2enu(const Vec3& nwu, Vec3& enu) {
   enu(2) = nwu(2);
 }
 
-void nwu2ned(const Quaternion& nwu, Quaternion& ned) {
+void nwu2ned(const Eigen::Quaterniond& nwu, Eigen::Quaterniond& ned) {
   ned.w() = nwu.w();
   ned.x() = nwu.x();
   ned.y() = -nwu.y();
   ned.z() = -nwu.z();
 }
 
-void nwu2edn(const Vec3& nwu, Vec3& edn) {
+void nwu2edn(const Eigen::Vector3d& nwu, Eigen::Vector3d& edn) {
   // NWU: (x - forward, y - left, z - up)
   // EDN: (x - right, y - down, z - forward)
   edn(0) = -nwu(1);
@@ -345,8 +348,8 @@ Eigen::Matrix3d RightJacobianOfSO3(const Eigen::Vector3d& w) {
          sin_term * hat_w * hat_w;
 }
 
-MatX RoundMatrix(const MatX& M, int precision) {
-  MatX Mround(M.rows(), M.cols());
+Eigen::MatrixXd RoundMatrix(const Eigen::MatrixXd& M, int precision) {
+  Eigen::MatrixXd Mround(M.rows(), M.cols());
   for (int i = 0; i < M.rows(); i++) {
     for (int j = 0; j < M.cols(); j++) {
       Mround(i, j) = std::round(M(i, j) * std::pow(10, precision)) /
@@ -432,22 +435,24 @@ Eigen::Quaterniond LieAlgebraToQ(const Eigen::Vector3d& eps) {
   return q.normalized();
 }
 
-beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
-                                const beam::Mat4& m2, const beam::TimePoint& t2,
-                                const beam::TimePoint& t) {
+Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
+                                     const beam::TimePoint& t1,
+                                     const Eigen::Matrix4d& m2,
+                                     const beam::TimePoint& t2,
+                                     const beam::TimePoint& t) {
   double w2 = 1.0 * (t - t1) / (t2 - t1);
 
-  beam::Mat4 T1 = m1;
-  beam::Mat4 T2 = m2;
-  beam::Mat4 T;
+  Eigen::Matrix4d T1 = m1;
+  Eigen::Matrix4d T2 = m2;
+  Eigen::Matrix4d T;
 
-  beam::Mat3 R1 = T1.block<3, 3>(0, 0);
-  beam::Mat3 R2 = T2.block<3, 3>(0, 0);
-  beam::Mat3 R = (R2 * R1.transpose()).pow(w2) * R1;
+  Eigen::Matrix3d R1 = T1.block<3, 3>(0, 0);
+  Eigen::Matrix3d R2 = T2.block<3, 3>(0, 0);
+  Eigen::Matrix3d R = (R2 * R1.transpose()).pow(w2) * R1;
 
-  beam::Vec4 tr1 = T1.rightCols<1>();
-  beam::Vec4 tr2 = T2.rightCols<1>();
-  beam::Vec4 tr = (1 - w2) * tr1 + w2 * tr2;
+  Eigen::Vector4d tr1 = T1.rightCols<1>();
+  Eigen::Vector4d tr2 = T2.rightCols<1>();
+  Eigen::Vector4d tr = (1 - w2) * tr1 + w2 * tr2;
 
   T.setIdentity();
   T.block<3, 3>(0, 0) = R;
@@ -456,7 +461,7 @@ beam::Mat4 InterpolateTransform(const beam::Mat4& m1, const beam::TimePoint& t1,
   return T;
 }
 
-beam::Vec3 InvSkewTransform(const beam::Mat3& M) {
+Eigen::Vector3d InvSkewTransform(const Eigen::Matrix3d& M) {
   Eigen::Vector3d V;
   V(0) = M(2, 1);
   V(1) = M(0, 2);
@@ -464,8 +469,8 @@ beam::Vec3 InvSkewTransform(const beam::Mat3& M) {
   return V;
 }
 
-beam::Mat3 SkewTransform(const beam::Vec3& V) {
-  beam::Mat3 M;
+Eigen::Matrix3d SkewTransform(const Eigen::Vector3d& V) {
+  Eigen::Matrix3d M;
   M(0, 0) = 0;
   M(0, 1) = -V(2, 0);
   M(0, 2) = V(1, 0);
@@ -513,15 +518,16 @@ Eigen::Matrix4d AverageTransforms(
   return T_AVG;
 }
 
-std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
+std::pair<Eigen::Vector3d, Eigen::Vector3d>
+    FitPlane(const std::vector<Eigen::Vector3d>& c) {
   // copy coordinates to  matrix in Eigen format
   size_t num_atoms = c.size();
-  Eigen::Matrix<beam::Vec3::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(
+  Eigen::Matrix<Eigen::Vector3d::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(
       3, num_atoms);
   for (size_t i = 0; i < num_atoms; ++i) coord.col(i) = c[i];
   // calculate centroid
-  beam::Vec3 centroid(coord.row(0).mean(), coord.row(1).mean(),
-                      coord.row(2).mean());
+  Eigen::Vector3d centroid(coord.row(0).mean(), coord.row(1).mean(),
+                           coord.row(2).mean());
   // subtract centroid
   coord.row(0).array() -= centroid(0);
   coord.row(1).array() -= centroid(1);
@@ -529,15 +535,15 @@ std::pair<beam::Vec3, beam::Vec3> FitPlane(const std::vector<beam::Vec3>& c) {
   // we only need the left-singular matrix here
   //  http://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points
   auto svd = coord.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
-  beam::Vec3 plane_normal = svd.matrixU().rightCols<1>();
+  Eigen::Vector3d plane_normal = svd.matrixU().rightCols<1>();
   return std::make_pair(centroid, plane_normal);
 }
 
-beam::Vec3 IntersectPoint(const beam::Vec3& ray_vector,
-                          const beam::Vec3& ray_point,
-                          const beam::Vec3& plane_normal,
-                          const beam::Vec3& plane_point) {
-  beam::Vec3 diff = ray_point - plane_point;
+Eigen::Vector3d IntersectPoint(const Eigen::Vector3d& ray_vector,
+                               const Eigen::Vector3d& ray_point,
+                               const Eigen::Vector3d& plane_normal,
+                               const Eigen::Vector3d& plane_point) {
+  Eigen::Vector3d diff = ray_point - plane_point;
   double prod1 = diff.dot(plane_normal);
   double prod2 = ray_vector.dot(plane_normal);
   double prod3 = prod1 / prod2;
@@ -582,7 +588,7 @@ Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
 
 Eigen::Matrix4d
     QuaternionAndTranslationToTransformMatrix(const std::vector<double>& pose) {
-  Eigen::Quaternion<double> quaternion{pose[0], pose[1], pose[2], pose[3]};
+  Eigen::Quaterniond quaternion{pose[0], pose[1], pose[2], pose[3]};
   Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
   T.block(0, 0, 3, 3) = quaternion.toRotationMatrix();
   T(0, 3) = pose[4];
@@ -594,7 +600,7 @@ Eigen::Matrix4d
 std::vector<double>
     TransformMatrixToQuaternionAndTranslation(const Eigen::Matrix4d& T) {
   Eigen::Matrix3d R = T.block(0, 0, 3, 3);
-  Eigen::Quaternion<double> q = Eigen::Quaternion<double>(R);
+  Eigen::Quaterniond q = Eigen::Quaterniond(R);
   std::vector<double> pose{q.w(),   q.x(),   q.y(),  q.z(),
                            T(0, 3), T(1, 3), T(2, 3)};
   return pose;
@@ -743,6 +749,20 @@ void OutputTransformInformation(const Eigen::Matrix4d& T,
          << "Quat (wxyz): [" << q.w() << ", " << q.x() << ", " << q.y() << ", "
          << q.z() << "]\n"
          << "Trans: [" << t[0] << ", " << t[1] << ", " << t[2] << "]\n";
+}
+
+std::string TransformationMatrixToString(const Eigen::Matrix4d& T) {
+  Eigen::Matrix3d R = T.block<3, 3>(0, 0);
+  Eigen::Vector3d p = T.block<3, 1>(0, 3).transpose();
+  Eigen::Vector3d ea = R.eulerAngles(2, 1, 0);
+  std::string output;
+  output += "Roll: " + std::to_string(ea[0]);
+  output += ", Pitch: " + std::to_string(ea[1]);
+  output += ", Yaw: " + std::to_string(ea[2]);
+  output += ", x: " + std::to_string(p[0]);
+  output += ", y: " + std::to_string(p[1]);
+  output += ", z: " + std::to_string(p[2]);
+  return output;
 }
 
 } // namespace beam

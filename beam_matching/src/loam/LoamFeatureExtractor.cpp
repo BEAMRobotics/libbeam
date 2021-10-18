@@ -12,13 +12,50 @@ LoamFeatureExtractor::LoamFeatureExtractor(const LoamParamsPtr& params)
     : params_(params) {}
 
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
-  Reset();
   std::vector<PointCloud> scan_lines = GetScanLines(cloud);
   if (static_cast<int>(scan_lines.size()) != params_->number_of_beams) {
     BEAM_WARN("Number of scan lines extracted is not equal to the specified "
               "number of lidar beams, please confirm lidar settings (number of "
               "beams and FOV).");
   }
+  return ExtractFeaturesFromScanLines(scan_lines);
+}
+
+LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
+    const pcl::PointCloud<PointXYZIRT>& cloud) {
+  // get scan lines based on label
+  std::vector<PointCloud> scan_lines(params_->number_of_beams);
+  for (const auto& p : cloud) {
+    if (p.ring > params_->number_of_beams - 1) {
+      BEAM_WARN("Point ring number is greater than specified number of beams, "
+                "not using point.");
+      continue;
+    }
+    scan_lines.at(p.ring).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+  }
+
+  return ExtractFeaturesFromScanLines(scan_lines);
+}
+
+LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
+    const pcl::PointCloud<PointXYZITRRNR>& cloud) {
+  // get scan lines based on label
+  std::vector<PointCloud> scan_lines(params_->number_of_beams);
+  for (const auto& p : cloud) {
+    if (p.ring > params_->number_of_beams - 1) {
+      BEAM_WARN("Point ring number is greater than specified number of beams, "
+                "not using point.");
+      continue;
+    }
+    scan_lines.at(p.ring).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+  }
+
+  return ExtractFeaturesFromScanLines(scan_lines);
+}
+
+LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
+    const std::vector<PointCloud>& scan_lines) {
+  Reset();
   GetSortedScan(scan_lines);
 
   // extract features from individual scans
@@ -193,12 +230,24 @@ std::vector<PointCloud>
   }
 
   // Save results
-  if (output_scan_lines_ && cloud.size() > 0) {
+  if (!debug_output_path_.empty() && cloud.size() > 0) {
+    if (!boost::filesystem::exists(debug_output_path_)) {
+      BEAM_ERROR("Output directory for scan lines does not exist, not "
+                 "outputting. Input: {}",
+                 debug_output_path_);
+      return scan_lines;
+    }
+
+    std::string current_save_path =
+        debug_output_path_ +
+        beam::ConvertTimeToDate(std::chrono::system_clock::now()) + "/";
+    boost::filesystem::create_directory(current_save_path);
+
     std::string error_message{};
     for (size_t i = 0; i < scan_lines.size(); i++) {
       if (scan_lines[i].size() == 0) { continue; }
       if (!beam::SavePointCloud<pcl::PointXYZ>(
-              debug_output_path_ + "scan" + std::to_string(i) + ".pcd",
+              current_save_path + "scan" + std::to_string(i) + ".pcd",
               scan_lines[i], beam::PointCloudFileType::PCDBINARY,
               error_message)) {
         BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
@@ -206,7 +255,7 @@ std::vector<PointCloud>
     }
 
     if (!beam::SavePointCloud<pcl::PointXYZ>(
-            debug_output_path_ + "scan_orig.pcd", cloud,
+            current_save_path + "scan_orig.pcd", cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
@@ -225,16 +274,6 @@ void LoamFeatureExtractor::GetSortedScan(
     cloud_size += scan_lines[i].size();
     range.second = cloud_size > 0 ? cloud_size - 1 : 0;
     scan_indices_.push_back(range);
-  }
-
-  // Save results
-  if (output_scan_lines_) {
-    std::string error_message{};
-    if (!beam::SavePointCloud<pcl::PointXYZ>(
-            debug_output_path_ + "scan_sorted.pcd", sorted_scan_,
-            beam::PointCloudFileType::PCDBINARY, error_message)) {
-      BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
-    }
   }
 }
 
@@ -347,6 +386,10 @@ void LoamFeatureExtractor::MarkAsPicked(size_t cloud_idx, size_t scan_idx) {
     }
     scan_neighbor_picked_[scan_idx - i] = 1;
   }
+}
+
+void LoamFeatureExtractor::SaveScanLines(const std::string& debug_output_path) {
+  debug_output_path_ = debug_output_path;
 }
 
 } // namespace beam_matching

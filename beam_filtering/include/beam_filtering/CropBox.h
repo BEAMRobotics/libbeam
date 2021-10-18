@@ -39,7 +39,7 @@ public:
           const Eigen::Vector3f& max_vec = Eigen::Vector3f(20, 20, 20),
           const Eigen::Affine3f& T_box_cloud =
               Eigen::Affine3f(Eigen::Matrix4f::Identity()),
-          bool remove_outside_points = false)
+          bool remove_outside_points = true)
       : min_vec_(min_vec),
         max_vec_(max_vec),
         T_box_cloud_(T_box_cloud),
