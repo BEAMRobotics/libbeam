@@ -417,6 +417,17 @@ Eigen::MatrixXd KroneckerProduct(const Eigen::MatrixXd& A,
   return C;
 }
 
+Eigen::Matrix<double, 3, 2> S2TangentialBasis(const Eigen::Vector3d& x) {
+  int d = 0;
+  for (int i = 1; i < 3; ++i) {
+    if (std::abs(x[i]) > std::abs(x[d])) d = i;
+  }
+  Eigen::Vector3d b1 = x.cross(Eigen::Vector3d::Unit((d + 1) % 3)).normalized();
+  Eigen::Vector3d b2 = x.cross(b1).normalized();
+  return (Eigen::Matrix<double, 3, 2>() << b1, b2).finished();
+}
+
+
 Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d& R) {
   return InvSkewTransform(R.log());
 }

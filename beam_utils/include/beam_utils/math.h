@@ -130,7 +130,8 @@ std::vector<T> RandomSample(const std::vector<T>& input, uint32_t N, int seed) {
 int gcd(int a, int b);
 
 /** Reshapes a vector `x` to matrix `y` of size `rows` and `cols` */
-void vec2mat(const std::vector<double>& x, int rows, int cols, Eigen::MatrixXd& y);
+void vec2mat(const std::vector<double>& x, int rows, int cols,
+             Eigen::MatrixXd& y);
 
 /** Reshapes a matrix to a vector*/
 void mat2vec(const Eigen::MatrixXd& A, std::vector<double>& x);
@@ -145,10 +146,12 @@ void mat2vec(const Eigen::MatrixXd& A, Eigen::VectorXd& x);
 int euler2rot(const Eigen::Vector3d& euler, int euler_seq, Eigen::Matrix3d& R);
 
 /** Convert euler angle to quaternion **/
-int euler2quat(const Eigen::Vector3d& euler, int euler_seq, Eigen::Quaterniond& q);
+int euler2quat(const Eigen::Vector3d& euler, int euler_seq,
+               Eigen::Quaterniond& q);
 
 /** Convert quaternion to euler angles **/
-int quat2euler(const Eigen::Quaterniond& q, int euler_seq, Eigen::Vector3d& euler);
+int quat2euler(const Eigen::Quaterniond& q, int euler_seq,
+               Eigen::Vector3d& euler);
 
 /** Convert quaternion to rotation matrix **/
 int quat2rot(const Eigen::Quaterniond& q, Eigen::Matrix3d& R);
@@ -220,6 +223,13 @@ bool IsRotationMatrix(const Eigen::Matrix3d& R,
  **/
 Eigen::MatrixXd KroneckerProduct(const Eigen::MatrixXd& A,
                                  const Eigen::MatrixXd& B);
+
+/**
+ * @brief Computes the tangential basis for a direciton vector in 3 space
+ * @param x 3d vector
+ * @return 3x2 matrix
+ **/
+Eigen::Matrix<double, 3, 2> S2TangentialBasis(const Eigen::Vector3d& x);
 
 /**
  * @brief Convert from rotation matrix to its associated Lie Algebra
