@@ -8,7 +8,8 @@
 #include <ceres/rotation.h>
 
 /**
- * @brief Ceres cost functor for a prior pose with a covariance
+ * @brief Ceres cost functor for a prior pose with a weighting matrix (typically
+ * sqrt inverse covariance)
  */
 struct CeresPosePriorCostFunction {
   /**
@@ -27,15 +28,31 @@ struct CeresPosePriorCostFunction {
     // Compute the delta quaternion
     T orientation[4] = {T_CR[0], T_CR[1], T_CR[2], T_CR[3]};
     T observation_inverse[4] = {T(q_.w()), T(-q_.x()), T(-q_.y()), T(-q_.z())};
+    std::cout << "Observation inverse: " << std::endl;
+    std::cout << observation_inverse[0] << std::endl;
+    std::cout << observation_inverse[1] << std::endl;
+    std::cout << observation_inverse[2] << std::endl;
+    std::cout << observation_inverse[3] << std::endl;
+    std::cout << "Current estimate: " << std::endl;
+    std::cout << orientation[0] << std::endl;
+    std::cout << orientation[1] << std::endl;
+    std::cout << orientation[2] << std::endl;
+    std::cout << orientation[3] << std::endl;
     T difference[4];
     ceres::QuaternionProduct(observation_inverse, orientation, difference);
     ceres::QuaternionToAngleAxis(difference, residuals);
+    std::cout << "Difference: " << std::endl;
+    std::cout << difference[0] << std::endl;
+    std::cout << difference[1] << std::endl;
+    std::cout << difference[2] << std::endl;
+    std::cout << difference[3] << std::endl;
 
     // Compute the position error
     residuals[3] = T_CR[4] - T(p_(0));
     residuals[4] = T_CR[5] - T(p_(1));
     residuals[5] = T_CR[6] - T(p_(2));
 
+    // apply weighting matrix
     Eigen::Map<Eigen::Matrix<T, 6, 1>> residual_map(residuals);
     residual_map.applyOnTheLeft(A_.template cast<T>());
 

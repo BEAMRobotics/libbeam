@@ -37,8 +37,7 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
   ceres_solver_options.function_tolerance = 1e-8;
   ceres_solver_options.gradient_tolerance = 1e-10;
   ceres_solver_options.parameter_tolerance = 1e-8;
-  ceres_solver_options.linear_solver_type = ceres::SPARSE_SCHUR;
-  ceres_solver_options.preconditioner_type = ceres::SCHUR_JACOBI;
+  ceres_solver_options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
 
   // initial estimate
   Eigen::Matrix4d T_P = Eigen::Matrix4d::Identity();
