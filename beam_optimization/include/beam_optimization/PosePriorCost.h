@@ -28,24 +28,9 @@ struct CeresPosePriorCostFunction {
     // Compute the delta quaternion
     T orientation[4] = {T_CR[0], T_CR[1], T_CR[2], T_CR[3]};
     T observation_inverse[4] = {T(q_.w()), T(-q_.x()), T(-q_.y()), T(-q_.z())};
-    std::cout << "Observation inverse: " << std::endl;
-    std::cout << observation_inverse[0] << std::endl;
-    std::cout << observation_inverse[1] << std::endl;
-    std::cout << observation_inverse[2] << std::endl;
-    std::cout << observation_inverse[3] << std::endl;
-    std::cout << "Current estimate: " << std::endl;
-    std::cout << orientation[0] << std::endl;
-    std::cout << orientation[1] << std::endl;
-    std::cout << orientation[2] << std::endl;
-    std::cout << orientation[3] << std::endl;
     T difference[4];
     ceres::QuaternionProduct(observation_inverse, orientation, difference);
     ceres::QuaternionToAngleAxis(difference, residuals);
-    std::cout << "Difference: " << std::endl;
-    std::cout << difference[0] << std::endl;
-    std::cout << difference[1] << std::endl;
-    std::cout << difference[2] << std::endl;
-    std::cout << difference[3] << std::endl;
 
     // Compute the position error
     residuals[3] = T_CR[4] - T(p_(0));
