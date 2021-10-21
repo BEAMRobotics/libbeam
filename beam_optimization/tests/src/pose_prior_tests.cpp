@@ -47,7 +47,6 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
   Eigen::VectorXd perturbation(6, 1);
   perturbation << 20, -20, 10, 1, -1, 2;
   Eigen::Matrix4d T_P_pert = beam::PerturbTransformDegM(T_P, perturbation);
-  std::cout << T_P_pert << std::endl;
 
   // result
   std::vector<double> results{0, 0, 0, 0, 0, 0, 0};
@@ -77,8 +76,7 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
   pose(0, 3) = results[4];
   pose(1, 3) = results[5];
   pose(2, 3) = results[6];
-  std::cout << pose << std::endl;
 
 
-  REQUIRE(1 == 2);
+  REQUIRE(beam::RoundMatrix(T_P_pert, 5) == beam::RoundMatrix(pose, 5));
 }
