@@ -88,6 +88,24 @@ target_link_libraries(${PROJECT_NAME}_ceres_point_to_plane_tests
   beam::utils
 )
 
+add_executable(${PROJECT_NAME}_ceres_pose_prior_tests
+  tests/src/pose_prior_tests.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_ceres_pose_prior_tests
+  PUBLIC
+    include/beam_optimization
+    ${catkin_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME}_ceres_pose_prior_tests
+  ${PROJECT_NAME}
+  Catch2::Catch2
+  ${CERES_LIBRARIES}
+  test_utils
+  beam::utils
+)
+
 file(COPY tests/run_all_tests.bash
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )
