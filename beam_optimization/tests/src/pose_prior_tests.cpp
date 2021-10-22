@@ -46,20 +46,24 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
   std::shared_ptr<ceres::Problem> problem =
       std::make_shared<ceres::Problem>(ceres_params.ProblemOptions());
 
-  problem->AddParameterBlock(
-      &(results[0]), 7, ceres_params.SE3QuatTransLocalParametrization().get());
+  std::unique_ptr<ceres::LocalParameterization> parameterization =
+      ceres_params.SE3QuatTransLocalParametrization();
+
+  std::unique_ptr<ceres::LossFunction> loss_function =
+      ceres_params.LossFunction();
+
+  problem->AddParameterBlock(&(results[0]), 7, parameterization.get());
 
   std::unique_ptr<ceres::CostFunction> cost_function(
       CeresPosePriorCostFunction::Create(T, covariance));
 
   problem->AddResidualBlock(cost_function.release(),
-                            ceres_params.LossFunction().get(), &(results[0]));
+                            loss_function.get(), &(results[0]));
 
   // solve problem
   ceres::Solver::Summary ceres_summary;
   ceres::Solve(ceres_params.SolverOptions(), problem.get(), &ceres_summary);
   std::string report = ceres_summary.FullReport();
-  std::cout << "Ceres Report: \n" << report << "\n\n";
 
   // get pose from result
   std::cout << "INITIAL: [" << q.w() << ", " << q.x() << ", " << q.y() << ", "

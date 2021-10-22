@@ -53,52 +53,48 @@ public:
    */
   LoamParams(std::string& param_config) {
     std::string read_file = param_config;
-    if (param_config.empty()) {
-      return;
-    } else if (!boost::filesystem::exists(param_config)) {
-      BEAM_WARN("Invalid matcher config path, file does not exist, using "
-                "default. Input: {}",
-                param_config);
-      return;
-    } else if (param_config == "DEFAULT_PATH") {
-      std::string default_path = beam::LibbeamRoot();
-      default_path += "beam_matching/config/loam.json";
-      if (!boost::filesystem::exists(default_path)) {
-        BEAM_WARN("Could not find default icp config at: {}. Using "
-                  "default params.",
-                  default_path);
-        return;
-      }
-      read_file = default_path;
+    if (param_config == "DEFAULT_PATH") {
+      read_file = beam::LibbeamRoot();
+      read_file += "beam_matching/config/loam.json";
     }
 
     BEAM_INFO("Loading LOAM config file: {}", read_file);
-
     nlohmann::json J;
-    std::ifstream file(read_file);
-    file >> J;
+    if (!beam::ReadJson(read_file, J)) {
+      BEAM_ERROR("Using default loam params.");
+      return;
+    }
 
-    number_of_beams = J["number_of_beams"];
-    fov_deg = J["fov_deg"];
-    n_feature_regions = J["n_feature_regions"];
-    curvature_region = J["curvature_region"];
-    max_corner_sharp = J["max_corner_sharp"];
-    max_corner_less_sharp = J["max_corner_less_sharp"];
-    max_surface_flat = J["max_surface_flat"];
-    less_flat_filter_size = J["less_flat_filter_size"];
-    surface_curvature_threshold = J["surface_curvature_threshold"];
-    vertical_axis = J["vertical_axis"];
-    max_correspondence_distance = J["max_correspondence_distance"];
-    validate_correspondences = J["validate_correspondences"];
-    iterate_correspondences = J["iterate_correspondences"];
-    min_number_measurements = J["min_number_measurements"];
-    convergence_criteria_translation_m =
-        J["convergence_criteria_translation_m"];
-    convergence_criteria_rotation_deg = J["convergence_criteria_rotation_deg"];
-    max_correspondence_iterations = J["max_correspondence_iterations"];
-    output_ceres_summary = J["output_ceres_summary"];
-    output_optimization_summary = J["output_optimization_summary"];
-    optimizer_params = beam_optimization::CeresParams(J["ceres_config"]);
+    std::string ceres_config;
+    try {
+      number_of_beams = J["number_of_beams"];
+      fov_deg = J["fov_deg"];
+      n_feature_regions = J["n_feature_regions"];
+      curvature_region = J["curvature_region"];
+      max_corner_sharp = J["max_corner_sharp"];
+      max_corner_less_sharp = J["max_corner_less_sharp"];
+      max_surface_flat = J["max_surface_flat"];
+      less_flat_filter_size = J["less_flat_filter_size"];
+      surface_curvature_threshold = J["surface_curvature_threshold"];
+      vertical_axis = J["vertical_axis"];
+      max_correspondence_distance = J["max_correspondence_distance"];
+      validate_correspondences = J["validate_correspondences"];
+      iterate_correspondences = J["iterate_correspondences"];
+      min_number_measurements = J["min_number_measurements"];
+      convergence_criteria_translation_m =
+          J["convergence_criteria_translation_m"];
+      convergence_criteria_rotation_deg =
+          J["convergence_criteria_rotation_deg"];
+      max_correspondence_iterations = J["max_correspondence_iterations"];
+      output_ceres_summary = J["output_ceres_summary"];
+      output_optimization_summary = J["output_optimization_summary"];
+      ceres_config = J["ceres_config"];
+    } catch (...) {
+      BEAM_ERROR("Cannot load loam params from json config file. One or more "
+                 "missing or invalid params. Using defaults.");
+    }
+
+    optimizer_params = beam_optimization::CeresParams(ceres_config);
   }
 
   /**
