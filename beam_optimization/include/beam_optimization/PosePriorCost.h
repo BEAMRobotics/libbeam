@@ -48,7 +48,7 @@ struct CeresPosePriorCostFunction {
   // the client code.
   static ceres::CostFunction* Create(const Eigen::Matrix4d T_P,
                                      const Eigen::MatrixXd A) {
-    return (new ceres::AutoDiffCostFunction<CeresPosePriorCostFunction, 1, 7>(
+    return (new ceres::AutoDiffCostFunction<CeresPosePriorCostFunction, 6, 7>(
         new CeresPosePriorCostFunction(T_P, A)));
   }
 
