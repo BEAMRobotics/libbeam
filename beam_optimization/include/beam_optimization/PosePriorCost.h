@@ -8,7 +8,8 @@
 #include <ceres/rotation.h>
 
 /**
- * @brief Ceres cost functor for a prior pose with a covariance
+ * @brief Ceres cost functor for a prior pose with a weighting matrix (typically
+ * sqrt inverse covariance)
  */
 struct CeresPosePriorCostFunction {
   /**
@@ -36,6 +37,7 @@ struct CeresPosePriorCostFunction {
     residuals[4] = T_CR[5] - T(p_(1));
     residuals[5] = T_CR[6] - T(p_(2));
 
+    // apply weighting matrix
     Eigen::Map<Eigen::Matrix<T, 6, 1>> residual_map(residuals);
     residual_map.applyOnTheLeft(A_.template cast<T>());
 
@@ -46,7 +48,7 @@ struct CeresPosePriorCostFunction {
   // the client code.
   static ceres::CostFunction* Create(const Eigen::Matrix4d T_P,
                                      const Eigen::MatrixXd A) {
-    return (new ceres::AutoDiffCostFunction<CeresPosePriorCostFunction, 1, 7>(
+    return (new ceres::AutoDiffCostFunction<CeresPosePriorCostFunction, 6, 7>(
         new CeresPosePriorCostFunction(T_P, A)));
   }
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdio>
-#include <map>
 #include <fstream>
+#include <map>
 
 #include <boost/filesystem.hpp>
 #include <ceres/ceres.h>
@@ -11,6 +11,7 @@
 #include <ceres/types.h>
 #include <nlohmann/json.hpp>
 
+#include <beam_utils/filesystem.h>
 #include <beam_utils/log.h>
 
 namespace beam_optimization {
@@ -26,97 +27,93 @@ class CeresParams {
 public:
   /**
    * @brief Constructor. This will use the default params set in this
-   * class
+   * class, plus the input ownership variables.
    */
-  CeresParams() { LoadDefaultParams(); }
+  CeresParams(bool cost_function_take_ownership = false,
+              bool loss_function_take_ownership = false,
+              bool parameterization_take_ownership = false) {
+    LoadDefaultParams(cost_function_take_ownership,
+                      loss_function_take_ownership,
+                      parameterization_take_ownership);
+  }
 
   /**
    * @brief Constructor that takes in a path to a json config file with all
-   * relevant parameters
+   * relevant parameters, plus the ownership variables. These ownership
+   * variables cannot be set using a config file because they are dependent on
+   * how the code implements the ceres problem.
    * @param config_path full path to config file. For example, see
    * beam_optimization/config/CeresParamsDefault.json
+   *
    */
-  CeresParams(const std::string& config_path) {
-    if (config_path.empty()) {
-      LoadDefaultParams();
-      return;
-    }
+  CeresParams(const std::string& config_path,
+              bool cost_function_take_ownership = false,
+              bool loss_function_take_ownership = false,
+              bool parameterization_take_ownership = false) {
+    LoadDefaultParams(cost_function_take_ownership,
+                      loss_function_take_ownership,
+                      parameterization_take_ownership);
 
-    if (!boost::filesystem::exists(config_path)) {
-      BEAM_ERROR(
-          "Ceres config file does not exist: {}. Using default parameters.",
-          config_path);
-      LoadDefaultParams();
-      return;
-    }
+    if (config_path.empty()) { return; }
 
     BEAM_INFO("Loading ceres config file: {}", config_path);
     nlohmann::json J;
-    std::ifstream file(config_path);
-    file >> J;
-
-    nlohmann::json J_solver_options = J["solver_options"];
-    solver_options_.minimizer_progress_to_stdout =
-        J_solver_options["minimizer_progress_to_stdout"];
-    solver_options_.max_num_iterations = J_solver_options["max_num_iterations"];
-    solver_options_.max_solver_time_in_seconds =
-        J_solver_options["max_solver_time_in_seconds"];
-    solver_options_.function_tolerance = J_solver_options["function_tolerance"];
-    solver_options_.gradient_tolerance = J_solver_options["gradient_tolerance"];
-    solver_options_.parameter_tolerance =
-        J_solver_options["parameter_tolerance"];
-
-    std::string linear_solver_type = J_solver_options["linear_solver_type"];
-    if (linear_solver_map_.find(linear_solver_type) ==
-        linear_solver_map_.end()) {
-      BEAM_ERROR(
-          "Invalid linear_solver_type param. Using default (SPARSE_SCHUR). "
-          "Options: DENSE_NORMAL_CHOLESKY, DENSE_QR, SPARSE_NORMAL_CHOLESKY, "
-          "DENSE_SCHUR, SPARSE_SCHUR, ITERATIVE_SCHUR, CGNR");
-      solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
-    } else {
-      solver_options_.linear_solver_type =
-          linear_solver_map_[linear_solver_type];
+    if (!beam::ReadJson(config_path, J)) {
+      BEAM_ERROR("Using default ceres params.");
     }
 
-    std::string preconditioner_type = J_solver_options["preconditioner_type"];
-    if (preconditioner_type_map_.find(preconditioner_type) ==
-        preconditioner_type_map_.end()) {
-      BEAM_ERROR(
-          "Invalid preconditioner_type param. Using default (SCHUR_JACOBI). "
-          "Options: IDENTITY, JACOBI, SCHUR_JACOBI");
-      solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
-    } else {
-      solver_options_.preconditioner_type =
-          preconditioner_type_map_[preconditioner_type];
-    }
+    try {
+      nlohmann::json J_solver_options = J["solver_options"];
+      solver_options_.minimizer_progress_to_stdout =
+          J_solver_options["minimizer_progress_to_stdout"];
+      solver_options_.max_num_iterations =
+          J_solver_options["max_num_iterations"];
+      solver_options_.max_solver_time_in_seconds =
+          J_solver_options["max_solver_time_in_seconds"];
+      solver_options_.function_tolerance =
+          J_solver_options["function_tolerance"];
+      solver_options_.gradient_tolerance =
+          J_solver_options["gradient_tolerance"];
+      solver_options_.parameter_tolerance =
+          J_solver_options["parameter_tolerance"];
 
-    nlohmann::json J_problem_options = J["problem_options"];
-    if (J_problem_options["local_parameterization_take_ownership"]) {
-      problem_options_.local_parameterization_ownership = ceres::TAKE_OWNERSHIP;
-    } else {
-      problem_options_.local_parameterization_ownership =
-          ceres::DO_NOT_TAKE_OWNERSHIP;
-    }
-    if (J_problem_options["loss_function_take_ownership"]) {
-      problem_options_.loss_function_ownership = ceres::TAKE_OWNERSHIP;
-    } else {
-      problem_options_.loss_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
-    }
-    if (J_problem_options["cost_function_take_ownership"]) {
-      problem_options_.cost_function_ownership = ceres::TAKE_OWNERSHIP;
-    } else {
-      problem_options_.cost_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
-    }
+      std::string linear_solver_type = J_solver_options["linear_solver_type"];
+      if (linear_solver_map_.find(linear_solver_type) ==
+          linear_solver_map_.end()) {
+        BEAM_ERROR(
+            "Invalid linear_solver_type param. Using default (SPARSE_SCHUR). "
+            "Options: DENSE_NORMAL_CHOLESKY, DENSE_QR, SPARSE_NORMAL_CHOLESKY, "
+            "DENSE_SCHUR, SPARSE_SCHUR, ITERATIVE_SCHUR, CGNR");
+        solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
+      } else {
+        solver_options_.linear_solver_type =
+            linear_solver_map_[linear_solver_type];
+      }
 
-    nlohmann::json J_loss_function = J["loss_function"];
-    loss_function_type_ = J_loss_function["type"];
-    loss_function_scaling_ = J_loss_function["scaling"];
-    if (loss_function_types_.find(loss_function_type_) ==
-        loss_function_types_.end()) {
-      LOG_ERROR("Invalid loss function type, Options: HUBER, CAUCHY, NULL. "
-                "Using default: HUBER");
-      loss_function_type_ = "HUBER";
+      std::string preconditioner_type = J_solver_options["preconditioner_type"];
+      if (preconditioner_type_map_.find(preconditioner_type) ==
+          preconditioner_type_map_.end()) {
+        BEAM_ERROR(
+            "Invalid preconditioner_type param. Using default (SCHUR_JACOBI). "
+            "Options: IDENTITY, JACOBI, SCHUR_JACOBI");
+        solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
+      } else {
+        solver_options_.preconditioner_type =
+            preconditioner_type_map_[preconditioner_type];
+      }
+
+      nlohmann::json J_loss_function = J["loss_function"];
+      loss_function_type_ = J_loss_function["type"];
+      loss_function_scaling_ = J_loss_function["scaling"];
+      if (loss_function_types_.find(loss_function_type_) ==
+          loss_function_types_.end()) {
+        LOG_ERROR("Invalid loss function type, Options: HUBER, CAUCHY, NULL. "
+                  "Using default: HUBER");
+        loss_function_type_ = "HUBER";
+      }
+    } catch (...) {
+      BEAM_ERROR("Cannot load json config file for CeresParams, one or more "
+                 "params are missing or invalid. Using default parameters.");
     }
   }
 
@@ -148,6 +145,10 @@ public:
   /**
    * @brief get a unique pointer to a loss function based on the type specified
    * herein
+   *
+   * IMPORTANT NOTE: When using this, you
+   * must store the unique pointer in your class before calling ptr.get() when
+   * adding to ceres. Otherwise, you will get a segmentation fault
    */
   std::unique_ptr<ceres::LossFunction> LossFunction() {
     std::unique_ptr<ceres::LossFunction> loss_function;
@@ -167,6 +168,10 @@ public:
    * @brief get a unique pointer to an SE3 parameterization, parameterized based
    * on the combination of a quaternion (w x y z) parameterization plus an
    * identity (x y z) parameterization.
+   *
+   * IMPORTANT NOTE: When using this, you
+   * must store the unique pointer in your class before calling ptr.get() when
+   * adding to ceres. Otherwise, you will get a segmentation fault
    */
   std::unique_ptr<ceres::LocalParameterization>
       SE3QuatTransLocalParametrization() {
@@ -174,8 +179,7 @@ public:
         new ceres::QuaternionParameterization());
     std::unique_ptr<ceres::LocalParameterization> identity_parameterization(
         new ceres::IdentityParameterization(3));
-    std::unique_ptr<ceres::LocalParameterization> se3_parameterization;
-    se3_parameterization = std::unique_ptr<ceres::LocalParameterization>(
+    std::unique_ptr<ceres::LocalParameterization> se3_parameterization(
         new ceres::ProductParameterization(
             quat_parameterization.release(),
             identity_parameterization.release()));
@@ -183,7 +187,9 @@ public:
   }
 
 private:
-  void LoadDefaultParams() {
+  void LoadDefaultParams(bool cost_function_take_ownership = false,
+                         bool loss_function_take_ownership = false,
+                         bool parameterization_take_ownership = false) {
     solver_options_.minimizer_progress_to_stdout = false;
     solver_options_.max_num_iterations = 50;
     solver_options_.max_solver_time_in_seconds = 1e6;
@@ -193,10 +199,21 @@ private:
     solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
     solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
 
+    // set these here, these cannot be overridden because of the way this class
+    // returns loss functino and parameterization
     problem_options_.loss_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
     problem_options_.local_parameterization_ownership =
         ceres::DO_NOT_TAKE_OWNERSHIP;
     problem_options_.cost_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
+    if (cost_function_take_ownership) {
+      problem_options_.cost_function_ownership = ceres::TAKE_OWNERSHIP;
+    }
+    if (loss_function_take_ownership) {
+      problem_options_.loss_function_ownership = ceres::TAKE_OWNERSHIP;
+    }
+    if (parameterization_take_ownership) {
+      problem_options_.local_parameterization_ownership = ceres::TAKE_OWNERSHIP;
+    }
   }
 
   std::map<std::string, ceres::LinearSolverType> linear_solver_map_{
