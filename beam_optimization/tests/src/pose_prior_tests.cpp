@@ -53,7 +53,7 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
       CeresPosePriorCostFunction::Create(T, covariance));
 
   problem->AddResidualBlock(cost_function.release(),
-                            ceres_params.LossFunction().get(), &(results[0]));
+                            ceres_params.LossFunction(), &(results[0]));
 
   // solve problem
   ceres::Solver::Summary ceres_summary;
@@ -61,15 +61,10 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
   std::string report = ceres_summary.FullReport();
   std::cout << "Ceres Report: \n" << report << "\n\n";
 
-  // get pose from result
-  std::cout << "INITIAL: [" << q.w() << ", " << q.x() << ", " << q.y() << ", "
-            << q.z() << ", " << t[0] << ", " << t[1] << ", " << t[2] << "]\n";
-  std::cout << "RESULT: [";
-  for (auto& i : results) { std::cout << i << ", "; }
-  std::cout << "]\n";
-  std::cout << "EXPECTED: [" << q_pert.w() << ", " << q_pert.x() << ", "
-            << q_pert.y() << "," << q_pert.z() << ", " << t_pert[0] << ", "
-            << t_pert[1] << ", " << t_pert[2] << "]\n";
+  Eigen::Quaterniond result_q{results[0], results[1], results[2], results[3]};
+  Eigen::Vector3d result_p{results[4], results[5], results[6]};
+  Eigen::Matrix4d result_T;
 
-  // REQUIRE(beam::RoundMatrix(T_pert, 5) == beam::RoundMatrix(T, 5));
+  beam::QuaternionAndTranslationToTransformMatrix(result_q, result_p, result_T);
+  REQUIRE(beam::RoundMatrix(T_pert, 5) == beam::RoundMatrix(result_T, 5));
 }
