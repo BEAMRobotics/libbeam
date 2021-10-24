@@ -3,6 +3,8 @@
   "bag_file_path": "test.bag",
   "save_directory": "/home/nick/results/ig_maps/libbeam_map_builder/testing/",
   "extrinsics_file": "/home/nick/catkin_ws/src/beam_robotics/calibration/results/inspector_gadget/current/extrinsics/extrinsics.json",
+  "moving_frame": "",
+  "fixed_frame": "",  
   "intermediary_map_size": 8,
   "min_translation": 0.1,
   "min_rotation_deg": 45,

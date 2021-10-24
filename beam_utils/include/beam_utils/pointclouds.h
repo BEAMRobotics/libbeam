@@ -8,12 +8,12 @@
 #pragma once
 
 #define PCL_NO_PRECOMPILE
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
+#include <geometry_msgs/Vector3.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/Vector3.h>
 
 #include <beam_utils/filesystem.h>
 
@@ -51,6 +51,31 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
     (float, intensity, intensity)(std::uint32_t, time, time)
     (std::uint16_t, reflectivity, reflectivity)(std::uint8_t, ring, ring)
     (std::uint16_t, noise, noise)(std::uint32_t, range, range))
+// clang-format on
+
+// create a point type for storing poses
+struct PointXYZIRPYT {
+  PCL_ADD_POINT4D
+  PCL_ADD_INTENSITY;
+  float roll;
+  float pitch;
+  float yaw;
+  double time;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointXYZIRPYT,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (float, roll, roll)
+    (float, pitch, pitch)
+    (float, yaw, yaw)
+    (double, time, time)
+    )
 // clang-format on
 
 #ifndef BEAM_PCL_TYPEDEF
@@ -124,9 +149,9 @@ void ROSToPCL(PointCloud& cloud_out, const sensor_msgs::PointCloud2& msg,
  * @param seq scan number
  * @return pcl point cloud
  */
-void ROSToPCL(pcl::PointCloud<PointXYZIRT>& cloud_out, const sensor_msgs::PointCloud2& msg,
-              ros::Time& time = time_tmp, std::string& frame_id = _string_tmp,
-              uint32_t& seq = seq_tmp);
+void ROSToPCL(pcl::PointCloud<PointXYZIRT>& cloud_out,
+              const sensor_msgs::PointCloud2& msg, ros::Time& time = time_tmp,
+              std::string& frame_id = _string_tmp, uint32_t& seq = seq_tmp);
 
 /**
  * @brief Convert from a ROS pointcloud to a pcl pointcloud
@@ -137,9 +162,9 @@ void ROSToPCL(pcl::PointCloud<PointXYZIRT>& cloud_out, const sensor_msgs::PointC
  * @param seq scan number
  * @return pcl point cloud
  */
-void ROSToPCL(pcl::PointCloud<PointXYZITRRNR>& cloud_out, const sensor_msgs::PointCloud2& msg,
-              ros::Time& time = time_tmp, std::string& frame_id = _string_tmp,
-              uint32_t& seq = seq_tmp);              
+void ROSToPCL(pcl::PointCloud<PointXYZITRRNR>& cloud_out,
+              const sensor_msgs::PointCloud2& msg, ros::Time& time = time_tmp,
+              std::string& frame_id = _string_tmp, uint32_t& seq = seq_tmp);
 
 /**
  * @brief Convert from a pcl pointcloud to a vector of ros vectors
@@ -155,6 +180,14 @@ std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud);
  */
 PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector);
 
+/**
+ * @brief converts PointXYZIRPYT to pose + ROS stamp
+ * @param point
+ * @param time reference to output time
+ * @param T reference to output transform
+ */
+void PCLPointToPose(const PointXYZIRPYT& point, ros::Time& time,
+                    Eigen::Matrix4d& T);
 /**
  * @brief Add RGB color to a pcl pointcloud
  * @param r red color intensity

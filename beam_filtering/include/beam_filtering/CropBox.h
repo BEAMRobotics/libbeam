@@ -168,7 +168,7 @@ private:
   Eigen::Vector3f min_vec_{0, 0, 0};
   Eigen::Vector3f max_vec_{20, 20, 20};
   Eigen::Affine3f T_box_cloud_{Eigen::Matrix4f::Identity()};
-  bool remove_outside_points_{true};
+  bool remove_outside_points_{false};
 
 };
 

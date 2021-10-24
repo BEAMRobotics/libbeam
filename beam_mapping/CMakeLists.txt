@@ -14,23 +14,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/MapBuilder.cpp
     src/Poses.cpp
-)
-
-################ main ###################
-add_executable(${PROJECT_NAME}_main
-  src/main.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_main
-  PUBLIC
-    include
-)
-
-target_link_libraries(${PROJECT_NAME}_main
-  ${PROJECT_NAME}
-  beam::utils
-  beam::filtering
-  beam::calibration
+    src/Utils.cpp
 )
 
 ################ tests ##################

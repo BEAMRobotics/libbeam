@@ -12,9 +12,6 @@
 
 namespace beam_mapping {
 
-using PointT = pcl::PointXYZI;
-using PointCloud = pcl::PointCloud<PointT>;
-
 MapBuilder::MapBuilder(const std::string& config_file) {
   config_file_ = config_file;
   poses_moving_frame_ = "";
@@ -33,6 +30,8 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
                                          bag_file_path_.rfind(".bag"));
   save_dir_ = J["save_directory"];
   extrinsics_file_ = J["extrinsics_file"];
+  poses_moving_frame_ = J["moving_frame"];
+  poses_fixed_frame_ = J["fixed_frame"];
   intermediary_map_size_ = J["intermediary_map_size"];
   min_translation_ = J["min_translation"];
   min_rotation_deg_ = J["min_rotation_deg"];
@@ -42,6 +41,7 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
     lidar_config.topic = lidar["topic"];
     lidar_config.frame = lidar["frame"];
     lidar_config.use_cropbox = lidar["use_cropbox"];
+    lidar_config.remove_outside_points = lidar["remove_outside_points"];
     std::vector<float> min_ = lidar["cropbox_min"];
     std::vector<float> max_ = lidar["cropbox_max"];
     Eigen::Vector3f min(min_[0], min_[1], min_[2]);
@@ -81,23 +81,28 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
     slam_poses_.LoadFromJSON(pose_file);
   } else if (pose_type == ".ply") {
     slam_poses_.LoadFromPLY(pose_file);
+  } else if (pose_type == ".pcd") {
+    slam_poses_.LoadFromPCD(pose_file);
   } else {
-    BEAM_CRITICAL("Invalid pose file type. Valid extensions: .ply, .json");
+    BEAM_CRITICAL(
+        "Invalid pose file type. Valid extensions: .ply, .json, .pcd");
     throw std::invalid_argument{
-        "Invalid pose file type. Valid extensions: .ply, .json"};
+        "Invalid pose file type. Valid extensions: .ply, .json, .pcd"};
   }
 
-  poses_moving_frame_ = slam_poses_.moving_frame;
-  poses_fixed_frame_ = slam_poses_.fixed_frame;
+  if (poses_moving_frame_.empty()) {
+    poses_moving_frame_ = slam_poses_.moving_frame;
+  }
+
+  if (poses_fixed_frame_.empty()) {
+    poses_fixed_frame_ = slam_poses_.fixed_frame;
+  }
 
   if (slam_poses_.GetBagName() != bag_file_name_) {
     BEAM_WARN("Bag file name from MapBuilder config file is not the same "
               "as the name listed in the pose file.\nMapBuilderConfig: "
               "{}\nPoseFile: {}",
-              bag_file_name_.c_str(), slam_poses_.GetBagName().c_str());
-    // throw std::invalid_argument{
-    //     "Bag file name from MapBuilder config file is "
-    //     "not the same as the name listed in the pose file."};
+              bag_file_name_, slam_poses_.GetBagName());
   }
 
   extrinsics_.LoadJSON(extrinsics_file_);
@@ -114,20 +119,22 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
 
   int num_poses = slam_poses_.time_stamps.size();
   for (int k = 0; k < num_poses; k++) {
-    trajectory_.AddTransform(slam_poses_.poses[k], poses_fixed_frame_,
-                             poses_moving_frame_, slam_poses_.time_stamps[k]);
+    trajectory_.AddTransform(Eigen::Affine3d(slam_poses_.poses[k]),
+                             poses_fixed_frame_, poses_moving_frame_,
+                             slam_poses_.time_stamps[k]);
   }
 }
 
-PointCloud::Ptr MapBuilder::CropPointCloud(PointCloud::Ptr cloud,
-                                           uint8_t lidar_number) {
+PointCloud MapBuilder::CropLidarRaw(const PointCloud& cloud,
+                                    uint8_t lidar_number) {
   if (!lidars_[lidar_number].use_cropbox) { return cloud; }
-  beam_filtering::CropBox<PointT> cropper;
+  beam_filtering::CropBox<pcl::PointXYZ> cropper;
   cropper.SetMinVector(lidars_[lidar_number].cropbox_min);
   cropper.SetMaxVector(lidars_[lidar_number].cropbox_max);
-  cropper.SetInputCloud(cloud);
+  cropper.SetRemoveOutsidePoints(lidars_[lidar_number].remove_outside_points);
+  cropper.SetInputCloud(std::make_shared<PointCloud>(cloud));
   cropper.Filter();
-  return std::make_shared<PointCloud>(cropper.GetFilteredCloud());
+  return cropper.GetFilteredCloud();
 }
 
 bool MapBuilder::CheckPoseChange() {
@@ -143,8 +150,8 @@ bool MapBuilder::CheckPoseChange() {
   double minRotSq =
       beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
   Eigen::Vector3d eps1, eps2, diffSq;
-  eps1 = beam::RToLieAlgebra(scan_pose_last_.rotation());
-  eps2 = beam::RToLieAlgebra(scan_pose_current_.rotation());
+  eps1 = beam::RToLieAlgebra(scan_pose_last_.block(0,0,3,3));
+  eps2 = beam::RToLieAlgebra(scan_pose_current_.block(0,0,3,3));
   diffSq(0, 0) = (eps2(0, 0) - eps1(0, 0)) * (eps2(0, 0) - eps1(0, 0));
   diffSq(1, 0) = (eps2(1, 0) - eps1(1, 0)) * (eps2(1, 0) - eps1(1, 0));
   diffSq(2, 0) = (eps2(2, 0) - eps1(2, 0)) * (eps2(2, 0) - eps1(2, 0));
@@ -174,19 +181,18 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
   std::string to_frame = poses_fixed_frame_;
   std::string from_frame = poses_moving_frame_;
   scan_pose_current_ =
-      trajectory_.GetTransformEigen(to_frame, from_frame, scan_time);
+      trajectory_.GetTransformEigen(to_frame, from_frame, scan_time).matrix();
   save_scan = CheckPoseChange();
 
   if (save_scan) {
     pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
         std::make_shared<pcl::PCLPointCloud2>();
-    PointCloud::Ptr cloud_tmp = std::make_shared<PointCloud>();
+    PointCloud cloud_tmp;
     beam::pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
-    pcl::fromPCLPointCloud2(*pcl_pc2_tmp, *cloud_tmp);
-    PointCloud::Ptr cloud_cropped =
-        this->CropPointCloud(cloud_tmp, lidar_number);
+    pcl::fromPCLPointCloud2(*pcl_pc2_tmp, cloud_tmp);
+    PointCloud cloud_cropped = CropLidarRaw(cloud_tmp, lidar_number);
     PointCloud cloud_filtered =
-        beam_filtering::FilterPointCloud(*cloud_cropped, input_filters_);
+        beam_filtering::FilterPointCloud(cloud_cropped, input_filters_);
     scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
     interpolated_poses_.AddSinglePose(scan_pose_current_);
     interpolated_poses_.AddSingleTimeStamp(scan_time);
@@ -226,15 +232,15 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
   std::string lidar_frame = lidars_[lidar_number].frame;
   PointCloud::Ptr scan_aggregate = std::make_shared<PointCloud>();
   PointCloud::Ptr scan_intermediary = std::make_shared<PointCloud>();
-  Eigen::Affine3d T_MOVING_LIDAR =
-      extrinsics_.GetTransformEigen(moving_frame, lidar_frame);
-  Eigen::Affine3d T_FIXED_LIDAR, T_FIXED_MOVING;
+  Eigen::Matrix4d T_MOVING_LIDAR =
+      extrinsics_.GetTransformEigen(moving_frame, lidar_frame).matrix();
+  Eigen::Matrix4d T_FIXED_LIDAR;
+  Eigen::Matrix4d T_FIXED_MOVING;
 
   // iterate through all scans
   int intermediary_size = 0;
-  Eigen::Affine3d T_FIXED_INT, T_INT_LIDAR;
-  T_FIXED_INT.matrix().setIdentity();
-  T_INT_LIDAR.matrix().setIdentity();
+  Eigen::Matrix4d T_FIXED_INT = Eigen::Matrix4d::Identity();
+  Eigen::Matrix4d T_INT_LIDAR = Eigen::Matrix4d::Identity();
 
   for (uint32_t k = 0; k < scans_.size(); k++) {
     intermediary_size++;
@@ -243,7 +249,7 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
     T_FIXED_MOVING = interpolated_poses_.poses[k];
     T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
     if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
-    T_INT_LIDAR = T_FIXED_INT.inverse() * T_FIXED_LIDAR;
+    T_INT_LIDAR = beam::InvertTransform(T_FIXED_INT) * T_FIXED_LIDAR;
 
     PointCloud::Ptr scan_intermediate_frame = std::make_shared<PointCloud>();
     PointCloud::Ptr intermediary_transformed = std::make_shared<PointCloud>();
@@ -276,7 +282,7 @@ void MapBuilder::SaveMaps() {
                             lidars_[i].frame + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
-    if (!beam::SavePointCloud<pcl::PointXYZI>(
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
             save_path, *maps_[i], beam::PointCloudFileType::PCDBINARY,
             error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
@@ -288,8 +294,8 @@ void MapBuilder::SaveMaps() {
     std::string save_path =
         save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";
     BEAM_INFO("Saving map to: {}", save_path);
-    std::string error_message{};
-    if (!beam::SavePointCloud<pcl::PointXYZI>(
+    std::string error_message;
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
             save_path, *combined_map, beam::PointCloudFileType::PCDBINARY,
             error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
@@ -314,15 +320,15 @@ std::string MapBuilder::GetPosesFixedFrame() {
 }
 
 void MapBuilder::BuildMap() {
-  this->LoadTrajectory(pose_file_path_);
+  LoadTrajectory(pose_file_path_);
   for (uint8_t i = 0; i < lidars_.size(); i++) {
-    scan_pose_last_.matrix().setIdentity();
+    scan_pose_last_ = Eigen::Matrix4d::Identity();
     interpolated_poses_.Clear();
-    this->scans_.clear();
-    this->LoadScans(i);
-    this->GenerateMap(i);
+    scans_.clear();
+    LoadScans(i);
+    GenerateMap(i);
   }
-  this->SaveMaps();
+  SaveMaps();
 }
 
 } // namespace beam_mapping

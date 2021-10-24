@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include <Eigen/Dense>
 #include <beam_utils/log.h>
 #include <nlohmann/json.hpp>
-#include <Eigen/Dense>
 
 namespace beam {
 /** @addtogroup utils
@@ -38,7 +38,8 @@ std::string GetExtension(const std::string& input);
 
 /**
  * @brief returns true if the input string finishes with the extension specified
- * by entension (e.g., ".json"). This will also convert both strings to lower case
+ * by entension (e.g., ".json"). This will also convert both strings to lower
+ * case
  */
 bool HasExtension(const std::string& input, const std::string& extension);
 
