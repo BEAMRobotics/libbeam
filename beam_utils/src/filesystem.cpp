@@ -1,7 +1,7 @@
 #include <beam_utils/filesystem.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include <boost/filesystem.hpp>
 

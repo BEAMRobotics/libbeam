@@ -39,9 +39,9 @@ TEST_CASE("Test JSON read and write functionality") {
       0.04162559194330412, -6.664018422068914, -0.01207790554542605,
       -0.1415549256445998, 0.9898567205527172, 1.292950254770442, 0, 0, 0, 1;
 
-  REQUIRE(poses_read.GetPoses()[0].matrix() == T1);
-  REQUIRE(poses_read.GetPoses()[1].matrix() == T2);
-  REQUIRE(poses_read.GetPoses()[2].matrix() == T3);
+  REQUIRE(poses_read.GetPoses()[0] == T1);
+  REQUIRE(poses_read.GetPoses()[1] == T2);
+  REQUIRE(poses_read.GetPoses()[2] == T3);
 
   ros::Time t1(1550105072, 919277056);
   ros::Time t2(1550105104, 118189056);

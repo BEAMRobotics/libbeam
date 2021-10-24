@@ -19,9 +19,6 @@ namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
-using PointT = pcl::PointXYZ;
-using PointCloud = pcl::PointCloud<PointT>;
-
 /**
  * @brief class for map builder
  */
@@ -200,8 +197,8 @@ private:
   PointCloud::Ptr aggregate_;
   std::vector<PointCloud::Ptr> scans_;
   std::vector<PointCloud::Ptr> maps_;
-  Eigen::Affine3d scan_pose_last_;
-  Eigen::Affine3d scan_pose_current_;
+  Eigen::Matrix4d scan_pose_last_;
+  Eigen::Matrix4d scan_pose_current_;
 };
 
 /** @} group mapping */

@@ -2,8 +2,8 @@
 
 #include <pcl/common/transforms.h>
 
-#include <beam_utils/pcl_conversions.h>
 #include <beam_utils/math.h>
+#include <beam_utils/pcl_conversions.h>
 
 namespace beam {
 
@@ -100,6 +100,21 @@ PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector) {
     cloud.push_back(point);
   }
   return cloud;
+}
+
+void PCLPointToPose(const PointXYZIRPYT& point, ros::Time& time,
+                    Eigen::Matrix4d& T) {
+  T = Eigen::Matrix4d::Identity();
+  ros::Time t(point.time);
+
+  Eigen::AngleAxisd rollAngle(point.roll, Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd yawAngle(point.yaw, Eigen::Vector3d::UnitZ());
+  Eigen::AngleAxisd pitchAngle(point.pitch, Eigen::Vector3d::UnitY());
+  Eigen::Quaternion<double> q = rollAngle * pitchAngle * yawAngle;
+  T.block(0, 0, 3, 3) = q.matrix();
+  T(0, 3) = point.x;
+  T(1, 3) = point.y;
+  T(2, 3) = point.z;
 }
 
 PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
