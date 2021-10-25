@@ -88,30 +88,30 @@ inline pcl::PointCloud<PointT>
     std::vector<double> params = filter_params[i].second;
     if (filter_type == FilterType::DROR) {
       beam_filtering::DROR<PointT> outlier_removal;
-      outlier_removal.SetRadiusMultiplier(params[0]);
-      outlier_removal.SetAzimuthAngle(params[1]);
-      outlier_removal.SetMinNeighbors(params[2]);
-      outlier_removal.SetMinSearchRadius(params[3]);
+      outlier_removal.SetRadiusMultiplier(params.at(0));
+      outlier_removal.SetAzimuthAngle(params.at(1));
+      outlier_removal.SetMinNeighbors(params.at(2));
+      outlier_removal.SetMinSearchRadius(params.at(3));
       outlier_removal.SetInputCloud(input_cloud);
       outlier_removal.Filter();
       filtered_cloud = outlier_removal.GetFilteredCloud();
     } else if (filter_type == FilterType::ROR) {
       beam_filtering::ROR<PointT> outlier_removal;
-      outlier_removal.SetRadiusSearch(params[0]);
-      outlier_removal.SetMinNeighbors(params[2]);
+      outlier_removal.SetRadiusSearch(params.at(0));
+      outlier_removal.SetMinNeighbors(params.at(1));
       outlier_removal.SetInputCloud(input_cloud);
       outlier_removal.Filter();
       filtered_cloud = outlier_removal.GetFilteredCloud();
     } else if (filter_type == FilterType::VOXEL) {
       beam_filtering::VoxelDownsample<PointT> downsampler;
       downsampler.SetVoxelSize(
-          Eigen::Vector3f(params[0], params[1], params[2]));
+          Eigen::Vector3f(params.at(0), params.at(1), params.at(2)));
       downsampler.SetInputCloud(input_cloud);
       downsampler.Filter();
       filtered_cloud = downsampler.GetFilteredCloud();
     } else if (filter_type == FilterType::CROPBOX) {
-      Eigen::Vector3d min_vec(params[0], params[1], params[2]);
-      Eigen::Vector3d max_vec(params[3], params[4], params[5]);
+      Eigen::Vector3d min_vec(params.at(0), params.at(1), params.at(2));
+      Eigen::Vector3d max_vec(params.at(3), params.at(4), params.at(5));
       Eigen::Vector3f min_vecf = min_vec.cast<float>();
       Eigen::Vector3f max_vecf = max_vec.cast<float>();
       beam_filtering::CropBox<PointT> cropper;

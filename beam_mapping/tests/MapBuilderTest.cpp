@@ -1,34 +1,20 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_mapping/MapBuilder.h"
-#include "beam_utils/math.h"
+
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 
-std::string GetFullFile(std::string current_rel_path,
-                        std::string new_rel_path) {
-  std::string path = __FILE__;
-  path.erase(path.end() - current_rel_path.length(), path.end());
-  path += new_rel_path;
-  return path;
-}
+#include <beam_mapping/MapBuilder.h>
+#include <beam_utils/math.h>
+
+std::string data_path_ =
+    beam::LibbeamRoot() + "beam_mapping/tests/test_data/MapBuilderTests/";
 
 TEST_CASE("Testing map building with JSON") {
-  std::string current_file_rel{"/tests/MapBuilderTest.cpp"};
-  std::string config_file_rel{
-      "/tests/test_data/MapBuilderTests/TestConfigJSON.json"};
-  std::string pose_file_rel{
-      "/tests/test_data/MapBuilderTests/TestPosesJSON.json"};
-  std::string bag_file_rel{"/tests/test_data/MapBuilderTests/TestBagJSON.bag"};
-  std::string extrinsics_file_rel{
-      "/tests/test_data/MapBuilderTests/extrinsics.json"};
-  std::string output_dir_rel{"/tests/test_data/MapBuilderTests/tmp/"};
-
-  std::string config_file_path = GetFullFile(current_file_rel, config_file_rel);
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
-  std::string bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
-  std::string extrinsics_file_path =
-      GetFullFile(current_file_rel, extrinsics_file_rel);
-  std::string output_dir_path = GetFullFile(current_file_rel, output_dir_rel);
+  std::string config_file_path = data_path_ + "TestConfigJSON.json";
+  std::string pose_file_path = data_path_ + "TestPosesJSON.json";
+  std::string bag_file_path = data_path_ + "TestBagJSON.bag";
+  std::string extrinsics_file_path = data_path_ + "extrinsics.json";
+  std::string output_dir_path = data_path_ + "tmp/";
 
   beam_mapping::MapBuilder map_builder(config_file_path);
   map_builder.OverrideBagFile(bag_file_path);
@@ -41,22 +27,11 @@ TEST_CASE("Testing map building with JSON") {
 }
 
 TEST_CASE("Testing map building with PLY") {
-  std::string current_file_rel{"/tests/MapBuilderTest.cpp"};
-  std::string config_file_rel{
-      "/tests/test_data/MapBuilderTests/TestConfigPLY.json"};
-  std::string pose_file_rel{
-      "/tests/test_data/MapBuilderTests/TestPosesPLY.ply"};
-  std::string bag_file_rel{"/tests/test_data/MapBuilderTests/TestBagPLY.bag"};
-  std::string extrinsics_file_rel{
-      "/tests/test_data/MapBuilderTests/extrinsics.json"};
-  std::string output_dir_rel{"/tests/test_data/MapBuilderTests/tmp/"};
-
-  std::string config_file_path = GetFullFile(current_file_rel, config_file_rel);
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
-  std::string bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
-  std::string extrinsics_file_path =
-      GetFullFile(current_file_rel, extrinsics_file_rel);
-  std::string output_dir_path = GetFullFile(current_file_rel, output_dir_rel);
+  std::string config_file_path = data_path_ + "TestConfigPLY.json";
+  std::string pose_file_path = data_path_ + "TestPosesPLY.ply";
+  std::string bag_file_path = data_path_ + "TestBagPLY.bag";
+  std::string extrinsics_file_path = data_path_ + "extrinsics.json";
+  std::string output_dir_path = data_path_ + "tmp/";
 
   beam_mapping::MapBuilder map_builder(config_file_path);
   map_builder.OverrideBagFile(bag_file_path);
@@ -73,22 +48,11 @@ TEST_CASE("Testing map building with PLY") {
 }
 
 TEST_CASE("Testing map building with PCD") {
-  std::string current_file_rel{"/tests/MapBuilderTest.cpp"};
-  std::string config_file_rel{
-      "/tests/test_data/MapBuilderTests/TestConfigPCD.json"};
-  std::string pose_file_rel{
-      "/tests/test_data/MapBuilderTests/TestPosesPCD.pcd"};
-  std::string bag_file_rel{"/tests/test_data/MapBuilderTests/TestBagPCD.bag"};
-  std::string extrinsics_file_rel{
-      "/tests/test_data/MapBuilderTests/extrinsics.json"};
-  std::string output_dir_rel{"/tests/test_data/MapBuilderTests/tmp/"};
-
-  std::string config_file_path = GetFullFile(current_file_rel, config_file_rel);
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
-  std::string bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
-  std::string extrinsics_file_path =
-      GetFullFile(current_file_rel, extrinsics_file_rel);
-  std::string output_dir_path = GetFullFile(current_file_rel, output_dir_rel);
+  std::string config_file_path = data_path_ + "TestConfigPCD.json";
+  std::string pose_file_path = data_path_ + "TestPosesPCD.pcd";
+  std::string bag_file_path = data_path_ + "TestBagPCD.bag";
+  std::string extrinsics_file_path = data_path_ + "extrinsics.json";
+  std::string output_dir_path = data_path_ + "tmp/";
 
   beam_mapping::MapBuilder map_builder(config_file_path);
   map_builder.OverrideBagFile(bag_file_path);
@@ -104,22 +68,13 @@ TEST_CASE("Testing map building with PCD") {
   boost::filesystem::remove_all(output_dir_path);
 }
 
+/**
+ * tmp test: 
 TEST_CASE("Testing map building from Bag odometry") {
-  std::string current_file_rel{"/tests/MapBuilderTest.cpp"};
-  std::string config_file_rel{
-      "/tests/test_data/MapBuilderTests/TestConfigBAG.json"};
-  std::string pose_file_rel{"/tests/test_data/MapBuilderTests/"};
-  std::string bag_file_rel{"/tests/test_data/MapBuilderTests/TestBagBAG.bag"};
-  std::string extrinsics_file_rel{
-      "/tests/test_data/MapBuilderTests/extrinsics.json"};
-  std::string output_dir_rel{"/tests/test_data/MapBuilderTests/tmp/"};
-
-  std::string config_file_path = GetFullFile(current_file_rel, config_file_rel);
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
-  std::string bag_file_path = GetFullFile(current_file_rel, bag_file_rel);
-  std::string extrinsics_file_path =
-      GetFullFile(current_file_rel, extrinsics_file_rel);
-  std::string output_dir_path = GetFullFile(current_file_rel, output_dir_rel);
+  std::string config_file_path = data_path_ + "TestConfigBAG.json";
+  std::string bag_file_path = data_path_ + "TestBagBAG.bag";
+  std::string extrinsics_file_path = data_path_ + "extrinsics.json";
+  std::string output_dir_path = data_path_ + "tmp/";
 
   beam_mapping::Poses bag_poses;
   std::string bag_poses_file_path =
@@ -144,3 +99,4 @@ TEST_CASE("Testing map building from Bag odometry") {
   boost::filesystem::remove_all(output_dir_path);
   boost::filesystem::remove_all(pose_file_path + "_poses.json");
 }
+*/

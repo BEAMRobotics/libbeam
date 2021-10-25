@@ -89,9 +89,10 @@ public:
       output_ceres_summary = J["output_ceres_summary"];
       output_optimization_summary = J["output_optimization_summary"];
       ceres_config = J["ceres_config"];
-    } catch (...) {
-      BEAM_ERROR("Cannot load loam params from json config file. One or more "
-                 "missing or invalid params. Using defaults.");
+    } catch (const nlohmann::json::exception& e) {
+      BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
+                 "Reason: {}",
+                 e.what());
     }
 
     optimizer_params = beam_optimization::CeresParams(ceres_config);

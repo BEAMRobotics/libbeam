@@ -5,9 +5,9 @@
 
 #include <tf2_eigen/tf2_eigen.h>
 
+#include <beam_utils/filesystem.h>
 #include <beam_utils/log.h>
 #include <beam_utils/math.h>
-#include <beam_utils/filesystem.h>
 
 namespace beam_calibration {
 
@@ -45,9 +45,11 @@ void TfTree::LoadJSON(const std::string& file_location) {
       }
       AddTransform(Eigen::Affine3d(T), to_frame, from_frame);
     }
-  } catch (...) {
-    BEAM_ERROR("Cannot read tftree json: one or more missing params.");
-    throw std::runtime_error{"Cannot read tftree json file."};
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_CRITICAL("Cannot read tftree json: one or more missing params. "
+                  "Reason: {}",
+                  e.what());
+    throw std::runtime_error{"Invalid json"};
   }
 
   BEAM_INFO("Saved {} transforms", calibration_counter);

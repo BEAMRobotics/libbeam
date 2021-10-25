@@ -39,8 +39,10 @@ bool LoadDRORParams(const nlohmann::json& J, std::vector<double>& params) {
     params.push_back(azimuth_angle);
     params.push_back(min_neighbors);
     params.push_back(min_search_radius);
-  } catch (...) {
-    BEAM_ERROR("Missing one or more required params for filter.");
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
+               "Reason: {}",
+               e.what());
     PrintFilterParamsOptions();
     return false;
   }
@@ -75,8 +77,10 @@ bool LoadRORParams(const nlohmann::json& J, std::vector<double>& params) {
     min_neighbors = J["min_neighbors"];
     params.push_back(search_radius);
     params.push_back(min_neighbors);
-  } catch (...) {
-    BEAM_ERROR("Missing one or more required params for filter.");
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
+               "Reason: {}",
+               e.what());
     PrintFilterParamsOptions();
     return false;
   }
@@ -97,7 +101,7 @@ bool LoadCropBoxParams(const nlohmann::json& J, std::vector<double>& params) {
   params.clear();
 
   std::vector<double> min, max;
-  double remove_outside_points;
+  bool remove_outside_points;
 
   try {
     std::vector<double> min_tmp = J["min"];
@@ -105,19 +109,16 @@ bool LoadCropBoxParams(const nlohmann::json& J, std::vector<double>& params) {
     std::vector<double> max_tmp = J["max"];
     max = max_tmp;
     remove_outside_points = J["remove_outside_points"];
-  } catch (...) {
-    BEAM_ERROR("Missing one or more required params for filter.");
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
+               "Reason: {}",
+               e.what());
     PrintFilterParamsOptions();
     return false;
   }
 
-  if (!(remove_outside_points == 0 || remove_outside_points == 1)) {
-    BEAM_CRITICAL("Invalid remove_outside_points parameter in config");
-    return false;
-  }
-
   if (min.size() != 3 || max.size() != 3) {
-    BEAM_CRITICAL(
+    BEAM_ERROR(
         "Invalid min or max parameter in cropbox from map builder config");
     return false;
   }
@@ -128,7 +129,11 @@ bool LoadCropBoxParams(const nlohmann::json& J, std::vector<double>& params) {
   params.push_back(max[0]);
   params.push_back(max[1]);
   params.push_back(max[2]);
-  params.push_back(remove_outside_points);
+  if (remove_outside_points) {
+    params.push_back(1);
+  } else {
+    params.push_back(0);
+  }
 
   return true;
 }
@@ -140,19 +145,21 @@ bool LoadVoxelDownsamplingParams(const nlohmann::json& J,
   std::vector<double> cell_size;
   for (const auto param : J["cell_size"]) { cell_size.push_back(param); }
   if (cell_size.size() != 3) {
-    BEAM_CRITICAL("Invalid cell size parameter in voxel grid filter from map "
-                  "builder config");
+    BEAM_ERROR("Invalid cell size parameter in voxel grid filter from map "
+               "builder config");
     return false;
   }
   if (cell_size[0] < 0.001 || cell_size[2] < 0.001 || cell_size[2] < 0.001) {
-    BEAM_CRITICAL("Invalid cell_size parameter in config");
+    BEAM_ERROR("Invalid cell_size parameter in config");
     return false;
   }
   params = cell_size;
 
   try {
-  } catch (...) {
-    BEAM_ERROR("Missing one or more required params for filter.");
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
+               "Reason: {}",
+               e.what());
     PrintFilterParamsOptions();
     return false;
   }
@@ -164,8 +171,10 @@ FilterParamsType GetFilterParams(const nlohmann::json& J) {
   std::string filter_type_str;
   try {
     filter_type_str = J["filter_type"];
-  } catch (...) {
-    BEAM_CRITICAL("Missing filter_type param.");
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_CRITICAL("Unable to load json, one or more missing or invalid params. "
+                  "Reason: {}",
+                  e.what());
     std::cout << "Json Dump: " << J.dump() << "\n";
     throw std::invalid_argument{"Invalid filter params."};
   }

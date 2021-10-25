@@ -78,13 +78,11 @@ public:
 
     // check cloud has points
     if (this->input_cloud_->size() == 0) { return false; }
-
     pcl::RadiusOutlierRemoval<PointT> outlier_removal;
     outlier_removal.setInputCloud(this->input_cloud_);
     outlier_removal.setRadiusSearch(radius_search_);
     outlier_removal.setMinNeighborsInRadius(min_neighbors_);
     outlier_removal.filter(this->output_cloud_);
-
     return true;
   }
 

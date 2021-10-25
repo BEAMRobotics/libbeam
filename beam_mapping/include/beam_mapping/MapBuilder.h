@@ -137,14 +137,6 @@ private:
   void LoadConfigFromJSON(const std::string& config_file);
 
   /**
-   * @brief checks the rotation and translation change between current pose and
-   * last pose and outputs bool of whether it was greater than specified the
-   * specified thresholds
-   * @return save_scan whether or not to save the current scan
-   */
-  bool CheckPoseChange();
-
-  /**
    * @brief processes a point cloud message by first checking if the pose has
    * changed more than the threshold, if so convert it and add to the scans and
    * timestamp vectors
@@ -179,7 +171,7 @@ private:
   std::string config_file_;
   std::string extrinsics_file_;
   int intermediary_map_size_;
-  double min_translation_;
+  double min_translation_m_;
   double min_rotation_deg_;
   bool combine_lidar_scans_;
   std::vector<LidarConfig> lidars_;
@@ -198,7 +190,6 @@ private:
   std::vector<PointCloud::Ptr> scans_;
   std::vector<PointCloud::Ptr> maps_;
   Eigen::Matrix4d scan_pose_last_;
-  Eigen::Matrix4d scan_pose_current_;
 };
 
 /** @} group mapping */

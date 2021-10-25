@@ -13,7 +13,9 @@
 
 #include <beam_calibration/TfTree.h>
 #include <beam_mapping/Utils.h>
+#include <beam_utils/filesystem.h>
 #include <beam_utils/log.h>
+#include <beam_utils/math.h>
 
 namespace beam_mapping {
 
@@ -92,24 +94,23 @@ void Poses::WriteToJSON(const std::string& output_dir) const {
   }
 
   // write to json
-  std::string J_string, J_poses_string, J_pose_k_string;
-  nlohmann::json J, J_pose_k;
-  J = {{"bag_name", bag_name_},
-       {"pose_file_date", pose_file_date_},
-       {"fixed_frame", fixed_frame_},
-       {"moving_frame", moving_frame_}};
+  nlohmann::json J = {{"bag_name", bag_name_},
+                      {"pose_file_date", pose_file_date_},
+                      {"fixed_frame", fixed_frame_},
+                      {"moving_frame", moving_frame_}};
 
-  J_string = J.dump();
-  J_poses_string = "{\"poses\": []}";
+  std::string J_string = J.dump();
+  std::string J_poses_string = "{\"poses\": []}";
   for (size_t k = 0; k < poses_.size(); k++) {
     Eigen::Matrix4d Tk = poses_[k];
-    J_pose_k = {{"time_stamp_sec", time_stamps_[k].sec},
-                {"time_stamp_nsec", time_stamps_[k].nsec},
-                {"transform",
-                 {Tk(0, 0), Tk(0, 1), Tk(0, 2), Tk(0, 3), Tk(1, 0), Tk(1, 1),
-                  Tk(1, 2), Tk(1, 3), Tk(2, 0), Tk(2, 1), Tk(2, 2), Tk(2, 3),
-                  Tk(3, 0), Tk(3, 1), Tk(3, 2), Tk(3, 3)}}};
-    J_pose_k_string = J_pose_k.dump();
+    nlohmann::json J_pose_k = {
+        {"time_stamp_sec", time_stamps_[k].sec},
+        {"time_stamp_nsec", time_stamps_[k].nsec},
+        {"transform",
+         {Tk(0, 0), Tk(0, 1), Tk(0, 2), Tk(0, 3), Tk(1, 0), Tk(1, 1), Tk(1, 2),
+          Tk(1, 3), Tk(2, 0), Tk(2, 1), Tk(2, 2), Tk(2, 3), Tk(3, 0), Tk(3, 1),
+          Tk(3, 2), Tk(3, 3)}}};
+    std::string J_pose_k_string = J_pose_k.dump();
     J_poses_string.erase(J_poses_string.end() - 2,
                          J_poses_string.end()); // erase end ]}
     if (k > 0) { J_poses_string = J_poses_string + ", "; }
@@ -126,43 +127,36 @@ void Poses::WriteToJSON(const std::string& output_dir) const {
 }
 
 void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
-  BEAM_INFO("Loading pose file: {}", input_pose_file_path.c_str());
-  nlohmann::json J;
-  std::ifstream file(input_pose_file_path);
-  file >> J;
-  bag_name_ = J["bag_name"];
-  fixed_frame_ = J["fixed_frame"];
-  moving_frame_ = J["moving_frame"];
-  pose_file_date_ = J["pose_file_date"];
-  int pose_counter = 0;
+  time_stamps_.clear();
+  poses_.clear();
 
-  for (const auto& pose : J["poses"]) {
-    pose_counter++;
-    ros::Time time_stamp_k;
-    time_stamp_k.sec = pose["time_stamp_sec"];
-    time_stamp_k.nsec = pose["time_stamp_nsec"];
-    Eigen::Matrix4d T_k;
-    int i = 0, j = 0;
-    int value_counter = 0;
-    for (const auto& value : pose["transform"]) {
-      value_counter++;
-      T_k(i, j) = value.get<double>();
-      if (j == 3) {
-        i++;
-        j = 0;
-      } else {
-        j++;
-      }
-    }
-    if (value_counter != 16) {
-      BEAM_CRITICAL("Invalid transform matrix in json pose file.");
-      throw std::invalid_argument{"Invalid transform matrix in .json file."};
-    } else {
+  BEAM_INFO("Loading pose file: {}", input_pose_file_path);
+  nlohmann::json J;
+  if (!beam::ReadJson(input_pose_file_path, J)) {
+    throw std::runtime_error{"Invalid json"};
+  }
+
+  try {
+    bag_name_ = J["bag_name"];
+    fixed_frame_ = J["fixed_frame"];
+    moving_frame_ = J["moving_frame"];
+    pose_file_date_ = J["pose_file_date"];
+    for (const auto& pose : J["poses"]) {
+      ros::Time time_stamp_k;
+      time_stamp_k.sec = pose["time_stamp_sec"];
+      time_stamp_k.nsec = pose["time_stamp_nsec"];
+      std::vector<double> T_k_vec = pose["transform"];
+      Eigen::Matrix4d T_k = beam::VectorToEigenTransform(T_k_vec);
       time_stamps_.push_back(time_stamp_k);
       poses_.push_back(T_k);
     }
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_CRITICAL("Unable to load json, one or more missing or invalid params. "
+                  "Reason: {}",
+                  e.what());
+    throw std::runtime_error{"Invalid json"};
   }
-  BEAM_INFO("Read {} poses.", pose_counter);
+  BEAM_INFO("Read {} poses.", poses_.size());
 }
 
 void Poses::WriteToTXT(const std::string& output_dir) const {
@@ -200,6 +194,9 @@ void Poses::WriteToTXT(const std::string& output_dir) const {
 }
 
 void Poses::LoadFromTXT(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
+
   // declare variables
   std::ifstream infile;
   std::string line;
@@ -279,18 +276,21 @@ void Poses::WriteToPLY(const std::string& output_dir) const {
     Eigen::RowVector3d Tk = TA.translation();
     Eigen::RowVector3d Mk = TA.rotation().eulerAngles(0, 1, 2);
     double t = time_stamps_.at(k).toSec() - t_start;
-    fileply << std::fixed << std::setprecision(6) << Tk[0] << " ";
-    fileply << std::fixed << std::setprecision(6) << Tk[1] << " ";
-    fileply << std::fixed << std::setprecision(6) << Tk[2] << " ";
-    fileply << std::fixed << std::setprecision(6) << Mk[0] << " ";
-    fileply << std::fixed << std::setprecision(6) << Mk[1] << " ";
-    fileply << std::fixed << std::setprecision(6) << Mk[2] << " ";
-    fileply << std::fixed << std::setprecision(6) << t << " ";
-    fileply << std::fixed << std::setprecision(6) << 1.000000 << std::endl;
+    fileply << std::fixed << std::setprecision(7) << Tk[0] << " ";
+    fileply << std::fixed << std::setprecision(7) << Tk[1] << " ";
+    fileply << std::fixed << std::setprecision(7) << Tk[2] << " ";
+    fileply << std::fixed << std::setprecision(7) << Mk[0] << " ";
+    fileply << std::fixed << std::setprecision(7) << Mk[1] << " ";
+    fileply << std::fixed << std::setprecision(7) << Mk[2] << " ";
+    fileply << std::fixed << std::setprecision(7) << t << " ";
+    fileply << std::fixed << std::setprecision(7) << 1.000000 << std::endl;
   }
 }
 
 void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
+
   std::string delim = " ";
   std::ifstream file(input_pose_file_path);
   std::string str;
@@ -390,7 +390,7 @@ void Poses::WriteToPLY2(const std::string& output_dir) const {
   fileply << "ply" << std::endl;
   fileply << "format ascii 1.0" << std::endl;
   fileply << "comment UTC time at start ";
-  fileply << std::fixed << std::setprecision(17) << t_start.toNSec()
+  fileply << std::fixed << std::setprecision(17) << t_start.toSec()
           << std::endl;
   fileply << "comment Local time at start " << pose_file_date_ << std::endl;
   fileply << "comment bag_file: " << bag_name_ << std::endl;
@@ -459,6 +459,9 @@ void Poses::LoadFromPLY2(std::ifstream& file, const std::string& delim,
 void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
                                 const std::string& topic_loop_closed,
                                 const std::string& topic_high_rate) {
+  time_stamps_.clear();
+  poses_.clear();
+
   boost::filesystem::path p(bag_file_path);
   bag_name_ = p.stem().string();
 
@@ -588,6 +591,9 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
 void Poses::LoadLoopClosedPathsInterpolated(
     const std::string& bag_file_path, const std::string& topic_loop_closed,
     const std::string& topic_high_rate) {
+  time_stamps_.clear();
+  poses_.clear();
+
   boost::filesystem::path p(bag_file_path);
   bag_name_ = p.stem().string();
 
@@ -755,6 +761,9 @@ void Poses::LoadLoopClosedPathsInterpolated(
 
 void Poses::LoadFromBAG(const std::string& bag_file_path,
                         const std::string& topic) {
+  time_stamps_.clear();
+  poses_.clear();
+
   boost::filesystem::path p(bag_file_path);
   bag_name_ = p.stem().string();
 
@@ -824,6 +833,9 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
 }
 
 void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
+
   // creat cloud ptr
   pcl::PointCloud<PointXYZIRPYT>::Ptr cloud =
       std::make_shared<pcl::PointCloud<PointXYZIRPYT>>();

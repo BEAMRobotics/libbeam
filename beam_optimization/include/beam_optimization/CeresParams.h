@@ -111,9 +111,11 @@ public:
                   "Using default: HUBER");
         loss_function_type_ = "HUBER";
       }
-    } catch (...) {
-      BEAM_ERROR("Cannot load json config file for CeresParams, one or more "
-                 "params are missing or invalid. Using default parameters.");
+    } catch (const nlohmann::json::exception& e) {
+      BEAM_ERROR(
+          "Cannot load json config file for CeresParams, one or more "
+          "params are missing or invalid. Using default parameters. Reason: {}",
+          e.what());
     }
   }
 

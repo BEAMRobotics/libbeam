@@ -4,10 +4,11 @@
 #include <catch2/catch.hpp>
 
 #include <beam_mapping/Poses.h>
-#include <beam_utils/math.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/math.h>
 
-std::string data_path_ = beam::LibbeamRoot() + "beam_mapping/tests/test_data/PosesTests/";
+std::string data_path_ =
+    beam::LibbeamRoot() + "beam_mapping/tests/test_data/PosesTests/";
 
 TEST_CASE("Test JSON read and write functionality") {
   std::string pose_file_path = data_path_ + "PosesTest.json";
@@ -99,11 +100,11 @@ TEST_CASE("Test PLY2 read and write functionality") {
   poses_read.LoadFromPLY(pose_file_path);
   auto transforms_read = poses_read.GetPoses();
   auto stamps_read = poses_read.GetTimeStamps();
-  
+
   // Now output to new file, and repeat with new file. This should test the
   // write method
   std::string pose_file_path2 = data_path_ + "ply2_poses.ply";
-  poses_read.WriteToPLY(pose_file_path2);
+  poses_read.WriteToPLY2(pose_file_path2);
   beam_mapping::Poses poses_written;
   poses_written.LoadFromPLY(pose_file_path2);
   auto transforms_written = poses_written.GetPoses();
@@ -113,11 +114,14 @@ TEST_CASE("Test PLY2 read and write functionality") {
   REQUIRE(stamps_written.size() == stamps_read.size());
   REQUIRE(stamps_read.size() == transforms_written.size());
 
-  for (auto i = 0; i < transforms_read.size(); i+=5){
-    REQUIRE(transforms_written[i] == transforms_read[i]);
-    REQUIRE(stamps_written[i] == stamps_read[i]);  
+  int round_precision = 5;
+  for (auto i = 0; i < transforms_read.size(); i += 5) {
+    REQUIRE(beam::RoundMatrix(transforms_written[i], round_precision) ==
+            beam::RoundMatrix(transforms_read[i], round_precision));
+    REQUIRE(std::abs(stamps_written[i].toSec() - stamps_read[i].toSec()) <
+            0.000001);
   }
-  // boost::filesystem::remove(pose_file_path2);
+  boost::filesystem::remove(pose_file_path2);
 }
 
 TEST_CASE("Test TXT read and write functionality") {

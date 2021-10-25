@@ -20,40 +20,50 @@ MapBuilder::MapBuilder(const std::string& config_file) {
 }
 
 void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
-  BEAM_INFO("Loading MapBuilder config file: {}", config_file.c_str());
+  BEAM_INFO("Loading MapBuilder config file: {}", config_file);
   nlohmann::json J;
-  std::ifstream file(config_file);
-  file >> J;
-  pose_file_path_ = J["pose_file"];
-  bag_file_path_ = J["bag_file_path"];
-  bag_file_name_ = bag_file_path_.substr(bag_file_path_.rfind("/") + 1,
-                                         bag_file_path_.rfind(".bag"));
-  save_dir_ = J["save_directory"];
-  extrinsics_file_ = J["extrinsics_file"];
-  poses_moving_frame_ = J["moving_frame"];
-  poses_fixed_frame_ = J["fixed_frame"];
-  intermediary_map_size_ = J["intermediary_map_size"];
-  min_translation_ = J["min_translation"];
-  min_rotation_deg_ = J["min_rotation_deg"];
-  combine_lidar_scans_ = J["combine_lidar_scans"];
-  for (const auto& lidar : J["lidars"]) {
-    MapBuilder::LidarConfig lidar_config;
-    lidar_config.topic = lidar["topic"];
-    lidar_config.frame = lidar["frame"];
-    lidar_config.use_cropbox = lidar["use_cropbox"];
-    lidar_config.remove_outside_points = lidar["remove_outside_points"];
-    std::vector<float> min_ = lidar["cropbox_min"];
-    std::vector<float> max_ = lidar["cropbox_max"];
-    Eigen::Vector3f min(min_[0], min_[1], min_[2]);
-    Eigen::Vector3f max(max_[0], max_[1], max_[2]);
-    lidar_config.cropbox_min = min;
-    lidar_config.cropbox_max = max;
-    lidars_.push_back(lidar_config);
+  if (!beam::ReadJson(config_file, J)) {
+    throw std::runtime_error{"Invalid json"};
   }
-  input_filters_ = beam_filtering::LoadFilterParamsVector(J["input_filters"]);
-  intermediary_filters_ =
-      beam_filtering::LoadFilterParamsVector(J["intermediary_filters"]);
-  output_filters_ = beam_filtering::LoadFilterParamsVector(J["output_filters"]);
+
+  try {
+    pose_file_path_ = J["pose_file"];
+    bag_file_path_ = J["bag_file_path"];
+    bag_file_name_ = bag_file_path_.substr(bag_file_path_.rfind("/") + 1,
+                                           bag_file_path_.rfind(".bag"));
+    save_dir_ = J["save_directory"];
+    extrinsics_file_ = J["extrinsics_file"];
+    poses_moving_frame_ = J["moving_frame"];
+    poses_fixed_frame_ = J["fixed_frame"];
+    intermediary_map_size_ = J["intermediary_map_size"];
+    min_translation_m_ = J["min_translation_m"];
+    min_rotation_deg_ = J["min_rotation_deg"];
+    combine_lidar_scans_ = J["combine_lidar_scans"];
+    for (const auto& lidar : J["lidars"]) {
+      MapBuilder::LidarConfig lidar_config;
+      lidar_config.topic = lidar["topic"];
+      lidar_config.frame = lidar["frame"];
+      lidar_config.use_cropbox = lidar["use_cropbox"];
+      lidar_config.remove_outside_points = lidar["remove_outside_points"];
+      std::vector<float> min_ = lidar["cropbox_min"];
+      std::vector<float> max_ = lidar["cropbox_max"];
+      Eigen::Vector3f min(min_[0], min_[1], min_[2]);
+      Eigen::Vector3f max(max_[0], max_[1], max_[2]);
+      lidar_config.cropbox_min = min;
+      lidar_config.cropbox_max = max;
+      lidars_.push_back(lidar_config);
+    }
+    input_filters_ = beam_filtering::LoadFilterParamsVector(J["input_filters"]);
+    intermediary_filters_ =
+        beam_filtering::LoadFilterParamsVector(J["intermediary_filters"]);
+    output_filters_ =
+        beam_filtering::LoadFilterParamsVector(J["output_filters"]);
+  } catch (const nlohmann::json::exception& e) {
+    BEAM_CRITICAL("Unable to load json, one or more missing or invalid params. "
+                  "Reason: {}",
+                  e.what());
+    throw std::runtime_error{"Invalid json"};
+  }
 }
 
 void MapBuilder::OverrideBagFile(const std::string& bag_file) {
@@ -137,37 +147,6 @@ PointCloud MapBuilder::CropLidarRaw(const PointCloud& cloud,
   return cropper.GetFilteredCloud();
 }
 
-bool MapBuilder::CheckPoseChange() {
-  // calculate change in pose and check if rot or trans bigger than threshold
-
-  double l2sqrd = (scan_pose_last_(0, 3) - scan_pose_current_(0, 3)) *
-                      (scan_pose_last_(0, 3) - scan_pose_current_(0, 3)) +
-                  (scan_pose_last_(1, 3) - scan_pose_current_(1, 3)) *
-                      (scan_pose_last_(1, 3) - scan_pose_current_(1, 3)) +
-                  (scan_pose_last_(2, 3) - scan_pose_current_(2, 3)) *
-                      (scan_pose_last_(2, 3) - scan_pose_current_(2, 3));
-
-  double minRotSq =
-      beam::Deg2Rad(min_rotation_deg_) * beam::Deg2Rad(min_rotation_deg_);
-  Eigen::Vector3d eps1, eps2, diffSq;
-  eps1 = beam::RToLieAlgebra(scan_pose_last_.block(0,0,3,3));
-  eps2 = beam::RToLieAlgebra(scan_pose_current_.block(0,0,3,3));
-  diffSq(0, 0) = (eps2(0, 0) - eps1(0, 0)) * (eps2(0, 0) - eps1(0, 0));
-  diffSq(1, 0) = (eps2(1, 0) - eps1(1, 0)) * (eps2(1, 0) - eps1(1, 0));
-  diffSq(2, 0) = (eps2(2, 0) - eps1(2, 0)) * (eps2(2, 0) - eps1(2, 0));
-
-  // if the norm is greater than the specified minimum sampling distance or
-  // if the change in rotation is greater than specified min.
-  if (l2sqrd > min_translation_ * min_translation_) {
-    return true;
-  } else if (diffSq(0, 0) > minRotSq || diffSq(1, 0) > minRotSq ||
-             diffSq(2, 0) > minRotSq) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
                                       uint8_t lidar_number) {
   bool save_scan = false;
@@ -180,9 +159,11 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
   }
   std::string to_frame = poses_fixed_frame_;
   std::string from_frame = poses_moving_frame_;
-  scan_pose_current_ =
+  Eigen::Matrix4d scan_pose_current =
       trajectory_.GetTransformEigen(to_frame, from_frame, scan_time).matrix();
-  save_scan = CheckPoseChange();
+  save_scan = beam::PassedMotionThreshold(scan_pose_last_, scan_pose_current,
+                                          min_rotation_deg_, min_translation_m_,
+                                          true, false, false);
 
   if (save_scan) {
     pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
@@ -191,12 +172,12 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
     beam::pcl_conversions::toPCL(*lidar_msg, *pcl_pc2_tmp);
     pcl::fromPCLPointCloud2(*pcl_pc2_tmp, cloud_tmp);
     PointCloud cloud_cropped = CropLidarRaw(cloud_tmp, lidar_number);
-    PointCloud cloud_filtered =
-        beam_filtering::FilterPointCloud(cloud_cropped, input_filters_);
+    PointCloud cloud_filtered = beam_filtering::FilterPointCloud<pcl::PointXYZ>(
+        cloud_cropped, input_filters_);
     scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
-    interpolated_poses_.AddSinglePose(scan_pose_current_);
+    interpolated_poses_.AddSinglePose(scan_pose_current);
     interpolated_poses_.AddSingleTimeStamp(scan_time);
-    scan_pose_last_ = scan_pose_current_;
+    scan_pose_last_ = scan_pose_current;
   }
 }
 
@@ -258,8 +239,9 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
 
     if (intermediary_size == this->intermediary_map_size_ ||
         k == scans_.size()) {
-      *scan_intermediate_frame = beam_filtering::FilterPointCloud(
-          *scan_intermediary, intermediary_filters_);
+      *scan_intermediate_frame =
+          beam_filtering::FilterPointCloud<pcl::PointXYZ>(
+              *scan_intermediary, intermediary_filters_);
       pcl::transformPointCloud(*scan_intermediate_frame,
                                *intermediary_transformed, T_FIXED_INT);
       *scan_aggregate += *intermediary_transformed;
@@ -267,8 +249,8 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
       intermediary_size = 0;
     }
   }
-  PointCloud new_map =
-      beam_filtering::FilterPointCloud(*scan_aggregate, output_filters_);
+  PointCloud new_map = beam_filtering::FilterPointCloud<pcl::PointXYZ>(
+      *scan_aggregate, output_filters_);
   maps_.push_back(std::make_shared<PointCloud>(new_map));
 }
 
