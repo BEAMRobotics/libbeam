@@ -1,21 +1,16 @@
 #define CATCH_CONFIG_MAIN
-#include "beam_mapping/Poses.h"
-#include "beam_utils/math.h"
+
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
 
-std::string GetFullFile(std::string current_rel_path,
-                        std::string new_rel_path) {
-  std::string path = __FILE__;
-  path.erase(path.end() - current_rel_path.length(), path.end());
-  path += new_rel_path;
-  return path;
-}
+#include <beam_mapping/Poses.h>
+#include <beam_utils/math.h>
+#include <beam_utils/filesystem.h>
+
+std::string data_path_ = beam::LibbeamRoot() + "beam_mapping/tests/test_data/PosesTests/";
 
 TEST_CASE("Test JSON read and write functionality") {
-  std::string pose_file_rel = "/tests/test_data/PosesTests/PosesTest.json";
-  std::string current_file_rel = "/tests/PosesTest.cpp";
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
+  std::string pose_file_path = data_path_ + "PosesTest.json";
 
   beam_mapping::Poses poses_read;
   poses_read.LoadFromJSON(pose_file_path);
@@ -53,12 +48,9 @@ TEST_CASE("Test JSON read and write functionality") {
 
   // Now output to new file, and repeat with new file. This should test the
   // write method
-  std::string pose_output_path_rel, pose_output_path, pose_file_path2;
-  pose_output_path_rel = "/tests/test_data/PosesTests/";
-  pose_output_path = GetFullFile(current_file_rel, pose_output_path_rel);
-  pose_file_path2 = pose_output_path + "2019_4_23_10_1_44_poses.json";
-
-  poses_read.WriteToJSON(pose_output_path);
+  std::string pose_file_path2 = data_path_ + "poses.json";
+  std::cout << "Saving to " << pose_file_path2 << "\n";
+  poses_read.WriteToJSON(pose_file_path2);
   beam_mapping::Poses poses_written;
   poses_written.LoadFromJSON(pose_file_path2);
   REQUIRE(poses_written.GetBagName() == "ig_scan_2019-02-13-19-44-24.bag");
@@ -75,65 +67,79 @@ TEST_CASE("Test JSON read and write functionality") {
 }
 
 TEST_CASE("Test PLY read and write functionality") {
-  std::string pose_file_rel = "/tests/test_data/PosesTests/PosesTestKaarta.ply";
-  std::string current_file_rel = "/tests/PosesTest.cpp";
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
-
+  std::string pose_file_path = data_path_ + "PosesTestKaarta.ply";
   beam_mapping::Poses poses_read;
   poses_read.LoadFromPLY(pose_file_path);
   double time_2 = 1563850853.876633 + 0.403459;
   ros::Time time1(1563850853.876633), time2(time_2);
-  REQUIRE(Approx(poses_read.poses[0](0, 3)).epsilon(0.00001) == 0.004724);
-  REQUIRE(Approx(poses_read.poses[0](2, 3)).epsilon(0.00001) == 0.007737);
-  REQUIRE(poses_read.time_stamps[0] == time1);
-  REQUIRE(Approx(poses_read.poses[4](0, 3)).epsilon(0.00001) == 0.007888);
-  REQUIRE(Approx(poses_read.poses[4](2, 3)).epsilon(0.00001) == 0.004562);
-  REQUIRE(poses_read.time_stamps[4] == time2);
+  REQUIRE(Approx(poses_read.GetPoses()[0](0, 3)).epsilon(0.00001) == 0.004724);
+  REQUIRE(Approx(poses_read.GetPoses()[0](2, 3)).epsilon(0.00001) == 0.007737);
+  REQUIRE(poses_read.GetTimeStamps()[0] == time1);
+  REQUIRE(Approx(poses_read.GetPoses()[4](0, 3)).epsilon(0.00001) == 0.007888);
+  REQUIRE(Approx(poses_read.GetPoses()[4](2, 3)).epsilon(0.00001) == 0.004562);
+  REQUIRE(poses_read.GetTimeStamps()[4] == time2);
 
   // Now output to new file, and repeat with new file. This should test the
   // write method
-  std::string pose_output_path_rel, pose_output_path, pose_file_path2;
-  pose_output_path_rel = "/tests/test_data/PosesTests/";
-  pose_output_path = GetFullFile(current_file_rel, pose_output_path_rel);
-  pose_file_path2 = pose_output_path + "Mon Jul 22 23:00:53 2019 EDT_poses.ply";
-
-  poses_read.WriteToPLY(pose_output_path);
+  std::string pose_file_path2 = data_path_ + "poses.ply";
+  poses_read.WriteToPLY(pose_file_path2);
   beam_mapping::Poses poses_written;
   poses_written.LoadFromPLY(pose_file_path2);
   REQUIRE(poses_written.GetPoseFileDate() == "Mon Jul 22 23:00:53 2019 EDT");
-  REQUIRE(poses_written.GetPoses()[0](0, 3) == poses_read.poses[0](0, 3));
-  REQUIRE(poses_written.GetPoses()[4](0, 3) == poses_read.poses[4](0, 3));
+  REQUIRE(poses_written.GetPoses()[0](0, 3) == poses_read.GetPoses()[0](0, 3));
+  REQUIRE(poses_written.GetPoses()[4](0, 3) == poses_read.GetPoses()[4](0, 3));
   REQUIRE(time1 == poses_written.GetTimeStamps()[0]);
   REQUIRE(time2 == poses_written.GetTimeStamps()[4]);
   boost::filesystem::remove(pose_file_path2);
 }
 
+TEST_CASE("Test PLY2 read and write functionality") {
+  std::string pose_file_path = data_path_ + "PosesTestKaarta.ply";
+  beam_mapping::Poses poses_read;
+  poses_read.LoadFromPLY(pose_file_path);
+  auto transforms_read = poses_read.GetPoses();
+  auto stamps_read = poses_read.GetTimeStamps();
+  
+  // Now output to new file, and repeat with new file. This should test the
+  // write method
+  std::string pose_file_path2 = data_path_ + "ply2_poses.ply";
+  poses_read.WriteToPLY(pose_file_path2);
+  beam_mapping::Poses poses_written;
+  poses_written.LoadFromPLY(pose_file_path2);
+  auto transforms_written = poses_written.GetPoses();
+  auto stamps_written = poses_written.GetTimeStamps();
+
+  REQUIRE(transforms_written.size() == transforms_read.size());
+  REQUIRE(stamps_written.size() == stamps_read.size());
+  REQUIRE(stamps_read.size() == transforms_written.size());
+
+  for (auto i = 0; i < transforms_read.size(); i+=5){
+    REQUIRE(transforms_written[i] == transforms_read[i]);
+    REQUIRE(stamps_written[i] == stamps_read[i]);  
+  }
+  // boost::filesystem::remove(pose_file_path2);
+}
+
 TEST_CASE("Test TXT read and write functionality") {
-  std::string current_file_rel = "/tests/PosesTest.cpp";
-  std::string pose_file_rel = "/tests/test_data/PosesTests/PosesTest.txt";
-  std::string pose_file_path = GetFullFile(current_file_rel, pose_file_rel);
+  std::string pose_file_path = data_path_ + "PosesTest.txt";
   beam_mapping::Poses poses_read;
   INFO(pose_file_path);
   poses_read.LoadFromTXT(pose_file_path);
   ros::Time time1(100342.790712000), time2(100343.191518010);
-  REQUIRE(Approx(poses_read.poses[0](0, 3)).epsilon(0.00001) == 0.432895);
-  REQUIRE(Approx(poses_read.poses[0](2, 3)).epsilon(0.00001) == 0.003007);
-  REQUIRE(poses_read.time_stamps[0] == time1);
-  REQUIRE(Approx(poses_read.poses[4](0, 3)).epsilon(0.00001) == 0.619671);
-  REQUIRE(Approx(poses_read.poses[4](2, 3)).epsilon(0.00001) == 0.013218);
-  REQUIRE(poses_read.time_stamps[4] == time2);
+  REQUIRE(Approx(poses_read.GetPoses()[0](0, 3)).epsilon(0.00001) == 0.432895);
+  REQUIRE(Approx(poses_read.GetPoses()[0](2, 3)).epsilon(0.00001) == 0.003007);
+  REQUIRE(poses_read.GetTimeStamps()[0] == time1);
+  REQUIRE(Approx(poses_read.GetPoses()[4](0, 3)).epsilon(0.00001) == 0.619671);
+  REQUIRE(Approx(poses_read.GetPoses()[4](2, 3)).epsilon(0.00001) == 0.013218);
+  REQUIRE(poses_read.GetTimeStamps()[4] == time2);
   // Now output to new file, and repeat with new file. This should test the
   // write method
-  std::string pose_output_path_rel, pose_output_path, pose_file_path2;
-  pose_output_path_rel = "/tests/test_data/PosesTests/";
-  pose_output_path = GetFullFile(current_file_rel, pose_output_path_rel);
-  pose_file_path2 = pose_output_path + "_poses.txt";
-
-  poses_read.WriteToTXT(pose_output_path);
+  std::string pose_file_path2 = data_path_ + "poses.txt";
+  poses_read.WriteToTXT(pose_file_path2);
   beam_mapping::Poses poses_written;
   poses_written.LoadFromTXT(pose_file_path2);
-  REQUIRE(poses_written.GetPoses()[0](0, 3) == poses_read.poses[0](0, 3));
-  REQUIRE(poses_written.GetPoses()[4](0, 3) == poses_read.poses[4](0, 3));
+  REQUIRE(poses_written.GetPoses()[0](0, 3) == poses_read.GetPoses()[0](0, 3));
+  REQUIRE(poses_written.GetPoses()[4](0, 3) == poses_read.GetPoses()[4](0, 3));
   REQUIRE(time1 == poses_written.GetTimeStamps()[0]);
   REQUIRE(time2 == poses_written.GetTimeStamps()[4]);
   boost::filesystem::remove(pose_file_path2);

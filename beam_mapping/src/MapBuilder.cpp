@@ -91,11 +91,11 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
   }
 
   if (poses_moving_frame_.empty()) {
-    poses_moving_frame_ = slam_poses_.moving_frame;
+    poses_moving_frame_ = slam_poses_.GetMovingFrame();
   }
 
   if (poses_fixed_frame_.empty()) {
-    poses_fixed_frame_ = slam_poses_.fixed_frame;
+    poses_fixed_frame_ = slam_poses_.GetFixedFrame();
   }
 
   if (slam_poses_.GetBagName() != bag_file_name_) {
@@ -117,11 +117,11 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
         "Set fixed frame in map builder before building map"};
   }
 
-  int num_poses = slam_poses_.time_stamps.size();
+  int num_poses = slam_poses_.GetTimeStamps().size();
   for (int k = 0; k < num_poses; k++) {
-    trajectory_.AddTransform(Eigen::Affine3d(slam_poses_.poses[k]),
+    trajectory_.AddTransform(Eigen::Affine3d(slam_poses_.GetPoses()[k]),
                              poses_fixed_frame_, poses_moving_frame_,
-                             slam_poses_.time_stamps[k]);
+                             slam_poses_.GetTimeStamps()[k]);
   }
 }
 
@@ -174,8 +174,8 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
   auto lidar_msg = iter->instantiate<sensor_msgs::PointCloud2>();
   ros::Time scan_time = lidar_msg->header.stamp;
 
-  if ((scan_time < slam_poses_.time_stamps[0]) ||
-      (scan_time > slam_poses_.time_stamps.back())) {
+  if ((scan_time < slam_poses_.GetTimeStamps()[0]) ||
+      (scan_time > slam_poses_.GetTimeStamps().back())) {
     return;
   }
   std::string to_frame = poses_fixed_frame_;
@@ -246,7 +246,7 @@ void MapBuilder::GenerateMap(uint8_t lidar_number) {
     intermediary_size++;
 
     // get the transforms we will need:
-    T_FIXED_MOVING = interpolated_poses_.poses[k];
+    T_FIXED_MOVING = interpolated_poses_.GetPoses()[k];
     T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
     if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
     T_INT_LIDAR = beam::InvertTransform(T_FIXED_INT) * T_FIXED_LIDAR;

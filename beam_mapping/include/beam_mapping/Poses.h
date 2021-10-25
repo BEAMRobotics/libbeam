@@ -37,9 +37,9 @@ public:
 
   /**
    * @brief for setting bag_name to pose file
-   * @param _bag_name
+   * @param bag_name
    */
-  void SetBagName(const std::string& _bag_name);
+  void SetBagName(const std::string& bag_name);
 
   /**
    * @brief for getting bag_name
@@ -49,9 +49,9 @@ public:
 
   /**
    * @brief for setting pose_file_date to pose file
-   * @param _pose_file_date
+   * @param pose_file_date
    */
-  void SetPoseFileDate(const std::string& _pose_file_date);
+  void SetPoseFileDate(const std::string& pose_file_date);
 
   /**
    * @brief for getting pose_file_date
@@ -61,9 +61,9 @@ public:
 
   /**
    * @brief for setting fixed_frame to pose file
-   * @param _fixed_frame
+   * @param fixed_frame
    */
-  void SetFixedFrame(const std::string& _fixed_frame);
+  void SetFixedFrame(const std::string& fixed_frame);
 
   /**
    * @brief for getting fixed_frame
@@ -73,9 +73,9 @@ public:
 
   /**
    * @brief for setting moving_frame to pose file
-   * @param _moving_frame
+   * @param moving_frame
    */
-  void SetMovingFrame(const std::string& _moving_frame);
+  void SetMovingFrame(const std::string& moving_frame);
 
   /**
    * @brief for getting moving_frame
@@ -85,9 +85,9 @@ public:
 
   /**
    * @brief for setting time stamps
-   * @param _time_stamps
+   * @param time_stamps
    */
-  void SetTimeStamps(const std::vector<ros::Time>& _time_stamps);
+  void SetTimeStamps(const std::vector<ros::Time>& time_stamps);
 
   /**
    * @brief for getting the time stamps
@@ -105,7 +105,7 @@ public:
    * @brief for setting poses vector<T_FIXED_MOVING>
    * @param _poses transforms from moving frame to fixed frame
    */
-  void SetPoses(const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& _poses);
+  void SetPoses(const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses);
 
   /**
    * @brief for getting the poses
@@ -160,7 +160,9 @@ public:
   void WriteToPLY(const std::string& output_dir) const;
 
   /**
-   * @brief loads the pose file in PLY format
+   * @brief loads the pose file in PLY format. This checks the header comment
+   * orientation_type and calls LoadFromPLY1 if it's equal to RPY, or
+   * LoadFromPLY2 if it's quaternion
    * @param input_pose_file_path full path to pose file
    */
   void LoadFromPLY(const std::string& input_pose_file_path);
@@ -173,10 +175,23 @@ public:
   void WriteToPLY2(const std::string& output_dir) const;
 
   /**
-   * @brief loads the pose file in PLY format
-   * @param input_pose_file_path full path to pose file
+   * @brief loads the poses from a ply with format: x y z roll pitch yaw time
+   * confidence
+   * @param file file stream that is currently on the poses part of the file
+   * @param delim delim used for separating pose values
+   * @param start_time_seconds start time in seconds of the first pose
    */
-  void LoadFromPLY2(const std::string& input_pose_file_path);
+  void LoadFromPLY1(std::ifstream& file, const std::string& delim,
+                    double start_time_seconds);
+
+  /**
+   * @brief loads the poses from a ply with format: x y z qw qx qy qz time
+   * @param file file stream that is currently on the poses part of the file
+   * @param delim delim used for separating pose values
+   * @param start_time_seconds start time in seconds of the first pose
+   */
+  void LoadFromPLY2(std::ifstream& file, const std::string& delim,
+                    double start_time_seconds);
 
   /**
    * @brief loads the pose object using the odometry topic or path topic from a
@@ -218,13 +233,6 @@ public:
    */
   void LoadFromPCD(const std::string& input_pose_file_path);
 
-  std::vector<ros::Time> time_stamps;
-  std::vector<Eigen::Matrix4d, beam::AlignMat4d> poses;
-  std::string bag_name;
-  std::string pose_file_date;
-  std::string fixed_frame;
-  std::string moving_frame;
-
 private:
   /**
    * @brief this is a helper function to create files to write to (e.g., .txt,
@@ -241,6 +249,14 @@ private:
    */
   std::ofstream CreateFile(const std::string& output_path,
                            const std::string& extension) const;
+
+
+  std::vector<ros::Time> time_stamps_;
+  std::vector<Eigen::Matrix4d, beam::AlignMat4d> poses_;
+  std::string bag_name_;
+  std::string pose_file_date_;
+  std::string fixed_frame_;
+  std::string moving_frame_;                           
 };
 
 /** @} group mapping */

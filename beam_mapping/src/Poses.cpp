@@ -18,73 +18,73 @@
 namespace beam_mapping {
 
 void Poses::Clear() {
-  time_stamps.clear();
-  poses.clear();
-  bag_name = "";
-  pose_file_date = "";
-  fixed_frame = "";
-  moving_frame = "";
+  time_stamps_.clear();
+  poses_.clear();
+  bag_name_ = "";
+  pose_file_date_ = "";
+  fixed_frame_ = "";
+  moving_frame_ = "";
 }
 
-void Poses::SetBagName(const std::string& _bag_name) {
-  bag_name = _bag_name;
+void Poses::SetBagName(const std::string& bag_name) {
+  bag_name_ = bag_name;
 }
 
 std::string Poses::GetBagName() const {
-  return bag_name;
+  return bag_name_;
 }
 
-void Poses::SetPoseFileDate(const std::string& _pose_file_date) {
-  pose_file_date = _pose_file_date;
+void Poses::SetPoseFileDate(const std::string& pose_file_date) {
+  pose_file_date_ = pose_file_date;
 }
 
 std::string Poses::GetPoseFileDate() const {
-  return pose_file_date;
+  return pose_file_date_;
 }
 
-void Poses::SetFixedFrame(const std::string& _fixed_frame) {
-  fixed_frame = _fixed_frame;
+void Poses::SetFixedFrame(const std::string& fixed_frame) {
+  fixed_frame_ = fixed_frame;
 }
 
 std::string Poses::GetFixedFrame() const {
-  return fixed_frame;
+  return fixed_frame_;
 }
 
-void Poses::SetMovingFrame(const std::string& _moving_frame) {
-  moving_frame = _moving_frame;
+void Poses::SetMovingFrame(const std::string& moving_frame) {
+  moving_frame_ = moving_frame;
 }
 
 std::string Poses::GetMovingFrame() const {
-  return moving_frame;
+  return moving_frame_;
 }
 
-void Poses::SetTimeStamps(const std::vector<ros::Time>& _time_stamps) {
-  time_stamps = _time_stamps;
+void Poses::SetTimeStamps(const std::vector<ros::Time>& time_stamps) {
+  time_stamps_ = time_stamps;
 }
 
 std::vector<ros::Time> Poses::GetTimeStamps() const {
-  return time_stamps;
+  return time_stamps_;
 }
 
-void Poses::AddSingleTimeStamp(const ros::Time& _time_stamp) {
-  time_stamps.push_back(_time_stamp);
+void Poses::AddSingleTimeStamp(const ros::Time& time_stamp) {
+  time_stamps_.push_back(time_stamp);
 }
 
 void Poses::SetPoses(
-    const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& _poses) {
-  poses = _poses;
+    const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses) {
+  poses_ = poses;
 }
 
 std::vector<Eigen::Matrix4d, beam::AlignMat4d> Poses::GetPoses() const {
-  return poses;
+  return poses_;
 }
 
 void Poses::AddSinglePose(const Eigen::Matrix4d& T_FIXED_MOVING) {
-  poses.push_back(T_FIXED_MOVING);
+  poses_.push_back(T_FIXED_MOVING);
 }
 
 void Poses::WriteToJSON(const std::string& output_dir) const {
-  if (poses.size() != time_stamps.size()) {
+  if (poses_.size() != time_stamps_.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
     throw std::runtime_error{"Number of time stamps not equal to number of "
@@ -94,17 +94,17 @@ void Poses::WriteToJSON(const std::string& output_dir) const {
   // write to json
   std::string J_string, J_poses_string, J_pose_k_string;
   nlohmann::json J, J_pose_k;
-  J = {{"bag_name", bag_name},
-       {"pose_file_date", pose_file_date},
-       {"fixed_frame", fixed_frame},
-       {"moving_frame", moving_frame}};
+  J = {{"bag_name", bag_name_},
+       {"pose_file_date", pose_file_date_},
+       {"fixed_frame", fixed_frame_},
+       {"moving_frame", moving_frame_}};
 
   J_string = J.dump();
   J_poses_string = "{\"poses\": []}";
-  for (size_t k = 0; k < poses.size(); k++) {
-    Eigen::Matrix4d Tk = poses[k];
-    J_pose_k = {{"time_stamp_sec", time_stamps[k].sec},
-                {"time_stamp_nsec", time_stamps[k].nsec},
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Matrix4d Tk = poses_[k];
+    J_pose_k = {{"time_stamp_sec", time_stamps_[k].sec},
+                {"time_stamp_nsec", time_stamps_[k].nsec},
                 {"transform",
                  {Tk(0, 0), Tk(0, 1), Tk(0, 2), Tk(0, 3), Tk(1, 0), Tk(1, 1),
                   Tk(1, 2), Tk(1, 3), Tk(2, 0), Tk(2, 1), Tk(2, 2), Tk(2, 3),
@@ -130,10 +130,10 @@ void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
   nlohmann::json J;
   std::ifstream file(input_pose_file_path);
   file >> J;
-  bag_name = J["bag_name"];
-  fixed_frame = J["fixed_frame"];
-  moving_frame = J["moving_frame"];
-  pose_file_date = J["pose_file_date"];
+  bag_name_ = J["bag_name"];
+  fixed_frame_ = J["fixed_frame"];
+  moving_frame_ = J["moving_frame"];
+  pose_file_date_ = J["pose_file_date"];
   int pose_counter = 0;
 
   for (const auto& pose : J["poses"]) {
@@ -158,15 +158,15 @@ void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
       BEAM_CRITICAL("Invalid transform matrix in json pose file.");
       throw std::invalid_argument{"Invalid transform matrix in .json file."};
     } else {
-      time_stamps.push_back(time_stamp_k);
-      poses.push_back(T_k);
+      time_stamps_.push_back(time_stamp_k);
+      poses_.push_back(T_k);
     }
   }
   BEAM_INFO("Read {} poses.", pose_counter);
 }
 
 void Poses::WriteToTXT(const std::string& output_dir) const {
-  if (poses.size() != time_stamps.size()) {
+  if (poses_.size() != time_stamps_.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
     throw std::runtime_error{"Number of time stamps not equal to number of "
@@ -175,20 +175,20 @@ void Poses::WriteToTXT(const std::string& output_dir) const {
 
   std::ofstream outfile = CreateFile(output_dir, ".txt");
 
-  for (size_t k = 0; k < poses.size(); k++) {
-    Eigen::Matrix4d Tk = poses[k];
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Matrix4d Tk = poses_[k];
     std::stringstream line;
-    line << time_stamps[k].sec;
+    line << time_stamps_[k].sec;
     // get num digits in nsec
     int length = 1;
-    int x = time_stamps[k].nsec;
+    int x = time_stamps_[k].nsec;
     while (x /= 10) length++;
     // extend nsec with 0's to fill 9 digits
     if (length < 9) {
       int extend = 9 - length;
       for (int i = 0; i < extend; i++) { line << "0"; }
     }
-    line << time_stamps[k].nsec << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", "
+    line << time_stamps_[k].nsec << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", "
          << Tk(0, 2) << ", " << Tk(0, 3) << ", " << Tk(1, 0) << ", " << Tk(1, 1)
          << ", " << Tk(1, 2) << ", " << Tk(1, 3) << ", " << Tk(2, 0) << ", "
          << Tk(2, 1) << ", " << Tk(2, 2) << ", " << Tk(2, 3) << ", " << Tk(3, 0)
@@ -235,15 +235,15 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path) {
           }
         }
       }
-      time_stamps.push_back(time_stamp_k);
-      poses.push_back(Tk);
+      time_stamps_.push_back(time_stamp_k);
+      poses_.push_back(Tk);
     }
   }
-  BEAM_INFO("Read {} poses.", poses.size());
+  BEAM_INFO("Read {} poses.", poses_.size());
 }
 
 void Poses::WriteToPLY(const std::string& output_dir) const {
-  if (poses.size() != time_stamps.size()) {
+  if (poses_.size() != time_stamps_.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
     throw std::runtime_error{"Number of time stamps not equal to number of "
@@ -251,31 +251,34 @@ void Poses::WriteToPLY(const std::string& output_dir) const {
   }
 
   std::ofstream fileply = CreateFile(output_dir, ".ply");
-  double t_start = time_stamps.at(0).toSec();
+  double t_start = time_stamps_.at(0).toSec();
 
   fileply << "ply" << std::endl;
   fileply << "format ascii 1.0" << std::endl;
   fileply << "comment UTC time at start ";
-  fileply << std::fixed << std::setprecision(6) << t_start << std::endl;
-  fileply << "comment Local time at start " << pose_file_date << std::endl;
-  fileply << "bag file: " << bag_name << std::endl;
-  fileply << "fixed frame: " << fixed_frame << std::endl;
-  fileply << "moving frame: " << moving_frame << std::endl;
-  fileply << "element vertex " << time_stamps.size() << std::endl;
+  fileply << std::fixed << std::setprecision(17) << t_start << std::endl;
+  fileply << "comment Local time at start " << pose_file_date_ << std::endl;
+  fileply << "comment bag_file " << bag_name_ << std::endl;
+  fileply << "comment fixed_frame " << fixed_frame_ << std::endl;
+  fileply << "comment moving_frame " << moving_frame_ << std::endl;
+  fileply << "comment orientation_type "
+          << "RPY" << std::endl;
+  fileply << "element vertex " << time_stamps_.size() << std::endl;
   fileply << "property float x" << std::endl;
   fileply << "property float y" << std::endl;
   fileply << "property float z" << std::endl;
   fileply << "property float roll" << std::endl;
   fileply << "property float pitch" << std::endl;
   fileply << "property float yaw" << std::endl;
+  fileply << "property float time" << std::endl;
   fileply << "property float scalar_confidence_metric" << std::endl;
   fileply << "end_header" << std::endl;
 
-  for (size_t k = 0; k < poses.size(); k++) {
-    Eigen::Affine3d TA(poses.at(k));
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Affine3d TA(poses_.at(k));
     Eigen::RowVector3d Tk = TA.translation();
     Eigen::RowVector3d Mk = TA.rotation().eulerAngles(0, 1, 2);
-    double t = time_stamps.at(k).toSec() - t_start;
+    double t = time_stamps_.at(k).toSec() - t_start;
     fileply << std::fixed << std::setprecision(6) << Tk[0] << " ";
     fileply << std::fixed << std::setprecision(6) << Tk[1] << " ";
     fileply << std::fixed << std::setprecision(6) << Tk[2] << " ";
@@ -292,29 +295,56 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
   std::ifstream file(input_pose_file_path);
   std::string str;
   double time_start = 0;
+  std::string string1 = "comment UTC time at start ";
+  std::string string2 = "comment Local time at start ";
+  std::string string3 = "comment bag_file ";
+  std::string string4 = "comment fixed_frame ";
+  std::string string5 = "comment moving_frame ";
+  std::string string6 = "comment orientation_type ";
+
+  std::string orientation_type;
+
   while (std::getline(file, str)) {
-    if (str.substr(0, 11) == "comment UTC") {
-      str.erase(0, 26);
+    if (str.substr(0, string1.size()) == string1) {
+      str.erase(0, string1.size());
       time_start = std::stod(str);
     }
-    if (str.substr(0, 13) == "comment Local") {
-      str.erase(0, 28);
-      pose_file_date = str;
+    if (str.substr(0, string2.size()) == string2) {
+      str.erase(0, string2.size());
+      pose_file_date_ = str;
     }
-    if (str.substr(0, 9) == "bag file:") {
-      str.erase(0, 10);
-      bag_name = str;
+    if (str.substr(0, string3.size()) == string3) {
+      str.erase(0, string3.size());
+      bag_name_ = str;
     }
-    if (str.substr(0, 12) == "fixed frame:") {
-      str.erase(0, 13);
-      fixed_frame = str;
+    if (str.substr(0, string4.size()) == string4) {
+      str.erase(0, string4.size());
+      fixed_frame_ = str;
     }
-    if (str.substr(0, 13) == "moving frame:") {
-      str.erase(0, 14);
-      moving_frame = str;
+    if (str.substr(0, string5.size()) == string5) {
+      str.erase(0, string5.size());
+      moving_frame_ = str;
+    }
+    if (str.substr(0, string6.size()) == string6) {
+      str.erase(0, string6.size());
+      orientation_type = str;
     }
     if (str == "end_header") { break; }
   }
+
+  if (orientation_type == "RPY") {
+    LoadFromPLY1(file, delim, time_start);
+  } else if (orientation_type == "quaternion") {
+    LoadFromPLY2(file, delim, time_start);
+  } else {
+    BEAM_ERROR("Invalid or missing orientation_type in ply header. Assuming "
+               "type is RPY");
+    LoadFromPLY1(file, delim, time_start);
+  }
+}
+
+void Poses::LoadFromPLY1(std::ifstream& file, const std::string& delim,
+                         double start_time_seconds) {
   std::string s;
   while (std::getline(file, s)) {
     size_t pos = 0;
@@ -327,7 +357,7 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
     double x = vals[0], y = vals[1], z = vals[2];
     double roll = vals[3], pitch = vals[4], yaw = vals[5];
     double time_since_start = vals[6];
-    double time_stamp_sec = time_since_start + time_start;
+    double time_stamp_sec = time_since_start + start_time_seconds;
     ros::Time t(time_stamp_sec);
 
     Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
@@ -340,13 +370,13 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
     T(1, 3) = y;
     T(2, 3) = z;
 
-    poses.push_back(T);
-    time_stamps.push_back(t);
+    poses_.push_back(T);
+    time_stamps_.push_back(t);
   }
 }
 
 void Poses::WriteToPLY2(const std::string& output_dir) const {
-  if (poses.size() != time_stamps.size()) {
+  if (poses_.size() != time_stamps_.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
                   "outputting to pose file.");
     throw std::runtime_error{"Number of time stamps not equal to number of "
@@ -355,18 +385,20 @@ void Poses::WriteToPLY2(const std::string& output_dir) const {
 
   std::ofstream fileply = CreateFile(output_dir, ".ply");
 
-  const ros::Time& t_start = time_stamps.at(0);
+  const ros::Time& t_start = time_stamps_.at(0);
 
   fileply << "ply" << std::endl;
   fileply << "format ascii 1.0" << std::endl;
   fileply << "comment UTC time at start ";
   fileply << std::fixed << std::setprecision(17) << t_start.toNSec()
           << std::endl;
-  fileply << "comment Local time at start " << pose_file_date << std::endl;
-  fileply << "comment bag_file: " << bag_name << std::endl;
-  fileply << "comment fixed_frame: " << fixed_frame << std::endl;
-  fileply << "comment moving_frame: " << moving_frame << std::endl;
-  fileply << "element vertex " << time_stamps.size() << std::endl;
+  fileply << "comment Local time at start " << pose_file_date_ << std::endl;
+  fileply << "comment bag_file: " << bag_name_ << std::endl;
+  fileply << "comment fixed_frame: " << fixed_frame_ << std::endl;
+  fileply << "comment moving_frame: " << moving_frame_ << std::endl;
+  fileply << "comment orientation_type "
+          << "quaternion" << std::endl;
+  fileply << "element vertex " << time_stamps_.size() << std::endl;
   fileply << "property float x" << std::endl;
   fileply << "property float y" << std::endl;
   fileply << "property float z" << std::endl;
@@ -377,11 +409,11 @@ void Poses::WriteToPLY2(const std::string& output_dir) const {
   fileply << "property float time_nsec" << std::endl;
   fileply << "end_header" << std::endl;
 
-  for (size_t k = 0; k < poses.size(); k++) {
-    const Eigen::Matrix4d& T = poses.at(k);
+  for (size_t k = 0; k < poses_.size(); k++) {
+    const Eigen::Matrix4d& T = poses_.at(k);
     Eigen::Matrix3d R = T.block(0, 0, 3, 3);
     Eigen::Quaterniond q(R);
-    double t = (time_stamps.at(k) - t_start).toNSec();
+    double t = (time_stamps_.at(k) - t_start).toNSec();
     fileply << std::fixed << std::setprecision(7) << T(0, 3) << " ";
     fileply << std::fixed << std::setprecision(7) << T(1, 3) << " ";
     fileply << std::fixed << std::setprecision(7) << T(2, 3) << " ";
@@ -389,39 +421,15 @@ void Poses::WriteToPLY2(const std::string& output_dir) const {
     fileply << std::fixed << std::setprecision(7) << q.x() << " ";
     fileply << std::fixed << std::setprecision(7) << q.y() << " ";
     fileply << std::fixed << std::setprecision(7) << q.z() << " ";
-    fileply << std::fixed << std::setprecision(16) << t << " " << std::endl;
+    fileply << std::fixed << std::setprecision(17) << t << " " << std::endl;
   }
 }
 
-void Poses::LoadFromPLY2(const std::string& input_pose_file_path) {
-  std::string delim = " ";
-  std::ifstream file(input_pose_file_path);
-  std::string str;
-  double time_start_double;
-  while (std::getline(file, str)) {
-    if (str.substr(0, 11) == "comment UTC") {
-      str.erase(0, 26);
-      time_start_double = std::stod(str);
-    }
-    if (str.substr(0, 13) == "comment Local") {
-      str.erase(0, 28);
-      pose_file_date = str;
-    }
-    if (str.substr(0, 9) == "comment bag_file:") {
-      str.erase(0, 10);
-      bag_name = str;
-    }
-    if (str.substr(0, 12) == "comment fixed_frame:") {
-      str.erase(0, 13);
-      fixed_frame = str;
-    }
-    if (str.substr(0, 13) == "comment moving_frame:") {
-      str.erase(0, 14);
-      moving_frame = str;
-    }
-    if (str == "end_header") { break; }
-  }
+void Poses::LoadFromPLY2(std::ifstream& file, const std::string& delim,
+                         double start_time_seconds) {
   std::string s;
+  ros::Time time_start(start_time_seconds);
+
   while (std::getline(file, s)) {
     size_t pos = 0;
     std::vector<double> vals;
@@ -431,10 +439,6 @@ void Poses::LoadFromPLY2(const std::string& input_pose_file_path) {
       vals.push_back(val);
     }
 
-    double time_since_start_double = vals[6];
-    ros::Time time_stamp;
-    time_stamp.fromNSec(time_since_start_double + time_start_double);
-
     Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
     T(0, 3) = vals[0];
     T(1, 3) = vals[1];
@@ -442,11 +446,13 @@ void Poses::LoadFromPLY2(const std::string& input_pose_file_path) {
     Eigen::Quaterniond q(vals[3], vals[4], vals[5], vals[6]);
     Eigen::Matrix3d R(q);
     T.block(0, 0, 3, 3) = R;
-    poses.push_back(T);
+    poses_.push_back(T);
 
-    ros::Time t;
-    t.fromNSec(vals[7]);
-    time_stamps.push_back(t);
+    double time_since_start = vals[7];
+    ros::Duration duration;
+    duration.fromNSec(time_since_start);
+    ros::Time time_stamp = time_start + duration;
+    time_stamps_.push_back(time_stamp);
   }
 }
 
@@ -454,7 +460,7 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
                                 const std::string& topic_loop_closed,
                                 const std::string& topic_high_rate) {
   boost::filesystem::path p(bag_file_path);
-  bag_name = p.stem().string();
+  bag_name_ = p.stem().string();
 
   // open bag
   rosbag::Bag bag;
@@ -491,8 +497,8 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
 
   // convert last path to poses
   pose_map_type loop_closed_poses;
-  utils::PathMsgToPoses(*path_msg, loop_closed_poses, fixed_frame,
-                        moving_frame);
+  utils::PathMsgToPoses(*path_msg, loop_closed_poses, fixed_frame_,
+                        moving_frame_);
 
   // next, load high rate path
   rosbag::View view_high_rate(bag, rosbag::TopicQuery(topic_high_rate),
@@ -521,7 +527,7 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
       throw std::runtime_error{"Cannot instantiate path msg."};
     }
     num_duplicate_poses += utils::PathMsgToPoses(*path_msg, high_rate_poses,
-                                                 fixed_frame, moving_frame);
+                                                 fixed_frame_, moving_frame_);
   }
   BEAM_INFO("Overrode {} duplicate poses.", num_duplicate_poses);
 
@@ -530,10 +536,10 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
     return;
   } else if (loop_closed_poses.empty()) {
     BEAM_ERROR("No loop closed poses read, using high rate poses only.");
-    utils::PoseMapToTimeAndPoseVecs(high_rate_poses, poses, time_stamps);
+    utils::PoseMapToTimeAndPoseVecs(high_rate_poses, poses_, time_stamps_);
   } else if (high_rate_poses.empty()) {
     BEAM_ERROR("No high rate poses read, using loop closed poses only.");
-    utils::PoseMapToTimeAndPoseVecs(loop_closed_poses, poses, time_stamps);
+    utils::PoseMapToTimeAndPoseVecs(loop_closed_poses, poses_, time_stamps_);
   } else {
     BEAM_INFO("Correcting {} high rate poses with {} loop closed poses.",
               high_rate_poses.size(), loop_closed_poses.size());
@@ -567,22 +573,23 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
           T_WORLDCORR_WORLDEST * T_WORLDEST_BASELINKHR;
       ros::Time new_stamp;
       new_stamp.fromNSec(t_HR);
-      time_stamps.push_back(new_stamp);
-      poses.push_back(T_WORLDCORR_BASELINKHR);
+      time_stamps_.push_back(new_stamp);
+      poses_.push_back(T_WORLDCORR_BASELINKHR);
     }
   }
 
   // check frames have been set, if not set defaults
-  if (fixed_frame.empty()) { fixed_frame = "odom"; }
-  if (moving_frame.empty()) { moving_frame = "base_link"; }
-  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.", poses.size());
+  if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
+  if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
+  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
+            poses_.size());
 }
 
 void Poses::LoadLoopClosedPathsInterpolated(
     const std::string& bag_file_path, const std::string& topic_loop_closed,
     const std::string& topic_high_rate) {
   boost::filesystem::path p(bag_file_path);
-  bag_name = p.stem().string();
+  bag_name_ = p.stem().string();
 
   // open bag
   rosbag::Bag bag;
@@ -619,8 +626,8 @@ void Poses::LoadLoopClosedPathsInterpolated(
 
   // convert last path to tf tree
   pose_map_type loop_closed_poses;
-  utils::PathMsgToPoses(*path_msg, loop_closed_poses, fixed_frame,
-                        moving_frame);
+  utils::PathMsgToPoses(*path_msg, loop_closed_poses, fixed_frame_,
+                        moving_frame_);
 
   // next, load high rate path
   rosbag::View view_high_rate(bag, rosbag::TopicQuery(topic_high_rate),
@@ -649,7 +656,7 @@ void Poses::LoadLoopClosedPathsInterpolated(
       throw std::runtime_error{"Cannot instantiate path msg."};
     }
     num_duplicate_poses += utils::PathMsgToPoses(*path_msg, high_rate_poses,
-                                                 fixed_frame, moving_frame);
+                                                 fixed_frame_, moving_frame_);
   }
   BEAM_INFO("Overrode {} duplicate poses.", num_duplicate_poses);
 
@@ -658,21 +665,21 @@ void Poses::LoadLoopClosedPathsInterpolated(
     return;
   } else if (loop_closed_poses.empty()) {
     BEAM_ERROR("No loop closed poses read, using high rate poses only.");
-    utils::PoseMapToTimeAndPoseVecs(high_rate_poses, poses, time_stamps);
+    utils::PoseMapToTimeAndPoseVecs(high_rate_poses, poses_, time_stamps_);
     // check frames have been set, if not set defaults
-    if (fixed_frame.empty()) { fixed_frame = "odom"; }
-    if (moving_frame.empty()) { moving_frame = "base_link"; }
+    if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
+    if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
     BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
-              poses.size());
+              poses_.size());
     return;
   } else if (high_rate_poses.empty()) {
     BEAM_ERROR("No high rate poses read, using loop closed poses only.");
-    utils::PoseMapToTimeAndPoseVecs(loop_closed_poses, poses, time_stamps);
+    utils::PoseMapToTimeAndPoseVecs(loop_closed_poses, poses_, time_stamps_);
     // check frames have been set, if not set defaults
-    if (fixed_frame.empty()) { fixed_frame = "odom"; }
-    if (moving_frame.empty()) { moving_frame = "base_link"; }
+    if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
+    if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
     BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
-              poses.size());
+              poses_.size());
     return;
   }
 
@@ -741,15 +748,15 @@ void Poses::LoadLoopClosedPathsInterpolated(
     // correct pose and add
     Eigen::Matrix4d T_WORLDCORR_BASELINKHR =
         T_WORLDCORR_WORLDEST * T_WORLDEST_BASELINKHR;
-    time_stamps.push_back(stamp_HR);
-    poses.push_back(T_WORLDCORR_BASELINKHR);
+    time_stamps_.push_back(stamp_HR);
+    poses_.push_back(T_WORLDCORR_BASELINKHR);
   }
 }
 
 void Poses::LoadFromBAG(const std::string& bag_file_path,
                         const std::string& topic) {
   boost::filesystem::path p(bag_file_path);
-  bag_name = p.stem().string();
+  bag_name_ = p.stem().string();
 
   // open bag
   rosbag::Bag bag;
@@ -786,12 +793,12 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
         throw std::runtime_error{"Cannot instantiate odometry msg."};
       }
 
-      if (fixed_frame.empty()) { fixed_frame = odom_msg->header.frame_id; }
-      if (moving_frame.empty()) { moving_frame = odom_msg->child_frame_id; }
-      time_stamps.push_back(odom_msg->header.stamp);
+      if (fixed_frame_.empty()) { fixed_frame_ = odom_msg->header.frame_id; }
+      if (moving_frame_.empty()) { moving_frame_ = odom_msg->child_frame_id; }
+      time_stamps_.push_back(odom_msg->header.stamp);
       Eigen::Affine3d T_FIXED_MOVING;
       Eigen::fromMsg(odom_msg->pose.pose, T_FIXED_MOVING);
-      poses.push_back(T_FIXED_MOVING.matrix());
+      poses_.push_back(T_FIXED_MOVING.matrix());
     }
   } else {
     BEAM_INFO("Loading path messages from bag");
@@ -806,13 +813,14 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
     }
 
     // convert to poses
-    utils::PathMsgToPoses(*path_msg, poses, time_stamps, fixed_frame,
-                          moving_frame);
+    utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
+                          moving_frame_);
   }
 
-  if (fixed_frame.empty()) { fixed_frame = "odom"; }
-  if (moving_frame.empty()) { moving_frame = "base_link"; }
-  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.", poses.size());
+  if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
+  if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
+  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
+            poses_.size());
 }
 
 void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
@@ -834,8 +842,8 @@ void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
     Eigen::Matrix4d T;
     ros::Time t;
     beam::PCLPointToPose(point, t, T);
-    poses.push_back(T);
-    time_stamps.push_back(t);
+    poses_.push_back(T);
+    time_stamps_.push_back(t);
   }
 }
 
@@ -871,7 +879,7 @@ std::ofstream Poses::CreateFile(const std::string& output_path,
                  "extension, using expected extension ({})",
                  output_ext);
     }
-    output_file = dir.string() + p.stem().string() + output_ext;
+    output_file = output_path;
   } else {
     // if no extension provided in output path, then we post-fix
     if (output_path.back() == '/') {
@@ -886,4 +894,5 @@ std::ofstream Poses::CreateFile(const std::string& output_path,
   BEAM_INFO("Saving poses to file: {}", output_file);
   return std::ofstream(output_file);
 }
+
 } // namespace beam_mapping
