@@ -23,7 +23,7 @@ namespace beam_mapping {
  * @brief class for map builder
  */
 class MapBuilder {
-  struct LidarConfig {
+  struct SensorConfig {
     std::string topic;
     std::string frame;
     bool use_cropbox;
@@ -125,10 +125,10 @@ private:
   /**
    * @brief method for cropping the input point cloud
    * @param cloud point cloud to crop
-   * @param lidar_number used for getting crop box parameters
+   * @param sensor_number used for getting crop box parameters
    * @return cropped_cloud
    */
-  PointCloud CropLidarRaw(const PointCloud& cloud, uint8_t lidar_number);
+  PointCloud CropCloudRaw(const PointCloud& cloud, uint8_t sensor_number);
 
   /**
    * @brief method to load configuration from json
@@ -141,22 +141,22 @@ private:
    * changed more than the threshold, if so convert it and add to the scans and
    * timestamp vectors
    * @param iter rosbag iterator
-   * @param lidar_number
+   * @param sensor_number
    */
-  void ProcessPointCloudMsg(rosbag::View::iterator& iter, uint8_t lidar_number);
+  void ProcessPointCloudMsg(rosbag::View::iterator& iter, uint8_t sensor_number);
 
   /**
-   * @brief loads all the scans from a specific lidar and builds the scans and
+   * @brief loads all the scans from a specific sensor and builds the scans and
    * timestamps vector.
-   * @param lidar_number
+   * @param sensor_number
    */
-  void LoadScans(uint8_t lidar_number);
+  void LoadScans(uint8_t sensor_number);
 
   /**
-   * @brief creates an aggregate map for one lidar scan topic
-   * @param lidar_number
+   * @brief creates an aggregate map for one sensor scan topic
+   * @param sensor_number
    */
-  void GenerateMap(uint8_t lidar_number);
+  void GenerateMap(uint8_t sensor_number);
 
   /**
    * @brief outputs maps to save directory
@@ -173,8 +173,8 @@ private:
   int intermediary_map_size_;
   double min_translation_m_;
   double min_rotation_deg_;
-  bool combine_lidar_scans_;
-  std::vector<LidarConfig> lidars_;
+  bool combine_sensor_data_;
+  std::vector<SensorConfig> sensors_;
   std::vector<beam_filtering::FilterParamsType> input_filters_;
   std::vector<beam_filtering::FilterParamsType> intermediary_filters_;
   std::vector<beam_filtering::FilterParamsType> output_filters_;
