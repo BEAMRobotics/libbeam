@@ -10,12 +10,13 @@
 #include <ceres/types.h>
 
 #include <beam_optimization/CamPoseReprojectionCost.h>
+#include <beam_optimization/PosePriorCost.h>
 
 namespace beam_cv {
 
 PoseRefinement::PoseRefinement() {
   // set ceres solver params
-  ceres_solver_options_.minimizer_progress_to_stdout = false;
+  ceres_solver_options_.minimizer_progress_to_stdout = true;
   ceres_solver_options_.max_num_iterations = 100;
   ceres_solver_options_.max_solver_time_in_seconds = 1e6;
   ceres_solver_options_.function_tolerance = 1e-8;
@@ -25,13 +26,13 @@ PoseRefinement::PoseRefinement() {
   ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
 }
 
-PoseRefinement::PoseRefinement(double time_limit, bool is_silent) {
+PoseRefinement::PoseRefinement(double time_limit, bool is_silent,
+                               double reprojection_weight)
+    : reprojection_weight_(reprojection_weight) {
   // set ceres solver params
-  ceres_solver_options_.minimizer_progress_to_stdout = false;
+  ceres_solver_options_.minimizer_progress_to_stdout = !is_silent;
   ceres_solver_options_.max_num_iterations = 100;
-  if(is_silent){
-    ceres_solver_options_.logging_type = ceres::SILENT;
-  }
+  if (is_silent) { ceres_solver_options_.logging_type = ceres::SILENT; }
   ceres_solver_options_.max_solver_time_in_seconds = time_limit;
   ceres_solver_options_.function_tolerance = 1e-8;
   ceres_solver_options_.gradient_tolerance = 1e-10;
@@ -40,7 +41,9 @@ PoseRefinement::PoseRefinement(double time_limit, bool is_silent) {
   ceres_solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
 }
 
-PoseRefinement::PoseRefinement(const ceres::Solver::Options options) {
+PoseRefinement::PoseRefinement(const ceres::Solver::Options options,
+                               double reprojection_weight)
+    : reprojection_weight_(reprojection_weight) {
   ceres_solver_options_ = options;
 }
 
@@ -49,7 +52,8 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
     const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-    std::string& report, bool remove_points_outside_domain) {
+    std::shared_ptr<Eigen::Matrix<double, 6, 6>> A, std::string& report,
+    bool remove_points_outside_domain) {
   // vector to store optimized pose quaternion and translation
   Eigen::Matrix3d estimate_r = estimate.block(0, 0, 3, 3);
   Eigen::Quaterniond estimate_q(estimate_r);
@@ -75,11 +79,18 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
       }
     }
 
-    std::unique_ptr<ceres::CostFunction> cost_function(
+    std::unique_ptr<ceres::CostFunction> reproj_cost(
         beam_optimization::CeresReprojectionCostFunction::Create(
-            pixels[i].cast<double>(), points[i], cam));
+            pixels[i].cast<double>(), points[i], cam, reprojection_weight_));
+    problem->AddResidualBlock(reproj_cost.release(), loss_function_.get(),
+                              &(results[0]));
+  }
 
-    problem->AddResidualBlock(cost_function.release(), loss_function_.get(),
+  // add a prior to the pose if a weighting matrix is passed in
+  if (A) {
+    std::unique_ptr<ceres::CostFunction> prior_pose_cost(
+        CeresPosePriorCostFunction::Create(estimate, *A));
+    problem->AddResidualBlock(prior_pose_cost.release(), loss_function_.get(),
                               &(results[0]));
   }
 
