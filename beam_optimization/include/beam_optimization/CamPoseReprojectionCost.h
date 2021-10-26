@@ -83,10 +83,12 @@ struct CameraProjectionFunctor {
 struct CeresReprojectionCostFunction {
   CeresReprojectionCostFunction(
       Eigen::Vector2d pixel_detected, Eigen::Vector3d P_STRUCT,
-      std::shared_ptr<beam_calibration::CameraModel> camera_model)
+      std::shared_ptr<beam_calibration::CameraModel> camera_model,
+      double weight = 1)
       : pixel_detected_(pixel_detected),
         P_STRUCT_(P_STRUCT),
-        camera_model_(camera_model) {
+        camera_model_(camera_model),
+        weight_(weight) {
     compute_projection.reset(new ceres::CostFunctionToFunctor<2, 3>(
         new ceres::NumericDiffCostFunction<CameraProjectionFunctor,
                                            ceres::CENTRAL, 2, 3>(
@@ -119,8 +121,10 @@ struct CeresReprojectionCostFunction {
     T pixel_projected[2];
     (*compute_projection)(P_CAMERA_const, &(pixel_projected[0]));
 
-    residuals[0] = pixel_detected_.cast<T>()[0] - pixel_projected[0];
-    residuals[1] = pixel_detected_.cast<T>()[1] - pixel_projected[1];
+    residuals[0] =
+        T(weight_) * (pixel_detected_.cast<T>()[0] - pixel_projected[0]);
+    residuals[1] =
+        T(weight_) * (pixel_detected_.cast<T>()[1] - pixel_projected[1]);
 
     // check if projection is outside the domain of the camera model
     Eigen::Vector3d P_CAMERA_eig_check{*P_CAMERA_check_x, *P_CAMERA_check_y,
@@ -145,19 +149,22 @@ struct CeresReprojectionCostFunction {
 
   // Factory to hide the construction of the CostFunction object from
   // the client code.
-  static ceres::CostFunction* Create(
-      const Eigen::Vector2d pixel_detected, const Eigen::Vector3d P_STRUCT,
-      const std::shared_ptr<beam_calibration::CameraModel> camera_model) {
+  static ceres::CostFunction*
+      Create(const Eigen::Vector2d pixel_detected,
+             const Eigen::Vector3d P_STRUCT,
+             const std::shared_ptr<beam_calibration::CameraModel> camera_model,
+             double weight = 1) {
     return (
         new ceres::AutoDiffCostFunction<CeresReprojectionCostFunction, 2, 7>(
             new CeresReprojectionCostFunction(pixel_detected, P_STRUCT,
-                                              camera_model)));
+                                              camera_model, weight)));
   }
 
   Eigen::Vector2d pixel_detected_;
   Eigen::Vector3d P_STRUCT_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
   std::unique_ptr<ceres::CostFunctionToFunctor<2, 3>> compute_projection;
+  double weight_;
 
 private:
   bool checkDomain(const double* P) {

@@ -47,7 +47,7 @@ struct CeresPosePriorCostFunction {
   // Factory to hide the construction of the CostFunction object from
   // the client code.
   static ceres::CostFunction* Create(const Eigen::Matrix4d T_P,
-                                     const Eigen::MatrixXd A) {
+                                     const Eigen::Matrix<double, 6, 6>& A) {
     return (new ceres::AutoDiffCostFunction<CeresPosePriorCostFunction, 6, 7>(
         new CeresPosePriorCostFunction(T_P, A)));
   }

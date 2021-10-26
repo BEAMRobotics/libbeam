@@ -14,9 +14,10 @@
 
 std::shared_ptr<beam_calibration::CameraModel> cam;
 
-void GenerateCorrespondences(std::shared_ptr<beam_calibration::CameraModel> cam,
-                             std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-                             std::vector<Eigen::Vector3d, beam::AlignVec3d>& points, int n) {
+void GenerateCorrespondences(
+    std::shared_ptr<beam_calibration::CameraModel> cam,
+    std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+    std::vector<Eigen::Vector3d, beam::AlignVec3d>& points, int n) {
   for (int i = 0; i < n; i++) {
     int x = rand() % cam->GetWidth();
     int y = rand() % cam->GetHeight();
@@ -32,9 +33,10 @@ void GenerateCorrespondences(std::shared_ptr<beam_calibration::CameraModel> cam,
   }
 }
 
-void PerturbCorrespondences(std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-                            std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-                            int pixel_pert, double point_pert) {
+void PerturbCorrespondences(
+    std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+    std::vector<Eigen::Vector3d, beam::AlignVec3d>& points, int pixel_pert,
+    double point_pert) {
   for (size_t i = 0; i < pixels.size(); i++) {
     for (int j = 0; j < pixels[i].size(); j++) {
       pixels[i][j] =
@@ -47,12 +49,13 @@ void PerturbCorrespondences(std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixe
   }
 }
 
-void ReadCorrespondences(std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels1,
-                         std::vector<Eigen::Vector3d, beam::AlignVec3d>& points1,
-                         Eigen::Matrix4d& pose1,
-                         std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels2,
-                         std::vector<Eigen::Vector3d, beam::AlignVec3d>& points2,
-                         Eigen::Matrix4d& pose2) {
+void ReadCorrespondences(
+    std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels1,
+    std::vector<Eigen::Vector3d, beam::AlignVec3d>& points1,
+    Eigen::Matrix4d& pose1,
+    std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels2,
+    std::vector<Eigen::Vector3d, beam::AlignVec3d>& points2,
+    Eigen::Matrix4d& pose2) {
   std::string location = __FILE__;
   location.erase(location.end() - 31, location.end());
   std::string corr_file1 = location + "tests/test_data/im1_correspondences.txt";
@@ -132,11 +135,12 @@ void PerturbPose(Eigen::Matrix4d& pose, double r_pert, double t_pert) {
 }
 
 TEST_CASE("Euroc VIO Refinement Tests.") {
-  // make camera model (for all tests)
+  // make camera model (for just this test)
   std::string location = __FILE__;
   location.erase(location.end() - 31, location.end());
   std::string intrinsics_loc = location + "tests/test_data/euroc.json";
-  cam = beam_calibration::CameraModel::Create(intrinsics_loc);
+  std::shared_ptr<beam_calibration::CameraModel> camera =
+      beam_calibration::CameraModel::Create(intrinsics_loc);
 
   // generate correspondences
   std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels1, pixels2;
@@ -148,7 +152,7 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
   std::string report1, report2;
   // refine pose 1
   Eigen::Matrix4d refined_pose1 =
-      refiner.RefinePose(pose1, cam, pixels1, points1, report1);
+      refiner.RefinePose(pose1, camera, pixels1, points1, nullptr, report1);
   Eigen::Matrix4d target_refined1;
   target_refined1 << 0.999415, -0.0292887, 0.0176378, -0.0568712, -0.0262657,
       -0.32748, 0.944493, -0.00156549, -0.021887, -0.944404, -0.328058,
@@ -157,7 +161,7 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
   REQUIRE(refined_pose1.isApprox(target_refined1, 1e-3));
   // refine pose 2
   Eigen::Matrix4d refined_pose2 =
-      refiner.RefinePose(pose2, cam, pixels2, points2, report2);
+      refiner.RefinePose(pose2, camera, pixels2, points2, nullptr, report2);
   Eigen::Matrix4d target_refined2;
   target_refined2 << 0.999323, -0.0335793, 0.0150601, -0.0582982, -0.0249295,
       -0.316631, 0.94822, -0.00263348, -0.027072, -0.947953, -0.317254,
@@ -165,8 +169,8 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
   REQUIRE(refined_pose2.isApprox(target_refined2, 1e-3));
 
   // refine pose 2 without removing bad points
-  refined_pose2 =
-      refiner.RefinePose(pose2, cam, pixels2, points2, report2, false);
+  refined_pose2 = refiner.RefinePose(pose2, camera, pixels2, points2, nullptr,
+                                     report2, false);
   REQUIRE(refined_pose2.isApprox(pose2, 1e-4));
 }
 
@@ -187,7 +191,7 @@ TEST_CASE("Refine given perfect correspondences, perfect pose.") {
   beam_cv::PoseRefinement refiner;
   std::string report;
   Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, report);
+      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-3));
@@ -210,7 +214,7 @@ TEST_CASE("Refine given perfect correspondences, perturbed pose.") {
   beam_cv::PoseRefinement refiner;
   std::string report;
   Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, report);
+      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-3));
@@ -233,17 +237,47 @@ TEST_CASE("Refine given perturbed pixels and points, perturbed pose.") {
   int pixel_pert = 2;
   double point_pert = .05;
   PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
-  struct timespec t;
-  beam::tic(&t);
+
   // refine pose
   beam_cv::PoseRefinement refiner;
   std::string report;
   Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, report);
-  float elapsed = beam::toc(&t);
-  std::cout << elapsed << std::endl;
-  BEAM_INFO("Pose Refinement Time: {}", elapsed);
+      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-2));
+}
+
+TEST_CASE(
+    "Refine given perturbed pixels and points, perturbed pose, and a prior.") {
+  // generate correspondences
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
+  GenerateCorrespondences(cam, pixels, points, 30);
+
+  // randomly perturb pose to use as initial estimate
+  Eigen::Matrix4d estimate = Eigen::Matrix4d::Identity();
+  // set maximum perturbation (up to +/- x)
+  double r_pert = M_PI / 10;
+  double t_pert = .1;
+  PerturbPose(estimate, r_pert, t_pert);
+
+  // randomly perturb points/pixels (up to +/- x)
+  int pixel_pert = 2;
+  double point_pert = .05;
+  PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
+
+  // refine pose
+  beam::HighResolutionTimer timer;
+  beam_cv::PoseRefinement refiner;
+  std::string report;
+  std::shared_ptr<Eigen::Matrix<double, 6, 6>> A =
+      std::make_shared<Eigen::Matrix<double, 6, 6>>();
+  *A = Eigen::Matrix<double, 6, 6>::Identity();
+  Eigen::Matrix4d pose =
+      refiner.RefinePose(estimate, cam, pixels, points, A, report);
+  BEAM_INFO("Pose Refinement Time: {}", timer.elapsed());
+
+  Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
+  REQUIRE(pose.isApprox(truth, 1e-1));
 }
