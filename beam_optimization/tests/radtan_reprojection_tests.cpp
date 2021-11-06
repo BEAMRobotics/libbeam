@@ -11,11 +11,10 @@
 #include <ceres/solver.h>
 #include <ceres/types.h>
 
-#include <CamPoseReprojectionCost.h>
+#include <beam_optimization/CamPoseReprojectionCost.h>
 #include <beam_utils/angles.h>
 #include <beam_utils/math.h>
 #include <beam_utils/visualizer.h>
-#include <test_util.h>
 
 namespace beam_optimization {
 
@@ -27,6 +26,38 @@ ceres::Solver::Options ceres_solver_options_;
 std::unique_ptr<ceres::LossFunction> loss_function_;
 std::unique_ptr<ceres::LocalParameterization> se3_parameterization_;
 bool output_results_{false};
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(
+    const std::vector<Eigen::Vector4d, beam::AlignVec4d>& points) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+
+  for (uint16_t i = 0; i < points.size(); i++) {
+    pcl::PointXYZ to_add;
+    to_add.x = points.at(i)[0];
+    to_add.y = points.at(i)[1];
+    to_add.z = points.at(i)[2];
+    return_cloud->push_back(to_add);
+  }
+
+  return return_cloud;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr MakePointCloud(
+    const std::vector<Eigen::Vector2d, beam::AlignVec2d>& points) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr return_cloud(
+      new pcl::PointCloud<pcl::PointXYZ>);
+
+  for (uint16_t i = 0; i < points.size(); i++) {
+    pcl::PointXYZ to_add;
+    to_add.x = points.at(i)[0];
+    to_add.y = points.at(i)[1];
+    to_add.z = 0;
+    return_cloud->push_back(to_add);
+  }
+
+  return return_cloud;
+}
 
 std::shared_ptr<ceres::Problem> SetupCeresProblem() {
   // set ceres solver params
@@ -138,7 +169,7 @@ TEST_CASE("Test rt projection - no noise") {
 
   // Visualization - create target, input_cloud_p, input_cloud_p_proj cloud
   if (VISUALIZATION) {
-    target_cloud = test_util::MakePointCloud(pixels);
+    target_cloud = MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
@@ -158,8 +189,8 @@ TEST_CASE("Test rt projection - no noise") {
       }
     }
 
-    input_cloud_p = test_util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = MakePointCloud(perturbed_points);
+    input_cloud_p_proj = MakePointCloud(perturbed_pixels);
   }
 
   // create values to optimize
@@ -246,7 +277,7 @@ TEST_CASE("Test rt projection - no noise") {
       }
     }
 
-    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = MakePointCloud(final_pixels);
 
     test_vis.startVis();
     // white, red, green, blue
@@ -337,7 +368,7 @@ TEST_CASE("Test rt projection - with noise") {
 
   // Visualization - create target, input_cloud_p, input_cloud_p_proj cloud
   if (VISUALIZATION) {
-    target_cloud = test_util::MakePointCloud(pixels);
+    target_cloud = MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
@@ -357,8 +388,8 @@ TEST_CASE("Test rt projection - with noise") {
       }
     }
 
-    input_cloud_p = test_util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = MakePointCloud(perturbed_points);
+    input_cloud_p_proj = MakePointCloud(perturbed_pixels);
   }
 
   // create values to optimize
@@ -443,7 +474,7 @@ TEST_CASE("Test rt projection - with noise") {
       }
     }
 
-    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = MakePointCloud(final_pixels);
 
     test2_vis.startVis();
     // white, red, green, blue
@@ -526,7 +557,7 @@ TEST_CASE("Test rt projection - with clipping") {
 
   // Visualization - create target, input_cloud_p, input_cloud_p_proj cloud
   if (VISUALIZATION) {
-    target_cloud = test_util::MakePointCloud(pixels);
+    target_cloud = MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
@@ -549,8 +580,8 @@ TEST_CASE("Test rt projection - with clipping") {
       }
     }
 
-    input_cloud_p = test_util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = MakePointCloud(perturbed_points);
+    input_cloud_p_proj = MakePointCloud(perturbed_pixels);
   }
 
   // create values to optimize
@@ -635,7 +666,7 @@ TEST_CASE("Test rt projection - with clipping") {
       }
     }
 
-    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = MakePointCloud(final_pixels);
 
     test3_vis.startVis();
     // white, red, green, blue
@@ -720,7 +751,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
 
   // Visualization - create target, input_cloud_p, input_cloud_p_proj cloud
   if (VISUALIZATION) {
-    target_cloud = test_util::MakePointCloud(pixels);
+    target_cloud = MakePointCloud(pixels);
 
     std::vector<Eigen::Vector4d, beam::AlignVec4d> perturbed_points(points.size());
     std::vector<Eigen::Vector2d, beam::AlignVec2d> perturbed_pixels(points.size());
@@ -740,8 +771,8 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
       }
     }
 
-    input_cloud_p = test_util::MakePointCloud(perturbed_points);
-    input_cloud_p_proj = test_util::MakePointCloud(perturbed_pixels);
+    input_cloud_p = MakePointCloud(perturbed_points);
+    input_cloud_p_proj = MakePointCloud(perturbed_pixels);
   }
 
   // create values to optimize
@@ -827,7 +858,7 @@ TEST_CASE("Test rt projection - with invalid initial pose") {
       }
     }
 
-    final_cloud_p_proj = test_util::MakePointCloud(final_pixels);
+    final_cloud_p_proj = MakePointCloud(final_pixels);
 
     test3_vis.startVis();
     // white, red, green, blue

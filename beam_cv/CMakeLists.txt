@@ -2,14 +2,10 @@ PROJECT(beam_cv)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
-    OpenCV::OpenCV
     beam::calibration
     beam::containers
     beam::utils
     beam::optimization
-    Eigen3::Eigen
-    PCL::PCL
-    Boost::boost
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
@@ -73,7 +69,6 @@ target_include_directories(${PROJECT_NAME}_pose_refinement_tests
 )
 target_link_libraries(${PROJECT_NAME}_pose_refinement_tests
   ${PROJECT_NAME}
-  ${CERES_LIBRARIES}
   Catch2::Catch2
 )
 

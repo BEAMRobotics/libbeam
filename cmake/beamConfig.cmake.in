@@ -74,32 +74,7 @@ SET_AND_CHECK(BEAM_EXTRA_CMAKE_DIR
 
 # Find dependencies which *may* be used by beam targets
 # These are not REQUIRED here, but are checked later for each libbeam component
-LIST(APPEND CMAKE_MODULE_PATH "${BEAM_EXTRA_CMAKE_DIR}")
-FIND_PACKAGE(Eigen3 3.2.92 QUIET)
-FIND_PACKAGE(Boost 1.58.0 QUIET)
-FIND_PACKAGE(PCL 1.11.1 QUIET)
-FIND_PACKAGE(kindr QUIET)
-FIND_PACKAGE(OpenCV 4.5.2 QUIET)
-FIND_PACKAGE(yaml-cpp QUIET)
-FIND_PACKAGE(Ceres 1.12 QUIET)
-FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime)
-FIND_PACKAGE(Catch2 REQUIRED)
-FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
-
-# Where dependencies do not provide imported targets, define them
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportEigen3.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportBoost.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportPCL.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportKindr.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportYaml-cpp.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportCeres.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportOpenCV.cmake)
-INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/ImportCatkin.cmake)
-
-IF(BUILD_LADYBUG)
-    FIND_PACKAGE(Ladybug)
-    INCLUDE(${BEAM_EXTRA_CMAKE_DIR}/FindLadybug.cmake)
-ENDIF()
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/cmake/GetBeamDependencies.cmake)
 
 # This file contains definitions of IMPORTED targets
 INCLUDE("${CMAKE_CURRENT_LIST_DIR}/beamTargets.cmake")

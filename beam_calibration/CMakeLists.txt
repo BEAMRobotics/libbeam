@@ -2,12 +2,7 @@ PROJECT(beam_calibration)
 
 SET(PROJECT_DEPENDS 
     beam::utils
-    Boost::boost
-    Catch2::Catch2
-    catkin::catkin
-    Eigen3::Eigen
-    nlohmann_json::nlohmann_json
-    yaml-cpp
+    tf2::tf2
     OpenCV::OpenCV
   )
 
@@ -46,8 +41,6 @@ target_include_directories(${PROJECT_NAME}_extrinsics_tests
 target_link_libraries(${PROJECT_NAME}_extrinsics_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  Boost::boost
-  catkin::catkin
 )
 
 add_executable(${PROJECT_NAME}_double_sphere_tests

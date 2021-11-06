@@ -3,12 +3,6 @@ PROJECT(beam_filtering)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
-    Boost::boost
-    Catch2::Catch2
-    catkin::catkin
-    Eigen3::Eigen
-    nlohmann_json::nlohmann_json
-    PCL::PCL
   SOURCES
     src/Filter.cpp  
     src/DROR.cpp

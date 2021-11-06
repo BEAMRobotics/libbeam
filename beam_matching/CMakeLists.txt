@@ -4,12 +4,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
     beam::optimization
-    Eigen3::Eigen
-    Catch2::Catch2
-    ceres
-    Boost::boost
-    PCL::PCL
-    nlohmann_json::nlohmann_json
   SOURCES
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
@@ -18,58 +12,53 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/loam/LoamPointCloud.cpp
     src/loam/LoamFeatureExtractor.cpp
     src/loam/LoamScanRegistration.cpp
-    
 )
 
 ##################### TESTS #########################
 add_executable(${PROJECT_NAME}_loam_gtests 
-  tests/loam_gtests.cpp)
+  tests/loam_gtests.cpp
+)
 target_link_libraries(${PROJECT_NAME}_loam_gtests 
-  gtest_main
   ${PROJECT_NAME}
-  beam::utils)
+  gtest_main
+)
 add_test(NAME ${PROJECT_NAME}_loam_gtests 
-         COMMAND ${PROJECT_NAME}_loam_gtests)
+  COMMAND ${PROJECT_NAME}_loam_gtests
+)
 
 add_executable(${PROJECT_NAME}_icp_gtests 
-  tests/icp_gtests.cpp)
+  tests/icp_gtests.cpp
+)
 target_link_libraries(${PROJECT_NAME}_icp_gtests 
-  gtest_main
   ${PROJECT_NAME}
-  beam::utils)
+  gtest_main
+)
 add_test(NAME ${PROJECT_NAME}_icp_gtests 
-         COMMAND ${PROJECT_NAME}_icp_gtests)
+  COMMAND ${PROJECT_NAME}_icp_gtests
+)
 
 
 add_executable(${PROJECT_NAME}_ndt_tests
   tests/ndt_tests.cpp
 )
-
 target_include_directories(${PROJECT_NAME}_ndt_tests
   PUBLIC
     include
 )
-
 target_link_libraries(${PROJECT_NAME}_ndt_tests
     ${PROJECT_NAME}
-    beam::utils
-    Eigen3::Eigen
     Catch2::Catch2
 )
 
 add_executable(${PROJECT_NAME}_gicp_tests
   tests/gicp_tests.cpp
 )
-
 target_include_directories(${PROJECT_NAME}_gicp_tests
   PUBLIC
     include
 )
-
 target_link_libraries(${PROJECT_NAME}_gicp_tests
     ${PROJECT_NAME}
-    beam::utils
-    Eigen3::Eigen
     Catch2::Catch2
 )
 
@@ -77,16 +66,12 @@ target_link_libraries(${PROJECT_NAME}_gicp_tests
 add_executable(${PROJECT_NAME}_multi_matcher_tests
   tests/multi_matcher_tests.cpp
 )
-
 target_include_directories(${PROJECT_NAME}_multi_matcher_tests
   PUBLIC
     include
 )
-
 target_link_libraries(${PROJECT_NAME}_multi_matcher_tests
     ${PROJECT_NAME}
-    beam::utils
-    Eigen3::Eigen
     Catch2::Catch2
 )
 ]]

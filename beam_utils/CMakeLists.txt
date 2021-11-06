@@ -3,12 +3,11 @@ PROJECT(beam_utils)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     Eigen3::Eigen
-    catkin::catkin
-    yaml-cpp
+    roscpp::roscpp
     PCL::PCL
-    OpenCV::OpenCV
-    gflags
     Boost::boost
+    nlohmann_json::nlohmann_json
+    gflags
   SOURCES
     src/math.cpp
     src/time.cpp
@@ -35,8 +34,8 @@ target_include_directories(${PROJECT_NAME}_unit_tests
   ../include
 )
 target_link_libraries(${PROJECT_NAME}_unit_tests
-  Catch2::Catch2
   ${PROJECT_NAME}
+    Catch2::Catch2
 )
 
 file(COPY tests/run_all_tests.bash

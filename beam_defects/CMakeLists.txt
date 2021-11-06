@@ -4,11 +4,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::containers
     beam::utils
-    catkin::catkin
-    #${catkin_LIBRARIES}
-    PCL::PCL
-    Eigen3::Eigen
-    Catch2::Catch2
   SOURCES
     src/Defect.cpp
     src/Crack.cpp
@@ -43,8 +38,6 @@ target_include_directories(${PROJECT_NAME}_delam_tests
 target_link_libraries(${PROJECT_NAME}_delam_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  PCL::PCL
-  beam::containers
 )
 
 # spall tests
@@ -59,7 +52,6 @@ target_include_directories(${PROJECT_NAME}_spall_tests
 target_link_libraries(${PROJECT_NAME}_spall_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  PCL::PCL
 )
 
 # crack tests
@@ -74,7 +66,6 @@ target_include_directories(${PROJECT_NAME}_crack_tests
 target_link_libraries(${PROJECT_NAME}_crack_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  PCL::PCL
 )
 
 # corrosion tests
@@ -89,7 +80,6 @@ target_include_directories(${PROJECT_NAME}_corrosion_tests
 target_link_libraries(${PROJECT_NAME}_corrosion_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  PCL::PCL
 )
 
 file(COPY tests/test_data

@@ -4,110 +4,61 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
     beam::calibration
-    Boost::boost
-    Catch2::Catch2
-    catkin::catkin
-    Eigen3::Eigen
-    PCL::PCL
+    ceres
   SOURCES
 )
-
-################ test libraries ##############
-
-add_library(test_utils STATIC tests/src/test_util.cpp)
-
-
-target_link_libraries(test_utils
-  beam::calibration
-  beam::utils
-)
-
-target_include_directories(test_utils
-  PUBLIC
-    tests/include
-    ${PCl_INCLUDE_DIRS}
-)
-
-add_definitions(${PCL_DEFINITIONS})
 
 ################ tests ##################
 
 add_executable(${PROJECT_NAME}_ceres_radtan_tests
-  tests/src/radtan_reprojection_tests.cpp
+  tests/radtan_reprojection_tests.cpp
 )
-
 target_include_directories(${PROJECT_NAME}_ceres_radtan_tests
   PUBLIC
-    include/beam_optimization
-    ${catkin_INCLUDE_DIRS}
-    ${PCl_INCLUDE_DIRS}
+    include
 )
-
 target_link_libraries(${PROJECT_NAME}_ceres_radtan_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  ${CERES_LIBRARIES}
-  ${PCL_LIBRARY_DIRS}
-  test_utils
-  beam::utils
 )
-
 add_executable(${PROJECT_NAME}_ceres_point_to_line_tests
-  tests/src/point_to_line_tests.cpp
+  tests/point_to_line_tests.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_ceres_point_to_line_tests
   PUBLIC
-    include/beam_optimization
-    ${catkin_INCLUDE_DIRS}
+    include
 )
-
 target_link_libraries(${PROJECT_NAME}_ceres_point_to_line_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  ${CERES_LIBRARIES}
-  test_utils
-  beam::utils
 )
-
 add_executable(${PROJECT_NAME}_ceres_point_to_plane_tests
-  tests/src/point_to_plane_tests.cpp
+  tests/point_to_plane_tests.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_ceres_point_to_plane_tests
   PUBLIC
-    include/beam_optimization
-    ${catkin_INCLUDE_DIRS}
+    include
 )
-
 target_link_libraries(${PROJECT_NAME}_ceres_point_to_plane_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  ${CERES_LIBRARIES}
-  test_utils
-  beam::utils
 )
 
 add_executable(${PROJECT_NAME}_ceres_pose_prior_tests
-  tests/src/pose_prior_tests.cpp
+  tests/pose_prior_tests.cpp
 )
-
 target_include_directories(${PROJECT_NAME}_ceres_pose_prior_tests
   PUBLIC
-    include/beam_optimization
-    ${catkin_INCLUDE_DIRS}
+    include
 )
 
 target_link_libraries(${PROJECT_NAME}_ceres_pose_prior_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  ${CERES_LIBRARIES}
-  test_utils
-  beam::utils
 )
 
 file(COPY tests/run_all_tests.bash
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-message (${CMAKE_CURRENT_BINARY_DIR})

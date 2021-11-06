@@ -1,4 +1,4 @@
-#include "beam_utils/polynomial.h"
+#include <beam_utils/polynomial.h>
 
 #include <cmath>
 

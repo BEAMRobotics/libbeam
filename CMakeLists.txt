@@ -31,52 +31,49 @@ OPTION(EXPORT_BUILD
 
 # Find all dependencies here, and ensure they have IMPORTED targets
 # Require Eigen 3.2.92, also called 3.3 beta-1, since it's in xenial
-FIND_PACKAGE(Eigen3 REQUIRED)
-FIND_PACKAGE(Boost 1.58.0 COMPONENTS system filesystem)
-FIND_PACKAGE(PCL 1.11.1 REQUIRED COMPONENTS
-    common filters registration kdtree search io visualization
-    surface segmentation features)
-FIND_PACKAGE(OpenCV 4.5.2 REQUIRED COMPONENTS)
-FIND_PACKAGE(yaml-cpp REQUIRED)
-FIND_PACKAGE(Ceres 1.11)
-FIND_PACKAGE(catkin REQUIRED COMPONENTS tf2 tf2_eigen sensor_msgs rostime
-             roscpp std_msgs rosbag)
-FIND_PACKAGE(Catch2 REQUIRED)
-FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
-
-IF(BUILD_LADYBUG)
-   FIND_PACKAGE(Ladybug)
-ENDIF()
-
-# Where dependencies do not provide IMPORTED targets, define them
-INCLUDE(cmake/ImportEigen3.cmake)
-INCLUDE(cmake/ImportBoost.cmake)
-INCLUDE(cmake/ImportPCL.cmake)
-INCLUDE(cmake/ImportKindr.cmake)
-INCLUDE(cmake/ImportYaml-cpp.cmake)
-INCLUDE(cmake/ImportCeres.cmake)
-INCLUDE(cmake/ImportCatkin.cmake)
-INCLUDE(cmake/ImportOpenCV.cmake)
+INCLUDE(cmake/GetBeamDependencies.cmake)
 
 # Add a special "beam" target including all modules
 # The BEAM_ADD_LIBRARY helper in BeamHelpers.cmake will add each module to this
 ADD_LIBRARY(beam INTERFACE)
 INSTALL(TARGETS beam EXPORT beamTargets)
 
-# Add each module to the project
+# Add each module to the project unless cmake ignore argument set to true
 # Modules with missing dependencies are not built, and circular dependencies are
 # not supported. Thus modules must be listed after their dependencies, for now.
-ADD_SUBDIRECTORY(beam_calibration)
-ADD_SUBDIRECTORY(beam_colorize)
-ADD_SUBDIRECTORY(beam_cv)
-ADD_SUBDIRECTORY(beam_defects)
-ADD_SUBDIRECTORY(beam_depth)
-ADD_SUBDIRECTORY(beam_utils)
-ADD_SUBDIRECTORY(beam_containers)
-ADD_SUBDIRECTORY(beam_filtering)
-ADD_SUBDIRECTORY(beam_mapping)
-ADD_SUBDIRECTORY(beam_matching)
-ADD_SUBDIRECTORY(beam_optimization)
+IF(NOT CMAKE_IGNORE_BEAM_CALIBRATION)
+    ADD_SUBDIRECTORY(beam_calibration)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_COLORIZE)
+    ADD_SUBDIRECTORY(beam_colorize)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_CV)
+    ADD_SUBDIRECTORY(beam_cv)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_DEFECTS)
+    ADD_SUBDIRECTORY(beam_defects)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_DEPTH)
+    ADD_SUBDIRECTORY(beam_depth)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_UTILS)
+    ADD_SUBDIRECTORY(beam_utils)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_CONTAINERS)
+    ADD_SUBDIRECTORY(beam_containers)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_FILTERING)
+    ADD_SUBDIRECTORY(beam_filtering)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_MAPPING)
+    ADD_SUBDIRECTORY(beam_mapping)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_MATCHING)
+    ADD_SUBDIRECTORY(beam_matching)
+ENDIF()
+IF(NOT CMAKE_IGNORE_BEAM_OPTIMIZATION)
+    ADD_SUBDIRECTORY(beam_optimization)
+ENDIF()
 
 # Documentation
 SET(BEAM_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -91,6 +88,7 @@ EXPORT(EXPORT beamTargets NAMESPACE beam:: FILE beamTargets.cmake)
 
 # Install the export file
 INSTALL(EXPORT beamTargets NAMESPACE beam:: DESTINATION "${INSTALL_CMAKE_DIR}")
+
 
 # Create the beamConfig and beamConfigVersion files
 
@@ -136,3 +134,8 @@ IF(EXPORT_BUILD)
         "${CMAKE_CURRENT_BINARY_DIR}/beamConfig.cmake"
         INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}")
 ENDIF(EXPORT_BUILD)
+
+# install dependencies cmake file 
+INSTALL(FILES
+    "cmake/GetBeamDependencies.cmake"
+    DESTINATION "${INSTALL_CMAKE_DIR}/cmake")
