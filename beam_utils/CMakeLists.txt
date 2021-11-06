@@ -1,13 +1,18 @@
 PROJECT(beam_utils)
 
+# NOTE: OpenCV and Ceres are not needed here, but useful to include the dependencies
+#       so that packages that depend on libbeam do not have conflicts with different
+#       versions of OpenCV and Ceres
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
+    OpenCV::OpenCV
     Eigen3::Eigen
     roscpp::roscpp
     PCL::PCL
     Boost::boost
     nlohmann_json::nlohmann_json
     gflags
+    ceres 
   SOURCES
     src/math.cpp
     src/time.cpp

@@ -3,7 +3,6 @@ PROJECT(beam_calibration)
 SET(PROJECT_DEPENDS 
     beam::utils
     tf2::tf2
-    OpenCV::OpenCV
   )
 
 SET(PROJECT_SOURCES
