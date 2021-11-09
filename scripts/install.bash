@@ -3,118 +3,190 @@ set -e
 # This script installs and compiles libbeam
 # Running this script with some parts already installed should be fine
 
-# Specify location of installation scripts
-INSTALL_SCRIPTS=$"$HOME/software/beam_install_scripts"
+# Get important directories
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SRC_DIR="${SCRIPT_DIR//'libbeam/scripts'}"
 
-# Ensure that Beam install scripts are installed
-if [ -d $INSTALL_SCRIPTS ]; then
-    echo "Beam install scripts found"
-else
-    echo "Cloning Beam install scripts into:"
-    echo $INSTALL_SCRIPTS
-    echo "Make sure they are not install somewhere else."
-    if [ ! -d "$HOME/software" ]; then
-      mkdir -p "$HOME/software"
-    fi
-    git clone git@github.com:BEAMRobotics/beam_install_scripts.git $INSTALL_SCRIPTS
-    echo "Success"
-fi
+# set global variables
+INSTALL_LIBBEAM_LOCALLY=0
+INSTALL_OPENCV4=1
+INSTALL_OPENCV4_LOCALLY=0
 
-# Set the repo directory as an environment variable
-export REPO_DIR=$(dirname "$SCRIPT_DIR")
-
-# get UBUNTU_CODENAME, ROS_DISTRO, CATKIN_DIR
-source $INSTALL_SCRIPTS/identify_environment.bash
-
-: ${SYMLINKS_REPO_DIR:=$REPO_DIR}
-
+IGNORE_BEAM_CALIBRATION=0
+IGNORE_BEAM_COLORIZE=0
+IGNORE_BEAM_CONTAINERS=0
+IGNORE_BEAM_CV=0
+IGNORE_BEAM_DEFECTS=0
+IGNORE_BEAM_DEPTH=0
+IGNORE_BEAM_FILTERING=0
+IGNORE_BEAM_MAPPING=0
+IGNORE_BEAM_MATCHING=0
+IGNORE_BEAM_OPTIMIZATION=0
+IGNORE_BEAM_UTILS=0
 
 main()
 {
-    install_routine $1
+
+    set_inputs $@
+    menu
+    #install_routine 
 }
 
-install_routine()
+set_inputs()
 {
-    sudo -v
-    if [ -z "$ARG_NO_MENU" ] && [ -z "$CONTINUOUS_INTEGRATION" ]; then
-        menu
-    fi
-  
-    # Import functions to install required dependencies
-    source $INSTALL_SCRIPTS/beam_dependencies_install.bash
-    install_gcc7
-    install_gflags
-    
-    # source catkin setup script
-    source $INSTALL_SCRIPTS/catkin_setup.bash
-    
-    unlink_routine
-    catkin_clean
+    for ARGUMENT in "$@"
+    do
+        KEY=$(echo $ARGUMENT | cut -f1 -d=)
+        VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
 
-    bash $INSTALL_SCRIPTS/ros_install.bash
-    create_catkin_ws
+        case "$KEY" in
+                INSTALL_LIBBEAM_LOCALLY) INSTALL_LIBBEAM_LOCALLY=${VALUE} ;;
+                INSTALL_OPENCV4) INSTALL_OPENCV4=${VALUE} ;;    
+                INSTALL_OPENCV4_LOCALLY) INSTALL_OPENCV4_LOCALLY=${VALUE} ;;     
+                *) echo "INVALID ARGUMENT.";   
+        esac    
+    done
 
-    link_routine
-    bash $INSTALL_SCRIPTS/rosdeps_install.bash
-
-    # Ensure wget is available
-    sudo apt-get install -qq wget  > /dev/null
-    # Install dependencies
-    install_cmake
-    install_catch2
-    install_eigen3
-    #install_ceres
-    install_pcl
-    install_geographiclib
-    #install_gtsam
-    #install_libwave
-    install_json
-    install_ladybug_sdk
-    install_dbow3
-
-    if [[ $1 = 'robot' ]]; then
-        echo 'Installing drivers for robot'
-        cd $( dirname "$REPO_DIR")
-        if [ -d 'ros_drivers' ]; then
-            echo 'pulling most recent master'
-            cd ros_drivers
-            git pull origin master
-            cd ..
-        else
-            echo "Cloning Beam install scripts"
-            git clone git@github.com:BEAMRobotics/ros_drivers.git
-        fi
-        bash $INSTALL_SCRIPTS/robot_hardware_install.bash
+    if(( $INSTALL_LIBBEAM_LOCALLY != 1 && $INSTALL_LIBBEAM_LOCALLY != 0 ))
+    then
+        echo "Invalid INSTALL_LIBBEAM_LOCALLY parameter. Required: 1 or 0. Exiting"
+        exit
     fi
 
-    compile
+    if(( $INSTALL_OPENCV4 != 1 && $INSTALL_OPENCV4 != 0 ))
+    then
+        echo "Invalid INSTALL_OPENCV4 parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
 
-    echo "Beam robotics installation completed. Please open a new terminal to re-source environment variables."
-    if [ -z "$CONTINUOUS_INTEGRATION" ]; then
-        notify-send "Beam Robotics installation completed"
+    if(( $INSTALL_OPENCV4_LOCALLY != 1 && $INSTALL_OPENCV4_LOCALLY != 0 ))
+    then
+        echo "Invalid INSTALL_OPENCV4_LOCALLY parameter. Required: 1 or 0. Exiting"
+        exit
     fi
 }
 
 menu()
 {
-    echo "Running this script will delete your /build /devel and /logs folders in your $CATKIN_DIR directory and re-build them."
-    echo "Also, this script assumes the following things:"
-    echo "  - Your ROS version is $ROS_DISTRO"
-    echo "  - Your catkin workspace is located at: $CATKIN_DIR"
-    echo "  - Catkin tools is installed"
-    echo "  - Your bashrc sources $CATKIN_DIR/devel/setup.bash"
-    echo "If any of the above assumptions are not true, the following script will make them so."
-    echo "Do you wish to continue? (y/n):"
+    echo "* Running this script will install libbeam and all dependencies to your system "
+    echo "  if they are not currently available including:"
+    echo "  TODO: list dependencies"
+    echo ""
+    echo "* libbeam depends on OpenCV4 for certain modules (e.g., beam_cv), however, "
+    echo "  if you are not using all modules, you may be able to get away with older versions. "
+    echo "  To disable OpenCV4 install set the parameter INSTALL_OPENCV4=0"
+    echo ""
+    echo "* You may chose to install libbeam and certain dependencies locally by setting the "
+    echo "  appropriate params (see below). Installing these locally means that we assume "
+    echo "  libbeam has been cloned to some catkin workspace (e.g., ~/catkin_ws/src/) and "
+    echo "  therefore we will not run make install on any of those packages. Instead, you "
+    echo "  will need to run catkin build in the workspace after this script has completed."
+    echo "  See the source directory below for where your the dependent source code will be saved."
+    echo ""
+    echo "* Parameters are currently set to:"
+    echo "  INSTALL_LIBBEAM_LOCALLY: $INSTALL_LIBBEAM_LOCALLY"
+    echo "  INSTALL_OPENCV4: $INSTALL_OPENCV4"
+    echo "  INSTALL_OPENCV4_LOCALLY: $INSTALL_OPENCV4_LOCALLY"
+    echo ""
+    echo "* Found script directory: $SCRIPT_DIR"
+    echo "* Set source directory to: $SRC_DIR"
+    echo ""
+    echo "Would you like to continue? (y/n)"
 
     while read ans; do
         case "$ans" in
             y) break;;
             n) exit; break;;
-            *) echo "(y/n):";;
+            *) echo "Invalid input (y/n):";;
         esac
     done
 }
 
-main $1
+install_routine()
+{
+    sudo -v
+
+    # Ensure wget is available
+    sudo apt-get install -qq wget  > /dev/null
+
+    get_install_scripts
+
+    # get UBUNTU_CODENAME and ROS_DISTRO
+    source $INSTALL_SCRIPTS/identify_environment.bash
+
+    # Import functions to install required dependencies, and get ROS distro and ubuntu name
+    source $INSTALL_SCRIPTS/beam_dependencies_install.bash
+        
+    bash $INSTALL_SCRIPTS/ros_install.bash
+
+    bash $INSTALL_SCRIPTS/rosdeps_install.bash
+
+    # Install dependencies
+    install_catch2
+    install_eigen3
+    install_ceres
+    install_pcl
+    install_json
+    install_gflags
+
+    if(( $INSTALL_OPENCV4 == 0 ))
+    then
+        echo "Not installing opencv4"
+    else 
+        echo "installing opencv4"
+        export OPENCV_SRC_PATH=$SRC_DIR
+        export INSTALL_OPENCV4_LOCALLY=$INSTALL_OPENCV4_LOCALLY
+        install_opencv4
+    fi
+
+    if(( $INSTALL_LIBBEAM_LOCALLY == 1 ))
+    then
+        echo "Not installing libbeam to system. "
+        echo "You will need to build your catkin workspace."
+    else 
+        echo "building libbeam"
+        cd $SRC_DIR
+        cd libbeam
+        mkdir -p build 
+        cd build
+        cmake .. -DCMAKE_IGNORE_BEAM_CALIBRATION=$IGNORE_BEAM_CALIBRATION \
+        -DCMAKE_IGNORE_BEAM_COLORIZE=$IGNORE_BEAM_COLORIZE \
+        -DCMAKE_IGNORE_BEAM_CONTAINERS=$IGNORE_BEAM_CONTAINERS \
+        -DCMAKE_IGNORE_BEAM_CV=$IGNORE_BEAM_CV \
+        -DCMAKE_IGNORE_BEAM_DEFECTS=$IGNORE_BEAM_DEFECTS \
+        -DCMAKE_IGNORE_BEAM_DEPTH=$IGNORE_BEAM_DEPTH \
+        -DCMAKE_IGNORE_BEAM_FILTERING=$IGNORE_BEAM_FILTERING \
+        -DCMAKE_IGNORE_BEAM_MAPPING=$IGNORE_BEAM_MAPPING \
+        -DCMAKE_IGNORE_BEAM_MATCHING=$IGNORE_BEAM_MATCHING \
+        -DCMAKE_IGNORE_BEAM_OPTIMIZATION=$IGNORE_BEAM_OPTIMIZATION \
+        -DCMAKE_IGNORE_BEAM_UTILS=$IGNORE_BEAM_UTILS
+        make_with_progress -j$NUM_PROCESSORS
+        
+        echo "installing libbeam to system"
+        sudo make install > /dev/null
+
+    fi
+
+    echo "libbeam installation completed. "
+    echo "Please run the following steps if appropriate:"
+    echo "* open a new terminal to re-source environment variables (if the bashrc was changed)"
+    echo "* build your catkin workspace using: cd /path_to/catkin_ws && catkin build"
+}
+
+get_install_scripts()
+{
+    # Ensure that Beam install scripts are installed
+    INSTALL_SCRIPTS = SRC_DIR + "/beam_install_scripts"
+    if [ -d $INSTALL_SCRIPTS ]; then
+        echo "Beam install scripts found. Pulling most recent version of master."
+        cd $INSTALL_SCRIPTS 
+        git pull origin master
+    else
+        echo "Cloning Beam install scripts into:"
+        echo $SRC_DIR
+        cd $SRC_DIR 
+        git clone https://github.com/BEAMRobotics/beam_install_scripts.git
+    fi
+}
+
+main $@
