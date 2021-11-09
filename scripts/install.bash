@@ -5,7 +5,7 @@ set -e
 
 # Get important directories
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SRC_DIR="${SCRIPT_DIR//'libbeam/scripts'}"
+SRC_DIR="${SCRIPT_DIR//'/libbeam/scripts'}"
 
 # set global variables
 INSTALL_LIBBEAM_LOCALLY=0
@@ -26,10 +26,9 @@ IGNORE_BEAM_UTILS=0
 
 main()
 {
-
     set_inputs $@
     menu
-    #install_routine 
+    install_routine 
 }
 
 set_inputs()
@@ -41,8 +40,19 @@ set_inputs()
 
         case "$KEY" in
                 INSTALL_LIBBEAM_LOCALLY) INSTALL_LIBBEAM_LOCALLY=${VALUE} ;;
-                INSTALL_OPENCV4) INSTALL_OPENCV4=${VALUE} ;;    
-                INSTALL_OPENCV4_LOCALLY) INSTALL_OPENCV4_LOCALLY=${VALUE} ;;     
+                INSTALL_OPENCV4) INSTALL_OPENCV4=${VALUE} ;;
+                INSTALL_OPENCV4_LOCALLY) INSTALL_OPENCV4_LOCALLY=${VALUE} ;;
+                IGNORE_BEAM_CALIBRATION) IGNORE_BEAM_CALIBRATION=${VALUE} ;;
+                IGNORE_BEAM_COLORIZE) IGNORE_BEAM_COLORIZE=${VALUE} ;;
+                IGNORE_BEAM_CONTAINERS) IGNORE_BEAM_CONTAINERS=${VALUE} ;;
+                IGNORE_BEAM_CV) IGNORE_BEAM_CV=${VALUE} ;;
+                IGNORE_BEAM_DEFECTS) IGNORE_BEAM_DEFECTS=${VALUE} ;;
+                IGNORE_BEAM_DEPTH) IGNORE_BEAM_DEPTH=${VALUE} ;;
+                IGNORE_BEAM_FILTERING) IGNORE_BEAM_FILTERING=${VALUE} ;;
+                IGNORE_BEAM_MAPPING) IGNORE_BEAM_MAPPING=${VALUE} ;;
+                IGNORE_BEAM_MATCHING) IGNORE_BEAM_MATCHING=${VALUE} ;;
+                IGNORE_BEAM_OPTIMIZATION) IGNORE_BEAM_OPTIMIZATION=${VALUE} ;;
+                INSTALL_OPENCV4) IGNORE_BEAM_UTILS=${VALUE} ;;
                 *) echo "INVALID ARGUMENT.";   
         esac    
     done
@@ -64,13 +74,86 @@ set_inputs()
         echo "Invalid INSTALL_OPENCV4_LOCALLY parameter. Required: 1 or 0. Exiting"
         exit
     fi
+
+    if(( $IGNORE_BEAM_CALIBRATION != 1 && $IGNORE_BEAM_CALIBRATION != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_CALIBRATION parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+    
+    if(( $IGNORE_BEAM_COLORIZE != 1 && $IGNORE_BEAM_COLORIZE != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_COLORIZE parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_CONTAINERS != 1 && $IGNORE_BEAM_CONTAINERS != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_CONTAINERS parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_CV != 1 && $IGNORE_BEAM_CV != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_CV parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_DEFECTS != 1 && $IGNORE_BEAM_DEFECTS != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_DEFECTS parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_DEPTH != 1 && $IGNORE_BEAM_DEPTH != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_DEPTH parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_FILTERING != 1 && $IGNORE_BEAM_FILTERING != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_FILTERING parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_MAPPING != 1 && $IGNORE_BEAM_MAPPING != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_MAPPING parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_MATCHING != 1 && $IGNORE_BEAM_MATCHING != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_MATCHING parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_OPTIMIZATION != 1 && $IGNORE_BEAM_OPTIMIZATION != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_OPTIMIZATION parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $IGNORE_BEAM_UTILS != 1 && $IGNORE_BEAM_UTILS != 0 ))
+    then
+        echo "Invalid IGNORE_BEAM_UTILS parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
 }
 
 menu()
 {
     echo "* Running this script will install libbeam and all dependencies to your system "
     echo "  if they are not currently available including:"
-    echo "  TODO: list dependencies"
+    echo "  * ROS (and all required ROS depenencies)"
+    echo "  * Catch2"
+    echo "  * Eigen3"
+    echo "  * Ceres"
+    echo "  * PCL"
+    echo "  * OpenCV4"
+    echo "  * Gflags"
+    echo "  * nlohmann json"
     echo ""
     echo "* libbeam depends on OpenCV4 for certain modules (e.g., beam_cv), however, "
     echo "  if you are not using all modules, you may be able to get away with older versions. "
@@ -176,7 +259,7 @@ install_routine()
 get_install_scripts()
 {
     # Ensure that Beam install scripts are installed
-    INSTALL_SCRIPTS = SRC_DIR + "/beam_install_scripts"
+    INSTALL_SCRIPTS="$SRC_DIR/beam_install_scripts"
     if [ -d $INSTALL_SCRIPTS ]; then
         echo "Beam install scripts found. Pulling most recent version of master."
         cd $INSTALL_SCRIPTS 
