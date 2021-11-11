@@ -43,6 +43,7 @@ set_inputs()
                 INSTALL_LIBBEAM_LOCALLY) INSTALL_LIBBEAM_LOCALLY=${VALUE} ;;
                 INSTALL_OPENCV4) INSTALL_OPENCV4=${VALUE} ;;
                 INSTALL_OPENCV4_LOCALLY) INSTALL_OPENCV4_LOCALLY=${VALUE} ;;
+                INSTALL_CERES) INSTALL_CERES=${VALUE} ;;
                 IGNORE_BEAM_CALIBRATION) IGNORE_BEAM_CALIBRATION=${VALUE} ;;
                 IGNORE_BEAM_COLORIZE) IGNORE_BEAM_COLORIZE=${VALUE} ;;
                 IGNORE_BEAM_CONTAINERS) IGNORE_BEAM_CONTAINERS=${VALUE} ;;
@@ -67,6 +68,12 @@ set_inputs()
     if(( $INSTALL_OPENCV4 != 1 && $INSTALL_OPENCV4 != 0 ))
     then
         echo "Invalid INSTALL_OPENCV4 parameter. Required: 1 or 0. Exiting"
+        exit       
+    fi
+
+    if(( $INSTALL_CERES != 1 && $INSTALL_CERES != 0 ))
+    then
+        echo "Invalid INSTALL_CERES parameter. Required: 1 or 0. Exiting"
         exit       
     fi
 
