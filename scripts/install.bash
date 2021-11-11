@@ -11,6 +11,7 @@ SRC_DIR="${SCRIPT_DIR//'/libbeam/scripts'}"
 INSTALL_LIBBEAM_LOCALLY=0
 INSTALL_OPENCV4=1
 INSTALL_OPENCV4_LOCALLY=0
+INSTALL_CERES=1
 
 IGNORE_BEAM_CALIBRATION=0
 IGNORE_BEAM_COLORIZE=0
@@ -159,6 +160,9 @@ menu()
     echo "  if you are not using all modules, you may be able to get away with older versions. "
     echo "  To disable OpenCV4 install set the parameter INSTALL_OPENCV4=0"
     echo ""
+    echo "* You may also chose to not install ceres if you are using modules that do not "
+    echo "  depend on ceres, by setting INSTALL_CERES=0 "
+    echo ""
     echo "* You may chose to install libbeam and certain dependencies locally by setting the "
     echo "  appropriate params (see below). Installing these locally means that we assume "
     echo "  libbeam has been cloned to some catkin workspace (e.g., ~/catkin_ws/src/) and "
@@ -170,6 +174,7 @@ menu()
     echo "  INSTALL_LIBBEAM_LOCALLY: $INSTALL_LIBBEAM_LOCALLY"
     echo "  INSTALL_OPENCV4: $INSTALL_OPENCV4"
     echo "  INSTALL_OPENCV4_LOCALLY: $INSTALL_OPENCV4_LOCALLY"
+    echo "  INSTALL_CERES: $INSTALL_CERES"
     echo ""
     echo "* Found script directory: $SCRIPT_DIR"
     echo "* Set source directory to: $SRC_DIR"
@@ -207,10 +212,17 @@ install_routine()
     # Install dependencies
     install_catch2
     install_eigen3
-    install_ceres
     install_pcl
     install_json
     install_gflags
+
+    if(( $INSTALL_CERES == 0 ))
+    then
+        echo "Not installing ceres"
+    else 
+        echo "installing ceres"
+        install_ceres
+    fi
 
     if(( $INSTALL_OPENCV4 == 0 ))
     then
