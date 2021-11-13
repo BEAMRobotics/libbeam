@@ -10,10 +10,12 @@ FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(roscpp REQUIRED)
 FIND_PACKAGE(tf2 REQUIRED)
 FIND_PACKAGE(rosbag REQUIRED)
-FIND_PACKAGE(Ceres 1.12 REQUIRED)
+		
+# Ceres is only required for certain modules. Let this be optional
+FIND_PACKAGE(Ceres 1.12 QUIET)
 
 # OpenCV4 is only required when building: cv, colorize, containers, 
-# defects, depth. Let the use decide when to use the default opencv
+# defects, depth. Let the user decide when to use the default opencv
 IF(NOT CMAKE_IGNORE_BEAM_OPENCV4)
     FIND_PACKAGE(OpenCV 4.5.2 REQUIRED) 
     INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ImportOpenCV.cmake)

@@ -232,9 +232,11 @@ install_routine()
         install_ceres
     fi
 
+    IGNORE_BEAM_OPENCV4=0
     if(( $INSTALL_OPENCV4 == 0 ))
     then
         echo "Not installing opencv4"
+	IGNORE_BEAM_OPENCV4=1
     else 
         echo "installing opencv4"
         export OPENCV_SRC_PATH=$SRC_DIR
@@ -252,7 +254,8 @@ install_routine()
         cd libbeam
         mkdir -p build 
         cd build
-        cmake .. -DCMAKE_IGNORE_BEAM_CALIBRATION=$IGNORE_BEAM_CALIBRATION \
+        cmake .. -DCMAKE_IGNORE_BEAM_OPENCV4=$IGNORE_BEAM_OPENCV4 \ 
+	-DCMAKE_IGNORE_BEAM_CALIBRATION=$IGNORE_BEAM_CALIBRATION \
         -DCMAKE_IGNORE_BEAM_COLORIZE=$IGNORE_BEAM_COLORIZE \
         -DCMAKE_IGNORE_BEAM_CONTAINERS=$IGNORE_BEAM_CONTAINERS \
         -DCMAKE_IGNORE_BEAM_CV=$IGNORE_BEAM_CV \
