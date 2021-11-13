@@ -217,6 +217,7 @@ install_routine()
     bash $INSTALL_SCRIPTS/rosdeps_install.bash
 
     # Install dependencies
+    install_cmake
     install_catch2
     install_eigen3
     install_pcl
