@@ -1,8 +1,5 @@
 PROJECT(beam_utils)
 
-# NOTE: OpenCV and Ceres are not needed here, but useful to include the dependencies
-#       so that packages that depend on libbeam do not have conflicts with different
-#       versions of OpenCV and Ceres
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     OpenCV::OpenCV
