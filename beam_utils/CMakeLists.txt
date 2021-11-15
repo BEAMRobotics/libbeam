@@ -12,7 +12,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     Boost::boost
     nlohmann_json::nlohmann_json
     gflags
-    ceres 
   SOURCES
     src/math.cpp
     src/time.cpp

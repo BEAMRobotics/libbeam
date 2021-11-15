@@ -4,6 +4,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::utils
     beam::calibration
+    ceres 
   SOURCES
 )
 
