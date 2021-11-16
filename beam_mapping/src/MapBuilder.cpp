@@ -12,29 +12,27 @@
 
 namespace beam_mapping {
 
-MapBuilder::MapBuilder(const std::string& config_file) {
-  config_file_ = config_file;
-  poses_moving_frame_ = "";
-  poses_fixed_frame_ = "";
-  LoadConfigFromJSON(config_file);
+MapBuilder::MapBuilder(const std::string& config_file,
+                       const std::string& pose_file,
+                       const std::string& output_directory,
+                       const std::string& extrinsics,
+                       const std::string& poses_moving_frame)
+    : config_file_(config_file),
+      pose_file_path_(pose_file),
+      save_dir_(output_directory),
+      extrinsics_file_(extrinsics),
+      poses_moving_frame_(poses_moving_frame) {
+  LoadConfigFromJSON();
 }
 
-void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
-  BEAM_INFO("Loading MapBuilder config file: {}", config_file);
+void MapBuilder::LoadConfigFromJSON() {
+  BEAM_INFO("Loading MapBuilder config file: {}", config_file_);
   nlohmann::json J;
-  if (!beam::ReadJson(config_file, J)) {
+  if (!beam::ReadJson(config_file_, J)) {
     throw std::runtime_error{"Invalid json"};
   }
 
   try {
-    pose_file_path_ = J["pose_file"];
-    bag_file_path_ = J["bag_file_path"];
-    bag_file_name_ = bag_file_path_.substr(bag_file_path_.rfind("/") + 1,
-                                           bag_file_path_.rfind(".bag"));
-    save_dir_ = J["save_directory"];
-    extrinsics_file_ = J["extrinsics_file"];
-    poses_moving_frame_ = J["moving_frame"];
-    poses_fixed_frame_ = J["fixed_frame"];
     intermediary_map_size_ = J["intermediary_map_size"];
     min_translation_m_ = J["min_translation_m"];
     min_rotation_deg_ = J["min_rotation_deg"];
@@ -66,34 +64,8 @@ void MapBuilder::LoadConfigFromJSON(const std::string& config_file) {
   }
 }
 
-void MapBuilder::OverrideBagFile(const std::string& bag_file) {
-  bag_file_path_ = bag_file;
-  bag_file_name_ = bag_file_path_.substr(bag_file_path_.rfind("/") + 1,
-                                         bag_file_path_.rfind(".bag"));
-}
-
-void MapBuilder::OverridePoseFile(const std::string& pose_file) {
-  pose_file_path_ = pose_file;
-}
-
-void MapBuilder::OverrideExtrinsicsFile(const std::string& extrinsics_file) {
-  extrinsics_file_ = extrinsics_file;
-}
-
-void MapBuilder::OverrideOutputDir(const std::string& output_dir) {
-  save_dir_ = output_dir;
-}
-
-void MapBuilder::LoadTrajectory(const std::string& pose_file) {
-  std::string pose_type = pose_file_path_.substr(pose_file_path_.rfind("."),
-                                                 pose_file_path_.size());
-  if (pose_type == ".json") {
-    slam_poses_.LoadFromJSON(pose_file);
-  } else if (pose_type == ".ply") {
-    slam_poses_.LoadFromPLY(pose_file);
-  } else if (pose_type == ".pcd") {
-    slam_poses_.LoadFromPCD(pose_file);
-  } else {
+void MapBuilder::LoadTrajectory() {
+  if (!slam_poses_.LoadFromFile(pose_file_path_)) {
     BEAM_CRITICAL(
         "Invalid pose file type. Valid extensions: .ply, .json, .pcd");
     throw std::invalid_argument{
@@ -104,33 +76,26 @@ void MapBuilder::LoadTrajectory(const std::string& pose_file) {
     poses_moving_frame_ = slam_poses_.GetMovingFrame();
   }
 
-  if (poses_fixed_frame_.empty()) {
-    poses_fixed_frame_ = slam_poses_.GetFixedFrame();
+  if (poses_moving_frame_.empty()) {
+    BEAM_CRITICAL("You must provide the moving frame name of the poses either "
+                  "by adding it in the poses file, or adding it in the "
+                  "MapBuilder constructor. Exiting.");
+    throw std::runtime_error{
+        "Set moving frame in map builder before building map."};
   }
 
-  if (slam_poses_.GetBagName() != bag_file_name_) {
-    BEAM_WARN("Bag file name from MapBuilder config file is not the same "
-              "as the name listed in the pose file.\nMapBuilderConfig: "
-              "{}\nPoseFile: {}",
-              bag_file_name_, slam_poses_.GetBagName());
+  if (map_frame_.empty()) { map_frame_ = slam_poses_.GetFixedFrame(); }
+
+  if (map_frame_.empty()) {
+    BEAM_WARN("No fixed frame set in poses file, using 'map'");
+    map_frame_ = "map";
   }
 
   extrinsics_.LoadJSON(extrinsics_file_);
 
-  if (poses_moving_frame_ == "") {
-    BEAM_CRITICAL("Set moving frame in map builder before building map.");
-    throw std::runtime_error{
-        "Set moving frame in map builder before building map."};
-  } else if (poses_fixed_frame_ == "") {
-    BEAM_CRITICAL("Set fixed frame in map builder before building map");
-    throw std::runtime_error{
-        "Set fixed frame in map builder before building map"};
-  }
-
-  int num_poses = slam_poses_.GetTimeStamps().size();
-  for (int k = 0; k < num_poses; k++) {
+  for (size_t k = 0; k < slam_poses_.GetTimeStamps().size(); k++) {
     trajectory_.AddTransform(Eigen::Affine3d(slam_poses_.GetPoses()[k]),
-                             poses_fixed_frame_, poses_moving_frame_,
+                             map_frame_, poses_moving_frame_,
                              slam_poses_.GetTimeStamps()[k]);
   }
 }
@@ -157,10 +122,9 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
       (scan_time > slam_poses_.GetTimeStamps().back())) {
     return;
   }
-  std::string to_frame = poses_fixed_frame_;
   std::string from_frame = poses_moving_frame_;
   Eigen::Matrix4d scan_pose_current =
-      trajectory_.GetTransformEigen(to_frame, from_frame, scan_time).matrix();
+      trajectory_.GetTransformEigen(map_frame_, from_frame, scan_time).matrix();
   save_scan = beam::PassedMotionThreshold(scan_pose_last_, scan_pose_current,
                                           min_rotation_deg_, min_translation_m_,
                                           true, false, false);
@@ -208,7 +172,6 @@ void MapBuilder::LoadScans(uint8_t sensor_number) {
 }
 
 void MapBuilder::GenerateMap(uint8_t sensor_number) {
-  std::string fixed_frame = poses_fixed_frame_;
   std::string moving_frame = poses_moving_frame_;
   std::string sensor_frame = sensors_[sensor_number].frame;
   PointCloud::Ptr scan_aggregate = std::make_shared<PointCloud>();
@@ -284,24 +247,8 @@ void MapBuilder::SaveMaps() {
   }
 }
 
-void MapBuilder::SetPosesMovingFrame(std::string& moving_frame) {
-  poses_moving_frame_ = moving_frame;
-}
-
-std::string MapBuilder::GetPosesMovingFrame() {
-  return poses_moving_frame_;
-}
-
-void MapBuilder::SetPosesFixedFrame(std::string& fixed_frame) {
-  poses_fixed_frame_ = fixed_frame;
-}
-
-std::string MapBuilder::GetPosesFixedFrame() {
-  return poses_fixed_frame_;
-}
-
 void MapBuilder::BuildMap() {
-  LoadTrajectory(pose_file_path_);
+  LoadTrajectory();
   for (uint8_t i = 0; i < sensors_.size(); i++) {
     scan_pose_last_ = Eigen::Matrix4d::Identity();
     interpolated_poses_.Clear();

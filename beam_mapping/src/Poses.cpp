@@ -85,6 +85,24 @@ void Poses::AddSinglePose(const Eigen::Matrix4d& T_FIXED_MOVING) {
   poses_.push_back(T_FIXED_MOVING);
 }
 
+bool Poses::LoadFromFile(const std::string& input_pose_file_path) {
+  std::string pose_type = input_pose_file_path.substr(
+      input_pose_file_path.rfind("."), input_pose_file_path.size());
+
+  if (pose_type == ".json") {
+    LoadFromJSON(input_pose_file_path);
+  } else if (pose_type == ".ply") {
+    LoadFromPLY(input_pose_file_path);
+  } else if (pose_type == ".txt") {
+    LoadFromTXT(input_pose_file_path);
+  } else if (pose_type == ".pcd") {
+    LoadFromPCD(input_pose_file_path);
+  } else {
+    return false;
+  }
+  return true;
+}
+
 void Poses::WriteToJSON(const std::string& output_dir) const {
   if (poses_.size() != time_stamps_.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "

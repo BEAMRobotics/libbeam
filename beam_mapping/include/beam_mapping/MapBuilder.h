@@ -11,9 +11,9 @@
 #include <rosbag/view.h>
 
 #include <beam_calibration/TfTree.h>
+#include <beam_filtering/Utils.h>
 #include <beam_mapping/Poses.h>
 #include <beam_utils/math.h>
-#include <beam_filtering/Utils.h>
 
 namespace beam_mapping {
 /** @addtogroup mapping
@@ -34,10 +34,26 @@ class MapBuilder {
 
 public:
   /**
-   * @brief constructor which sets some defaults
+   * @brief main constructor
    * @param config_file full path to configuration file
+   * @param pose_file full path to pose file. For format, see
+   * libbeam/beam_mapping/tests/test_data/PosesTests. You can create this using the bag_to_poses executable
+   * @param output_directory full path to output directory to save resutls. This
+   * must exist.
+   * @param extrinsics json file containing extrinsics. For format, see
+   * libbeam/beam_mapping/tests/test_data/MapBuilderTests/extrinsics.json
+   * @param poses_moving_frame optional moving frame associated with the poses.
+   * This needs to match a frame in the extrinsics. If not provided, it will use
+   * the frame from the poses file. Otherwise, it will override.
    */
-  MapBuilder(const std::string& config_file);
+  MapBuilder(const std::string& config_file, const std::string& pose_file,
+             const std::string& output_directory, const std::string& extrinsics,
+             const std::string& poses_moving_frame = "");
+
+  /**
+   * @brief delete default constructor
+   */
+  MapBuilder() = delete;
 
   /**
    * @brief Default destructor
@@ -45,82 +61,15 @@ public:
   ~MapBuilder() = default;
 
   /**
-   * @brief for overriding the bag file specified in the config file. This is
-   used when you want to use a different bag file from what is specified in the
-   config file. E.g., with testing, you want to use a local reference to the bag
-   so we cannot specify the full path in the config file.
-   * @param bag_file full path to new bag file
-   */
-  void OverrideBagFile(const std::string& bag_file);
-
-  /**
-   * @brief for overriding the poses file specified in the config file. See
-   OverrideBagFile for explanation as to why this might be needed.
-   * @param poses_file full path to new poses file
-   */
-  void OverridePoseFile(const std::string& poses_file);
-
-  /**
-   * @brief for overriding the extrinsics file specified in the config file. See
-   OverrideBagFile for explanation as to why this might be needed.
-   * @param extrinsics_file full path to new extrinsics file
-   */
-  void OverrideExtrinsicsFile(const std::string& extrinsics_file);
-
-  /**
-   * @brief for overriding the output directory. See
-   OverrideBagFile for explanation as to why this might be needed.
-   * @param output_dir output directory
-   */
-  void OverrideOutputDir(const std::string& output_dir);
-
-  /**
    * @brief performs the map building
    */
   void BuildMap();
 
-  /**
-   * @brief sets moving frame for poses
-   * @param moving_frame
-   */
-  void SetPosesMovingFrame(std::string& moving_frame);
-
-  /**
-   * @brief returns moving frame for poses
-   * @return poses_moving_frame_
-   */
-  std::string GetPosesMovingFrame();
-
-  /**
-   * @brief sets fixed frame for poses
-   * @param fixed_frame
-   */
-  void SetPosesFixedFrame(std::string& fixed_frame);
-
-  /**
-   * @brief returns fixed frame for poses
-   * @return poses_fixed_frame_
-   */
-  std::string GetPosesFixedFrame();
-
-  /**
-   * @brief gets the path to the bag file
-   * return bag_file_path_
-   */
-  std::string GetBagFile() { return bag_file_path_; }
-
-  /**
-   * @brief gets the path to the save directory
-   * return save_dir_
-   */
-  std::string GetSaveDir() { return save_dir_; }
-
 private:
   /**
    * @brief method to load poses from json and extrinsics
-   * @param poses_file full path to poses file
    */
-  void LoadTrajectory(const std::string& poses_file);
+  void LoadTrajectory();
 
   /**
    * @brief method for cropping the input point cloud
@@ -132,9 +81,8 @@ private:
 
   /**
    * @brief method to load configuration from json
-   * @param config_file full path to configuration file
    */
-  void LoadConfigFromJSON(const std::string& config_file);
+  void LoadConfigFromJSON();
 
   /**
    * @brief processes a point cloud message by first checking if the pose has
@@ -143,7 +91,8 @@ private:
    * @param iter rosbag iterator
    * @param sensor_number
    */
-  void ProcessPointCloudMsg(rosbag::View::iterator& iter, uint8_t sensor_number);
+  void ProcessPointCloudMsg(rosbag::View::iterator& iter,
+                            uint8_t sensor_number);
 
   /**
    * @brief loads all the scans from a specific sensor and builds the scans and
@@ -163,13 +112,15 @@ private:
    */
   void SaveMaps();
 
-  // From Config file
-  std::string pose_file_path_;
-  std::string bag_file_path_;
-  std::string bag_file_name_;
-  std::string save_dir_;
+  // from constructor
   std::string config_file_;
+  std::string pose_file_path_;
+  std::string save_dir_;
+  std::string bag_file_path_;
   std::string extrinsics_file_;
+  std::string poses_moving_frame_;
+
+  // From Config file
   int intermediary_map_size_;
   double min_translation_m_;
   double min_rotation_deg_;
@@ -180,8 +131,7 @@ private:
   std::vector<beam_filtering::FilterParamsType> output_filters_;
 
   // New objects
-  std::string poses_moving_frame_;
-  std::string poses_fixed_frame_;
+  std::string map_frame_;
   beam_mapping::Poses slam_poses_;
   beam_mapping::Poses interpolated_poses_;
   beam_calibration::TfTree trajectory_;
