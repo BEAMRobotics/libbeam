@@ -5,8 +5,8 @@ libbeam is a library developed by the former [SDIC Lab](http://www.civil.uwaterl
 
 For questions, email one of the following maintainers:
 
-Alex Thoms: adthoms@uwaterloo.ca
-Nick Charron: nicholas.c.charron@gmail.com
+* Alex Thoms: adthoms@uwaterloo.ca
+* Nick Charron: nicholas.c.charron@gmail.com
 
 ## Installing 
 
@@ -65,3 +65,73 @@ Then you can include the headers in your .cpp and .hpp files, e.g.:
 `#include <beam_utils/math.h>`
 
 For a simple example use of libbeam which only uses certain modules, see: https://github.com/nickcharron/3d_map_builder
+
+## Modules
+
+We will briefly go over all available modules within libbeam:
+
+### beam_calibration 
+
+This module contains two parts: 
+
+1. camera models: We create an extensible class of cameras models with common implementations including pinhole, double sphere, Kanala Brandt, Cataditrophic and the Ladybug Camera (not this relies on the ladybug SDK which only works on Ubuntu 16 - so this is deprecated). We also provide a tool for converting images between camera models. 
+2. TfTree: for storing extrinsic calibrations, we create a TfTree object which is a wrapper around tf2::BufferCore with some useful extensions. For example, we allow different inputs and output (i.e., Eigen). We also allow for the case of inputting a frame that has two parents, which tf2 does not allow for. Lastly, we provide a simple way to read and write an extrinsics calibration tree from a json file.
+
+### beam_colorize
+
+This contains the tools needed to colorize a pointcloud map with image data, including a projection method and a raytrace method.
+
+### beam_containers
+
+This is a utilities class for storing different types of containers that are useful for other modules. For example, ImageBridge is a data structure for storing all data that was extracted from an image of a bridge including defect masks, IR and RGB raw images, and more. We also have LandmarkContainer and LandmarkMeasurement which are used for tasks such as SLAM and relocalization. And finally, we have a custom point type, PointBridge, that holds all defect information about a point on a bridge from an automated inspection (e.g., belonging to crack or delam)
+
+### beam_cv
+
+This module has all computer vision code needed for all other modules, or SLAM/Reloc code created outside libbeam. The major components are:
+
+* descriptors: abstract class definition for a descriptor, with several implementations (i.e., BEBLID, BRISK, ORB, SIFT)
+* detectors: abstract class definition for a detector, with several implementations (i.e., FASY, GFTT, ORB, SIFT)
+* geometry: some useful CV geometry algorithms including absolute pose estimation, non-linear pose refinement, relative pose estimation, and point triangulation
+* matchers: abstract class definition for methods of matching image features between image pairs, with specific implementation including: brute force, FLANN
+* trackers: abstract class definition for methods of tracking features between subsequent images in an image sequence, with specific implementations including: KLT and descriptor matching
+* Others: common conversions and utilities
+
+### beam_defects
+
+This module has classes that store different defect classes that have been back projected from an image to a pointcloud. We define an abstract defect class with common functionalities needed for each defect type (e.g., get size), with implementations of crack, spall, and delamination.
+
+### beam_depth
+
+This module contains a class representing depth maps, provifing the ability to extract them easily and perform operations on them given a camera model, point cloud and image. For example, we provide a depth completion algorithm to densify sparse depth maps produces from devices such as a lidar.
+
+### beam_filtering
+
+This module contains pointcloud filtering functionality. We define our own abstract class to give our specific desired user interface, and implement several functions including some that are direct wrapers over PCL, as well as custom filters and variations of PCL filters.
+
+### beam_mapping
+
+This module contains code that is useful for creating pointcloud maps from a set of poses and 3D data. We provide two classes:
+
+1. MapBuilder: this takes a bag with 3D data, extrinsics, and a pose file and creates a final pointcloud map
+2. Poses: this is a useful class for creating, storing, reading, and writing poses from say some SLAM output
+
+See: https://github.com/nickcharron/3d_map_builder
+
+### beam_matching
+
+This module performs scan matching (or scan registration, or point set registration) between pcl pointclouds. We define an abstract class with an interface designed for our needs, and implement various matching techniques including: [LOAM](https://www.ri.cmu.edu/pub_files/2014/7/Ji_LidarMapping_RSS2014_v8.pdf), iterative closest point, generalized iterative closest point, and the Normal Distributions Transform.
+
+### beam_optimization
+
+This module has tools for optimization that are useful for other modules, and inspection tasks including SLAM. We provide some ceres cost functions (i.e., camera reprojection cost, point to line cost, point to plane cost, pose prior cose) as well as a class for helping to load ceres params.
+
+### beam_utils
+
+This module is a general utilities module that has shared code between two or many of the other modules. Example types of utilities are:
+
+* angles utils
+* math utils
+* time utils
+* pointcloud utils
+* filesystem utils
+* logging utils
