@@ -115,7 +115,8 @@ TEST_CASE("Test PLY2 read and write functionality") {
   REQUIRE(stamps_read.size() == transforms_written.size());
 
   int round_precision = 5;
-  for (auto i = 0; i < transforms_read.size(); i += 5) {
+  size_t increment = 5;
+  for (size_t i = 0; i < transforms_read.size(); i += increment) {
     REQUIRE(beam::RoundMatrix(transforms_written[i], round_precision) ==
             beam::RoundMatrix(transforms_read[i], round_precision));
     REQUIRE(std::abs(stamps_written[i].toSec() - stamps_read[i].toSec()) <

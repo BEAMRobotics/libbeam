@@ -106,6 +106,7 @@ void PCLPointToPose(const PointXYZIRPYT& point, ros::Time& time,
                     Eigen::Matrix4d& T) {
   T = Eigen::Matrix4d::Identity();
   ros::Time t(point.time);
+  time = t;
 
   Eigen::AngleAxisd rollAngle(point.roll, Eigen::Vector3d::UnitX());
   Eigen::AngleAxisd yawAngle(point.yaw, Eigen::Vector3d::UnitZ());

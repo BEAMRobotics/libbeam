@@ -15,13 +15,10 @@ TEST_CASE("Testing map building with JSON") {
   std::string bag_file_path = data_path_ + "TestBagJSON.bag";
   std::string extrinsics_file_path = data_path_ + "extrinsics.json";
   std::string output_dir_path = data_path_ + "tmp/";
-
-  beam_mapping::MapBuilder map_builder(config_file_path);
-  map_builder.OverrideBagFile(bag_file_path);
-  map_builder.OverridePoseFile(pose_file_path);
-  map_builder.OverrideExtrinsicsFile(extrinsics_file_path);
-  map_builder.OverrideOutputDir(output_dir_path);
   boost::filesystem::create_directory(output_dir_path);
+  beam_mapping::MapBuilder map_builder(bag_file_path, config_file_path,
+                                       pose_file_path, output_dir_path,
+                                       extrinsics_file_path);
   REQUIRE_NOTHROW(map_builder.BuildMap());
   boost::filesystem::remove_all(output_dir_path);
 }
@@ -32,17 +29,12 @@ TEST_CASE("Testing map building with PLY") {
   std::string bag_file_path = data_path_ + "TestBagPLY.bag";
   std::string extrinsics_file_path = data_path_ + "extrinsics.json";
   std::string output_dir_path = data_path_ + "tmp/";
-
-  beam_mapping::MapBuilder map_builder(config_file_path);
-  map_builder.OverrideBagFile(bag_file_path);
-  map_builder.OverridePoseFile(pose_file_path);
-  map_builder.OverrideExtrinsicsFile(extrinsics_file_path);
-  map_builder.OverrideOutputDir(output_dir_path);
   std::string moving_frame = "vvlp_link";
-  std::string fixed_frame = "odom";
-  map_builder.SetPosesMovingFrame(moving_frame);
-  map_builder.SetPosesFixedFrame(fixed_frame);
+
   boost::filesystem::create_directory(output_dir_path);
+  beam_mapping::MapBuilder map_builder(bag_file_path, config_file_path,
+                                       pose_file_path, output_dir_path,
+                                       extrinsics_file_path, moving_frame);
   REQUIRE_NOTHROW(map_builder.BuildMap());
   boost::filesystem::remove_all(output_dir_path);
 }
@@ -54,22 +46,17 @@ TEST_CASE("Testing map building with PCD") {
   std::string extrinsics_file_path = data_path_ + "extrinsics.json";
   std::string output_dir_path = data_path_ + "tmp/";
 
-  beam_mapping::MapBuilder map_builder(config_file_path);
-  map_builder.OverrideBagFile(bag_file_path);
-  map_builder.OverridePoseFile(pose_file_path);
-  map_builder.OverrideExtrinsicsFile(extrinsics_file_path);
-  map_builder.OverrideOutputDir(output_dir_path);
   std::string moving_frame = "base_link";
-  std::string fixed_frame = "odom";
-  map_builder.SetPosesMovingFrame(moving_frame);
-  map_builder.SetPosesFixedFrame(fixed_frame);
   boost::filesystem::create_directory(output_dir_path);
+  beam_mapping::MapBuilder map_builder(bag_file_path, config_file_path,
+                                       pose_file_path, output_dir_path,
+                                       extrinsics_file_path, moving_frame);
   REQUIRE_NOTHROW(map_builder.BuildMap());
   boost::filesystem::remove_all(output_dir_path);
 }
 
 /**
- * tmp test: 
+ * tmp test:
 TEST_CASE("Testing map building from Bag odometry") {
   std::string config_file_path = data_path_ + "TestConfigBAG.json";
   std::string bag_file_path = data_path_ + "TestBagBAG.bag";

@@ -2,14 +2,9 @@ PROJECT(beam_depth)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
-    catkin::catkin
-    PCL::PCL
     beam::calibration
-    beam::containers
     beam::utils
     beam::cv
-    OpenCV::OpenCV
-    Eigen3::Eigen
   SOURCES
     src/Utils.cpp
     src/DepthMap.cpp
@@ -53,7 +48,6 @@ target_include_directories(${PROJECT_NAME}_kitti
 )
 target_link_libraries(${PROJECT_NAME}_kitti
   ${PROJECT_NAME}
-  Eigen3::Eigen
 )
 
 file(COPY tests/run_all_tests.bash

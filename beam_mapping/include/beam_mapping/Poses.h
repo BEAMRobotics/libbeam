@@ -121,6 +121,14 @@ public:
   void AddSinglePose(const Eigen::Matrix4d& T_FIXED_MOVING);
 
   /**
+   * @brief load from file. This will lookup the extension this call the
+   * appropriate function.
+   * @param input_pose_file_path full path to pose file (ply or json or txt)
+   * @return false if file type is incorrect
+   */
+  bool LoadFromFile(const std::string& input_pose_file_path);
+
+  /**
    * @brief writes the pose file to the specified directory as JSON type. If a
    * directory is given (i.e. ending in /) the file will be named:
    * "poses_file_date"_poses.json. If a full filename is given (i.e.
@@ -250,13 +258,12 @@ private:
   std::ofstream CreateFile(const std::string& output_path,
                            const std::string& extension) const;
 
-
   std::vector<ros::Time> time_stamps_;
   std::vector<Eigen::Matrix4d, beam::AlignMat4d> poses_;
   std::string bag_name_;
   std::string pose_file_date_;
   std::string fixed_frame_;
-  std::string moving_frame_;                           
+  std::string moving_frame_;
 };
 
 /** @} group mapping */

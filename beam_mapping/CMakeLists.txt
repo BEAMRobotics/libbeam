@@ -5,12 +5,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::utils
     beam::calibration
     beam::filtering
-    Boost::boost
-    Catch2::Catch2
-    catkin::catkin
-    Eigen3::Eigen
-    nlohmann_json::nlohmann_json
-    PCL::PCL
+    rosbag::rosbag
   SOURCES
     src/MapBuilder.cpp
     src/Poses.cpp

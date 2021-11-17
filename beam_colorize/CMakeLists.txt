@@ -2,9 +2,6 @@ PROJECT(beam_colorize)
 
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
-    catkin::catkin
-    PCL::PCL
-    OpenCV::OpenCV
     beam::calibration
     beam::containers
     beam::cv
@@ -24,8 +21,6 @@ target_include_directories(${PROJECT_NAME}_tests
 target_link_libraries(${PROJECT_NAME}_tests
   ${PROJECT_NAME}
   Catch2::Catch2
-  nlohmann_json::nlohmann_json
-  Boost::boost
 )
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_demo
@@ -37,8 +32,6 @@ target_include_directories(${PROJECT_NAME}_demo
 )
 target_link_libraries(${PROJECT_NAME}_demo
   ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  OpenCV::OpenCV
 )
 
 file(COPY tests/run_all_tests.bash
