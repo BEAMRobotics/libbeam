@@ -16,8 +16,9 @@ TEST_CASE("Testing map building with JSON") {
   std::string extrinsics_file_path = data_path_ + "extrinsics.json";
   std::string output_dir_path = data_path_ + "tmp/";
   boost::filesystem::create_directory(output_dir_path);
-  beam_mapping::MapBuilder map_builder(config_file_path, pose_file_path,
-                                       output_dir_path, extrinsics_file_path);
+  beam_mapping::MapBuilder map_builder(bag_file_path, config_file_path,
+                                       pose_file_path, output_dir_path,
+                                       extrinsics_file_path);
   REQUIRE_NOTHROW(map_builder.BuildMap());
   boost::filesystem::remove_all(output_dir_path);
 }
@@ -29,11 +30,11 @@ TEST_CASE("Testing map building with PLY") {
   std::string extrinsics_file_path = data_path_ + "extrinsics.json";
   std::string output_dir_path = data_path_ + "tmp/";
   std::string moving_frame = "vvlp_link";
-  
+
   boost::filesystem::create_directory(output_dir_path);
-  beam_mapping::MapBuilder map_builder(config_file_path, pose_file_path,
-                                       output_dir_path, extrinsics_file_path,
-                                       moving_frame);
+  beam_mapping::MapBuilder map_builder(bag_file_path, config_file_path,
+                                       pose_file_path, output_dir_path,
+                                       extrinsics_file_path, moving_frame);
   REQUIRE_NOTHROW(map_builder.BuildMap());
   boost::filesystem::remove_all(output_dir_path);
 }
@@ -47,9 +48,9 @@ TEST_CASE("Testing map building with PCD") {
 
   std::string moving_frame = "base_link";
   boost::filesystem::create_directory(output_dir_path);
-  beam_mapping::MapBuilder map_builder(config_file_path, pose_file_path,
-                                       output_dir_path, extrinsics_file_path,
-                                       moving_frame);
+  beam_mapping::MapBuilder map_builder(bag_file_path, config_file_path,
+                                       pose_file_path, output_dir_path,
+                                       extrinsics_file_path, moving_frame);
   REQUIRE_NOTHROW(map_builder.BuildMap());
   boost::filesystem::remove_all(output_dir_path);
 }

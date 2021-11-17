@@ -35,9 +35,11 @@ class MapBuilder {
 public:
   /**
    * @brief main constructor
+   * @param bag_file full path to bag file containing the 3D data
    * @param config_file full path to configuration file
    * @param pose_file full path to pose file. For format, see
-   * libbeam/beam_mapping/tests/test_data/PosesTests. You can create this using the bag_to_poses executable
+   * libbeam/beam_mapping/tests/test_data/PosesTests. You can create this using
+   * the bag_to_poses executable
    * @param output_directory full path to output directory to save resutls. This
    * must exist.
    * @param extrinsics json file containing extrinsics. For format, see
@@ -46,8 +48,9 @@ public:
    * This needs to match a frame in the extrinsics. If not provided, it will use
    * the frame from the poses file. Otherwise, it will override.
    */
-  MapBuilder(const std::string& config_file, const std::string& pose_file,
-             const std::string& output_directory, const std::string& extrinsics,
+  MapBuilder(const std::string& bag_file, const std::string& config_file,
+             const std::string& pose_file, const std::string& output_directory,
+             const std::string& extrinsics,
              const std::string& poses_moving_frame = "");
 
   /**
@@ -113,10 +116,10 @@ private:
   void SaveMaps();
 
   // from constructor
+  std::string bag_file_path_;
   std::string config_file_;
   std::string pose_file_path_;
   std::string save_dir_;
-  std::string bag_file_path_;
   std::string extrinsics_file_;
   std::string poses_moving_frame_;
 

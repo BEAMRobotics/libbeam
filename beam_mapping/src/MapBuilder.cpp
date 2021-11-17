@@ -12,12 +12,14 @@
 
 namespace beam_mapping {
 
-MapBuilder::MapBuilder(const std::string& config_file,
+MapBuilder::MapBuilder(const std::string& bag_file,
+                       const std::string& config_file,
                        const std::string& pose_file,
                        const std::string& output_directory,
                        const std::string& extrinsics,
                        const std::string& poses_moving_frame)
-    : config_file_(config_file),
+    : bag_file_path_(bag_file),
+      config_file_(config_file),
       pose_file_path_(pose_file),
       save_dir_(output_directory),
       extrinsics_file_(extrinsics),
