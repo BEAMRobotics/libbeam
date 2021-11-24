@@ -53,6 +53,28 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
     (std::uint16_t, noise, noise)(std::uint32_t, range, range))
 // clang-format on
 
+/**
+ * @brief Enum class for different types of Lidars
+ */
+enum class LidarType { VELODYNE = 0, OUSTER };
+
+// Map for storing lidar type string input
+static std::map<std::string, LidarType> LidarTypeStringMap = {
+    {"VELODYNE", LidarType::VELODYNE},
+    {"OUSTER", LidarType::OUSTER}};
+
+// function for listing types of lidars available
+inline std::string GetLidarTypes() {
+  std::string types;
+  for (auto it = LidarTypeStringMap.begin(); it != LidarTypeStringMap.end();
+       it++) {
+    types += it->first;
+    types += ", ";
+  }
+  types.erase(types.end() - 2, types.end());
+  return types;
+}
+
 // create a point type for storing poses
 struct PointXYZIRPYT {
   PCL_ADD_POINT4D
@@ -110,6 +132,32 @@ static uint32_t seq_tmp = 0;
  * @return ros pointcloud
  */
 sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
+                                  const ros::Time& time = ros::Time(0),
+                                  const std::string& frame_id = "",
+                                  uint32_t seq = 0);
+
+/**
+ * @brief Convert from a pcl pointcloud to a ROS pointcloud
+ * @param cloud pcl pointcloud
+ * @param time stamp
+ * @param frame_id frame associated with the lidar
+ * @param seq scan number
+ * @return ros pointcloud
+ */
+sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointXYZITRRNR>& cloud,
+                                  const ros::Time& time = ros::Time(0),
+                                  const std::string& frame_id = "",
+                                  uint32_t seq = 0);
+
+/**
+ * @brief Convert from a pcl pointcloud to a ROS pointcloud
+ * @param cloud pcl pointcloud
+ * @param time stamp
+ * @param frame_id frame associated with the lidar
+ * @param seq scan number
+ * @return ros pointcloud
+ */
+sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointXYZIRT>& cloud,
                                   const ros::Time& time = ros::Time(0),
                                   const std::string& frame_id = "",
                                   uint32_t seq = 0);
