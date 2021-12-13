@@ -467,7 +467,7 @@ void LoamScanRegistration::SaveResults(const std::string& output_path) {
   boost::filesystem::create_directory(output_path + "target_aligned/");
 
   ref_->Save(output_path + "referece_cloud/", true, 0, 0, 255);
-  ref_->Save(output_path + "target_initial/", true, 255, 0, 0);
+  tgt_->Save(output_path + "target_initial/", true, 255, 0, 0);
 
   LoamPointCloud target_aligned = *tgt_;
   target_aligned.TransformPointCloud(T_REF_TGT_);
