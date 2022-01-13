@@ -9,8 +9,9 @@
 
 namespace beam_cv {
 std::vector<Eigen::Matrix4d, beam::AlignMat4d> AbsolutePoseEstimator::P3PEstimator(
-    std::shared_ptr<beam_calibration::CameraModel> cam,
-    std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels, std::vector<Eigen::Vector3d, beam::AlignVec3d> points) {
+      const std::shared_ptr<beam_calibration::CameraModel>& cam,
+      const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+      const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points) {
   // store normalized pixels coords
   std::vector<Eigen::Vector3d, beam::AlignVec3d> x;
   for (std::size_t i = 0; i < pixels.size(); ++i) {
@@ -225,9 +226,10 @@ std::vector<Eigen::Matrix4d, beam::AlignMat4d> AbsolutePoseEstimator::P3PEstimat
 }
 
 Eigen::Matrix4d AbsolutePoseEstimator::RANSACEstimator(
-    std::shared_ptr<beam_calibration::CameraModel> cam,
-    std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels, std::vector<Eigen::Vector3d, beam::AlignVec3d> points,
-    int max_iterations, double inlier_threshold, int seed) {
+      const std::shared_ptr<beam_calibration::CameraModel>& cam,
+      const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+      const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
+      int max_iterations, double inlier_threshold, int seed) {
   // return nothing if input sizes do not match
   if (pixels.size() != points.size()) {
     BEAM_CRITICAL("Pixel/point vectors are not of the same size.");
