@@ -10,6 +10,7 @@
 #include <ceres/types.h>
 
 #include <beam_optimization/CamPoseReprojectionCost.h>
+#include <beam_optimization/CamPoseUnitSphereCost.h>
 #include <beam_optimization/PosePriorCost.h>
 
 namespace beam_cv {
@@ -27,8 +28,9 @@ PoseRefinement::PoseRefinement() {
 }
 
 PoseRefinement::PoseRefinement(double time_limit, bool is_silent,
-                               double reprojection_weight)
-    : reprojection_weight_(reprojection_weight) {
+                               double reprojection_weight, bool use_unit_sphere)
+    : reprojection_weight_(reprojection_weight),
+      use_unit_sphere_(use_unit_sphere) {
   // set ceres solver params
   ceres_solver_options_.minimizer_progress_to_stdout = !is_silent;
   ceres_solver_options_.max_num_iterations = 100;
@@ -42,8 +44,9 @@ PoseRefinement::PoseRefinement(double time_limit, bool is_silent,
 }
 
 PoseRefinement::PoseRefinement(const ceres::Solver::Options options,
-                               double reprojection_weight)
-    : reprojection_weight_(reprojection_weight) {
+                               double reprojection_weight, bool use_unit_sphere)
+    : reprojection_weight_(reprojection_weight),
+      use_unit_sphere_(use_unit_sphere) {
   ceres_solver_options_ = options;
 }
 
@@ -78,12 +81,19 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
         continue;
       }
     }
-
-    std::unique_ptr<ceres::CostFunction> reproj_cost(
-        beam_optimization::CeresReprojectionCostFunction::Create(
-            pixels[i].cast<double>(), points[i], cam, reprojection_weight_));
-    problem->AddResidualBlock(reproj_cost.release(), loss_function_.get(),
-                              &(results[0]));
+    if (use_unit_sphere_) {
+      std::unique_ptr<ceres::CostFunction> reproj_cost(
+          beam_optimization::CeresUnitSphereCostFunction::Create(
+              pixels[i].cast<double>(), points[i], cam));
+      problem->AddResidualBlock(reproj_cost.release(), loss_function_.get(),
+                                &(results[0]));
+    } else {
+      std::unique_ptr<ceres::CostFunction> reproj_cost(
+          beam_optimization::CeresReprojectionCostFunction::Create(
+              pixels[i].cast<double>(), points[i], cam, reprojection_weight_));
+      problem->AddResidualBlock(reproj_cost.release(), loss_function_.get(),
+                                &(results[0]));
+    }
   }
 
   // add a prior to the pose if a weighting matrix is passed in

@@ -281,3 +281,32 @@ TEST_CASE(
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-1));
 }
+
+TEST_CASE("Refine given perturbed pixels and points, perturbed pose, using "
+          "unit sphere cost.") {
+  // generate correspondences
+  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
+  GenerateCorrespondences(cam, pixels, points, 30);
+
+  // randomly perturb pose to use as initial estimate
+  Eigen::Matrix4d estimate = Eigen::Matrix4d::Identity();
+  // set maximum perturbation (up to +/- x)
+  double r_pert = M_PI / 10;
+  double t_pert = .1;
+  PerturbPose(estimate, r_pert, t_pert);
+
+  // randomly perturb points/pixels (up to +/- x)
+  int pixel_pert = 2;
+  double point_pert = .05;
+  PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
+
+  // refine pose
+  beam_cv::PoseRefinement refiner(10.0, true, 1, true);
+  std::string report;
+  Eigen::Matrix4d pose =
+      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
+
+  Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
+  REQUIRE(pose.isApprox(truth, 1e-1));
+}
