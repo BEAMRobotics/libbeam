@@ -1,6 +1,6 @@
 # Find all dependencies here, and ensure they have IMPORTED targets
 # Require Eigen 3.2.92, also called 3.3 beta-1, since it's in xenial
-FIND_PACKAGE(Eigen3 3.2.92 REQUIRED)
+FIND_PACKAGE(Eigen3 3.3.7 REQUIRED)
 FIND_PACKAGE(Boost 1.58.0 REQUIRED system filesystem)
 FIND_PACKAGE(PCL 1.11.1 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization

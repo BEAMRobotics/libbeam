@@ -30,7 +30,6 @@ OPTION(EXPORT_BUILD
 
 
 # Find all dependencies here, and ensure they have IMPORTED targets
-# Require Eigen 3.2.92, also called 3.3 beta-1, since it's in xenial
 INCLUDE(cmake/GetBeamDependencies.cmake)
 
 # Add a special "beam" target including all modules
