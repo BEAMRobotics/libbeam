@@ -32,14 +32,16 @@ public:
    * @param is_silent silence ceres output
    */
   PoseRefinement(double time_limit, bool is_silent = true,
-                 double reprojection_weight = 1);
+                 double reprojection_weight = 1,
+                 bool use_unit_sphere = false);
 
   /**
    * @brief Constructor for custom ceres solver options.
    * @param options Client's ceres solver options.
    */
   PoseRefinement(const ceres::Solver::Options options,
-                 double reprojection_weight = 1);
+                 double reprojection_weight = 1,
+                 bool use_unit_sphere = false);
 
   /**
    * @brief Refines an estimated transformation matrix to minimize
@@ -72,6 +74,7 @@ private:
   std::unique_ptr<ceres::LossFunction> loss_function_;
   std::unique_ptr<ceres::LocalParameterization> parameterization_;
   double reprojection_weight_{1};
+  bool use_unit_sphere_{false};
 };
 
 } // namespace beam_cv

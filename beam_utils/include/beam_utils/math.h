@@ -274,6 +274,18 @@ Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
                                      const Eigen::Matrix4d& m2,
                                      const beam::TimePoint& t2,
                                      const beam::TimePoint& t);
+/**
+ * @brief Linear interpolation of a vector
+ * @param v1 first vector
+ * @param v2 second vector
+ * @param t1 time point of first vector
+ * @param t2 time point of second vector
+ * @param t time point that you want to interpolate at
+ * @return interpolated vector
+ **/
+Eigen::VectorXd InterpolateVector(const Eigen::VectorXd& v1, const double& t1,
+                                  const Eigen::VectorXd& v2, const double& t2,
+                                  const double& t);
 
 /**
  * @brief Perform inverse of skew symmetric transform

@@ -472,6 +472,20 @@ Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
   return T;
 }
 
+Eigen::VectorXd InterpolateVector(const Eigen::VectorXd& v1, const double& t1,
+                                  const Eigen::VectorXd& v2, const double& t2,
+                                  const double& t) {
+  if (v1.rows() != v2.rows()) {
+    BEAM_ERROR("Input vectors must be of the same dimension!");
+    throw std::runtime_error{"Invalid input vector dimensions."};
+  }
+  Eigen::VectorXd rise = v2 - v1;
+  double run = t2 - t1;
+  Eigen::VectorXd slope = rise / run;
+  return slope * (t - t1);
+}
+
+
 Eigen::Vector3d InvSkewTransform(const Eigen::Matrix3d& M) {
   Eigen::Vector3d V;
   V(0) = M(2, 1);

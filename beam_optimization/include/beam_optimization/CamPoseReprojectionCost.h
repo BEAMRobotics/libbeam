@@ -72,6 +72,69 @@ struct CameraProjectionFunctor {
 };
 
 /**
+ * @brief Ceres cost functor for camera projection
+ * performs projection of 3D point into camera frame
+ * if the projection is outside of the image frame, the projected
+ * pixel is set to the nearest edge point to its corresponding
+ * detected pixel in the image
+ */
+struct CameraBackProjectionFunctor {
+  CameraBackProjectionFunctor(
+      const std::shared_ptr<beam_calibration::CameraModel>& camera_model,
+      Eigen::Vector2d pixel_detected)
+      : camera_model_(camera_model), pixel_detected_(pixel_detected) {}
+
+  bool operator()(const double* P, double* ray) const {
+    Eigen::Vector2d P_CAMERA_eig{P[0], P[1]};
+    Eigen::Vector2i P_CAMERA_eig_i = P_CAMERA_eig.cast<int>();
+    Eigen::Vector3d pixel_back_projected;
+    bool in_domain =
+        camera_model_->BackProject(P_CAMERA_eig_i, pixel_back_projected);
+
+    // get image dims in case projection fails
+    uint16_t height =
+        camera_model_->GetHeight() != 0 ? camera_model_->GetHeight() : 5000;
+    uint16_t width =
+        camera_model_->GetWidth() != 0 ? camera_model_->GetWidth() : 5000;
+
+    if (in_domain) {
+      ray[0] = pixel_back_projected[0];
+      ray[1] = pixel_back_projected[1];
+      ray[2] = pixel_back_projected[2];
+    } else {
+      // if the back projection failed, set the back projected point to
+      // be the nearest edge point to the detected point
+      int near_u =
+          (width - pixel_detected_[0]) < pixel_detected_[0] ? width : 0;
+      int dist_u = (width - pixel_detected_[0]) < pixel_detected_[0]
+                       ? (width - pixel_detected_[0])
+                       : pixel_detected_[0];
+      int near_v =
+          (height - pixel_detected_[1]) < pixel_detected_[1] ? height : 0;
+      int dist_v = (height - pixel_detected_[1]) < pixel_detected_[1]
+                       ? (height - pixel_detected_[1])
+                       : pixel_detected_[1];
+      Eigen::Vector2i P_tmp;
+      if (dist_u <= dist_v) {
+        P_tmp[0] = near_u;
+        P_tmp[1] = pixel_detected_[1];
+      } else {
+        P_tmp[0] = pixel_detected_[0];
+        P_tmp[1] = near_v;
+      }
+      camera_model_->BackProject(P_tmp, pixel_back_projected);
+      ray[0] = pixel_back_projected[0];
+      ray[1] = pixel_back_projected[1];
+      ray[2] = pixel_back_projected[2];
+    }
+    return true;
+  }
+
+  std::shared_ptr<beam_calibration::CameraModel> camera_model_;
+  Eigen::Vector2d pixel_detected_;
+};
+
+/**
  * @brief Ceres reprojection cost function
  * sets the residual for the projection of a 3D point as determined by the
  * preceding functor and its corresponding detected pixel

@@ -2,11 +2,11 @@
 
 #include <time.h>
 
-#include <opencv2/video/tracking.hpp>
-#include <boost/filesystem.hpp>
-#include <nlohmann/json.hpp>
 #include <beam_utils/log.h>
 #include <beam_utils/math.h>
+#include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
+#include <opencv2/video/tracking.hpp>
 
 namespace beam_cv {
 
@@ -118,9 +118,9 @@ void KLTracker::DetectInitialFeatures(const cv::Mat& image) {
 void KLTracker::RegisterKeypoints(const std::vector<uchar>& status,
                                   const cv::Mat& image,
                                   uint32_t new_points_start_id) {
-  // if this is the first image, then all previous points are new so we need to
+  // if this is the second image, then all previous points are new so we need to
   // add all those landmarks, if they were tracked between these images
-  if (img_times_.size() == 1) { new_points_start_id = 0; }
+  if (img_times_.size() == 2) { new_points_start_id = 0; }
 
   // add points from the previous images that have not been added to the tracker
   // yet. This occurs if either (A) this is the second image (keypoints from
@@ -250,7 +250,7 @@ uint32_t KLTracker::ExtractNewKeypoints(const cv::Mat& image) {
   std::set<int> new_keypoints_selected;
   srand(time(NULL));
   uint32_t counter{0};
-  
+
   while (combined_ids.size() < original_feature_count_) {
     counter++;
 
