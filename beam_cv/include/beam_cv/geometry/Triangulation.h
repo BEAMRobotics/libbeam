@@ -33,7 +33,8 @@ public:
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
-      const Eigen::Vector2i& p1, const Eigen::Vector2i& p2);
+      const Eigen::Vector2i& p1, const Eigen::Vector2i& p2,
+      double max_dist = 100);
 
   /**
    * @brief Triangulates single point given a single camera model and multiple
