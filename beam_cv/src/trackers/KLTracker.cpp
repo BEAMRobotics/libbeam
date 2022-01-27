@@ -63,6 +63,19 @@ void KLTracker::ValidateParams() {
   }
 }
 
+void KLTracker::Reset() {
+  // clear landmark container
+  landmarks_.clear();
+  img_times_.clear();
+
+  // reset variables
+  curr_ids_.clear();
+  tracked_features_count_ = 0;
+  original_feature_count_ = 0;
+  prev_kp_.clear();
+  curr_kp_.clear();
+}
+
 void KLTracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
   // Register the time this image
   TimestampImage(current_time);

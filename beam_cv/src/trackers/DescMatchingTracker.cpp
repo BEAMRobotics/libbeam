@@ -89,6 +89,16 @@ std::map<int, uint64_t>
   return ids;
 }
 
+void DescMatchingTracker::Reset() {
+  // clear landmark container
+  landmarks_.clear();
+  img_times_.clear();
+
+  // reset variables
+  prev_ids_.clear();
+  prev_kp_.clear();
+}
+
 void DescMatchingTracker::AddImage(const cv::Mat& image,
                                    const ros::Time& current_time) {
   // Register the time this image

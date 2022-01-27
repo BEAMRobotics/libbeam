@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
-#include <beam_cv/trackers/Tracker.h>
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
 #include <beam_cv/Utils.h>
 #include <beam_cv/descriptors/Descriptor.h>
 #include <beam_cv/detectors/Detector.h>
 #include <beam_cv/matchers/Matcher.h>
+#include <beam_cv/trackers/Tracker.h>
 #include <beam_utils/utils.h>
 
 namespace beam_cv {
@@ -105,6 +105,11 @@ public:
    * @param current_time the time at which the image was captured
    */
   void AddImage(const cv::Mat& image, const ros::Time& current_time) override;
+
+  /**
+   * @brief Purges the container but retains the current id value
+   */
+  void Reset() override;
 
 private:
   /**

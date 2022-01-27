@@ -81,6 +81,11 @@ public:
                         const ros::Time& current_time) = 0;
 
   /**
+   * @brief Purges the container but retains the current id value
+   */
+  virtual void Reset() = 0;
+
+  /**
    * @brief Get the tracks of all features in the requested image from the
    * sequence using the image number
    * @param img_num the number of the image to obtain tracks from
