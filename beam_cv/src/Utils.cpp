@@ -263,11 +263,10 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
   return inliers;
 }
 
-int CheckInliers(
-    std::shared_ptr<beam_calibration::CameraModel> cam,
-    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-    const Eigen::Matrix4d& T_cam_world, double inlier_threshold) {
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
+                 const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+                 const Eigen::Matrix4d& T_cam_world, double inlier_threshold) {
   if (points.size() != pixels.size()) {
     BEAM_WARN("Invalid input, number of points and pixels must match.");
     return -1;
@@ -351,6 +350,48 @@ double
   } else {
     return -1.0;
   }
+}
+
+std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r) {
+  std::vector<Eigen::Vector2i> circle;
+  int top = center[0] - r;
+  int bot = center[0] + r;
+  int left = center[1] - r;
+  int right = center[1] + r;
+
+  Eigen::Vector2d centerd = center.cast<double>();
+  for (int row = top; row < bot; row++) {
+    for (int col = left; col < right; col++) {
+      Eigen::Vector2d current((double)row, (double)col);
+      double d = beam::distance(centerd, current);
+      if (d > r - 0.5 && d < r + 0.5) { circle.push_back(center.cast<int>()); }
+    }
+  }
+  return circle;
+}
+
+Eigen::Matrix2d FitEllipse(std::vector<Eigen::Vector2d> points) {
+  std::vector<cv::Vec2i> cv_points;
+  for (auto& p : points) { cv_points.push_back(cv::Vec2i(p[0], p[1])); }
+
+  cv::RotatedRect rect = cv::fitEllipse(cv_points);
+
+  float a = rect.size.width / 2; // width >= height
+  float b = rect.size.height / 2;
+  float theta = rect.angle; // in degrees
+
+  double A = a * a * std::pow(std::sin(theta), 2) +
+             b * b * std::pow(std::cos(theta), 2);
+  double B = 2 * (b * b - a * a) * std::sin(theta) * std::cos(theta);
+  double C = a * a * std::pow(std::cos(theta), 2) +
+             b * b * std::pow(std::sin(theta), 2);
+
+  Eigen::Matrix2d output = Eigen::Matrix2d::Zero();
+  output(0, 0) = A;
+  output(1, 0) = B;
+  output(0, 1) = B;
+  output(1, 1) = C;
+  return output;
 }
 
 } // namespace beam_cv
