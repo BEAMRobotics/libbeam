@@ -122,8 +122,7 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     double covariance_arr[7 * 7];
     covariance.GetCovarianceBlock(&(results[0]), &(results[0]), covariance_arr);
     Eigen::Matrix<double, 7, 7> covariance_eig(covariance_arr);
-    A_out->block<3, 3>(0, 0) = covariance_eig.block<3, 3>(1, 1);
-    A_out->block<3, 3>(3, 3) = covariance_eig.block<3, 3>(4, 4);
+    A_out->block<6, 6>(0, 0) = covariance_eig.block<6, 6>(1, 1);
   }
 
   // recover pose from optimization results
