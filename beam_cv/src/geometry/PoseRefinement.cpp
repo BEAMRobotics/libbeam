@@ -3,6 +3,7 @@
 #include <ceres/autodiff_cost_function.h>
 #include <ceres/ceres.h>
 #include <ceres/cost_function_to_functor.h>
+#include <ceres/covariance.h>
 #include <ceres/loss_function.h>
 #include <ceres/numeric_diff_cost_function.h>
 #include <ceres/rotation.h>
@@ -55,7 +56,8 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
     const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-    std::shared_ptr<Eigen::Matrix<double, 6, 6>> A, std::string& report,
+    std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_in,
+    std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_out, std::string& report,
     bool remove_points_outside_domain) {
   // vector to store optimized pose quaternion and translation
   Eigen::Matrix3d estimate_r = estimate.block(0, 0, 3, 3);
@@ -97,9 +99,9 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
   }
 
   // add a prior to the pose if a weighting matrix is passed in
-  if (A) {
+  if (A_in) {
     std::unique_ptr<ceres::CostFunction> prior_pose_cost(
-        CeresPosePriorCostFunction::Create(estimate, *A));
+        CeresPosePriorCostFunction::Create(estimate, *A_in));
     problem->AddResidualBlock(prior_pose_cost.release(), loss_function_.get(),
                               &(results[0]));
   }
@@ -107,6 +109,22 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
   ceres::Solver::Summary ceres_summary;
   ceres::Solve(ceres_solver_options_, problem.get(), &ceres_summary);
   report = ceres_summary.FullReport();
+
+  if (A_out) {
+    // compute covariance
+    ceres::Covariance::Options cov_options;
+    ceres::Covariance covariance(cov_options);
+    std::vector<const double*> covariance_block;
+    covariance_block.push_back(&(results[0]));
+    covariance.Compute(covariance_block, problem.get());
+
+    // setup covariance to return as eigen matrix
+    double covariance_arr[7 * 7];
+    covariance.GetCovarianceBlock(&(results[0]), &(results[0]), covariance_arr);
+    Eigen::Matrix<double, 7, 7> covariance_eig(covariance_arr);
+    A_out->block<3, 3>(0, 0) = covariance_eig.block<3, 3>(1, 1);
+    A_out->block<3, 3>(3, 3) = covariance_eig.block<3, 3>(4, 4);
+  }
 
   // recover pose from optimization results
   Eigen::Matrix4d pose = Eigen::Matrix4d::Identity();
