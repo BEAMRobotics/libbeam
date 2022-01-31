@@ -268,15 +268,15 @@ TEST_CASE(
   PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
 
   // refine pose
-  beam::HighResolutionTimer timer;
   beam_cv::PoseRefinement refiner;
   std::string report;
+  std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_out =
+      std::make_shared<Eigen::Matrix<double, 6, 6>>();
   std::shared_ptr<Eigen::Matrix<double, 6, 6>> A =
       std::make_shared<Eigen::Matrix<double, 6, 6>>();
   *A = Eigen::Matrix<double, 6, 6>::Identity();
   Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, A, nullptr, report);
-  BEAM_INFO("Pose Refinement Time: {}", timer.elapsed());
+      refiner.RefinePose(estimate, cam, pixels, points, A, A_out, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-1));
@@ -302,7 +302,7 @@ TEST_CASE("Refine given perturbed pixels and points, perturbed pose, using "
   PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
 
   // refine pose
-  beam_cv::PoseRefinement refiner(10.0, true, 1, true);
+  beam_cv::PoseRefinement refiner(10.0, false, 1, true);
   std::string report;
   Eigen::Matrix4d pose = refiner.RefinePose(estimate, cam, pixels, points,
                                             nullptr, nullptr, report);
