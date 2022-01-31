@@ -10,8 +10,8 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <beam_utils/optional.h>
 #include <beam_utils/log.h>
+#include <beam_utils/optional.h>
 
 static bool default_bool = false;
 
@@ -90,6 +90,23 @@ public:
    * @param id of the camera to use
    */
   virtual void SetCameraID(const unsigned int id);
+
+  /**
+   * @brief Create the undistortion map
+   */
+  void InitUndistortMap();
+
+  /**
+   * @brief undistort a pixel
+   * @param pixel in distorted image
+   * @return undistorted pixel
+   */
+  Eigen::Vector2i UndistortPixel(Eigen::Vector2i pixel);
+
+  /**
+   * @brief Returns a rectified camera model
+   */
+  std::shared_ptr<CameraModel> GetRectifiedModel();
 
   /**
    * @brief Method for adding the frame id
@@ -183,6 +200,9 @@ protected:
    * @brief Method for outputting all camera model types from intrinsics_types_
    */
   void OutputCameraTypes();
+
+  std::shared_ptr<cv::Mat> pixel_map_;
+  std::shared_ptr<CameraModel> rectified_model_;
 
   CameraType type_; // THIS SHOULD BE SET IN EACH DERIVED CLASS CONSTRUCTOR
   std::string frame_id_{""};

@@ -3,9 +3,9 @@
 #include <chrono>
 #include <ctime>
 
+#include <beam_utils/log.h>
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
-#include <beam_utils/log.h>
 
 namespace beam_calibration {
 
@@ -48,6 +48,70 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
   }
 
   return camera_model;
+}
+
+void CameraModel::InitUndistortMap() {
+  BEAM_INFO("Creating undistortion map...");
+
+  GetRectifiedModel();
+
+  pixel_map_ = std::make_shared<cv::Mat>(GetHeight(), GetWidth(), CV_32SC2);
+  for (int i = 0; i < GetHeight(); i++) {
+    for (int j = 0; j < GetWidth(); j++) {
+      Eigen::Vector3d point_back_projected;
+      if (!BackProject(Eigen::Vector2i(i, j), point_back_projected)) {
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
+        continue;
+      }
+
+      Eigen::Vector2d point_projected;
+      bool in_image_plane = false;
+      if (!rectified_model_->ProjectPoint(point_back_projected, point_projected,
+                                          in_image_plane)) {
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
+        continue;
+      }
+      if (in_image_plane) {
+        cv::Vec2i und_pixel(point_projected[0], point_projected[1]);
+
+        if (und_pixel[0] < 0 || und_pixel[1] < 0 ||
+            und_pixel[0] > (int)GetWidth() || und_pixel[1] > (int)GetHeight()) {
+          (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
+          (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
+          continue;
+        }
+
+        (*pixel_map_).at<cv::Vec2i>(i, j) = und_pixel;
+      }
+    }
+  }
+  BEAM_INFO("Done.");
+}
+
+Eigen::Vector2i CameraModel::UndistortPixel(Eigen::Vector2i pixel) {
+  if (!pixel_map_) { InitUndistortMap(); }
+  cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(pixel[0], pixel[1]);
+  return Eigen::Vector2i(out[0], out[1]);
+}
+
+std::shared_ptr<CameraModel> CameraModel::GetRectifiedModel() {
+  if (!rectified_model_) {
+    Eigen::Matrix<double, 8, 1> intrinsics;
+    intrinsics(0, 0) = GetIntrinsics()[0];
+    intrinsics(1, 0) = GetIntrinsics()[1];
+    intrinsics(2, 0) = GetWidth() / 2;
+    intrinsics(3, 0) = GetHeight() / 2;
+    intrinsics(4, 0) = 0;
+    intrinsics(5, 0) = 0;
+    intrinsics(6, 0) = 0;
+    intrinsics(7, 0) = 0;
+
+    rectified_model_ =
+        std::make_shared<Radtan>(GetHeight(), GetWidth(), intrinsics);
+  }
+  return rectified_model_;
 }
 
 void CameraModel::SetCameraID(const unsigned int id) {
