@@ -202,10 +202,10 @@ double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
 
 /**
  * @brief Gets a list of pixels forming a circle around the given one with a specified radius
- * @param pixel corresponding keypoints in left image
+ * @param center of circle
  * @param r radius of the circle
  */
-std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i pixel, uint32_t r);
+std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r);
 
 /**
  * @brief Fits an ellipse to a set of 2d points
