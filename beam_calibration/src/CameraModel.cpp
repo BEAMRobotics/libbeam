@@ -52,9 +52,9 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
 
 void CameraModel::InitUndistortMap() {
   BEAM_INFO("Creating undistortion map...");
-
+  // get the rectified model
   GetRectifiedModel();
-
+  // pixel_map_.at(distorted_pixel) = undistorted_pixel
   pixel_map_ = std::make_shared<cv::Mat>(GetHeight(), GetWidth(), CV_32SC2);
   for (int i = 0; i < GetHeight(); i++) {
     for (int j = 0; j < GetWidth(); j++) {
@@ -72,18 +72,13 @@ void CameraModel::InitUndistortMap() {
         (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
         (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
         continue;
-      }
-      if (in_image_plane) {
-        cv::Vec2i und_pixel(point_projected[0], point_projected[1]);
-
-        if (und_pixel[0] < 0 || und_pixel[1] < 0 ||
-            und_pixel[0] > (int)GetWidth() || und_pixel[1] > (int)GetHeight()) {
-          (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
-          (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
-          continue;
-        }
-
-        (*pixel_map_).at<cv::Vec2i>(i, j) = und_pixel;
+      } else if (!in_image_plane) {
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
+        continue;
+      } else {
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = point_projected[0];
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = point_projected[1];
       }
     }
   }
