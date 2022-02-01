@@ -104,6 +104,13 @@ public:
   Eigen::Vector2i UndistortPixel(Eigen::Vector2i pixel);
 
   /**
+   * @brief Checks if a pixel is undistortable
+   * @param pixel in distorted image
+   * @return true or false
+   */
+  bool Undistortable(Eigen::Vector2i pixel);
+
+  /**
    * @brief Returns a rectified camera model
    */
   std::shared_ptr<CameraModel> GetRectifiedModel();
@@ -210,8 +217,6 @@ protected:
   uint32_t image_height_{0};
   uint32_t image_width_{0};
   Eigen::VectorXd intrinsics_;
-
-  // static bool outside_domain_default_ = false;
 
   unsigned int cam_id_ = 0;
 

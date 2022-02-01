@@ -91,6 +91,12 @@ Eigen::Vector2i CameraModel::UndistortPixel(Eigen::Vector2i pixel) {
   return Eigen::Vector2i(out[0], out[1]);
 }
 
+bool CameraModel::Undistortable(Eigen::Vector2i pixel) {
+  Eigen::Vector2i out = UndistortPixel(pixel);
+  if (out[0] == -1 || out[1] == -1) { return false; }
+  return true;
+}
+
 std::shared_ptr<CameraModel> CameraModel::GetRectifiedModel() {
   if (!rectified_model_) {
     Eigen::Matrix<double, 8, 1> intrinsics;
