@@ -3,8 +3,8 @@
  */
 
 #pragma once
-#include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
+#include <opencv2/opencv.hpp>
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_cv/descriptors/Descriptor.h>
@@ -201,11 +201,13 @@ double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
                                   const std::vector<cv::KeyPoint>& keypoints_2);
 
 /**
- * @brief Gets a list of pixels forming a circle around the given one with a specified radius
+ * @brief Gets a list of pixels forming a circle around the given one with a
+ * specified radius
  * @param center of circle
  * @param r radius of the circle
  */
-std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r);
+std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r,
+                                       float threshold = 0.5);
 
 /**
  * @brief Fits an ellipse to a set of 2d points

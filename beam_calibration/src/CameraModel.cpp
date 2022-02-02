@@ -54,29 +54,27 @@ void CameraModel::InitUndistortMap() {
   BEAM_INFO("Creating undistortion map...");
   // get the rectified model
   GetRectifiedModel();
+  int height = GetHeight();
+  int width = GetWidth();
   // pixel_map_.at(distorted_pixel) = undistorted_pixel
-  pixel_map_ = std::make_shared<cv::Mat>(GetHeight(), GetWidth(), CV_32SC2);
-  for (int i = 0; i < GetHeight(); i++) {
-    for (int j = 0; j < GetWidth(); j++) {
+  pixel_map_ = std::make_shared<cv::Mat>(height, width, CV_32SC2);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
       Eigen::Vector3d point_back_projected;
-      if (!BackProject(Eigen::Vector2i(i, j), point_back_projected)) {
+      if (!BackProject(Eigen::Vector2i(j, i), point_back_projected)) {
         (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
         (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
         continue;
       }
 
       Eigen::Vector2d point_projected;
-      bool in_image_plane = false;
-      if (!rectified_model_->ProjectPoint(point_back_projected, point_projected,
-                                          in_image_plane)) {
-        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
-        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
-        continue;
-      } else if (!in_image_plane) {
+      if (!rectified_model_->ProjectPoint(point_back_projected,
+                                          point_projected)) {
         (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
         (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
         continue;
       } else {
+        // we still allow pixels outside of the image plane to be undistorted
         (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = point_projected[0];
         (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = point_projected[1];
       }

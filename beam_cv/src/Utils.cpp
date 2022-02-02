@@ -352,19 +352,22 @@ double
   }
 }
 
-std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r) {
+std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r,
+                                       float threshold) {
   std::vector<Eigen::Vector2i> circle;
-  int top = center[0] - r;
-  int bot = center[0] + r;
-  int left = center[1] - r;
-  int right = center[1] + r;
+  int top = center[0] - (r+1);
+  int bot = center[0] + (r+1);
+  int left = center[1] - (r+1);
+  int right = center[1] + (r+1);
 
   Eigen::Vector2d centerd = center.cast<double>();
   for (int row = top; row < bot; row++) {
     for (int col = left; col < right; col++) {
       Eigen::Vector2d current((double)row, (double)col);
       double d = beam::distance(centerd, current);
-      if (d > r - 0.5 && d < r + 0.5) { circle.push_back(center.cast<int>()); }
+      if (d > r - threshold && d < r + threshold) {
+        circle.push_back(current.cast<int>());
+      }
     }
   }
   return circle;
