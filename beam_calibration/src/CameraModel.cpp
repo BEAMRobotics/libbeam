@@ -62,16 +62,16 @@ void CameraModel::InitUndistortMap() {
     for (int j = 0; j < width; j++) {
       Eigen::Vector3d point_back_projected;
       if (!BackProject(Eigen::Vector2i(j, i), point_back_projected)) {
-        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
-        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -999999;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -999999;
         continue;
       }
 
       Eigen::Vector2d point_projected;
       if (!rectified_model_->ProjectPoint(point_back_projected,
                                           point_projected)) {
-        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -1;
-        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -1;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[0] = -999999;
+        (*pixel_map_).at<cv::Vec2i>(i, j).val[1] = -999999;
         continue;
       } else {
         // we still allow pixels outside of the image plane to be undistorted
@@ -85,13 +85,13 @@ void CameraModel::InitUndistortMap() {
 
 Eigen::Vector2i CameraModel::UndistortPixel(Eigen::Vector2i pixel) {
   if (!pixel_map_) { InitUndistortMap(); }
-  cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(pixel[0], pixel[1]);
+  cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(pixel[1], pixel[0]);
   return Eigen::Vector2i(out[0], out[1]);
 }
 
 bool CameraModel::Undistortable(Eigen::Vector2i pixel) {
   Eigen::Vector2i out = UndistortPixel(pixel);
-  if (out[0] == -1 || out[1] == -1) { return false; }
+  if (out[0] == -999999 || out[1] == -999999) { return false; }
   return true;
 }
 

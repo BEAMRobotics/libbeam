@@ -58,7 +58,7 @@ public:
    * point is outside of the valid projection domain, then the point will not be
    * projected and will retain whatever value the input parameter has
    * @param[in] in_point 3d point to be projected [x,y,z]^T
-   * @param[out] out_pixel pixel the point projects to
+   * @param[out] out_pixel pixel the point projects to [col, row]
    * @param[in] J optional param to compute the jacobian
    * @param[out] in_image_plane true if the pixel is outside of the image plane
    * @return whether the input point is in the domain of the function
@@ -71,7 +71,7 @@ public:
   /**
    * @brief Method back projecting, if the input pixel is outside of back
    * projection domain then it will not compute the back projection
-   * @param[in] in_pixel pixel to back project
+   * @param[in] in_pixel pixel to back project [col, row]
    * @param[out] out_point ray towards the input pixel
    * @return return whether the input pixel is in the domain of the function
    */

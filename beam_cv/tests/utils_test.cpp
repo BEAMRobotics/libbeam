@@ -121,20 +121,20 @@ TEST_CASE("Circle extraction.") {
     REQUIRE(circle_und[i] == circle_und_gt[i]);
   }
 
-  // // draw results on image
-  // std::string image_path = file_location + "KB_test_img.png";
-  // cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
+  // draw results on image
+  std::string image_path = file_location + "KB_test_img.png";
+  cv::Mat source_image = cv::imread(image_path, cv::IMREAD_COLOR);
 
-  // for (auto& p : circle) {
-  //   source_image.at<cv::Vec3b>(p[0], p[1]).val[0] = 0;
-  //   source_image.at<cv::Vec3b>(p[0], p[1]).val[1] = 0;
-  //   source_image.at<cv::Vec3b>(p[0], p[1]).val[2] = 255;
-  // }
+  for (auto& p : circle) {
+    source_image.at<cv::Vec3b>(p[1], p[0]).val[0] = 0;
+    source_image.at<cv::Vec3b>(p[1], p[0]).val[1] = 0;
+    source_image.at<cv::Vec3b>(p[1], p[0]).val[2] = 255;
+  }
 
-  // for (auto& p : circle_und) {
-  //   source_image.at<cv::Vec3b>(p[0], p[1]).val[0] = 0;
-  //   source_image.at<cv::Vec3b>(p[0], p[1]).val[1] = 255;
-  //   source_image.at<cv::Vec3b>(p[0], p[1]).val[2] = 0;
-  // }
-  // cv::imwrite("/home/jake/out.png", source_image);
+  for (auto& p : circle_und) {
+    source_image.at<cv::Vec3b>(p[1], p[0]).val[0] = 0;
+    source_image.at<cv::Vec3b>(p[1], p[0]).val[1] = 255;
+    source_image.at<cv::Vec3b>(p[1], p[0]).val[2] = 0;
+  }
+  cv::imwrite("/tmp/beam_cv_utils_tests/out.png", source_image);
 }

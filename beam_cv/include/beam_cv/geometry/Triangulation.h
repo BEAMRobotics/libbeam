@@ -26,8 +26,8 @@ public:
    * @param cam2 camera model for image 2
    * @param T_cam1_world transformation matrix from world to image 1 frame
    * @param T_cam2_world transformation matrix from world to image 2 frame
-   * @param p1 pixel in image 1 to triangulate
-   * @param p2 pixel in image 2 to triangulate
+   * @param p1 pixel in image 1 to triangulate [col, row]
+   * @param p2 pixel in image 2 to triangulate [col, row]
    */
   static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
