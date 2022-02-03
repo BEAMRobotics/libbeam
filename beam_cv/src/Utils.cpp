@@ -372,6 +372,10 @@ std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r,
 }
 
 Eigen::Matrix2d FitEllipse(std::vector<Eigen::Vector2d> points) {
+  if (points.size() < 5) {
+    BEAM_CRITICAL("Not enough points to fit ellipse, minimum: 5.");
+    throw std::runtime_error{"Not enough points to fit ellipse, minimum: 5."};
+  }
   std::vector<cv::Vec2i> cv_points;
   for (auto& p : points) { cv_points.push_back(cv::Vec2i(p[1], p[0])); }
 

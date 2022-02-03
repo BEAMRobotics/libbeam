@@ -138,3 +138,14 @@ TEST_CASE("Circle extraction.") {
   }
   cv::imwrite("/tmp/beam_cv_utils_tests/out.png", source_image);
 }
+
+TEST_CASE("Ellipse fitting.") {
+  std::vector<Eigen::Vector2d> circle;
+  circle.push_back(Eigen::Vector2d(-1,0));
+  circle.push_back(Eigen::Vector2d(1,0));
+  circle.push_back(Eigen::Vector2d(0,1));
+  circle.push_back(Eigen::Vector2d(0,-1));
+  REQUIRE_THROWS(beam_cv::FitEllipse(circle));
+  circle.push_back(Eigen::Vector2d(-0.5,-0.5));
+  REQUIRE_NOTHROW(beam_cv::FitEllipse(circle));
+}
