@@ -1,9 +1,7 @@
 #include <beam_cv/Utils.h>
-
+#include <beam_utils/angles.h>
 #include <algorithm>
-
 #include <opencv2/highgui/highgui_c.h>
-
 #include <beam_cv/geometry/Triangulation.h>
 
 namespace beam_cv {
@@ -381,7 +379,7 @@ Eigen::Matrix2d FitEllipse(std::vector<Eigen::Vector2d> points) {
 
   float a = rect.size.width / 2; // width >= height
   float b = rect.size.height / 2;
-  float theta = rect.angle; // in degrees
+  float theta = beam::Deg2Rad(rect.angle); // in degrees
 
   double A = a * a * std::pow(std::sin(theta), 2) +
              b * b * std::pow(std::cos(theta), 2);
