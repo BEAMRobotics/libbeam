@@ -148,9 +148,16 @@ public:
    * directory is given (i.e. ending in /) the file will be named:
    * "poses_file_date"_poses.txt. If a full filename is given (i.e.
    * /path/filename.txt) it will keep that name.
+   * @param format_type string specifying i/o format. Currently supports "beam"
+   * and "rpg". By default, "beam" formatting is selected, formatting poses
+   * with i/o format: time T, where T is the homogeneous matrix representing
+   * pose in row-major order. When "rpg" is selected, poses are formatted with:
+   * time x y z qx qy qz qw. This format is required by the
+   * `rpg_trajectory_evaluation` package DOI: 10.1109/IROS.2018.8593941
    * @param output_dir full path to directory at which to save pose file
    */
-  void WriteToTXT(const std::string& output_dir) const;
+  void WriteToTXT(const std::string& output_dir,
+                  const std::string& format_type = "beam") const;
 
   /**
    * @brief loads the pose file in txt format
