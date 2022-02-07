@@ -385,24 +385,21 @@ Eigen::Matrix2d FitEllipse(std::vector<Eigen::Vector2d> points) {
   is outlined in https://en.wikipedia.org/wiki/Ellipse (finding the implicit
   equation)
   */
-  float xc = rect.center.x;
-  float yc = rect.center.y;
   float a = rect.size.width / 2; // width >= height
   float b = rect.size.height / 2;
-  float theta = beam::Deg2Rad(rect.angle); // in degrees
+  float theta = beam::Deg2Rad(rect.angle); // in radians
 
   double A = a * a * std::pow(std::sin(theta), 2) +
              b * b * std::pow(std::cos(theta), 2);
   double B = 2 * (b * b - a * a) * std::sin(theta) * std::cos(theta);
   double C = a * a * std::pow(std::cos(theta), 2) +
              b * b * std::pow(std::sin(theta), 2);
-  double F = A * xc * xc + B * xc * yc + C * yc * yc - a * a * b * b;
 
   Eigen::Matrix2d output = Eigen::Matrix2d::Zero();
-  output(0, 0) = A / F;
-  output(1, 0) = B / F / 2;
-  output(0, 1) = B / F / 2;
-  output(1, 1) = C / F;
+  output(0, 0) = A;
+  output(1, 0) = B / 2;
+  output(0, 1) = B / 2;
+  output(1, 1) = C;
   return output;
 }
 

@@ -141,11 +141,21 @@ TEST_CASE("Circle extraction.") {
 
 TEST_CASE("Ellipse fitting.") {
   std::vector<Eigen::Vector2d> circle;
-  circle.push_back(Eigen::Vector2d(-1,0));
-  circle.push_back(Eigen::Vector2d(1,0));
-  circle.push_back(Eigen::Vector2d(0,1));
-  circle.push_back(Eigen::Vector2d(0,-1));
+  circle.push_back(Eigen::Vector2d(-1, 0));
+  circle.push_back(Eigen::Vector2d(1, 0));
+  circle.push_back(Eigen::Vector2d(0, 1));
+  circle.push_back(Eigen::Vector2d(0, -1));
   REQUIRE_THROWS(beam_cv::FitEllipse(circle));
-  circle.push_back(Eigen::Vector2d(-0.5,-0.5));
+  circle.push_back(Eigen::Vector2d(-0.5, -0.5));
   REQUIRE_NOTHROW(beam_cv::FitEllipse(circle));
+
+  Eigen::Vector2i center(0, 0);
+  std::vector<Eigen::Vector2i> circle_gt = beam_cv::GetCircle(center, 2, 0.5);
+  std::vector<Eigen::Vector2d> circle2;
+  for (auto& p : circle_gt) { circle2.push_back(Eigen::Vector2d(p[0], p[1])); }
+  Eigen::Matrix2d ellipse = beam_cv::FitEllipse(circle2);
+  Eigen::Matrix2d GT;
+  GT << 4.71429, 0, 0, 4.71429;
+
+  REQUIRE(ellipse.isApprox(GT, 0.1));
 }
