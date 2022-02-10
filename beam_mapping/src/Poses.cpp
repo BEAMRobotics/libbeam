@@ -85,17 +85,17 @@ void Poses::AddSinglePose(const Eigen::Matrix4d& T_FIXED_MOVING) {
   poses_.push_back(T_FIXED_MOVING);
 }
 
-bool Poses::LoadFromFile(const std::string& input_pose_file_path) {
-  std::string pose_type = input_pose_file_path.substr(
+bool Poses::LoadFromFile(const std::string& input_pose_file_path,
+                         int format_type) {
+  std::string file_type = input_pose_file_path.substr(
       input_pose_file_path.rfind("."), input_pose_file_path.size());
-
-  if (pose_type == ".json") {
+  if (file_type == ".json") {
     LoadFromJSON(input_pose_file_path);
-  } else if (pose_type == ".ply") {
-    LoadFromPLY(input_pose_file_path);
-  } else if (pose_type == ".txt") {
-    LoadFromTXT(input_pose_file_path);
-  } else if (pose_type == ".pcd") {
+  } else if (file_type == ".ply") {
+    LoadFromPLY(input_pose_file_path, format_type);
+  } else if (file_type == ".txt") {
+    LoadFromTXT(input_pose_file_path, format_type);
+  } else if (file_type == ".pcd") {
     LoadFromPCD(input_pose_file_path);
   } else {
     return false;
@@ -103,13 +103,23 @@ bool Poses::LoadFromFile(const std::string& input_pose_file_path) {
   return true;
 }
 
-void Poses::WriteToJSON(const std::string& output_dir) const {
-  if (poses_.size() != time_stamps_.size()) {
-    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
-                  "outputting to pose file.");
-    throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose file."};
+bool Poses::WriteToFile(const std::string& output_dir,
+                        const std::string& file_type, int format_type) {
+  if (file_type == "JSON") {
+    WriteToJSON(output_dir);
+  } else if (file_type == "PLY") {
+    WriteToPLY(output_dir, format_type);
+  } else if (file_type == "TXT") {
+    WriteToTXT(output_dir, format_type);
+  } else {
+    BEAM_ERROR("Invalid file type, using default: JSON");
+    WriteToJSON(output_dir);
   }
+  return true;
+}
+
+void Poses::WriteToJSON(const std::string& output_dir) const {
+  CheckPoses();
 
   // write to json
   nlohmann::json J = {{"bag_name", bag_name_},
@@ -177,147 +187,217 @@ void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
   BEAM_INFO("Read {} poses.", poses_.size());
 }
 
-void Poses::WriteToTXT(const std::string& output_dir,
-                       const std::string& format_type) const {
-  if (poses_.size() != time_stamps_.size()) {
-    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
-                  "outputting to pose file.");
-    throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose file."};
+void Poses::WriteToTXT(const std::string& output_dir, int format_type) const {
+  CheckPoses();
+  if (format_type != format_type::Type1 && format_type != format_type::Type2) {
+    BEAM_ERROR("Invalid format_type, using default: Type1");
+    format_type = format_type::Type1;
   }
 
-  std::ofstream outfile = CreateFile(output_dir, ".txt");
+  std::ofstream filetxt = CreateFile(output_dir, ".txt");
 
-  for (size_t k = 0; k < poses_.size(); k++) {
-    Eigen::Matrix4d Tk = poses_[k];
-    Eigen::Quaterniond qk(Tk.block<3, 3>(0, 0));
-    std::stringstream line;
-    line.precision(9);
-    line << time_stamps_[k].toSec();
-
-    if (format_type == "rpg") {
-      line << " " << Tk(0, 3) << " " << Tk(1, 3) << " " << Tk(2, 3) << " "
-           << qk.x() << " " << qk.y() << " " << qk.z() << " " << qk.w()
-           << std::endl;
-    } else {
-      if (format_type != "beam") {
-        BEAM_ERROR("Invalid or missing format_type specified by user. Assuming "
-                   "type is beam");
+  switch (format_type) {
+    case format_type::Type1: {
+      for (size_t k = 0; k < poses_.size(); k++) {
+        const Eigen::Matrix4d& T = poses_.at(k);
+        filetxt << std::fixed << std::setprecision(9)
+                << time_stamps_[k].toNSec() << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(0, 0) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(0, 1) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(0, 2) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(0, 3) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(1, 0) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(1, 1) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(1, 2) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(1, 3) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(2, 0) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(2, 1) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(2, 2) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(2, 3) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(3, 0) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(3, 1) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(3, 2) << ", ";
+        filetxt << std::fixed << std::setprecision(7) << T(3, 3) << std::endl;
       }
-      line << ", " << Tk(0, 0) << ", " << Tk(0, 1) << ", " << Tk(0, 2) << ", "
-           << Tk(0, 3) << ", " << Tk(1, 0) << ", " << Tk(1, 1) << ", "
-           << Tk(1, 2) << ", " << Tk(1, 3) << ", " << Tk(2, 0) << ", "
-           << Tk(2, 1) << ", " << Tk(2, 2) << ", " << Tk(2, 3) << ", "
-           << Tk(3, 0) << ", " << Tk(3, 1) << ", " << Tk(3, 2) << ", "
-           << Tk(3, 3) << std::endl;
+      break;
     }
-    std::string line_str = line.str();
-    outfile << line_str;
+    case format_type::Type2: {
+      filetxt << "# time x y z qx qy qz qw" << std::endl;
+      for (size_t k = 0; k < poses_.size(); k++) {
+        const Eigen::Matrix4d& T = poses_.at(k);
+        Eigen::Matrix3d R = T.block(0, 0, 3, 3);
+        Eigen::Quaterniond q(R);
+        filetxt << std::fixed << std::setprecision(9) << time_stamps_[k].toSec()
+                << " ";
+        filetxt << std::fixed << std::setprecision(9) << T(0, 3) << " ";
+        filetxt << std::fixed << std::setprecision(9) << T(1, 3) << " ";
+        filetxt << std::fixed << std::setprecision(9) << T(2, 3) << " ";
+        filetxt << std::fixed << std::setprecision(9) << q.x() << " ";
+        filetxt << std::fixed << std::setprecision(9) << q.y() << " ";
+        filetxt << std::fixed << std::setprecision(9) << q.z() << " ";
+        filetxt << std::fixed << std::setprecision(9) << q.w() << std::endl;
+      }
+      break;
+    }
   }
 }
 
-void Poses::LoadFromTXT(const std::string& input_pose_file_path) {
+void Poses::LoadFromTXT(const std::string& input_pose_file_path,
+                        int format_type) {
   time_stamps_.clear();
   poses_.clear();
 
-  // declare variables
-  std::ifstream infile;
-  std::string line;
-  Eigen::Matrix4d Tk;
-  ros::Time time_stamp_k;
-  // open file
-  infile.open(input_pose_file_path);
-  // extract poses
-  while (!infile.eof()) {
-    // get timestamp k
-    std::getline(infile, line, ',');
-    if (line.length() > 0) {
-      try {
-        uint64_t n_sec =
-            std::stod(line.substr(line.length() - 9, line.length()));
-        uint64_t sec = std::stod(line.substr(0, line.length() - 9));
-        time_stamp_k.sec = sec;
-        time_stamp_k.nsec = n_sec;
-      } catch (const std::invalid_argument& e) {
-        BEAM_CRITICAL("Invalid argument, probably at end of file");
-        throw std::invalid_argument{
-            "Invalid argument, probably at end of file"};
-      }
-
-      for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-          if (i == 3 && j == 3) {
-            std::getline(infile, line, '\n');
-            Tk(i, j) = std::stod(line);
-          } else {
-            std::getline(infile, line, ',');
-            Tk(i, j) = std::stod(line);
-          }
-        }
-      }
-      time_stamps_.push_back(time_stamp_k);
-      poses_.push_back(Tk);
-    }
+  if (format_type != format_type::Type1 && format_type != format_type::Type2) {
+    BEAM_ERROR("Invalid format_type, using default: Type1");
+    format_type = format_type::Type1;
   }
-  BEAM_INFO("Read {} poses.", poses_.size());
+
+  std::ifstream file(input_pose_file_path);
+  std::string delim = ",";
+  std::string s;
+  if (format_type == format_type::Type2) {
+    delim = " ";
+    std::getline(file, s); // read in first line, which is a comment
+  }
+
+  while (std::getline(file, s)) {
+    std::vector<double> vals;
+    PopulateValues(delim, s, vals);
+
+    ros::Time time_stamp;
+    Eigen::Matrix4d T;
+
+    switch (format_type) {
+      case format_type::Type1: {
+        std::string time_string = std::to_string(vals[0]);
+
+        // remove trailing zeros from double to string conversion
+        std::size_t loc = time_string.find(".");
+        time_string = time_string.substr(0, loc);
+
+        // nsec and sec fields are fixed
+        uint64_t n_sec = std::stod(
+            time_string.substr(time_string.length() - 9, time_string.length()));
+        uint64_t sec =
+            std::stod(time_string.substr(0, time_string.length() - 9));
+        time_stamp.sec = sec;
+        time_stamp.nsec = n_sec;
+
+        // reshape transformation matrix from vector to matrix
+        std::vector<double> pose(vals.begin() + 1, vals.end());
+        T = beam::VectorToEigenTransform(pose);
+        break;
+      }
+      case format_type::Type2: {
+        ros::Time time_stamp_temp(vals[0]);
+        time_stamp = time_stamp_temp;
+        Eigen::Vector3d p(vals[1], vals[2], vals[3]);
+        Eigen::Quaterniond q(vals[7], vals[4], vals[5], vals[6]);
+        beam::QuaternionAndTranslationToTransformMatrix(q, p, T);
+        break;
+      }
+    }
+
+    time_stamps_.push_back(time_stamp);
+    poses_.push_back(T);
+  }
 }
 
-void Poses::WriteToPLY(const std::string& output_dir) const {
-  if (poses_.size() != time_stamps_.size()) {
-    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
-                  "outputting to pose file.");
-    throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose file."};
+void Poses::WriteToPLY(const std::string& output_dir, int format_type) const {
+  CheckPoses();
+  if (format_type != format_type::Type1 && format_type != format_type::Type2) {
+    BEAM_ERROR("Invalid format_type. Assuming Type1");
+    format_type = format_type::Type1;
   }
 
   std::ofstream fileply = CreateFile(output_dir, ".ply");
-  double t_start = time_stamps_.at(0).toSec();
+  const ros::Time& t_start = time_stamps_.at(0);
 
   fileply << "ply" << std::endl;
   fileply << "format ascii 1.0" << std::endl;
   fileply << "comment UTC time at start ";
-  fileply << std::fixed << std::setprecision(17) << t_start << std::endl;
+  fileply << std::fixed << std::setprecision(6) << t_start.toSec() << std::endl;
   fileply << "comment Local time at start " << pose_file_date_ << std::endl;
   fileply << "comment bag_file " << bag_name_ << std::endl;
   fileply << "comment fixed_frame " << fixed_frame_ << std::endl;
   fileply << "comment moving_frame " << moving_frame_ << std::endl;
-  fileply << "comment orientation_type "
-          << "RPY" << std::endl;
-  fileply << "element vertex " << time_stamps_.size() << std::endl;
-  fileply << "property float x" << std::endl;
-  fileply << "property float y" << std::endl;
-  fileply << "property float z" << std::endl;
-  fileply << "property float roll" << std::endl;
-  fileply << "property float pitch" << std::endl;
-  fileply << "property float yaw" << std::endl;
-  fileply << "property float time" << std::endl;
-  fileply << "property float scalar_confidence_metric" << std::endl;
-  fileply << "end_header" << std::endl;
 
-  for (size_t k = 0; k < poses_.size(); k++) {
-    Eigen::Affine3d TA(poses_.at(k));
-    Eigen::RowVector3d Tk = TA.translation();
-    Eigen::RowVector3d Mk = TA.rotation().eulerAngles(0, 1, 2);
-    double t = time_stamps_.at(k).toSec() - t_start;
-    fileply << std::fixed << std::setprecision(7) << Tk[0] << " ";
-    fileply << std::fixed << std::setprecision(7) << Tk[1] << " ";
-    fileply << std::fixed << std::setprecision(7) << Tk[2] << " ";
-    fileply << std::fixed << std::setprecision(7) << Mk[0] << " ";
-    fileply << std::fixed << std::setprecision(7) << Mk[1] << " ";
-    fileply << std::fixed << std::setprecision(7) << Mk[2] << " ";
-    fileply << std::fixed << std::setprecision(7) << t << " ";
-    fileply << std::fixed << std::setprecision(7) << 1.000000 << std::endl;
+  switch (format_type) {
+    case format_type::Type1: {
+      fileply << "comment orientation_type RPY" << std::endl;
+      fileply << "element vertex " << time_stamps_.size() << std::endl;
+      fileply << "property float x" << std::endl;
+      fileply << "property float y" << std::endl;
+      fileply << "property float z" << std::endl;
+      fileply << "property float roll" << std::endl;
+      fileply << "property float pitch" << std::endl;
+      fileply << "property float yaw" << std::endl;
+      fileply << "property float time" << std::endl;
+      fileply << "property float scalar_confidence_metric" << std::endl;
+      fileply << "end_header" << std::endl;
+
+      for (size_t k = 0; k < poses_.size(); k++) {
+        double t = (time_stamps_.at(k) - t_start).toSec();
+        const Eigen::Matrix4d& T = poses_.at(k);
+        Eigen::Vector3d p;
+        Eigen::Vector3d euler;
+        Eigen::Quaterniond q;
+        beam::TransformMatrixToQuaternionAndTranslation(T, q, p);
+        beam::QuaterniontoRPY(q, euler);
+        fileply << std::fixed << std::setprecision(7) << p.x() << " ";
+        fileply << std::fixed << std::setprecision(7) << p.y() << " ";
+        fileply << std::fixed << std::setprecision(7) << p.z() << " ";
+        fileply << std::fixed << std::setprecision(7) << euler.x() << " ";
+        fileply << std::fixed << std::setprecision(7) << euler.y() << " ";
+        fileply << std::fixed << std::setprecision(7) << euler.z() << " ";
+        fileply << std::fixed << std::setprecision(7) << t << " ";
+        fileply << std::fixed << std::setprecision(7) << 1.000000 << std::endl;
+      }
+      break;
+    }
+    case format_type::Type2: {
+      fileply << "comment orientation_type Quaternion" << std::endl;
+      fileply << "element vertex " << time_stamps_.size() << std::endl;
+      fileply << "property float x" << std::endl;
+      fileply << "property float y" << std::endl;
+      fileply << "property float z" << std::endl;
+      fileply << "property float qw" << std::endl;
+      fileply << "property float qx" << std::endl;
+      fileply << "property float qy" << std::endl;
+      fileply << "property float qz" << std::endl;
+      fileply << "property float time_nsec" << std::endl;
+      fileply << "end_header" << std::endl;
+
+      for (size_t k = 0; k < poses_.size(); k++) {
+        double t = (time_stamps_.at(k) - t_start).toNSec();
+        const Eigen::Matrix4d& T = poses_.at(k);
+        Eigen::Vector3d p;
+        Eigen::Quaterniond q;
+        beam::TransformMatrixToQuaternionAndTranslation(T, q, p);
+        fileply << std::fixed << std::setprecision(7) << p.x() << " ";
+        fileply << std::fixed << std::setprecision(7) << p.y() << " ";
+        fileply << std::fixed << std::setprecision(7) << p.z() << " ";
+        fileply << std::fixed << std::setprecision(7) << q.w() << " ";
+        fileply << std::fixed << std::setprecision(7) << q.x() << " ";
+        fileply << std::fixed << std::setprecision(7) << q.y() << " ";
+        fileply << std::fixed << std::setprecision(7) << q.z() << " ";
+        fileply << std::fixed << std::setprecision(0) << t << std::endl;
+      }
+      break;
+    }
   }
 }
 
-void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
+void Poses::LoadFromPLY(const std::string& input_pose_file_path,
+                        int format_type) {
   time_stamps_.clear();
   poses_.clear();
 
-  std::string delim = " ";
   std::ifstream file(input_pose_file_path);
+  double start_time_sec{0};
+  double start_time_nsec{0};
   std::string str;
-  double time_start = 0;
+  std::string orientation_type;
   std::string string1 = "comment UTC time at start ";
   std::string string2 = "comment Local time at start ";
   std::string string3 = "comment bag_file ";
@@ -325,12 +405,14 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
   std::string string5 = "comment moving_frame ";
   std::string string6 = "comment orientation_type ";
 
-  std::string orientation_type;
-
   while (std::getline(file, str)) {
     if (str.substr(0, string1.size()) == string1) {
       str.erase(0, string1.size());
-      time_start = std::stod(str);
+      size_t pos = str.find(".");
+      start_time_sec = std::stod(str.substr(0, pos));
+      str.erase(0, pos + 1);
+      while (str.size() < 9) { str += "0"; }
+      start_time_nsec = std::stod(str);
     }
     if (str.substr(0, string2.size()) == string2) {
       str.erase(0, string2.size());
@@ -355,128 +437,158 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path) {
     if (str == "end_header") { break; }
   }
 
-  if (orientation_type == "RPY") {
-    LoadFromPLY1(file, delim, time_start);
-  } else if (orientation_type == "quaternion") {
-    LoadFromPLY2(file, delim, time_start);
-  } else {
-    BEAM_ERROR("Invalid or missing orientation_type in ply header. Assuming "
-               "type is RPY");
-    LoadFromPLY1(file, delim, time_start);
+  if (!orientation_type.empty()) {
+    if (boost::iequals(orientation_type, "RPY"))
+      format_type = format_type::Type1;
+    else if (boost::iequals(orientation_type, "Quaternion")) {
+      format_type = format_type::Type2;
+    } else {
+      BEAM_ERROR("Invalid or missing orientation_type in ply header. Assuming "
+                 "type is RPY");
+      format_type = format_type::Type1;
+    }
+  } else if (format_type != format_type::Type1 &&
+             format_type != format_type::Type2) {
+    BEAM_ERROR("Invalid format_type. Assuming Type1");
+    format_type = format_type::Type1;
+  }
+
+  ros::Time time_start(start_time_sec, start_time_nsec);
+  std::string delim = " ";
+  std::string s;
+
+  while (std::getline(file, s)) {
+    std::vector<double> vals;
+    PopulateValues(delim, s, vals);
+
+    ros::Duration duration;
+    Eigen::Quaterniond q;
+
+    switch (format_type) {
+      case format_type::Type1: {
+        duration.fromSec(vals[6]);
+        double roll = vals[3];
+        double pitch = vals[4];
+        double yaw = vals[5];
+        beam::RPYtoQuaternion(roll, pitch, yaw, q);
+        break;
+      }
+      case format_type::Type2: {
+        duration.fromNSec(vals[7]);
+        q.w() = vals[3];
+        q.x() = vals[4];
+        q.y() = vals[5];
+        q.z() = vals[6];
+        q.normalize();
+        break;
+      }
+    }
+
+    Eigen::Matrix4d T;
+    Eigen::Vector3d p(vals[0], vals[1], vals[2]);
+    beam::QuaternionAndTranslationToTransformMatrix(q, p, T);
+    poses_.push_back(T);
+
+    ros::Time time_stamp = time_start + duration;
+    time_stamps_.push_back(time_stamp);
   }
 }
 
-void Poses::LoadFromPLY1(std::ifstream& file, const std::string& delim,
-                         double start_time_seconds) {
-  std::string s;
-  while (std::getline(file, s)) {
-    size_t pos = 0;
-    std::vector<double> vals;
-    while ((pos = s.find(delim)) != std::string::npos) {
-      double val = std::stof(s.substr(0, pos));
-      s.erase(0, pos + delim.length());
-      vals.push_back(val);
-    }
-    double x = vals[0], y = vals[1], z = vals[2];
-    double roll = vals[3], pitch = vals[4], yaw = vals[5];
-    double time_since_start = vals[6];
-    double time_stamp_sec = time_since_start + start_time_seconds;
-    ros::Time t(time_stamp_sec);
+void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
 
-    Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
-    Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
-    Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
-    Eigen::Quaternion<double> q = rollAngle * pitchAngle * yawAngle;
-    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-    T.block(0, 0, 3, 3) = q.matrix();
-    T(0, 3) = x;
-    T(1, 3) = y;
-    T(2, 3) = z;
+  // creat cloud ptr
+  pcl::PointCloud<PointXYZIRPYT>::Ptr cloud =
+      std::make_shared<pcl::PointCloud<PointXYZIRPYT>>();
 
+  // load PCD
+  int pcl_loaded =
+      pcl::io::loadPCDFile<PointXYZIRPYT>(input_pose_file_path, *cloud);
+  if (pcl_loaded == -1) {
+    BEAM_CRITICAL("Cannot load poses from PCD file");
+    throw std::runtime_error{
+        "Check point type used in PCD. Cannot create pose file."};
+  }
+
+  // process PCD
+  for (const auto& point : *cloud) {
+    Eigen::Matrix4d T;
+    ros::Time t;
+    beam::PCLPointToPose(point, t, T);
     poses_.push_back(T);
     time_stamps_.push_back(t);
   }
 }
 
-void Poses::WriteToPLY2(const std::string& output_dir) const {
-  if (poses_.size() != time_stamps_.size()) {
-    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
-                  "outputting to pose file.");
-    throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose file."};
-  }
+void Poses::LoadFromBAG(const std::string& bag_file_path,
+                        const std::string& topic) {
+  time_stamps_.clear();
+  poses_.clear();
 
-  std::ofstream fileply = CreateFile(output_dir, ".ply");
+  boost::filesystem::path p(bag_file_path);
+  bag_name_ = p.stem().string();
 
-  const ros::Time& t_start = time_stamps_.at(0);
+  // open bag
+  rosbag::Bag bag;
+  BEAM_INFO("Opening bag: {}", bag_file_path);
+  bag.open(bag_file_path, rosbag::bagmode::Read);
 
-  fileply << "ply" << std::endl;
-  fileply << "format ascii 1.0" << std::endl;
-  fileply << "comment UTC time at start ";
-  fileply << std::fixed << std::setprecision(17) << t_start.toSec()
-          << std::endl;
-  fileply << "comment Local time at start " << pose_file_date_ << std::endl;
-  fileply << "comment bag_file: " << bag_name_ << std::endl;
-  fileply << "comment fixed_frame: " << fixed_frame_ << std::endl;
-  fileply << "comment moving_frame: " << moving_frame_ << std::endl;
-  fileply << "comment orientation_type "
-          << "quaternion" << std::endl;
-  fileply << "element vertex " << time_stamps_.size() << std::endl;
-  fileply << "property float x" << std::endl;
-  fileply << "property float y" << std::endl;
-  fileply << "property float z" << std::endl;
-  fileply << "property float qw" << std::endl;
-  fileply << "property float qx" << std::endl;
-  fileply << "property float qy" << std::endl;
-  fileply << "property float qz" << std::endl;
-  fileply << "property float time_nsec" << std::endl;
-  fileply << "end_header" << std::endl;
+  rosbag::View view(bag, rosbag::TopicQuery(topic), ros::TIME_MIN,
+                    ros::TIME_MAX, true);
 
-  for (size_t k = 0; k < poses_.size(); k++) {
-    const Eigen::Matrix4d& T = poses_.at(k);
-    Eigen::Matrix3d R = T.block(0, 0, 3, 3);
-    Eigen::Quaterniond q(R);
-    double t = (time_stamps_.at(k) - t_start).toNSec();
-    fileply << std::fixed << std::setprecision(7) << T(0, 3) << " ";
-    fileply << std::fixed << std::setprecision(7) << T(1, 3) << " ";
-    fileply << std::fixed << std::setprecision(7) << T(2, 3) << " ";
-    fileply << std::fixed << std::setprecision(7) << q.w() << " ";
-    fileply << std::fixed << std::setprecision(7) << q.x() << " ";
-    fileply << std::fixed << std::setprecision(7) << q.y() << " ";
-    fileply << std::fixed << std::setprecision(7) << q.z() << " ";
-    fileply << std::fixed << std::setprecision(17) << t << " " << std::endl;
-  }
-}
-
-void Poses::LoadFromPLY2(std::ifstream& file, const std::string& delim,
-                         double start_time_seconds) {
-  std::string s;
-  ros::Time time_start(start_time_seconds);
-
-  while (std::getline(file, s)) {
-    size_t pos = 0;
-    std::vector<double> vals;
-    while ((pos = s.find(delim)) != std::string::npos) {
-      double val = std::stof(s.substr(0, pos));
-      s.erase(0, pos + delim.length());
-      vals.push_back(val);
+  // first, check if input topic is odom or path
+  bool is_odom{true};
+  for (auto iter = view.begin(); iter != view.end(); iter++) {
+    auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
+    if (odom_msg == NULL) {
+      is_odom = false;
+    } else {
+      break;
     }
 
-    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-    T(0, 3) = vals[0];
-    T(1, 3) = vals[1];
-    T(2, 3) = vals[2];
-    Eigen::Quaterniond q(vals[3], vals[4], vals[5], vals[6]);
-    Eigen::Matrix3d R(q);
-    T.block(0, 0, 3, 3) = R;
-    poses_.push_back(T);
-
-    double time_since_start = vals[7];
-    ros::Duration duration;
-    duration.fromNSec(time_since_start);
-    ros::Time time_stamp = time_start + duration;
-    time_stamps_.push_back(time_stamp);
+    auto path_msg = iter->instantiate<nav_msgs::Path>();
+    if (path_msg == NULL) {
+      BEAM_CRITICAL("Input trajectory message in bag is not of type "
+                    "nav_msgs::Odometry or nav_msgs::Path");
+      throw std::runtime_error{"Invalid message type for input message topic."};
+    }
+    break;
   }
+
+  if (is_odom) {
+    BEAM_INFO("Loading odom messages from bag");
+    for (auto iter = view.begin(); iter != view.end(); iter++) {
+      auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
+      if (odom_msg == NULL) {
+        throw std::runtime_error{"Cannot instantiate odometry msg."};
+      }
+
+      // convert to poses
+      utils::OdomMsgToPoses(*odom_msg, poses_, time_stamps_, fixed_frame_,
+                            moving_frame_);
+    }
+  } else {
+    BEAM_INFO("Loading path messages from bag");
+    boost::shared_ptr<nav_msgs::Path> path_msg;
+    // get last path message
+    for (auto iter = view.begin(); iter != view.end(); iter++) {
+      path_msg = iter->instantiate<nav_msgs::Path>();
+    }
+
+    if (path_msg == NULL) {
+      throw std::runtime_error{"Cannot instantiate path msg."};
+    }
+
+    // convert to poses
+    utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
+                          moving_frame_);
+  }
+
+  if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
+  if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
+  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
+            poses_.size());
 }
 
 void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
@@ -782,106 +894,6 @@ void Poses::LoadLoopClosedPathsInterpolated(
   }
 }
 
-void Poses::LoadFromBAG(const std::string& bag_file_path,
-                        const std::string& topic) {
-  time_stamps_.clear();
-  poses_.clear();
-
-  boost::filesystem::path p(bag_file_path);
-  bag_name_ = p.stem().string();
-
-  // open bag
-  rosbag::Bag bag;
-  BEAM_INFO("Opening bag: {}", bag_file_path);
-  bag.open(bag_file_path, rosbag::bagmode::Read);
-
-  rosbag::View view(bag, rosbag::TopicQuery(topic), ros::TIME_MIN,
-                    ros::TIME_MAX, true);
-
-  // first, check if input topic is odom or path
-  bool is_odom{true};
-  for (auto iter = view.begin(); iter != view.end(); iter++) {
-    auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-    if (odom_msg == NULL) {
-      is_odom = false;
-    } else {
-      break;
-    }
-
-    auto path_msg = iter->instantiate<nav_msgs::Path>();
-    if (path_msg == NULL) {
-      BEAM_CRITICAL("Input trajectory message in bag is not of type "
-                    "nav_msgs::Odometry or nav_msgs::Path");
-      throw std::runtime_error{"Invalid message type for input message topic."};
-    }
-    break;
-  }
-
-  if (is_odom) {
-    BEAM_INFO("Loading odom messages from bag");
-    for (auto iter = view.begin(); iter != view.end(); iter++) {
-      auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-      if (odom_msg == NULL) {
-        throw std::runtime_error{"Cannot instantiate odometry msg."};
-      }
-
-      if (fixed_frame_.empty()) { fixed_frame_ = odom_msg->header.frame_id; }
-      if (moving_frame_.empty()) { moving_frame_ = odom_msg->child_frame_id; }
-      time_stamps_.push_back(odom_msg->header.stamp);
-      Eigen::Affine3d T_FIXED_MOVING;
-      Eigen::fromMsg(odom_msg->pose.pose, T_FIXED_MOVING);
-      poses_.push_back(T_FIXED_MOVING.matrix());
-    }
-  } else {
-    BEAM_INFO("Loading path messages from bag");
-    boost::shared_ptr<nav_msgs::Path> path_msg;
-    // get last path message
-    for (auto iter = view.begin(); iter != view.end(); iter++) {
-      path_msg = iter->instantiate<nav_msgs::Path>();
-    }
-
-    if (path_msg == NULL) {
-      throw std::runtime_error{"Cannot instantiate path msg."};
-    }
-
-    // convert to poses
-    utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
-                          moving_frame_);
-  }
-
-  if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
-  if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
-  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
-            poses_.size());
-}
-
-void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
-  time_stamps_.clear();
-  poses_.clear();
-
-  // creat cloud ptr
-  pcl::PointCloud<PointXYZIRPYT>::Ptr cloud =
-      std::make_shared<pcl::PointCloud<PointXYZIRPYT>>();
-
-  // load PCD
-  int pcl_loaded =
-      pcl::io::loadPCDFile<PointXYZIRPYT>(input_pose_file_path, *cloud);
-  if (pcl_loaded == -1) {
-    BEAM_CRITICAL("Cannot load poses from PCD file");
-    throw std::runtime_error{
-        "Check point type used in PCD. Cannot create pose file."};
-  }
-
-  // process PCD
-  for (const auto& point : *cloud) {
-    Eigen::Matrix4d T;
-    ros::Time t;
-    beam::PCLPointToPose(point, t, T);
-    poses_.push_back(T);
-    time_stamps_.push_back(t);
-  }
-}
-
 std::ofstream Poses::CreateFile(const std::string& output_path,
                                 const std::string& extension) const {
   // get lowercase of extension
@@ -928,6 +940,30 @@ std::ofstream Poses::CreateFile(const std::string& output_path,
 
   BEAM_INFO("Saving poses to file: {}", output_file);
   return std::ofstream(output_file);
+}
+
+void Poses::PopulateValues(const std::string& deliminator,
+                           std::string& input_string,
+                           std::vector<double>& values) {
+  size_t pos = 0;
+  input_string += deliminator;
+  while ((pos = input_string.find(deliminator)) != std::string::npos) {
+    double val = std::stod(input_string.substr(0, pos));
+    input_string.erase(0, pos + deliminator.length());
+    values.push_back(val);
+  }
+}
+
+bool Poses::CheckPoses() const {
+  if (poses_.size() != time_stamps_.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+    return false;
+  } else {
+    return true;
+  }
 }
 
 } // namespace beam_mapping

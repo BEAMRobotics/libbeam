@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 
 #include <beam_utils/math.h>
@@ -19,6 +20,38 @@ using pose_map_type = std::map<
     Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Matrix4d> > >;
 
 namespace utils {
+
+/**
+ * @brief convert a ROS odometry message to a vector of transforms and a vector
+ * of timestamps
+ * @param path input odometry msg
+ * @param poses reference to output poses. NOTE: This will not override the
+ * vector, it will add to it (push back).
+ * @param timestamps reference to output timestamps. NOTE: This will not
+ * override the vector, it will add to it (push back).
+ * @param fixed_frame reference to fixed frame to fill in. This will come from
+ * the odometry message header
+ * @param moving_frame reference to the moving frame to fill in. This will come
+ * from the odometry message header
+ */
+void OdomMsgToPoses(const nav_msgs::Odometry& odom,
+                    std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses,
+                    std::vector<ros::Time>& timestamps,
+                    std::string& fixed_frame, std::string& moving_frame);
+
+/**
+ * @brief convert a ROS odometry message to a vector of transforms and a vector
+ * of timestamps
+ * @param path input odometry msg
+ * @param poses reference to pose map. NOTE: this will not override poses,
+ * but add to them
+ * @param fixed_frame reference to fixed frame to fill in. This will come from
+ * the odometry message header
+ * @param moving_frame reference to the moving frame to fill in. This will come
+ * from the odometry message header
+ */
+void OdomMsgToPoses(const nav_msgs::Odometry& odom, pose_map_type& poses,
+                    std::string& fixed_frame, std::string& moving_frame);
 
 /**
  * @brief convert a ROS path message to a vector of transforms and a vector of

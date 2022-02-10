@@ -15,6 +15,8 @@ namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
+enum format_type { Type1 = 1, Type2 };
+
 /**
  * @brief class for map builder
  */
@@ -121,18 +123,34 @@ public:
   void AddSinglePose(const Eigen::Matrix4d& T_FIXED_MOVING);
 
   /**
-   * @brief load from file. This will lookup the extension this call the
-   * appropriate function.
-   * @param input_pose_file_path full path to pose file (ply or json or txt)
+   * @brief load from file. This will lookup the extension and call the
+   * appropriate load function.
+   * @param input_pose_file_path full path to pose file. File extensions
+   * supported include: .ply, .json, .txt, .pcd
+   * @param format_type int specifying i/o format type. Certain load
+   * functions will have the option to load a file with different formats. See
+   * load function documentation for details on the meaning of integer value
    * @return false if file type is incorrect
    */
-  bool LoadFromFile(const std::string& input_pose_file_path);
+  bool LoadFromFile(const std::string& input_pose_file_path,
+                    int format_type = format_type::Type1);
 
   /**
-   * @brief writes the pose file to the specified directory as JSON type. If a
-   * directory is given (i.e. ending in /) the file will be named:
-   * "poses_file_date"_poses.json. If a full filename is given (i.e.
-   * /path/filename.json) it will keep that name.
+   * @brief writes the pose file to the specified directory with file type
+   * specified by the user. If a directory is given (i.e. ending in /) the file
+   * will be named: "poses_file_date"_poses.file_type. If a full filename is
+   * given (i.e. /path/filename.file_type) it will keep that name.
+   * @param file_type specifies the file type to which poses are written. File
+   * types supported include: "JSON", "PLY", "TXT"
+   * @param format_type int specifying i/o format type. Certain load
+   * functions will have the option to load a file with different formats. See
+   * README for documentation
+   */
+  bool WriteToFile(const std::string& output_dir, const std::string& file_type,
+                   int format_type = format_type::Type1);
+
+  /**
+   * @brief writes the pose file to the specified directory as JSON type
    * @param output_dir full path to directory at which to save pose file
    */
   void WriteToJSON(const std::string& output_dir) const;
@@ -144,69 +162,44 @@ public:
   void LoadFromJSON(const std::string& input_pose_file_path);
 
   /**
-   * @brief writes the pose file to the specified directory as TXT type. If a
-   * directory is given (i.e. ending in /) the file will be named:
-   * "poses_file_date"_poses.txt. If a full filename is given (i.e.
-   * /path/filename.txt) it will keep that name.
-   * @param format_type string specifying i/o format. Currently supports "beam"
-   * and "rpg". By default, "beam" formatting is selected, formatting poses
-   * with i/o format: time T, where T is the homogeneous matrix representing
-   * pose in row-major order. When "rpg" is selected, poses are formatted with:
-   * time x y z qx qy qz qw. This format is required by the
-   * `rpg_trajectory_evaluation` package DOI: 10.1109/IROS.2018.8593941
+   * @brief writes the pose file to the specified directory as TXT type
    * @param output_dir full path to directory at which to save pose file
+   * @param format_type int specifying i/o format type.
    */
   void WriteToTXT(const std::string& output_dir,
-                  const std::string& format_type = "beam") const;
+                  int format_type = format_type::Type1) const;
 
   /**
    * @brief loads the pose file in txt format
    * @param input_pose_file_path full path to pose file
+   * @param format_type int specifying i/o format type.
    */
-  void LoadFromTXT(const std::string& input_pose_file_path);
+  void LoadFromTXT(const std::string& input_pose_file_path,
+                   int format_type = format_type::Type1);
 
   /**
-   * @brief writes the pose file to the specified directory as PLY type. If a
-   * directory is given (i.e. ending in /) the file will be named:
-   * "poses_file_date"_poses.ply. If a full filename is given (i.e.
-   * /path/filename.ply) it will keep that name.
+   * @brief writes the pose file to the specified directory as PLY type
    * @param output_dir full path to directory at which to save pose file
+   * @param format_type int specifying i/o format type.
    */
-  void WriteToPLY(const std::string& output_dir) const;
+  void WriteToPLY(const std::string& output_dir,
+                  int format_type = format_type::Type1) const;
 
   /**
    * @brief loads the pose file in PLY format. This checks the header comment
-   * orientation_type and calls LoadFromPLY1 if it's equal to RPY, or
-   * LoadFromPLY2 if it's quaternion
+   * orientation_type and loads PLY format in either "Type1" or "Type2"
+   * format, overriding format_type
+   * @param input_pose_file_path full path to pose file
+   * @param format_type int specifying i/o format type.
+   */
+  void LoadFromPLY(const std::string& input_pose_file_path,
+                   int format_type = format_type::Type1);
+
+  /**
+   * @brief loads the pose file in PCD format
    * @param input_pose_file_path full path to pose file
    */
-  void LoadFromPLY(const std::string& input_pose_file_path);
-
-  /**
-   * @brief writes the pose file to the specified directory as PLY type. For i/o
-   * format, see CreateFile function below.
-   * @param output_dir full path to directory at which to save pose file
-   */
-  void WriteToPLY2(const std::string& output_dir) const;
-
-  /**
-   * @brief loads the poses from a ply with format: x y z roll pitch yaw time
-   * confidence
-   * @param file file stream that is currently on the poses part of the file
-   * @param delim delim used for separating pose values
-   * @param start_time_seconds start time in seconds of the first pose
-   */
-  void LoadFromPLY1(std::ifstream& file, const std::string& delim,
-                    double start_time_seconds);
-
-  /**
-   * @brief loads the poses from a ply with format: x y z qw qx qy qz time
-   * @param file file stream that is currently on the poses part of the file
-   * @param delim delim used for separating pose values
-   * @param start_time_seconds start time in seconds of the first pose
-   */
-  void LoadFromPLY2(std::ifstream& file, const std::string& delim,
-                    double start_time_seconds);
+  void LoadFromPCD(const std::string& input_pose_file_path);
 
   /**
    * @brief loads the pose object using the odometry topic or path topic from a
@@ -234,19 +227,13 @@ public:
 
   /**
    * @brief Same as LoadLoopClosedPaths, but interpolates the corrections at
-   * each new pose. This makes sure the corrected trajectory is conitnuous
+   * each new pose. This makes sure the corrected trajectory is continuous
    * @param topic_loop_closed
    * @param topic_high_rate
    */
   void LoadLoopClosedPathsInterpolated(const std::string& bag_file_path,
                                        const std::string& topic_loop_closed,
                                        const std::string& topic_high_rate);
-
-  /**
-   * @brief loads the pose file in PCD format
-   * @param input_pose_file_path full path to pose file
-   */
-  void LoadFromPCD(const std::string& input_pose_file_path);
 
 private:
   /**
@@ -264,6 +251,21 @@ private:
    */
   std::ofstream CreateFile(const std::string& output_path,
                            const std::string& extension) const;
+
+  /**
+   * @brief converts tokens, seperated by a common deliminator, from an input
+   * string into a vector of numeric values
+   * @param deliminator deliminator seperating tokens
+   * @param input_string input string to parse
+   * @param values vector containing tokens as numeric values
+   */
+  void PopulateValues(const std::string& deliminator, std::string& input_string,
+                      std::vector<double>& values);
+
+  /**
+   * @brief ensures that the numer of poses matches the number of time stamps
+   */
+  bool CheckPoses() const;
 
   std::vector<ros::Time> time_stamps_;
   std::vector<Eigen::Matrix4d, beam::AlignMat4d> poses_;
