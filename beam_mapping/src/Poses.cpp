@@ -737,70 +737,96 @@ void Poses::LoadLoopClosedPathsInterpolated(
   BEAM_INFO("Opening bag: {}", bag_file_path);
   bag.open(bag_file_path, rosbag::bagmode::Read);
 
-  // load loop closed poses
+  // load loop closed (LC) poses
   rosbag::View view_loop_closed(bag, rosbag::TopicQuery(topic_loop_closed),
                                 ros::TIME_MIN, ros::TIME_MAX, true);
 
-  // first, check if input topic is path
+  // first, check if LC topic is path
   BEAM_INFO("Loading loop closed path messages from topic {}",
             topic_loop_closed);
   for (auto iter = view_loop_closed.begin(); iter != view_loop_closed.end();
        iter++) {
     auto path_msg_test = iter->instantiate<nav_msgs::Path>();
     if (path_msg_test == NULL) {
-      BEAM_CRITICAL(
-          "Input trajectory message in bag is not of type nav_msgs::Path");
+      BEAM_CRITICAL("Loop closed trajectory message in bag is not of type "
+                    "nav_msgs::Path");
       throw std::runtime_error{"Invalid message type for input message topic."};
     }
     break;
   }
 
-  // get last path message
-  boost::shared_ptr<nav_msgs::Path> path_msg;
+  // get last LC path message
+  boost::shared_ptr<nav_msgs::Path> path_msg_LC;
   for (auto iter = view_loop_closed.begin(); iter != view_loop_closed.end();
        iter++) {
-    path_msg = iter->instantiate<nav_msgs::Path>();
+    path_msg_LC = iter->instantiate<nav_msgs::Path>();
   }
-  if (path_msg == NULL) {
+  if (path_msg_LC == NULL) {
     throw std::runtime_error{"Cannot instantiate path msg."};
   }
 
-  // convert last path to tf tree
+  // convert last LC path to tf tree
   pose_map_type loop_closed_poses;
-  utils::PathMsgToPoses(*path_msg, loop_closed_poses, fixed_frame_,
+  utils::PathMsgToPoses(*path_msg_LC, loop_closed_poses, fixed_frame_,
                         moving_frame_);
 
-  // next, load high rate path
+  // next, load high rate (HR) path
   rosbag::View view_high_rate(bag, rosbag::TopicQuery(topic_high_rate),
                               ros::TIME_MIN, ros::TIME_MAX, true);
 
-  // first, check if input topic is path
-  BEAM_INFO("Loading high rate path messages from topic {}", topic_high_rate);
+  // first, check if HR topic is odom or path
+  BEAM_INFO("Loading high rate odom/path messages from topic {}",
+            topic_high_rate);
+  bool is_HR_odom{true};
+  boost::shared_ptr<nav_msgs::Odometry> odom_msg_HR;
+  boost::shared_ptr<nav_msgs::Path> path_msg_HR;
   for (auto iter = view_high_rate.begin(); iter != view_high_rate.end();
        iter++) {
-    auto path_msg_test = iter->instantiate<nav_msgs::Path>();
-    if (path_msg_test == NULL) {
-      BEAM_CRITICAL(
-          "Input trajectory message in bag is not of type nav_msgs::Path");
+    odom_msg_HR = iter->instantiate<nav_msgs::Odometry>();
+    if (odom_msg_HR == NULL) {
+      is_HR_odom = false;
+    } else {
+      break;
+    }
+
+    path_msg_HR = iter->instantiate<nav_msgs::Path>();
+    if (path_msg_HR == NULL) {
+      BEAM_CRITICAL("High rate trajectory message in bag is not of type "
+                    "nav_msgs::Odometry or nav_msgs::Path");
       throw std::runtime_error{"Invalid message type for input message topic."};
     }
     break;
   }
 
-  // get all high rate paths
+  // convert HR msgs to tf tree
   pose_map_type high_rate_poses;
   int num_duplicate_poses{0};
-  for (auto iter = view_high_rate.begin(); iter != view_high_rate.end();
-       iter++) {
-    path_msg = iter->instantiate<nav_msgs::Path>();
-    if (path_msg == NULL) {
-      throw std::runtime_error{"Cannot instantiate path msg."};
+  if (is_HR_odom) {
+    // get HR odometry
+    for (auto iter = view_high_rate.begin(); iter != view_high_rate.end();
+         iter++) {
+      odom_msg_HR = iter->instantiate<nav_msgs::Odometry>();
+      if (odom_msg_HR == NULL) {
+        throw std::runtime_error{"Cannot instantiate odom msg."};
+      }
+      utils::OdomMsgToPoses(*odom_msg_HR, high_rate_poses, fixed_frame_,
+                            moving_frame_);
     }
-    num_duplicate_poses += utils::PathMsgToPoses(*path_msg, high_rate_poses,
-                                                 fixed_frame_, moving_frame_);
+  } else {
+    // get all HR paths
+    for (auto iter = view_high_rate.begin(); iter != view_high_rate.end();
+         iter++) {
+      path_msg_HR = iter->instantiate<nav_msgs::Path>();
+      if (path_msg_HR == NULL) {
+        throw std::runtime_error{"Cannot instantiate path msg."};
+      }
+      num_duplicate_poses += utils::PathMsgToPoses(
+          *path_msg_HR, high_rate_poses, fixed_frame_, moving_frame_);
+    }
+    BEAM_INFO("Overrode {} duplicate poses.", num_duplicate_poses);
   }
-  BEAM_INFO("Overrode {} duplicate poses.", num_duplicate_poses);
 
+  // check LC and HR pose maps
   if (loop_closed_poses.empty() && high_rate_poses.empty()) {
     BEAM_ERROR("No poses read.");
     return;
@@ -839,28 +865,61 @@ void Poses::LoadLoopClosedPathsInterpolated(
   }
 
   // iterate through HR poses and build corrections
-  auto tmp_LC_iter = loop_closed_poses.begin();
   Eigen::Matrix4d T_WORLDCORR_WORLDEST;
+  beam_calibration::TfTree transforms_HR;
+  auto iter_HR_prev = high_rate_poses.begin();
+  auto iter_LC = loop_closed_poses.begin();
   for (auto iter_HR = high_rate_poses.begin(); iter_HR != high_rate_poses.end();
        iter_HR++) {
+    // get time of curent HR and LC poses
     const uint64_t& t_HR = iter_HR->first;
+    const uint64_t& t_LC = iter_LC->first;
 
     // if time of current HR pose is greater or equal to LC pose, then add
     // correction and increment LC iter
-    if (t_HR >= tmp_LC_iter->first && tmp_LC_iter != loop_closed_poses.end()) {
-      // get correction
-      const Eigen::Matrix4d& T_WORLDEST_BASELINKHR = iter_HR->second;
-      const Eigen::Matrix4d& T_WORLD_BASELINKLC = tmp_LC_iter->second;
-      tmp_LC_iter++;
+    if (t_HR >= t_LC && iter_LC != loop_closed_poses.end()) {
+      // get stamp of LC pose
+      ros::Time stamp_LC;
+      stamp_LC.fromNSec(t_LC);
+
+      // if time of current HR pose is greater than LC pose, then interpolate a
+      // HR pose at time of LC pose
+      Eigen::Matrix4d T_WORLDEST_BASELINKHR;
+      if (t_HR > t_LC) {
+        // add current and previous transforms to buffer
+        const Eigen::Affine3d T_WB_HR_prev(iter_HR_prev->second);
+        const Eigen::Affine3d T_WB_HR_curr(iter_HR->second);
+
+        ros::Time stamp_curr;
+        stamp_curr.fromNSec(t_HR);
+
+        ros::Time stamp_prev;
+        stamp_prev.fromNSec(iter_HR_prev->first);
+
+        transforms_HR.AddTransform(T_WB_HR_prev, "W", "B", stamp_prev);
+        transforms_HR.AddTransform(T_WB_HR_curr, "W", "B", stamp_curr);
+
+        // get transform at time of LC pose
+        T_WORLDEST_BASELINKHR =
+            transforms_HR.GetTransformEigen("W", "B", stamp_LC).matrix();
+      } else {
+        T_WORLDEST_BASELINKHR = iter_HR->second;
+      }
+
+      const Eigen::Matrix4d& T_WORLD_BASELINKLC = iter_LC->second;
       T_WORLDCORR_WORLDEST =
           T_WORLD_BASELINKLC * beam::InvertTransform(T_WORLDEST_BASELINKHR);
 
       // add correction to tf tree
       Eigen::Affine3d T(T_WORLDCORR_WORLDEST);
-      ros::Time stamp;
-      stamp.fromNSec(t_HR);
-      corrections.AddTransform(T, "WORLD_CORRECTED", "WORLD_ESTIMATED", stamp);
+      corrections.AddTransform(T, "WORLD_CORRECTED", "WORLD_ESTIMATED",
+                               stamp_LC);
+
+      // increment LC iterator
+      iter_LC++;
     }
+    // reset previous HR iterator
+    iter_HR_prev = iter_HR;
   }
 
   // if last HR pose is after last LC pose, then add a correction equal to the
