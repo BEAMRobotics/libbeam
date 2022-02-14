@@ -1,34 +1,39 @@
 import numpy as np
+import os
 import cv2
 import glob
 import sys
 import json
 from collections import OrderedDict
 import datetime
+import argparse
 
 def main():
-    if(len(sys.argv) != 8):
-        print("Invalid number of arguments.")
-        print("Usage:\n python Calibrator.py [path_to_images] [camera_model] [height] [width] [frame_id] [image_extension] [convert_to_gray]")
-        print("\n path_to_images: full path to images directory")
-        print("\n camera_model: equidistant (KB - fisheye) or radtan (pinhole with radtan dist)")
-        print("\n height: checkerboard height")
-        print("\n width: checkerboard width")
-        print("\n frame_id: to assign to intrinsics json")
-        print("\n image_extension: .jpg, .jpeg, or .png")
-        print("\n convert_to_gray: set to true if images are not mono or grayscale")
+    parser = argparse.ArgumentParser("Calibrate a set of images")
+    parser.add_argument('--path', type=str, default="", help='Path to directory containing images')
+    parser.add_argument('--model', type=str, default="radtan", help='Camera model to calibrate. Options: equidistant (KB - fisheye) or radtan (pinhole with radtan dist).')
+    parser.add_argument('--height', type=int, default=0, help='Checkerboard height')
+    parser.add_argument('--width', type=int, default=0, help='Checkerboard width')
+    parser.add_argument('--frame_id', type=str, default="", help='frame id to assign to intrinsics json')
+    parser.add_argument('--image_extension', type=str, default="", help='image_extension: .jpg, .jpeg, or .png')
+    parser.add_argument('--convert_to_gray', type=bool, default=False, help='Set to true to convert to grayscale if images are RGB')
+    args = parser.parse_args()
+
+    print("path: " + args.path)
+    print("model: " + args.model)
+    print("height: " + str(args.height))
+    print("width: " + str(args.width))
+    print("frame_id: " + args.frame_id)
+    print("image_extension: " + args.image_extension)
+    print("convert_to_gray: " + str(args.convert_to_gray))
+    
+    if args.model == "equidistant":
+        calibrateFisheye(args.path, args.height, args.width, args.frame_id, args.image_extension, args.convert_to_gray)
+    elif args.model == "radtan":
+        calibrateRadtan(args.path, args.height, args.width, args.frame_id, args.image_extension, args.convert_to_gray)
+    else:
+        print("ERROR: invalid type. Options: equidistant, radtan")    
         sys.exit()
-    method = sys.argv[1]
-    path = sys.argv[2]
-    height = int(sys.argv[3])
-    width = int(sys.argv[4])
-    frame_id = sys.argv[5]
-    image_extension = sys.argv[6]
-    convert_to_gray = bool(sys.argv[7])
-    if method == "equidistant":
-        calibrateFisheye(path, height, width, frame_id, image_extension, convert_to_gray)
-    elif method == "radtan":
-        calibrateRadtan(path, height, width, frame_id, image_extension, convert_to_gray)
 
 def calibrateRadtan(path, height, width, frame_id, image_extension, convert_to_gray):
 # termination criteria
@@ -39,32 +44,33 @@ def calibrateRadtan(path, height, width, frame_id, image_extension, convert_to_g
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
-    images = glob.glob(path + '/*' + image_extension)
     gray = None
     _img_shape = None
-    for fname in images:
-        print(fname)
-        img = cv2.imread(fname)
-        gray = img
-        if convert_to_gray:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    for fname in os.listdir(path):
+        if fname.endswith(image_extension):
+            print("Reading image: " + fname)
+            img = cv2.imread(path + fname)
+            gray = img
+            if convert_to_gray:
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        if _img_shape == None:
-            _img_shape = img.shape[:2]
-        else:
-            assert _img_shape == img.shape[:2], "All images must share the same size."
+            if _img_shape == None:
+                _img_shape = img.shape[:2]
+            else:
+                assert _img_shape == img.shape[:2], "All images must share the same size."
 
-        # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (height,width), None)
-        # If found, add object points, image points (after refining them)
-        if ret == True:
-            objpoints.append(objp)
-            corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
-            imgpoints.append(corners)
-            # Draw and display the corners
-            cv2.drawChessboardCorners(img, (height,width), corners2, ret)
-            cv2.imshow('img', img)
-            cv2.waitKey(500)
+            # Find the chess board corners
+            ret, corners = cv2.findChessboardCorners(gray, (height,width), None)
+            # If found, add object points, image points (after refining them)
+            if ret == True:
+                objpoints.append(objp)
+                corners2 = cv2.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+                imgpoints.append(corners)
+                # Draw and display the corners
+                cv2.drawChessboardCorners(img, (height,width), corners2, ret)
+                cv2.imshow('img', img)
+                cv2.waitKey(500)
 
     cv2.destroyAllWindows()
     ret, K, D, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
@@ -89,35 +95,37 @@ def calibrateFisheye(path, height, width, frame_id, image_extension, convert_to_
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob(path + '/*' + image_extension)
-    print('Looking for images in: ' + images)
+    print('Looking for images in: ' + path)
 
-    for fname in images:
-        print('reading image: ' + fname)
-        img = cv2.imread(fname)
-        gray = img
-        if convert_to_gray:
-            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    for fname in os.listdir(path):
+        if fname.endswith(image_extension):
+            print('reading image: ' + fname)
+            img = cv2.imread(path + fname)
+            gray = img
+            if convert_to_gray:
+                gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-        if _img_shape == None:
-            _img_shape = img.shape[:2]
-        else:
-            assert _img_shape == img.shape[:2], "All images must share the same size."
+            if _img_shape == None:
+                _img_shape = img.shape[:2]
+            else:
+                assert _img_shape == img.shape[:2], "All images must share the same size."
 
-        # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, CHECKERBOARD,None)
+            # Find the chess board corners
+            ret, corners = cv2.findChessboardCorners(gray, CHECKERBOARD,None)
 
-        # If found, add object points, image points (after refining them)
-        if ret == True:
-            objpoints.append(objp)
+            # If found, add object points, image points (after refining them)
+            if ret == True:
+                objpoints.append(objp)
 
-            corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-            imgpoints.append(corners2)
+                corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+                imgpoints.append(corners2)
 
-            # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2,ret)
-            cv2.imshow('img',img)
-            cv2.waitKey(500)
+                # Draw and display the corners
+                img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2,ret)
+                cv2.imshow('img',img)
+                cv2.waitKey(500)
+            else:
+                print("Could not detect corners")
 
     cv2.destroyAllWindows()
 
@@ -135,8 +143,7 @@ def calibrateFisheye(path, height, width, frame_id, image_extension, convert_to_
             D,
             rvecs,
             tvecs,
-            calibration_flags,
-            (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-6)
+            calibration_flags
         )
     intrinsics = [K[0,0], K[1,1], K[0,2], K[1,2]]
     coeffs = [D[0][0], D[1][0], D[2][0], D[3][0]]
