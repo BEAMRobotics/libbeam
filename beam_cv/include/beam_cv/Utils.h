@@ -3,6 +3,7 @@
  */
 
 #pragma once
+#include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
 
 #include <beam_calibration/CameraModel.h>
@@ -151,11 +152,10 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
  * @param pixels associated pixels
  * @param T_cam_world transform to camera
  */
-int CheckInliers(
-    std::shared_ptr<beam_calibration::CameraModel> cam,
-    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-    const Eigen::Matrix4d& T_cam_world, double inlier_threshold);
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
+                 const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+                 const Eigen::Matrix4d& T_cam_world, double inlier_threshold);
 
 /**
  * @brief performs entire matching pipeline
@@ -199,6 +199,21 @@ void DetectAndCompute(const cv::Mat& image,
 double ComputeMedianMatchDistance(std::vector<cv::DMatch> matches,
                                   const std::vector<cv::KeyPoint>& keypoints_1,
                                   const std::vector<cv::KeyPoint>& keypoints_2);
+
+/**
+ * @brief Gets a list of pixels forming a circle around the given one with a
+ * specified radius
+ * @param center of circle
+ * @param r radius of the circle
+ */
+std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r,
+                                       float threshold = 0.5);
+
+/**
+ * @brief Fits an ellipse to a set of 2d points
+ * @param points input points
+ */
+Eigen::Matrix2d FitEllipse(std::vector<Eigen::Vector2d> points);
 
 /**
  * @brief This class provides a simple yet efficient Union-Find data structure

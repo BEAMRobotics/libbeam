@@ -50,8 +50,9 @@ public:
    * @param cam camera model for image
    * @param pixels projected pixel locations of feature points in cam
    * @param points 3d locations of features
-   * @param A optional weighting matrix for the confidence of the initial
+   * @param A_in optional weighting matrix for the confidence of the initial
    * estimate
+   * @param A_out optional return value of the covaraince estimate
    * @param report string to store ceres report
    * @returns Refined transformation matrix
    */
@@ -60,7 +61,8 @@ public:
                  const std::shared_ptr<beam_calibration::CameraModel>& cam,
                  const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
                  const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-                 std::shared_ptr<Eigen::Matrix<double, 6, 6>> A = nullptr,
+                 std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_in = nullptr,
+                 std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_out = nullptr,
                  std::string& report = default_string,
                  bool remove_points_outside_domain = true);
 

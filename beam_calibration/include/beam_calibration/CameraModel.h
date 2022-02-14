@@ -10,8 +10,8 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <beam_utils/optional.h>
 #include <beam_utils/log.h>
+#include <beam_utils/optional.h>
 
 static bool default_bool = false;
 
@@ -58,7 +58,7 @@ public:
    * point is outside of the valid projection domain, then the point will not be
    * projected and will retain whatever value the input parameter has
    * @param[in] in_point 3d point to be projected [x,y,z]^T
-   * @param[out] out_pixel pixel the point projects to
+   * @param[out] out_pixel pixel the point projects to [col, row]
    * @param[in] J optional param to compute the jacobian
    * @param[out] in_image_plane true if the pixel is outside of the image plane
    * @return whether the input point is in the domain of the function
@@ -71,7 +71,7 @@ public:
   /**
    * @brief Method back projecting, if the input pixel is outside of back
    * projection domain then it will not compute the back projection
-   * @param[in] in_pixel pixel to back project
+   * @param[in] in_pixel pixel to back project [col, row]
    * @param[out] out_point ray towards the input pixel
    * @return return whether the input pixel is in the domain of the function
    */
@@ -90,6 +90,30 @@ public:
    * @param id of the camera to use
    */
   virtual void SetCameraID(const unsigned int id);
+
+  /**
+   * @brief Create the undistortion map
+   */
+  void InitUndistortMap();
+
+  /**
+   * @brief undistort a pixel
+   * @param pixel in distorted image
+   * @return undistorted pixel
+   */
+  Eigen::Vector2i UndistortPixel(Eigen::Vector2i pixel);
+
+  /**
+   * @brief Checks if a pixel is undistortable
+   * @param pixel in distorted image
+   * @return true or false
+   */
+  bool Undistortable(Eigen::Vector2i pixel);
+
+  /**
+   * @brief Returns a rectified camera model
+   */
+  std::shared_ptr<CameraModel> GetRectifiedModel();
 
   /**
    * @brief Method for adding the frame id
@@ -184,14 +208,15 @@ protected:
    */
   void OutputCameraTypes();
 
+  std::shared_ptr<cv::Mat> pixel_map_;
+  std::shared_ptr<CameraModel> rectified_model_;
+
   CameraType type_; // THIS SHOULD BE SET IN EACH DERIVED CLASS CONSTRUCTOR
   std::string frame_id_{""};
   std::string calibration_date_{""};
   uint32_t image_height_{0};
   uint32_t image_width_{0};
   Eigen::VectorXd intrinsics_;
-
-  // static bool outside_domain_default_ = false;
 
   unsigned int cam_id_ = 0;
 

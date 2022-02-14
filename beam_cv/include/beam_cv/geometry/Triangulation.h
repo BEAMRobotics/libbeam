@@ -26,14 +26,15 @@ public:
    * @param cam2 camera model for image 2
    * @param T_cam1_world transformation matrix from world to image 1 frame
    * @param T_cam2_world transformation matrix from world to image 2 frame
-   * @param p1 pixel in image 1 to triangulate
-   * @param p2 pixel in image 2 to triangulate
+   * @param p1 pixel in image 1 to triangulate [col, row]
+   * @param p2 pixel in image 2 to triangulate [col, row]
    */
   static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
-      const Eigen::Vector2i& p1, const Eigen::Vector2i& p2);
+      const Eigen::Vector2i& p1, const Eigen::Vector2i& p2,
+      double max_dist = 100);
 
   /**
    * @brief Triangulates single point given a single camera model and multiple

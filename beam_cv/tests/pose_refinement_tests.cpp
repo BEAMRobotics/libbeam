@@ -151,8 +151,8 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
   beam_cv::PoseRefinement refiner;
   std::string report1, report2;
   // refine pose 1
-  Eigen::Matrix4d refined_pose1 =
-      refiner.RefinePose(pose1, camera, pixels1, points1, nullptr, report1);
+  Eigen::Matrix4d refined_pose1 = refiner.RefinePose(
+      pose1, camera, pixels1, points1, nullptr, nullptr, report1);
   Eigen::Matrix4d target_refined1;
   target_refined1 << 0.999415, -0.0292887, 0.0176378, -0.0568712, -0.0262657,
       -0.32748, 0.944493, -0.00156549, -0.021887, -0.944404, -0.328058,
@@ -160,8 +160,8 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
 
   REQUIRE(refined_pose1.isApprox(target_refined1, 1e-3));
   // refine pose 2
-  Eigen::Matrix4d refined_pose2 =
-      refiner.RefinePose(pose2, camera, pixels2, points2, nullptr, report2);
+  Eigen::Matrix4d refined_pose2 = refiner.RefinePose(
+      pose2, camera, pixels2, points2, nullptr, nullptr, report2);
   Eigen::Matrix4d target_refined2;
   target_refined2 << 0.999323, -0.0335793, 0.0150601, -0.0582982, -0.0249295,
       -0.316631, 0.94822, -0.00263348, -0.027072, -0.947953, -0.317254,
@@ -170,7 +170,7 @@ TEST_CASE("Euroc VIO Refinement Tests.") {
 
   // refine pose 2 without removing bad points
   refined_pose2 = refiner.RefinePose(pose2, camera, pixels2, points2, nullptr,
-                                     report2, false);
+                                     nullptr, report2, false);
   REQUIRE(refined_pose2.isApprox(pose2, 1e-4));
 }
 
@@ -190,8 +190,8 @@ TEST_CASE("Refine given perfect correspondences, perfect pose.") {
   Eigen::Matrix4d estimate = Eigen::Matrix4d::Identity();
   beam_cv::PoseRefinement refiner;
   std::string report;
-  Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
+  Eigen::Matrix4d pose = refiner.RefinePose(estimate, cam, pixels, points,
+                                            nullptr, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-3));
@@ -213,8 +213,8 @@ TEST_CASE("Refine given perfect correspondences, perturbed pose.") {
   // refine pose
   beam_cv::PoseRefinement refiner;
   std::string report;
-  Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
+  Eigen::Matrix4d pose = refiner.RefinePose(estimate, cam, pixels, points,
+                                            nullptr, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-3));
@@ -241,8 +241,8 @@ TEST_CASE("Refine given perturbed pixels and points, perturbed pose.") {
   // refine pose
   beam_cv::PoseRefinement refiner;
   std::string report;
-  Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
+  Eigen::Matrix4d pose = refiner.RefinePose(estimate, cam, pixels, points,
+                                            nullptr, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-2));
@@ -268,15 +268,15 @@ TEST_CASE(
   PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
 
   // refine pose
-  beam::HighResolutionTimer timer;
   beam_cv::PoseRefinement refiner;
   std::string report;
+  std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_out =
+      std::make_shared<Eigen::Matrix<double, 6, 6>>();
   std::shared_ptr<Eigen::Matrix<double, 6, 6>> A =
       std::make_shared<Eigen::Matrix<double, 6, 6>>();
   *A = Eigen::Matrix<double, 6, 6>::Identity();
   Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, A, report);
-  BEAM_INFO("Pose Refinement Time: {}", timer.elapsed());
+      refiner.RefinePose(estimate, cam, pixels, points, A, A_out, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-1));
@@ -302,10 +302,10 @@ TEST_CASE("Refine given perturbed pixels and points, perturbed pose, using "
   PerturbCorrespondences(pixels, points, pixel_pert, point_pert);
 
   // refine pose
-  beam_cv::PoseRefinement refiner(10.0, true, 1, true);
+  beam_cv::PoseRefinement refiner(10.0, false, 1, true);
   std::string report;
-  Eigen::Matrix4d pose =
-      refiner.RefinePose(estimate, cam, pixels, points, nullptr, report);
+  Eigen::Matrix4d pose = refiner.RefinePose(estimate, cam, pixels, points,
+                                            nullptr, nullptr, report);
 
   Eigen::Matrix4d truth = Eigen::Matrix4d::Identity();
   REQUIRE(pose.isApprox(truth, 1e-1));

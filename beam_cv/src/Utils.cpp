@@ -1,10 +1,8 @@
-#include <beam_cv/Utils.h>
-
 #include <algorithm>
-
-#include <opencv2/highgui/highgui_c.h>
-
+#include <beam_cv/Utils.h>
 #include <beam_cv/geometry/Triangulation.h>
+#include <beam_utils/angles.h>
+#include <opencv2/highgui/highgui_c.h>
 
 namespace beam_cv {
 
@@ -263,11 +261,10 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
   return inliers;
 }
 
-int CheckInliers(
-    std::shared_ptr<beam_calibration::CameraModel> cam,
-    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-    const Eigen::Matrix4d& T_cam_world, double inlier_threshold) {
+int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam,
+                 const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
+                 const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
+                 const Eigen::Matrix4d& T_cam_world, double inlier_threshold) {
   if (points.size() != pixels.size()) {
     BEAM_WARN("Invalid input, number of points and pixels must match.");
     return -1;
@@ -351,6 +348,59 @@ double
   } else {
     return -1.0;
   }
+}
+
+std::vector<Eigen::Vector2i> GetCircle(Eigen::Vector2i center, uint32_t r,
+                                       float threshold) {
+  std::vector<Eigen::Vector2i> circle;
+  int top = center[0] - (r + 1);
+  int bot = center[0] + (r + 1);
+  int left = center[1] - (r + 1);
+  int right = center[1] + (r + 1);
+
+  Eigen::Vector2d centerd = center.cast<double>();
+  for (int row = top; row < bot; row++) {
+    for (int col = left; col < right; col++) {
+      Eigen::Vector2d current((double)row, (double)col);
+      double d = beam::distance(centerd, current);
+      if (d > r - threshold && d < r + threshold) {
+        circle.push_back(current.cast<int>());
+      }
+    }
+  }
+  return circle;
+}
+
+Eigen::Matrix2d FitEllipse(std::vector<Eigen::Vector2d> points) {
+  if (points.size() < 5) {
+    BEAM_CRITICAL("Not enough points to fit ellipse, minimum: 5.");
+    throw std::runtime_error{"Not enough points to fit ellipse, minimum: 5."};
+  }
+  std::vector<cv::Vec2i> cv_points;
+  for (auto& p : points) { cv_points.push_back(cv::Vec2i(p[1], p[0])); }
+
+  cv::RotatedRect rect = cv::fitEllipse(cv_points);
+  /*
+  An explanation of this method of extracting the conic section of the ellipse
+  is outlined in https://en.wikipedia.org/wiki/Ellipse (finding the implicit
+  equation)
+  */
+  float a = rect.size.width / 2; // width >= height
+  float b = rect.size.height / 2;
+  float theta = beam::Deg2Rad(rect.angle); // in radians
+
+  double A = a * a * std::pow(std::sin(theta), 2) +
+             b * b * std::pow(std::cos(theta), 2);
+  double B = 2 * (b * b - a * a) * std::sin(theta) * std::cos(theta);
+  double C = a * a * std::pow(std::cos(theta), 2) +
+             b * b * std::pow(std::sin(theta), 2);
+
+  Eigen::Matrix2d output = Eigen::Matrix2d::Zero();
+  output(0, 0) = A;
+  output(1, 0) = B / 2;
+  output(0, 1) = B / 2;
+  output(1, 1) = C;
+  return output;
 }
 
 } // namespace beam_cv
