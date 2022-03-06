@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <nlohmann/json.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -792,30 +793,15 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
 
   rosbag::View view(bag, rosbag::TopicQuery(topic), ros::TIME_MIN,
                     ros::TIME_MAX, true);
-
-  // first, check if input topic is odom or path
-  bool is_odom{true};
-  for (auto iter = view.begin(); iter != view.end(); iter++) {
-    auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-    if (odom_msg == NULL) {
-      is_odom = false;
-    } else {
-      break;
-    }
-
-    auto path_msg = iter->instantiate<nav_msgs::Path>();
-    if (path_msg == NULL) {
-      BEAM_CRITICAL("Input trajectory message in bag is not of type "
-                    "nav_msgs::Odometry or nav_msgs::Path");
-      throw std::runtime_error{"Invalid message type for input message topic."};
-    }
-    break;
-  }
-
-  if (is_odom) {
+  auto iter = view.begin();
+  auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
+  auto path_msg = iter->instantiate<nav_msgs::Path>();
+  auto geo_msg = iter->instantiate<geometry_msgs::TransformStamped>();
+  
+  if (odom_msg != NULL) {
     BEAM_INFO("Loading odom messages from bag");
     for (auto iter = view.begin(); iter != view.end(); iter++) {
-      auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
+      odom_msg = iter->instantiate<nav_msgs::Odometry>();
       if (odom_msg == NULL) {
         throw std::runtime_error{"Cannot instantiate odometry msg."};
       }
@@ -827,7 +813,7 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
       Eigen::fromMsg(odom_msg->pose.pose, T_FIXED_MOVING);
       poses_.push_back(T_FIXED_MOVING.matrix());
     }
-  } else {
+  } else if (path_msg != NULL) {
     BEAM_INFO("Loading path messages from bag");
     boost::shared_ptr<nav_msgs::Path> path_msg;
     // get last path message
@@ -842,6 +828,30 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
     // convert to poses
     utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
                           moving_frame_);
+  } else if (geo_msg != NULL){
+    BEAM_INFO("Loading geometry messages from bag");
+    for (auto iter = view.begin(); iter != view.end(); iter++) {
+      geo_msg = iter->instantiate<geometry_msgs::TransformStamped>();
+      if (geo_msg == NULL) {
+        throw std::runtime_error{"Cannot instantiate geometry msg."};
+      }
+
+      if (fixed_frame_.empty()) { fixed_frame_ = geo_msg->header.frame_id; }
+      if (moving_frame_.empty()) { moving_frame_ = geo_msg->child_frame_id; }
+      time_stamps_.push_back(geo_msg->header.stamp);
+      Eigen::Matrix4d T_FIXED_MOVING;
+      Eigen::Quaterniond q;
+      Eigen::fromMsg(geo_msg->transform.rotation, q);
+      Eigen::Matrix3d R = q.toRotationMatrix();
+      T_FIXED_MOVING.block(0,0,3,3) = R;
+      T_FIXED_MOVING(0,3) = geo_msg->transform.translation.x;
+      T_FIXED_MOVING(1,3) = geo_msg->transform.translation.y;
+      T_FIXED_MOVING(2,3) = geo_msg->transform.translation.z;
+      poses_.push_back(T_FIXED_MOVING.matrix());
+    }
+  } else {
+    BEAM_ERROR("Cannot instantiate message. Invalid message type. Options: nav_msgs::Odometry, nav_msgs::Path, geometry_msgs::TransformStamped");
+    throw std::runtime_error{"Cannot instantiate message."};
   }
 
   if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
