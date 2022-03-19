@@ -65,7 +65,7 @@ int DepthMap::ExtractDepthMapProjection(float thresh) {
     uint16_t col = coords(0, 0), row = coords(1, 0);
     float dist = beam::distance(point, origin);
     if ((depth_image_->at<float>(row, col) > dist ||
-         depth_image_->at<float>(row, col) > dist) &&
+         depth_image_->at<float>(row, col) == 0) &&
         dist < thresh) {
       depth_image_->at<float>(row, col) = dist;
     }
