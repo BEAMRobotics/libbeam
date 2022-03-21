@@ -83,15 +83,22 @@ void CameraModel::InitUndistortMap() {
   BEAM_INFO("Done.");
 }
 
-Eigen::Vector2i CameraModel::UndistortPixel(Eigen::Vector2i pixel) {
+bool CameraModel::UndistortPixel(const Eigen::Vector2i& in_pixel, Eigen::Vector2i& out_pixel) {
+  // create undistort map if it doesnt exist
   if (!pixel_map_) { InitUndistortMap(); }
-  cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(pixel[1], pixel[0]);
-  return Eigen::Vector2i(out[0], out[1]);
-}
 
-bool CameraModel::Undistortable(Eigen::Vector2i pixel) {
-  Eigen::Vector2i out = UndistortPixel(pixel);
-  if (out[0] == -999999 || out[1] == -999999) { return false; }
+  // add check for invalid input
+  if (in_pixel[1] >= (int)GetHeight() || in_pixel[0] >= (int)GetWidth() ||
+      in_pixel[1] < 0 || in_pixel[0] < 0) {
+    return false;
+  } else {
+    cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(in_pixel[1], in_pixel[0]);
+    if (out[0] == -999999 || out[1] == -999999) {
+      return false;
+    } else {
+      out_pixel = Eigen::Vector2i(out[0], out[1]);
+    }
+  }
   return true;
 }
 

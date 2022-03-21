@@ -115,7 +115,8 @@ TEST_CASE("Circle extraction.") {
   std::vector<Eigen::Vector2i> circle_und_gt =
       ReadCircle("circle_undistorted.txt");
   for (auto& p : circle) {
-    circle_und.push_back(cam_model_->UndistortPixel(p));
+    Eigen::Vector2i out;
+    if (cam_model_->UndistortPixel(p, out)) { circle_und.push_back(out); }
   }
   for (size_t i = 0; i < circle_und.size(); i++) {
     REQUIRE(circle_und[i] == circle_und_gt[i]);

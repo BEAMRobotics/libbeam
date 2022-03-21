@@ -98,17 +98,11 @@ public:
 
   /**
    * @brief undistort a pixel
-   * @param pixel in distorted image
-   * @return undistorted pixel
+   * @param in_pixel in distorted image
+   * @param out_pixel undistorted pixel
+   * @return whether its valid or not
    */
-  Eigen::Vector2i UndistortPixel(Eigen::Vector2i pixel);
-
-  /**
-   * @brief Checks if a pixel is undistortable
-   * @param pixel in distorted image
-   * @return true or false
-   */
-  bool Undistortable(Eigen::Vector2i pixel);
+  bool UndistortPixel(const Eigen::Vector2i& in_pixel, Eigen::Vector2i& out_pixel);
 
   /**
    * @brief Returns a rectified camera model
