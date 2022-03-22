@@ -47,7 +47,7 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& T_cam_world,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-    double reprojection_threshold, double max_dist) {
+    double max_dist) {
   if (pixels.size() != T_cam_world.size()) { return {}; }
   int rows = pixels.size() * 2;
   Eigen::MatrixXd A(rows, 4);
@@ -67,18 +67,9 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   x = svd.matrixV().col(A.cols() - 1);
   // check if result is in front of all cameras
   for (uint16_t i = 0; i < T_cam_world.size(); i++) {
-    Eigen::Vector3d T_x = (T_cam_world[i] * x).hnormalized();
+    Eigen::Vector3d T_x = (T_cam_world[i].inverse() * x).hnormalized();
     // check if its behind the image plane
     if (T_x[2] < 0.01 || T_x[2] > max_dist) { return {}; }
-    // compute reprojection error
-    if (reprojection_threshold != -1.0) {
-      Eigen::Vector2d reproj_pixel;
-      cam->ProjectPoint(T_x, reproj_pixel);
-      Eigen::Vector2i reproj_pixeli = reproj_pixel.cast<int>();
-      if (beam::distance(reproj_pixeli, pixels[i]) > reprojection_threshold) {
-        return {};
-      }
-    }
   }
 
   Eigen::Vector3d xp = x.hnormalized();
