@@ -67,7 +67,7 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   x = svd.matrixV().col(A.cols() - 1);
   // check if result is in front of all cameras
   for (uint16_t i = 0; i < T_cam_world.size(); i++) {
-    Eigen::Vector3d T_x = (T_cam_world[i].inverse() * x).hnormalized();
+    Eigen::Vector3d T_x = (T_cam_world[i] * x).hnormalized();
     // check if its behind the image plane
     if (T_x[2] < 0.01 || T_x[2] > max_dist) { return {}; }
   }
