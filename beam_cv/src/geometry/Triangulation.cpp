@@ -32,14 +32,16 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::Vector4d x;
   Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
   x = svd.matrixV().col(A.cols() - 1);
+  Eigen::Vector3d xp = x.hnormalized();
   // check if result is in front of both cameras
-  Eigen::Vector3d T_cam1_world_x = (T_cam1_world * x).hnormalized();
-  Eigen::Vector3d T_cam2_world_x = (T_cam2_world * x).hnormalized();
+  Eigen::Vector3d T_cam1_world_x =
+      (T_cam1_world * xp.homogeneous()).hnormalized();
+  Eigen::Vector3d T_cam2_world_x =
+      (T_cam2_world * xp.homogeneous()).hnormalized();
   if (T_cam1_world_x[2] < 0.01 || T_cam2_world_x[2] < 0.01 ||
       T_cam2_world_x[2] > max_dist || T_cam1_world_x[2] > max_dist) {
     return {};
   }
-  Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
 
@@ -65,14 +67,15 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::Vector4d x;
   Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
   x = svd.matrixV().col(A.cols() - 1);
+  Eigen::Vector3d xp = x.hnormalized();
+
   // check if result is in front of all cameras
   for (uint16_t i = 0; i < T_cam_world.size(); i++) {
-    Eigen::Vector3d T_x = (T_cam_world[i] * x).hnormalized();
+    Eigen::Vector3d T_x = (T_cam_world[i] * xp.homogeneous()).hnormalized();
     // check if its behind the image plane
-    if (T_x[2] < 0.01 || T_x[2] > max_dist) { return {}; }
+    if (T_x[2] < 0 || T_x[2] > max_dist) { return {}; }
   }
 
-  Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
 
