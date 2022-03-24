@@ -28,6 +28,8 @@ public:
    * @param T_cam2_world transformation matrix from world to image 2 frame
    * @param p1 pixel in image 1 to triangulate [col, row]
    * @param p2 pixel in image 2 to triangulate [col, row]
+   * @param max_dist maximum distance from the camera to accept as a valid
+   * solution
    */
   static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
@@ -42,12 +44,16 @@ public:
    * @param cam camera model
    * @param T_cam_world list of transforms form world to camera
    * @param pixels list of pixel locations in each camera image
+   * @param max_dist maximum distance from the camera to accept as a valid
+   * solution
+   * @param reprojection_threshold pixel reprojection trheshold to accept a
+   * solution (negative for no outlier checking)
    */
   static beam::opt<Eigen::Vector3d> TriangulatePoint(
       const std::shared_ptr<beam_calibration::CameraModel>& cam,
       const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& T_cam_world,
       const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-      double max_dist = 100);
+      double max_dist = 100, double reprojection_threshold = -1);
 
   /**
    * @brief Triangulates a list of points given two camera models and
