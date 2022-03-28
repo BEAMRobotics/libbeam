@@ -49,7 +49,7 @@ int DepthMap::ExtractDepthMap(float thresh) {
 int DepthMap::ExtractDepthMapProjection(float thresh) {
   // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
-                                           model_->GetWidth(), CV_32FC1);
+                                           model_->GetWidth(), CV_32FC1, double(0));
   for (uint32_t i = 0; i < cloud_->points.size(); i++) {
     Eigen::Vector3d origin(0, 0, 0);
     Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
@@ -133,7 +133,7 @@ Eigen::Vector3d DepthMap::GetXYZ(const Eigen::Vector2i& pixel) {
   }
   Eigen::Vector3d direction;
   if (model_->BackProject(pixel, direction)) {
-    Eigen::Vector3d coords = distance * direction;
+    Eigen::Vector3d coords = distance * direction.normalized();
     return coords;
   } else {
     BEAM_WARN("Pixel cannot be back projected, skipping.");
