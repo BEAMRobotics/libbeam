@@ -148,15 +148,34 @@ public:
    * directory is given (i.e. ending in /) the file will be named:
    * "poses_file_date"_poses.txt. If a full filename is given (i.e.
    * /path/filename.txt) it will keep that name.
+   * Format: timestamp T_WORLD_SENSOR
    * @param output_dir full path to directory at which to save pose file
    */
   void WriteToTXT(const std::string& output_dir) const;
 
   /**
    * @brief loads the pose file in txt format
+   * Format: timestamp T_WORLD_SENSOR
    * @param input_pose_file_path full path to pose file
    */
   void LoadFromTXT(const std::string& input_pose_file_path);
+
+  /**
+   * @brief writes the pose file to the specified directory as TXT type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.txt. If a full filename is given (i.e.
+   * /path/filename.txt) it will keep that name.
+   * Format: timestamp tx ty tz qx qy qz qw
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteToTXT2(const std::string& output_dir) const;
+
+  /**
+   * @brief loads the pose file in txt format
+   * Format: timestamp tx ty tz qx qy qz qw
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromTXT2(const std::string& input_pose_file_path);
 
   /**
    * @brief writes the pose file to the specified directory as PLY type. If a

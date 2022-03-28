@@ -4,9 +4,9 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
-#include <geometry_msgs/TransformStamped.h>
 #include <nlohmann/json.hpp>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -251,6 +251,81 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path) {
           }
         }
       }
+      time_stamps_.push_back(time_stamp_k);
+      poses_.push_back(Tk);
+    }
+  }
+  BEAM_INFO("Read {} poses.", poses_.size());
+}
+
+void Poses::WriteToTXT2(const std::string& output_dir) const {
+  if (poses_.size() != time_stamps_.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+
+  std::ofstream outfile = CreateFile(output_dir, ".txt");
+
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Matrix4d Tk = poses_[k];
+    Eigen::Vector3d p;
+    Eigen::Quaterniond q;
+    beam::TransformMatrixToQuaternionAndTranslation(Tk, q, p);
+
+    std::stringstream line;
+    line << std::fixed;
+    line << time_stamps_[k].toSec() << " " << p[0] << " " << p[1] << " " << p[2]
+         << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
+         << std::endl;
+    std::string line_str = line.str();
+    outfile << line_str;
+  }
+}
+
+void Poses::LoadFromTXT2(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
+
+  // declare variables
+  std::ifstream infile;
+  std::string line;
+  Eigen::Matrix4d Tk;
+  ros::Time time_stamp_k;
+  // open file
+  infile.open(input_pose_file_path);
+  // extract poses
+  while (!infile.eof()) {
+    // get timestamp k
+    std::getline(infile, line, ' ');
+    if (line.length() > 0) {
+      try {
+        double t = std::stod(line);
+        time_stamp_k = ros::Time(t);
+      } catch (const std::invalid_argument& e) {
+        BEAM_CRITICAL("Invalid argument, probably at end of file");
+        throw std::invalid_argument{
+            "Invalid argument, probably at end of file"};
+      }
+      Eigen::Vector3d p;
+      Eigen::Quaterniond q;
+      std::getline(infile, line, ' ');
+      p[0] = std::stod(line);
+      std::getline(infile, line, ' ');
+      p[1] = std::stod(line);
+      std::getline(infile, line, ' ');
+      p[2] = std::stod(line);
+      std::getline(infile, line, ' ');
+      q.x() = std::stod(line);
+      std::getline(infile, line, ' ');
+      q.y() = std::stod(line);
+      std::getline(infile, line, ' ');
+      q.z() = std::stod(line);
+      std::getline(infile, line, '\n');
+      q.w() = std::stod(line);
+
+      beam::QuaternionAndTranslationToTransformMatrix(q, p, Tk);
       time_stamps_.push_back(time_stamp_k);
       poses_.push_back(Tk);
     }
@@ -797,7 +872,7 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
   auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
   auto path_msg = iter->instantiate<nav_msgs::Path>();
   auto geo_msg = iter->instantiate<geometry_msgs::TransformStamped>();
-  
+
   if (odom_msg != NULL) {
     BEAM_INFO("Loading odom messages from bag");
     for (auto iter = view.begin(); iter != view.end(); iter++) {
@@ -828,7 +903,7 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
     // convert to poses
     utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
                           moving_frame_);
-  } else if (geo_msg != NULL){
+  } else if (geo_msg != NULL) {
     BEAM_INFO("Loading geometry messages from bag");
     for (auto iter = view.begin(); iter != view.end(); iter++) {
       geo_msg = iter->instantiate<geometry_msgs::TransformStamped>();
@@ -843,14 +918,16 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
       Eigen::Quaterniond q;
       Eigen::fromMsg(geo_msg->transform.rotation, q);
       Eigen::Matrix3d R = q.toRotationMatrix();
-      T_FIXED_MOVING.block(0,0,3,3) = R;
-      T_FIXED_MOVING(0,3) = geo_msg->transform.translation.x;
-      T_FIXED_MOVING(1,3) = geo_msg->transform.translation.y;
-      T_FIXED_MOVING(2,3) = geo_msg->transform.translation.z;
+      T_FIXED_MOVING.block(0, 0, 3, 3) = R;
+      T_FIXED_MOVING(0, 3) = geo_msg->transform.translation.x;
+      T_FIXED_MOVING(1, 3) = geo_msg->transform.translation.y;
+      T_FIXED_MOVING(2, 3) = geo_msg->transform.translation.z;
       poses_.push_back(T_FIXED_MOVING.matrix());
     }
   } else {
-    BEAM_ERROR("Cannot instantiate message. Invalid message type. Options: nav_msgs::Odometry, nav_msgs::Path, geometry_msgs::TransformStamped");
+    BEAM_ERROR(
+        "Cannot instantiate message. Invalid message type. Options: "
+        "nav_msgs::Odometry, nav_msgs::Path, geometry_msgs::TransformStamped");
     throw std::runtime_error{"Cannot instantiate message."};
   }
 
