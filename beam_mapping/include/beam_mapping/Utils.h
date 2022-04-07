@@ -15,6 +15,11 @@ namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
+using scan_data_type =
+    std::pair<std::vector<Eigen::Matrix4d>, std::vector<PointCloud::Ptr> >;
+
+using sensor_data_type = std::map<std::string, scan_data_type>;
+
 using pose_map_type = std::map<
     uint64_t, Eigen::Matrix4d, std::less<uint64_t>,
     Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Matrix4d> > >;

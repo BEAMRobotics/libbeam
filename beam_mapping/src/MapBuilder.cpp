@@ -188,12 +188,15 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
   Eigen::Matrix4d T_FIXED_INT = Eigen::Matrix4d::Identity();
   Eigen::Matrix4d T_INT_LIDAR = Eigen::Matrix4d::Identity();
 
+  std::vector<Eigen::Matrix4d> scan_poses;
   for (uint32_t k = 0; k < scans_.size(); k++) {
     intermediary_size++;
 
     // get the transforms we will need:
     T_FIXED_MOVING = interpolated_poses_.GetPoses()[k];
     T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
+    scan_poses.push_back(T_FIXED_LIDAR);
+
     if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
     T_INT_LIDAR = beam::InvertTransform(T_FIXED_INT) * T_FIXED_LIDAR;
 
@@ -216,6 +219,7 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
   PointCloud new_map = beam_filtering::FilterPointCloud<pcl::PointXYZ>(
       *scan_aggregate, output_filters_);
   maps_.push_back(std::make_shared<PointCloud>(new_map));
+  sensor_data_[sensor_frame] = std::make_pair(scan_poses, scans_);
 }
 
 void MapBuilder::SaveMaps() {
@@ -249,7 +253,7 @@ void MapBuilder::SaveMaps() {
   }
 }
 
-void MapBuilder::BuildMap() {
+void MapBuilder::BuildMap(bool save_map) {
   LoadTrajectory();
   for (uint8_t i = 0; i < sensors_.size(); i++) {
     scan_pose_last_ = Eigen::Matrix4d::Identity();
@@ -258,7 +262,7 @@ void MapBuilder::BuildMap() {
     LoadScans(i);
     GenerateMap(i);
   }
-  SaveMaps();
+  if (save_map) { SaveMaps(); };
 }
 
 } // namespace beam_mapping

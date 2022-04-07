@@ -13,6 +13,7 @@
 #include <beam_calibration/TfTree.h>
 #include <beam_filtering/Utils.h>
 #include <beam_mapping/Poses.h>
+#include <beam_mapping/Utils.h>
 #include <beam_utils/math.h>
 
 namespace beam_mapping {
@@ -65,8 +66,14 @@ public:
 
   /**
    * @brief performs the map building
+   * @param save_map set to true to save map to disk
    */
-  void BuildMap();
+  void BuildMap(bool save_map = true);
+
+  /**
+   * @brief get sensor data for post-processing
+   */
+  sensor_data_type GetSensorData() { return sensor_data_; };
 
 private:
   /**
@@ -133,7 +140,7 @@ private:
   std::vector<beam_filtering::FilterParamsType> intermediary_filters_;
   std::vector<beam_filtering::FilterParamsType> output_filters_;
 
-  // New objects
+  // Map Builder objects
   std::string map_frame_;
   beam_mapping::Poses slam_poses_;
   beam_mapping::Poses interpolated_poses_;
@@ -143,6 +150,7 @@ private:
   std::vector<PointCloud::Ptr> scans_;
   std::vector<PointCloud::Ptr> maps_;
   Eigen::Matrix4d scan_pose_last_;
+  sensor_data_type sensor_data_;
 };
 
 /** @} group mapping */
