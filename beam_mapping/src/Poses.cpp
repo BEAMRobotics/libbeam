@@ -253,14 +253,13 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path,
   }
 
   std::ifstream file(input_pose_file_path);
-  std::string delim = ",";
   std::string s;
-  if (format_type == format_type::Type2) {
-    delim = " ";
-    std::getline(file, s); // read in first line, which is a comment
-  }
+  std::string delim{","};
+  if (format_type == format_type::Type2) { delim = " "; };
 
   while (std::getline(file, s)) {
+    if (s[0] == '#') { continue; }
+
     std::vector<double> vals;
     PopulateValues(delim, s, vals);
 

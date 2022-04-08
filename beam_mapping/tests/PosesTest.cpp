@@ -163,7 +163,9 @@ TEST_CASE(
     "Test TXT read and write functionality with pose format type: Type2") {
   std::string pose_file_path = data_path_ + "PosesTestType2.txt";
   beam_mapping::Poses poses_read;
+  std::cout << "entering loading" << std::endl;
   poses_read.LoadFromFile(pose_file_path, beam_mapping::format_type::Type2);
+  std::cout << "loading done" << std::endl;
   auto transforms_read = poses_read.GetPoses();
   auto stamps_read = poses_read.GetTimeStamps();
 
