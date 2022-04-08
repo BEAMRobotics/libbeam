@@ -258,8 +258,9 @@ private:
    * @param deliminator deliminator seperating tokens
    * @param input_string input string to parse
    * @param values vector containing tokens as numeric values
+   * @return true if values is non-empty
    */
-  void PopulateValues(const std::string& deliminator, std::string& input_string,
+  bool PopulateValues(const std::string& deliminator, std::string& input_string,
                       std::vector<double>& values);
 
   /**

@@ -261,44 +261,43 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path,
     if (s[0] == '#') { continue; }
 
     std::vector<double> vals;
-    PopulateValues(delim, s, vals);
+    if (PopulateValues(delim, s, vals)) {
+      ros::Time time_stamp;
+      Eigen::Matrix4d T;
 
-    ros::Time time_stamp;
-    Eigen::Matrix4d T;
+      switch (format_type) {
+        case format_type::Type1: {
+          std::string time_string = std::to_string(vals[0]);
 
-    switch (format_type) {
-      case format_type::Type1: {
-        std::string time_string = std::to_string(vals[0]);
+          // remove trailing zeros from double to string conversion
+          std::size_t loc = time_string.find(".");
+          time_string = time_string.substr(0, loc);
 
-        // remove trailing zeros from double to string conversion
-        std::size_t loc = time_string.find(".");
-        time_string = time_string.substr(0, loc);
+          // nsec and sec fields are fixed
+          uint64_t n_sec = std::stod(time_string.substr(
+              time_string.length() - 9, time_string.length()));
+          uint64_t sec =
+              std::stod(time_string.substr(0, time_string.length() - 9));
+          time_stamp.sec = sec;
+          time_stamp.nsec = n_sec;
 
-        // nsec and sec fields are fixed
-        uint64_t n_sec = std::stod(
-            time_string.substr(time_string.length() - 9, time_string.length()));
-        uint64_t sec =
-            std::stod(time_string.substr(0, time_string.length() - 9));
-        time_stamp.sec = sec;
-        time_stamp.nsec = n_sec;
-
-        // reshape transformation matrix from vector to matrix
-        std::vector<double> pose(vals.begin() + 1, vals.end());
-        T = beam::VectorToEigenTransform(pose);
-        break;
+          // reshape transformation matrix from vector to matrix
+          std::vector<double> pose(vals.begin() + 1, vals.end());
+          T = beam::VectorToEigenTransform(pose);
+          break;
+        }
+        case format_type::Type2: {
+          ros::Time time_stamp_temp(vals[0]);
+          time_stamp = time_stamp_temp;
+          Eigen::Vector3d p(vals[1], vals[2], vals[3]);
+          Eigen::Quaterniond q(vals[7], vals[4], vals[5], vals[6]);
+          beam::QuaternionAndTranslationToTransformMatrix(q, p, T);
+          break;
+        }
       }
-      case format_type::Type2: {
-        ros::Time time_stamp_temp(vals[0]);
-        time_stamp = time_stamp_temp;
-        Eigen::Vector3d p(vals[1], vals[2], vals[3]);
-        Eigen::Quaterniond q(vals[7], vals[4], vals[5], vals[6]);
-        beam::QuaternionAndTranslationToTransformMatrix(q, p, T);
-        break;
-      }
+      time_stamps_.push_back(time_stamp);
+      poses_.push_back(T);
     }
-
-    time_stamps_.push_back(time_stamp);
-    poses_.push_back(T);
   }
 }
 
@@ -458,38 +457,38 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path,
 
   while (std::getline(file, s)) {
     std::vector<double> vals;
-    PopulateValues(delim, s, vals);
+    if (PopulateValues(delim, s, vals)) {
+      ros::Duration duration;
+      Eigen::Quaterniond q;
 
-    ros::Duration duration;
-    Eigen::Quaterniond q;
+      switch (format_type) {
+        case format_type::Type1: {
+          duration.fromSec(vals[6]);
+          double roll = vals[3];
+          double pitch = vals[4];
+          double yaw = vals[5];
+          beam::RPYtoQuaternion(roll, pitch, yaw, q);
+          break;
+        }
+        case format_type::Type2: {
+          duration.fromNSec(vals[7]);
+          q.w() = vals[3];
+          q.x() = vals[4];
+          q.y() = vals[5];
+          q.z() = vals[6];
+          q.normalize();
+          break;
+        }
+      }
 
-    switch (format_type) {
-      case format_type::Type1: {
-        duration.fromSec(vals[6]);
-        double roll = vals[3];
-        double pitch = vals[4];
-        double yaw = vals[5];
-        beam::RPYtoQuaternion(roll, pitch, yaw, q);
-        break;
-      }
-      case format_type::Type2: {
-        duration.fromNSec(vals[7]);
-        q.w() = vals[3];
-        q.x() = vals[4];
-        q.y() = vals[5];
-        q.z() = vals[6];
-        q.normalize();
-        break;
-      }
+      Eigen::Matrix4d T;
+      Eigen::Vector3d p(vals[0], vals[1], vals[2]);
+      beam::QuaternionAndTranslationToTransformMatrix(q, p, T);
+      poses_.push_back(T);
+
+      ros::Time time_stamp = time_start + duration;
+      time_stamps_.push_back(time_stamp);
     }
-
-    Eigen::Matrix4d T;
-    Eigen::Vector3d p(vals[0], vals[1], vals[2]);
-    beam::QuaternionAndTranslationToTransformMatrix(q, p, T);
-    poses_.push_back(T);
-
-    ros::Time time_stamp = time_start + duration;
-    time_stamps_.push_back(time_stamp);
   }
 }
 
@@ -1000,9 +999,10 @@ std::ofstream Poses::CreateFile(const std::string& output_path,
   return std::ofstream(output_file);
 }
 
-void Poses::PopulateValues(const std::string& deliminator,
+bool Poses::PopulateValues(const std::string& deliminator,
                            std::string& input_string,
                            std::vector<double>& values) {
+  values.clear();
   size_t pos = 0;
   input_string += deliminator;
   while ((pos = input_string.find(deliminator)) != std::string::npos) {
@@ -1010,6 +1010,9 @@ void Poses::PopulateValues(const std::string& deliminator,
     input_string.erase(0, pos + deliminator.length());
     values.push_back(val);
   }
+
+  if (values.empty()) { return false; }
+  return true;
 }
 
 bool Poses::CheckPoses() const {
