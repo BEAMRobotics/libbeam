@@ -15,7 +15,7 @@ namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
-enum format_type { Type1 = 1, Type2 };
+enum format_type { Type1 = 1, Type2, Type3 };
 
 /**
  * @brief class for map builder

@@ -225,7 +225,7 @@ void Poses::WriteToTXT(const std::string& output_dir, int format_type) const {
       filetxt << "# time x y z qx qy qz qw" << std::endl;
       for (size_t k = 0; k < poses_.size(); k++) {
         const Eigen::Matrix4d& T = poses_.at(k);
-        Eigen::Matrix3d R = T.block(0, 0, 3, 3);
+        Eigen::Matrix3d R(T.block(0, 0, 3, 3));
         Eigen::Quaterniond q(R);
         filetxt << std::fixed << std::setprecision(9) << time_stamps_[k].toSec()
                 << " ";
@@ -464,10 +464,7 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path,
       switch (format_type) {
         case format_type::Type1: {
           duration.fromSec(vals[6]);
-          double roll = vals[3];
-          double pitch = vals[4];
-          double yaw = vals[5];
-          beam::RPYtoQuaternion(roll, pitch, yaw, q);
+          beam::RPYtoQuaternion(vals[3], vals[4], vals[5], q);
           break;
         }
         case format_type::Type2: {
