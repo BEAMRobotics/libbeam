@@ -17,13 +17,15 @@ MapBuilder::MapBuilder(const std::string& bag_file,
                        const std::string& pose_file,
                        const std::string& output_directory,
                        const std::string& extrinsics,
-                       const std::string& poses_moving_frame)
+                       const std::string& poses_moving_frame,
+                       int poses_format_type)
     : bag_file_path_(bag_file),
       config_file_(config_file),
       pose_file_path_(pose_file),
       save_dir_(output_directory),
       extrinsics_file_(extrinsics),
-      poses_moving_frame_(poses_moving_frame) {
+      poses_moving_frame_(poses_moving_frame),
+      poses_format_type_(poses_format_type) {
   LoadConfigFromJSON();
 }
 
@@ -67,11 +69,11 @@ void MapBuilder::LoadConfigFromJSON() {
 }
 
 void MapBuilder::LoadTrajectory() {
-  if (!slam_poses_.LoadFromFile(pose_file_path_)) {
+  if (!slam_poses_.LoadFromFile(pose_file_path_, poses_format_type_)) {
     BEAM_CRITICAL(
-        "Invalid pose file type. Valid extensions: .ply, .json, .pcd");
+        "Invalid pose file type. Valid extensions: .ply, .json, .txt, .pcd");
     throw std::invalid_argument{
-        "Invalid pose file type. Valid extensions: .ply, .json, .pcd"};
+        "Invalid pose file type. Valid extensions: .ply, .json, .txt, .pcd"};
   }
 
   if (poses_moving_frame_.empty()) {

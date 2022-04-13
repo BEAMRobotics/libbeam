@@ -48,11 +48,13 @@ public:
    * @param poses_moving_frame optional moving frame associated with the poses.
    * This needs to match a frame in the extrinsics. If not provided, it will use
    * the frame from the poses file. Otherwise, it will override.
+   * @param poses_format_type int specifying i/o format type of pose file.
    */
   MapBuilder(const std::string& bag_file, const std::string& config_file,
              const std::string& pose_file, const std::string& output_directory,
              const std::string& extrinsics,
-             const std::string& poses_moving_frame = "");
+             const std::string& poses_moving_frame = "",
+             int poses_format_type = format_type::Type1);
 
   /**
    * @brief delete default constructor
@@ -129,6 +131,7 @@ private:
   std::string save_dir_;
   std::string extrinsics_file_;
   std::string poses_moving_frame_;
+  int poses_format_type_;
 
   // From Config file
   int intermediary_map_size_;
