@@ -105,6 +105,12 @@ private:
   void LoadScans(uint8_t sensor_number);
 
   /**
+   * @brief takes all interpolated poses and generates the trajectory for each
+   * pose in both the fixed_frame and sensor_frame for each sensor
+   */
+  void GeneratePoses();
+
+  /**
    * @brief creates an aggregate map for one sensor scan topic
    * @param sensor_number
    */
@@ -143,6 +149,7 @@ private:
   std::vector<PointCloud::Ptr> scans_;
   std::vector<PointCloud::Ptr> maps_;
   Eigen::Matrix4d scan_pose_last_;
+  std::string dateandtime_;
 };
 
 /** @} group mapping */

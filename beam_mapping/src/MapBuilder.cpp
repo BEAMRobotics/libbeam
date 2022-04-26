@@ -9,6 +9,7 @@
 #include <beam_utils/log.h>
 #include <beam_utils/math.h>
 #include <beam_utils/pcl_conversions.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_mapping {
 
@@ -116,7 +117,6 @@ PointCloud MapBuilder::CropCloudRaw(const PointCloud& cloud,
 
 void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
                                       uint8_t sensor_number) {
-  bool save_scan = false;
   auto sensor_msg = iter->instantiate<sensor_msgs::PointCloud2>();
   ros::Time scan_time = sensor_msg->header.stamp;
 
@@ -124,27 +124,27 @@ void MapBuilder::ProcessPointCloudMsg(rosbag::View::iterator& iter,
       (scan_time > slam_poses_.GetTimeStamps().back())) {
     return;
   }
-  std::string from_frame = poses_moving_frame_;
-  Eigen::Matrix4d scan_pose_current =
-      trajectory_.GetTransformEigen(map_frame_, from_frame, scan_time).matrix();
-  save_scan = beam::PassedMotionThreshold(scan_pose_last_, scan_pose_current,
-                                          min_rotation_deg_, min_translation_m_,
-                                          true, false, false);
+  Eigen::Affine3d scan_pose_current =
+      trajectory_.GetTransformEigen(map_frame_, poses_moving_frame_, scan_time);
 
-  if (save_scan) {
-    pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
-        std::make_shared<pcl::PCLPointCloud2>();
-    PointCloud cloud_tmp;
-    beam::pcl_conversions::toPCL(*sensor_msg, *pcl_pc2_tmp);
-    pcl::fromPCLPointCloud2(*pcl_pc2_tmp, cloud_tmp);
-    PointCloud cloud_cropped = CropCloudRaw(cloud_tmp, sensor_number);
-    PointCloud cloud_filtered = beam_filtering::FilterPointCloud<pcl::PointXYZ>(
-        cloud_cropped, input_filters_);
-    scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
-    interpolated_poses_.AddSinglePose(scan_pose_current);
-    interpolated_poses_.AddSingleTimeStamp(scan_time);
-    scan_pose_last_ = scan_pose_current;
+  if (!beam::PassedMotionThreshold(scan_pose_last_, scan_pose_current.matrix(),
+                                   min_rotation_deg_, min_translation_m_, true,
+                                   false, false)) {
+    return;
   }
+
+  pcl::PCLPointCloud2::Ptr pcl_pc2_tmp =
+      std::make_shared<pcl::PCLPointCloud2>();
+  PointCloud cloud_tmp;
+  beam::pcl_conversions::toPCL(*sensor_msg, *pcl_pc2_tmp);
+  pcl::fromPCLPointCloud2(*pcl_pc2_tmp, cloud_tmp);
+  PointCloud cloud_cropped = CropCloudRaw(cloud_tmp, sensor_number);
+  PointCloud cloud_filtered = beam_filtering::FilterPointCloud<pcl::PointXYZ>(
+      cloud_cropped, input_filters_);
+  scans_.push_back(std::make_shared<PointCloud>(cloud_filtered));
+  interpolated_poses_.AddSinglePose(scan_pose_current.matrix());
+  interpolated_poses_.AddSingleTimeStamp(scan_time);
+  scan_pose_last_ = scan_pose_current.matrix();
 }
 
 void MapBuilder::LoadScans(uint8_t sensor_number) {
@@ -180,20 +180,20 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
   PointCloud::Ptr scan_intermediary = std::make_shared<PointCloud>();
   Eigen::Matrix4d T_MOVING_LIDAR =
       extrinsics_.GetTransformEigen(moving_frame, sensor_frame).matrix();
-  Eigen::Matrix4d T_FIXED_LIDAR;
-  Eigen::Matrix4d T_FIXED_MOVING;
 
   // iterate through all scans
   int intermediary_size = 0;
   Eigen::Matrix4d T_FIXED_INT = Eigen::Matrix4d::Identity();
   Eigen::Matrix4d T_INT_LIDAR = Eigen::Matrix4d::Identity();
 
-  for (uint32_t k = 0; k < scans_.size(); k++) {
+  const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses =
+      interpolated_poses_.GetPoses();
+  for (uint32_t k = 0; k < poses.size(); k++) {
     intermediary_size++;
 
     // get the transforms we will need:
-    T_FIXED_MOVING = interpolated_poses_.GetPoses()[k];
-    T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
+    Eigen::Matrix4d T_FIXED_MOVING = poses[k];
+    Eigen::Matrix4d T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
     if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
     T_INT_LIDAR = beam::InvertTransform(T_FIXED_INT) * T_FIXED_LIDAR;
 
@@ -219,13 +219,9 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
 }
 
 void MapBuilder::SaveMaps() {
-  std::string dateandtime =
-      beam::ConvertTimeToDate(std::chrono::system_clock::now());
-  boost::filesystem::create_directory(save_dir_ + dateandtime + "/");
-
   for (uint8_t i = 0; i < maps_.size(); i++) {
-    std::string save_path = save_dir_ + dateandtime + "/" + dateandtime + "_" +
-                            sensors_[i].frame + ".pcd";
+    std::string save_path =
+        save_dir_ + dateandtime_ + "/" + sensors_[i].frame + ".pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
     if (!beam::SavePointCloud<pcl::PointXYZ>(
@@ -237,8 +233,7 @@ void MapBuilder::SaveMaps() {
   if (combine_sensor_data_) {
     PointCloud::Ptr combined_map = std::make_shared<PointCloud>();
     for (uint8_t i = 0; i < maps_.size(); i++) { *combined_map += *maps_[i]; }
-    std::string save_path =
-        save_dir_ + dateandtime + "/" + dateandtime + "_combined.pcd";
+    std::string save_path = save_dir_ + dateandtime_ + "/combined.pcd";
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message;
     if (!beam::SavePointCloud<pcl::PointXYZ>(
@@ -249,7 +244,57 @@ void MapBuilder::SaveMaps() {
   }
 }
 
+void MapBuilder::GeneratePoses() {
+  const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses =
+      interpolated_poses_.GetPoses();
+  PointCloudCol frame = beam::CreateFrameCol();
+
+  // generate trajectory of moving frame
+  PointCloudCol fixed_frame_traj;
+  for (size_t k = 0; k < poses.size(); k++) {
+    const Eigen::Matrix4d& T_MAP_FIXEDFRAME = poses.at(k);
+    beam::MergeFrameToCloud(fixed_frame_traj, frame, T_MAP_FIXEDFRAME);
+  }
+
+  // save
+  std::string save_path = save_dir_ + dateandtime_ + "/moving_frame_poses.pcd";
+  BEAM_INFO("Saving trajetory cloud of moving frame to: {}", save_path);
+  std::string error_message;
+  if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+          save_path, fixed_frame_traj, beam::PointCloudFileType::PCDBINARY,
+          error_message)) {
+    BEAM_ERROR("Unable to save trajetory cloud. Reason: {}", error_message);
+  }
+
+  // generate trajectory of each sensor frame
+  for (size_t i = 0; i < sensors_.size(); i++) {
+    std::string scan_frame = sensors_[i].frame;
+    Eigen::Matrix4d T_MOVING_LIDAR =
+        extrinsics_.GetTransformEigen(poses_moving_frame_, scan_frame).matrix();
+    PointCloudCol sensor_frame_traj;
+    for (size_t k = 0; k < poses.size(); k++) {
+      const Eigen::Matrix4d& T_FIXED_MOVING = poses.at(k);
+      Eigen::Matrix4d T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
+      beam::MergeFrameToCloud(sensor_frame_traj, frame, T_FIXED_LIDAR);
+    }
+
+    // save
+    save_path = save_dir_ + dateandtime_ + "/sensor_frame_" +
+                std::to_string(i) + "_poses.pcd";
+    BEAM_INFO("Saving trajetory cloud of sensor frame to: {}", save_path);
+    std::string error_message;
+    if (!beam::SavePointCloud<pcl::PointXYZRGB>(
+            save_path, sensor_frame_traj, beam::PointCloudFileType::PCDBINARY,
+            error_message)) {
+      BEAM_ERROR("Unable to save trajetory cloud. Reason: {}", error_message);
+    }
+  }
+}
+
 void MapBuilder::BuildMap() {
+  dateandtime_ = beam::ConvertTimeToDate(std::chrono::system_clock::now());
+  boost::filesystem::create_directory(save_dir_ + dateandtime_ + "/");
+
   LoadTrajectory();
   for (uint8_t i = 0; i < sensors_.size(); i++) {
     scan_pose_last_ = Eigen::Matrix4d::Identity();
@@ -258,6 +303,7 @@ void MapBuilder::BuildMap() {
     LoadScans(i);
     GenerateMap(i);
   }
+  GeneratePoses();
   SaveMaps();
 }
 
