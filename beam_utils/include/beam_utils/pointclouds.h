@@ -281,6 +281,19 @@ PointCloud
  * reference frame
  * @return pointcloud containing frame
  */
+void MergeFrameToCloud(pcl::PointCloud<pcl::PointXYZRGBL>& cloud,
+                       const pcl::PointCloud<pcl::PointXYZRGBL>& frame,
+                       const Eigen::Matrix4d& T);
+
+/**
+ * @brief Merge a coordinate frame (built a prebuilt pointcloud) to a pcl
+ * pointcloud
+ * @param cloud reference to original cloud
+ * @param frame poincloud frame to add
+ * @param T optional transform to apply to the frame to get it in the cloud
+ * reference frame
+ * @return pointcloud containing frame
+ */
 void MergeFrameToCloud(PointCloudCol& cloud, const PointCloudCol& frame,
                        const Eigen::Matrix4d& T);
 
@@ -346,7 +359,7 @@ pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
 /**
  * @brief Build a coordinate frame of points with timestamp as a label. The
  * coordinate frame will be colored RGB for frames XYZ, respectively.
- * @param t timestamp to add to the point labels
+ * @param t timestamp to add to the point
  * @param increment distance between points in the frame, in meters
  * @param length frame length in meters
  * @return colored pointcloud frame

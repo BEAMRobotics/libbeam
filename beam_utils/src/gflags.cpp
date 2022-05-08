@@ -13,15 +13,19 @@ bool ValidateCannotBeEmpty(const char* flagname, const std::string& value) {
   return false;
 }
 
-bool ValidateDirMustExist(const char* flagname, const std::string& value) {
+bool ValidateDirMustExist(const char* flagname, const std::string& value) { 
   if (value.empty()) {
     printf("Invalid value for --%s: %s. Cannot be empty.\n", flagname,
            value.c_str());
     return false;
   }
-  if (!boost::filesystem::exists(value)) {
+
+  boost::filesystem::path path(value);
+  boost::filesystem::path directory = path.parent_path();
+
+  if (!boost::filesystem::exists(directory)) {
     printf("Invalid value for --%s: %s. Directory does not exist.\n", flagname,
-           value.c_str());
+           directory.c_str());
     return false;
   }
   return true;

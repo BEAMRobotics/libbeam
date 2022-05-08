@@ -97,8 +97,8 @@ void MapBuilder::LoadTrajectory() {
   extrinsics_.LoadJSON(extrinsics_file_);
 
   for (size_t k = 0; k < slam_poses_.GetTimeStamps().size(); k++) {
-    trajectory_.AddTransform(Eigen::Affine3d(slam_poses_.GetPoses()[k]),
-                             map_frame_, poses_moving_frame_,
+    Eigen::Affine3d T_MAP_MOVINGFRAME(slam_poses_.GetPoses()[k]);
+    trajectory_.AddTransform(T_MAP_MOVINGFRAME, map_frame_, poses_moving_frame_,
                              slam_poses_.GetTimeStamps()[k]);
   }
 }

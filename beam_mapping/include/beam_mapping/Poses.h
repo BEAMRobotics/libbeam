@@ -138,6 +138,16 @@ public:
   void WriteToJSON(const std::string& output_dir) const;
 
   /**
+   * @brief writes all poses to a pcd file where each pose is a 3 axis RGB
+   * coordinate frame. Each point also has the timestamp embedded in the label
+   * field for each point in the frame. If directory is given (i.e. ending in /)
+   * the file will be named: "poses_file_date"_poses.pcd. If a full filename is
+   * given (i.e. /path/filename.pcd) it will keep that name.
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteCoordinateFramesToPCD(const std::string& output_dir) const;
+
+  /**
    * @brief loads the pose file in JSON format
    * @param input_pose_file_path full path to pose file
    */
@@ -262,6 +272,13 @@ public:
 
 private:
   /**
+   * @brief calls GetOutputFileName and then creates an ofstream with the
+   * result.
+   */
+  std::ofstream CreateFile(const std::string& output_path,
+                           const std::string& extension) const;
+
+  /**
    * @brief this is a helper function to create files to write to (e.g., .txt,
    * .ply). The goal of this is to make writing to a file more robust to user
    * input. Here is the logic:
@@ -274,8 +291,8 @@ private:
    *  - If the output_path ends in something else, we post-fix with
    *    _poses.extension
    */
-  std::ofstream CreateFile(const std::string& output_path,
-                           const std::string& extension) const;
+  std::string GetOutputFileName(const std::string& output_path,
+                                  const std::string& extension) const;
 
   std::vector<ros::Time> time_stamps_;
   std::vector<Eigen::Matrix4d, beam::AlignMat4d> poses_;

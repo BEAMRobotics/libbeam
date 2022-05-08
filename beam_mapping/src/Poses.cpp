@@ -145,6 +145,31 @@ void Poses::WriteToJSON(const std::string& output_dir) const {
   filejson << std::setw(4) << J << std::endl;
 }
 
+void Poses::WriteCoordinateFramesToPCD(const std::string& output_dir) const {
+  if (poses_.size() != time_stamps_.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+
+  BEAM_INFO("Converting poses to pointclouds");
+  pcl::PointCloud<pcl::PointXYZRGBL> cloud;
+  // to help prevent time variable overflow, start first timestamp as 0
+  const double t_start = time_stamps_.at(0).toSec();
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Matrix4d Tk = poses_[k];
+    ros::Time tk;
+    tk.fromSec(time_stamps_[k].toSec() - t_start);
+    pcl::PointCloud<pcl::PointXYZRGBL> frame = beam::CreateFrameCol(tk);
+    beam::MergeFrameToCloud(cloud, frame, Tk);
+  }
+
+  std::string filepcd = GetOutputFileName(output_dir, ".pcd");
+  BEAM_INFO("Saving poses cloud file to: {}", filepcd);
+  beam::SavePointCloud<pcl::PointXYZRGBL>(filepcd, cloud);
+}
+
 void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
   time_stamps_.clear();
   poses_.clear();
@@ -966,6 +991,13 @@ void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
 
 std::ofstream Poses::CreateFile(const std::string& output_path,
                                 const std::string& extension) const {
+  std::string output_file = GetOutputFileName(output_path, extension);
+  BEAM_INFO("Saving poses to file: {}", output_file);
+  return std::ofstream(output_file);
+}
+
+std::string Poses::GetOutputFileName(const std::string& output_path,
+                                     const std::string& extension) const {
   // get lowercase of extension
   std::string output_ext = extension;
   std::transform(output_ext.begin(), output_ext.end(), output_ext.begin(),
@@ -1008,8 +1040,7 @@ std::ofstream Poses::CreateFile(const std::string& output_path,
     }
   }
 
-  BEAM_INFO("Saving poses to file: {}", output_file);
-  return std::ofstream(output_file);
+  return output_file;
 }
 
 } // namespace beam_mapping
