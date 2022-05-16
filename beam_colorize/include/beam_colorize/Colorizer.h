@@ -8,22 +8,13 @@
 
 #pragma once
 
-// Gen
-#include <boost/make_shared.hpp>
-
-// libbeam
-#include "beam_calibration/CameraModel.h"
-#include "beam_containers/PointBridge.h"
-
-// PCL
+#include <opencv2/core.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-
-// OpenCV
-#include <opencv2/core.hpp>
-
-// ROS
 #include <sensor_msgs/Image.h>
+
+#include <beam_calibration/CameraModel.h>
+#include <beam_containers/PointBridge.h>
 
 namespace beam_colorize {
 /** @addtogroup colorizer
@@ -38,6 +29,11 @@ enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
  * @brief Pixel type for iterating through the image
  */
 using Pixel = cv::Point3_<uchar>;
+
+/**
+ * @brief point cloud type for PointBridge
+ */
+using PointCloudBridge = pcl::PointCloud<beam_containers::PointBridge>;
 
 /**
  * @brief Abstract class which different colorization methods can implement
@@ -106,16 +102,18 @@ public:
    * @brief Pure virtual method for colorizing a point cloud
    * @return Colored point cloud pointer
    */
-  virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask() const = 0;
+  virtual PointCloudBridge::Ptr ColorizeMask() const = 0;
 
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
   std::shared_ptr<cv::Mat> image_;
   std::shared_ptr<beam_calibration::CameraModel> intrinsics_;
   Eigen::Affine3d T_C_L_;
-  bool image_distorted_, image_initialized_, point_cloud_initialized_,
-      intrinsics_initialized_, transform_set_;
+  bool image_distorted_;
+  bool image_initialized_;
+  bool point_cloud_initialized_;
+  bool intrinsics_initialized_;
+  bool transform_set_;
 };
 
 /** @} group colorizer */

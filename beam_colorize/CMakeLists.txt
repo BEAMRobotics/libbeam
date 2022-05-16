@@ -9,6 +9,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/Colorizer.cpp
     src/Projection.cpp
     src/RayTrace.cpp
+    src/RayTraceGpu.cpp
 )
 ################ tests ##################
 add_executable(${PROJECT_NAME}_tests

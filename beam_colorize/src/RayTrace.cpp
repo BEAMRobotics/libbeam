@@ -44,8 +44,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
 }
 
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-    RayTrace::ReduceCloud(
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const {
+    RayTrace::ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const {
   // cloud to search on
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -59,7 +58,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
     if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
       BEAM_WARN("Cannot project point.");
       continue;
-    } else if(!in_image){
+    } else if (!in_image) {
       BEAM_WARN("Cannot project point.");
       continue;
     }
@@ -73,40 +72,38 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
   return std::make_tuple(cloud, indices);
 }
 
-pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    RayTrace::ColorizeMask() const {
-  pcl::PointCloud<beam_containers::PointBridge>::Ptr return_cloud;
+PointCloudBridge::Ptr RayTrace::ColorizeMask() const {
+  PointCloudBridge::Ptr return_cloud;
   pcl::copyPointCloud(*input_point_cloud_, *return_cloud);
 
   beam_cv::Raycast<beam_containers::PointBridge> caster(return_cloud,
                                                         intrinsics_, image_);
   // perform ray casting of cloud to color with mask
   int counter = 0;
-  caster.Execute(hit_threshold_,
-                 [&](std::shared_ptr<cv::Mat>& image,
-                     pcl::PointCloud<beam_containers::PointBridge>::Ptr& cloud,
-                     const int* position, int index) -> void {
-                   uchar color_scale =
-                       image->at<uchar>(position[0], position[1]);
-                   switch (color_scale) {
-                     case 1:
-                       cloud->points[index].crack = 1;
-                       counter++;
-                       break;
-                     case 2:
-                       cloud->points[index].delam = 1;
-                       counter++;
-                       break;
-                     case 3:
-                       cloud->points[index].corrosion = 1;
-                       counter++;
-                       break;
-                     case 4:
-                       cloud->points[index].spall = 1;
-                       counter++;
-                       break;
-                   }
-                 });
+  caster.Execute(
+      hit_threshold_,
+      [&](std::shared_ptr<cv::Mat>& image, PointCloudBridge::Ptr& cloud,
+          const int* position, int index) -> void {
+        uchar color_scale = image->at<uchar>(position[0], position[1]);
+        switch (color_scale) {
+          case 1:
+            cloud->points[index].crack = 1;
+            counter++;
+            break;
+          case 2:
+            cloud->points[index].delam = 1;
+            counter++;
+            break;
+          case 3:
+            cloud->points[index].corrosion = 1;
+            counter++;
+            break;
+          case 4:
+            cloud->points[index].spall = 1;
+            counter++;
+            break;
+        }
+      });
   BEAM_INFO("Coloured {} of {} total points.", counter,
             input_point_cloud_->points.size());
   return return_cloud;

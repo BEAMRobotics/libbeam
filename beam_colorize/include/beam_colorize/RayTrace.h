@@ -7,7 +7,9 @@
 #include <mutex>
 #include <thread>
 #include <tuple>
-#include <pcl/point_cloud.h>
+
+s#include <pcl/point_cloud.h>
+
 #include <beam_colorize/Colorizer.h>
 
 namespace beam_colorize {
@@ -35,8 +37,7 @@ public:
    * @brief
    * @return
    */
-  virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask() const override;
+  virtual PointCloudBridge::Ptr ColorizeMask() const override;
 
 private:
   /**

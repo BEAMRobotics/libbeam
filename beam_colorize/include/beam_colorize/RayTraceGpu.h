@@ -14,11 +14,11 @@ namespace beam_colorize {
  * @brief Class which implements Colorizer interface and provides colorization
  * functionality using projection methods
  */
-class Projection : public Colorizer {
+class RayTraceGpu : public Colorizer {
 public:
-  Projection();
+  RayTraceGpu();
 
-  ~Projection() override = default;
+  ~RayTraceGpu() override = default;
 
   /**
    * @brief Method for colorizing a point cloud

@@ -1,7 +1,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 
-#include "beam_colorize/Projection.h"
+#include <beam_colorize/Projection.h>
 
 namespace beam_colorize {
 
@@ -54,10 +54,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   return cloud_colored;
 }
 
-pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    Projection::ColorizeMask() const {
-  pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_cloud(
-      new pcl::PointCloud<beam_containers::PointBridge>);
+PointCloudBridge::Ptr Projection::ColorizeMask() const {
+  PointCloudBridge::Ptr defect_cloud(new PointCloudBridge);
 
   pcl::copyPointCloud(*input_point_cloud_, *defect_cloud);
 
