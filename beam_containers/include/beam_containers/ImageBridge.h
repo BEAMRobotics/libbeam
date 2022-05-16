@@ -294,7 +294,7 @@ public:
                         {"is_ir_image_set", is_ir_image_set_},
                         {"is_ir_mask_set", is_ir_mask_set_}};
 
-    std::ofstream file(output_directory + "/ImageBridgeInfo.json");
+    std::ofstream file(output_directory + "/ImageInfo.json");
     file << std::setw(4) << J << std::endl;
   }
 
@@ -304,9 +304,9 @@ public:
    */
   void LoadFromJSON(const std::string& path_to_json) {
     std::stringstream ss_json;
-    ss_json << path_to_json << "/ImageBridgeInfo.json";
+    ss_json << path_to_json << "/ImageInfo.json";
     nlohmann::json json_config;
-    std::ifstream file(path_to_json + "/ImageBridgeInfo.json");
+    std::ifstream file(path_to_json + "/ImageInfo.json");
     file >> json_config;
 
     bag_name_ = json_config["bag_name"];
