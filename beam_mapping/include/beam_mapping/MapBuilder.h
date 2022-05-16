@@ -149,7 +149,8 @@ private:
   std::vector<PointCloud::Ptr> scans_;
   std::vector<PointCloud::Ptr> maps_;
   Eigen::Matrix4d scan_pose_last_;
-  std::string dateandtime_;
+  std::string dateandtime_{""};
+  bool prefix_with_date_{false};
 };
 
 /** @} group mapping */

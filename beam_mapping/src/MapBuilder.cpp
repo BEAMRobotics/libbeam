@@ -292,9 +292,11 @@ void MapBuilder::GeneratePoses() {
 }
 
 void MapBuilder::BuildMap() {
-  dateandtime_ = beam::ConvertTimeToDate(std::chrono::system_clock::now());
-  boost::filesystem::create_directory(save_dir_ + dateandtime_ + "/");
-
+  if(prefix_with_date_){
+    dateandtime_ = beam::ConvertTimeToDate(std::chrono::system_clock::now());
+    boost::filesystem::create_directory(save_dir_ + dateandtime_ + "/");
+  }
+  
   LoadTrajectory();
   for (uint8_t i = 0; i < sensors_.size(); i++) {
     scan_pose_last_ = Eigen::Matrix4d::Identity();
