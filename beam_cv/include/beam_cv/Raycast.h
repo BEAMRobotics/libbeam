@@ -85,7 +85,7 @@ public:
       uint16_t row = coords(1, 0);
       hit_mask.at<uchar>(row, col) = 255;
       search_cloud_pt_to_orig_cloud_pt.push_back(i);
-      search_cloud.push_back(pcl::PointXYZ(point[0], point[1], point[2]));
+      search_cloud->push_back(pcl::PointXYZ(point[0], point[1], point[2]));
     }
 
     // create kdtree
