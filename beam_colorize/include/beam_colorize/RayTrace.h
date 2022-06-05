@@ -8,7 +8,7 @@
 #include <thread>
 #include <tuple>
 
-s#include <pcl/point_cloud.h>
+#include <pcl/point_cloud.h>
 
 #include <beam_colorize/Colorizer.h>
 
