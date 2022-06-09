@@ -9,6 +9,9 @@
 #include <Eigen/Dense>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <ros/time.h>
 
 #include <beam_utils/log.h>
 #include <beam_utils/optional.h>
@@ -102,7 +105,8 @@ public:
    * @param out_pixel undistorted pixel
    * @return whether its valid or not
    */
-  bool UndistortPixel(const Eigen::Vector2i& in_pixel, Eigen::Vector2i& out_pixel);
+  bool UndistortPixel(const Eigen::Vector2i& in_pixel,
+                      Eigen::Vector2i& out_pixel);
 
   /**
    * @brief Returns a rectified camera model
@@ -189,6 +193,20 @@ public:
    */
   void WriteJSON(const std::string& file_path,
                  const std::string& method = std::string());
+
+  /**
+   * @brief Create a Camera Frustum object for visualization, in the camera
+   * coordinate frame
+   * @param t timestamp to add to the points
+   * @param increment distance between points
+   * @param length of each ray of the frustum
+   * @param RGB color of frustum
+   * @return pcl::PointCloud<pcl::PointXYZRGBL>
+   */
+  pcl::PointCloud<pcl::PointXYZRGBL> CreateCameraFrustum(
+      const ros::Time& t = ros::Time(0), double increment = 0.01,
+      double length = 0.3,
+      const Eigen::Vector3i& RGB = Eigen::Vector3i(255, 0, 0));
 
 protected:
   /**
