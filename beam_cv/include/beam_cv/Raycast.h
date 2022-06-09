@@ -99,7 +99,7 @@ public:
     for (int row = 0; row < image_->rows; row++) {
       for (int col = 0; col < image_->cols; col++) {
         if (hit_mask.at<uchar>(row, col) != 255) { continue; }
-          
+
         Eigen::Vector3d ray(0, 0, 0);
 
         // get direction vector
@@ -127,9 +127,9 @@ public:
             int position[2];
             position[0] = row;
             position[1] = col;
-            int point_idx_orig =
-            search_cloud_pt_to_orig_cloud_pt[point_idx[0]]; behaviour(image_,
-            cloud_, position, point_idx_orig); break;
+            int point_idx_orig = search_cloud_pt_to_orig_cloud_pt[point_idx[0]];
+            behaviour(image_, cloud_, position, point_idx_orig);
+            break;
           } else {
             raypt++;
             ray(0, 0) = ray(0, 0) + distance * point(0, 0);
