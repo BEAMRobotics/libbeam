@@ -15,6 +15,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+#include <beam_utils/filesystem.h>
 #include <beam_utils/time.h>
 
 namespace beam_containers {
@@ -309,11 +310,10 @@ public:
    * @param path_to_json
    */
   void LoadFromJSON(const std::string& path_to_json) {
-    std::stringstream ss_json;
-    ss_json << path_to_json << "/ImageInfo.json";
     nlohmann::json json_config;
-    std::ifstream file(path_to_json + "/ImageInfo.json");
-    file >> json_config;
+    if (!beam::ReadJson(path_to_json + "/ImageInfo.json", json_config)) {
+      throw std::runtime_error{"invalid file path"};
+    }
 
     bag_name_ = json_config["bag_name"];
     bgr_frame_id_ = json_config["bgr_frame_id"];
