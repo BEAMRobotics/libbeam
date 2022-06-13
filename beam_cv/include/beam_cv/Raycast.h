@@ -72,7 +72,9 @@ public:
     std::vector<int> search_cloud_pt_to_orig_cloud_pt;
 
     // create image mask where white pixels = projection hit
+    BEAM_DEBUG("creating hit mask");
     cv::Mat1b hit_mask(model_->GetHeight(), model_->GetWidth());
+    int num_hit = 0;
     for (uint32_t i = 0; i < cloud_->points.size(); i++) {
       Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
                             cloud_->points[i].z);
@@ -87,19 +89,24 @@ public:
       uint16_t col = coords(0, 0);
       uint16_t row = coords(1, 0);
       hit_mask.at<uchar>(row, col) = 255;
+      num_hit++;
       search_cloud_pt_to_orig_cloud_pt.push_back(i);
       search_cloud->push_back(pcl::PointXYZ(point[0], point[1], point[2]));
     }
 
     // create kdtree
+    BEAM_DEBUG("creating kd search tree");
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(search_cloud);
 
     // cast ray for every pixel in the hit mask
+    int current = 1;
     for (int row = 0; row < image_->rows; row++) {
       for (int col = 0; col < image_->cols; col++) {
         if (hit_mask.at<uchar>(row, col) != 255) { continue; }
 
+        beam::OutputPercentComplete(current, num_hit,
+                                    "casting pixels from hit mask");
         Eigen::Vector3d ray(0, 0, 0);
 
         // get direction vector
@@ -137,6 +144,7 @@ public:
             ray(2, 0) = ray(2, 0) + distance * point(2, 0);
           }
         }
+        current++;
       }
     }
   }
