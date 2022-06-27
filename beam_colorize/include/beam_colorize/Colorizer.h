@@ -112,10 +112,15 @@ public:
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
   std::shared_ptr<cv::Mat> image_;
-  std::shared_ptr<beam_calibration::CameraModel> intrinsics_;
+  std::shared_ptr<beam_calibration::CameraModel> camera_model_;
+  std::shared_ptr<beam_calibration::CameraModel> camera_model_distorted_;
+  std::shared_ptr<beam_calibration::CameraModel> camera_model_undistorted_;
   Eigen::Affine3d T_C_L_;
-  bool image_distorted_, image_initialized_, point_cloud_initialized_,
-      intrinsics_initialized_, transform_set_;
+  bool image_distorted_{true};
+  bool image_initialized_{false};
+  bool point_cloud_initialized_{false};
+  bool camera_model_initialized_{false}; 
+  bool transform_set_{false};
 };
 
 /** @} group colorizer */

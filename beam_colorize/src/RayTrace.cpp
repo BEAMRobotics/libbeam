@@ -24,12 +24,12 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
 
   if (!image_initialized_ || !point_cloud_initialized_ ||
-      !intrinsics_initialized_ || input_point_cloud_->size() == 0) {
+      !camera_model_initialized_ || input_point_cloud_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
     BEAM_CRITICAL("Colorizer not properly initialized.");
     return cloud_colored;
   }
-  beam_cv::Raycast<pcl::PointXYZRGB> caster(cloud_colored, intrinsics_, image_);
+  beam_cv::Raycast<pcl::PointXYZRGB> caster(cloud_colored, camera_model_, image_);
   // perform ray casting of cloud to colorize with image
   caster.Execute(hit_threshold_,
                  [&](std::shared_ptr<cv::Mat>& image,
@@ -56,7 +56,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
     point << input->points[i].x, input->points[i].y, input->points[i].z;
     bool in_image = false;
     Eigen::Vector2d coords;
-    if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
+    if (!camera_model_->ProjectPoint(point, coords, in_image)) {
       BEAM_WARN("Cannot project point.");
       continue;
     } else if(!in_image){
@@ -79,7 +79,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   pcl::copyPointCloud(*input_point_cloud_, *return_cloud);
 
   beam_cv::Raycast<beam_containers::PointBridge> caster(return_cloud,
-                                                        intrinsics_, image_);
+                                                        camera_model_, image_);
   // perform ray casting of cloud to color with mask
   int counter = 0;
   caster.Execute(hit_threshold_,

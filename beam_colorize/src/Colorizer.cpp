@@ -13,7 +13,7 @@ Colorizer::Colorizer() {
   image_distorted_ = true;
   image_initialized_ = false;
   point_cloud_initialized_ = false;
-  intrinsics_initialized_ = false;
+  camera_model_initialized_ = false;
   transform_set_ = false;
 }
 void Colorizer::SetPointCloud(
@@ -52,12 +52,19 @@ void Colorizer::SetImage(const sensor_msgs::Image& image_input) {
 
 void Colorizer::SetIntrinsics(
     std::shared_ptr<beam_calibration::CameraModel> intrinsics) {
-  intrinsics_ = intrinsics;
-  intrinsics_initialized_ = true;
+  camera_model_distorted_ = intrinsics;
+  camera_model_undistorted_ = camera_model_distorted_->GetRectifiedModel();
+  camera_model_ = camera_model_distorted_;
+  camera_model_initialized_ = true;
 }
 
 void Colorizer::SetDistortion(const bool& image_distored) {
   image_distorted_ = image_distored;
+  if (image_distored) {
+    camera_model_ = camera_model_distorted_;
+  } else {
+    camera_model_ = camera_model_undistorted_;
+  }
 }
 
 void Colorizer::SetTransform(const Eigen::Affine3d& T_C_L) {

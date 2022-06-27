@@ -300,7 +300,7 @@ public:
                         {"is_bgr_mask_set", is_bgr_mask_set_},
                         {"is_ir_image_set", is_ir_image_set_},
                         {"is_ir_mask_set", is_ir_mask_set_}};
-
+                        
     std::ofstream file(output_directory + "/ImageInfo.json");
     file << std::setw(4) << J << std::endl;
   }
