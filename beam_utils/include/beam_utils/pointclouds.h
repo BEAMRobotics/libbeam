@@ -281,6 +281,19 @@ PointCloud
  * reference frame
  * @return pointcloud containing frame
  */
+void MergeFrameToCloud(pcl::PointCloud<pcl::PointXYZRGBL>& cloud,
+                       const pcl::PointCloud<pcl::PointXYZRGBL>& frame,
+                       const Eigen::Matrix4d& T);
+
+/**
+ * @brief Merge a coordinate frame (built a prebuilt pointcloud) to a pcl
+ * pointcloud
+ * @param cloud reference to original cloud
+ * @param frame poincloud frame to add
+ * @param T optional transform to apply to the frame to get it in the cloud
+ * reference frame
+ * @return pointcloud containing frame
+ */
 void MergeFrameToCloud(PointCloudCol& cloud, const PointCloudCol& frame,
                        const Eigen::Matrix4d& T);
 
@@ -346,7 +359,7 @@ pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
 /**
  * @brief Build a coordinate frame of points with timestamp as a label. The
  * coordinate frame will be colored RGB for frames XYZ, respectively.
- * @param t timestamp to add to the point labels
+ * @param t timestamp to add to the point
  * @param increment distance between points in the frame, in meters
  * @param length frame length in meters
  * @return colored pointcloud frame
@@ -354,6 +367,45 @@ pcl::PointCloud<pcl::PointXYZL> CreateFrame(const ros::Time& t,
 pcl::PointCloud<pcl::PointXYZRGBL> CreateFrameCol(const ros::Time& t,
                                                   double increment = 0.01,
                                                   double length = 0.3);
+
+/**
+ * @brief draw a line between two points and return as a pointcloud. The point
+ * fields from pt1 will be copied to all other points
+ *
+ * @tparam PointT type of point to make line out of
+ * @param pt1 start point of line
+ * @param pt2 end point of line
+ * @param increment distance between each point
+ * @return pcl::PointCloud<PointT>
+ */
+template <typename PointT>
+inline pcl::PointCloud<PointT> DrawLine(const PointT& pt1, const PointT& pt2,
+                                        double increment = 0.01) {
+  Eigen::Vector3f dir =
+      Eigen::Vector3f(pt2.x - pt1.x, pt2.y - pt1.y, pt2.z - pt1.z);
+  double len = dir.norm();
+  dir[0] = dir[0] / len;
+  dir[1] = dir[1] / len;
+  dir[2] = dir[2] / len;
+
+  double cur_length = 0;
+  PointT pt = pt1;
+  pt.x = 0;
+  pt.y = 0;
+  pt.z = 0;
+  Eigen::Vector3f pt1_eig(pt1.x, pt1.y, pt1.z);
+
+  pcl::PointCloud<PointT> cloud;
+  while (cur_length < len) {
+    Eigen::Vector3f pt_eig = pt1_eig + cur_length * dir;
+    pt.x = pt_eig[0];
+    pt.y = pt_eig[1];
+    pt.z = pt_eig[2];
+    cloud.push_back(pt);
+    cur_length += increment;
+  }
+  return cloud;
+}
 
 /**
  * @brief Calculate the absolute distance of the point to the origin.

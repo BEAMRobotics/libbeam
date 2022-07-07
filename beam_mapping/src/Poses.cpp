@@ -4,6 +4,7 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <nlohmann/json.hpp>
@@ -154,6 +155,31 @@ void Poses::WriteToJSON(const std::string& output_dir) const {
   filejson << std::setw(4) << J << std::endl;
 }
 
+void Poses::WriteCoordinateFramesToPCD(const std::string& output_dir) const {
+  if (poses_.size() != time_stamps_.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+
+  BEAM_INFO("Converting poses to pointclouds");
+  pcl::PointCloud<pcl::PointXYZRGBL> cloud;
+  // to help prevent time variable overflow, start first timestamp as 0
+  const double t_start = time_stamps_.at(0).toSec();
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Matrix4d Tk = poses_[k];
+    ros::Time tk;
+    tk.fromSec(time_stamps_[k].toSec() - t_start);
+    pcl::PointCloud<pcl::PointXYZRGBL> frame = beam::CreateFrameCol(tk);
+    beam::MergeFrameToCloud(cloud, frame, Tk);
+  }
+
+  std::string filepcd = GetOutputFileName(output_dir, ".pcd");
+  BEAM_INFO("Saving poses cloud file to: {}", filepcd);
+  beam::SavePointCloud<pcl::PointXYZRGBL>(filepcd, cloud);
+}
+
 void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
   time_stamps_.clear();
   poses_.clear();
@@ -301,11 +327,87 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path,
   }
 }
 
+void Poses::WriteToTXT2(const std::string& output_dir) const {
+  if (poses_.size() != time_stamps_.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
+  }
+
+  std::ofstream outfile = CreateFile(output_dir, ".txt");
+
+  for (size_t k = 0; k < poses_.size(); k++) {
+    Eigen::Matrix4d Tk = poses_[k];
+    Eigen::Vector3d p;
+    Eigen::Quaterniond q;
+    beam::TransformMatrixToQuaternionAndTranslation(Tk, q, p);
+
+    std::stringstream line;
+    line << std::fixed;
+    line << time_stamps_[k].toSec() << " " << p[0] << " " << p[1] << " " << p[2]
+         << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
+         << std::endl;
+    std::string line_str = line.str();
+    outfile << line_str;
+  }
+}
+
+void Poses::LoadFromTXT2(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
+
+  // declare variables
+  std::ifstream infile;
+  std::string line;
+  Eigen::Matrix4d Tk;
+  ros::Time time_stamp_k;
+  // open file
+  infile.open(input_pose_file_path);
+  // extract poses
+  while (!infile.eof()) {
+    // get timestamp k
+    std::getline(infile, line, ' ');
+    if (line.length() > 0) {
+      try {
+        double t = std::stod(line);
+        time_stamp_k = ros::Time(t);
+      } catch (const std::invalid_argument& e) {
+        BEAM_CRITICAL("Invalid argument, probably at end of file");
+        throw std::invalid_argument{
+            "Invalid argument, probably at end of file"};
+      }
+      Eigen::Vector3d p;
+      Eigen::Quaterniond q;
+      std::getline(infile, line, ' ');
+      p[0] = std::stod(line);
+      std::getline(infile, line, ' ');
+      p[1] = std::stod(line);
+      std::getline(infile, line, ' ');
+      p[2] = std::stod(line);
+      std::getline(infile, line, ' ');
+      q.x() = std::stod(line);
+      std::getline(infile, line, ' ');
+      q.y() = std::stod(line);
+      std::getline(infile, line, ' ');
+      q.z() = std::stod(line);
+      std::getline(infile, line, '\n');
+      q.w() = std::stod(line);
+
+      beam::QuaternionAndTranslationToTransformMatrix(q, p, Tk);
+      time_stamps_.push_back(time_stamp_k);
+      poses_.push_back(Tk);
+    }
+  }
+  BEAM_INFO("Read {} poses.", poses_.size());
+}
+ 
 void Poses::WriteToPLY(const std::string& output_dir, int format_type) const {
-  CheckPoses();
-  if (format_type != format_type::Type1 && format_type != format_type::Type2) {
-    BEAM_ERROR("Invalid format_type. Assuming Type1");
-    format_type = format_type::Type1;
+  if (poses_.size() != time_stamps_.size()) {
+    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
+                  "outputting to pose file.");
+    throw std::runtime_error{"Number of time stamps not equal to number of "
+                             "poses. Cannot create pose file."};
   }
 
   std::ofstream fileply = CreateFile(output_dir, ".ply");
@@ -487,103 +589,6 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path,
       time_stamps_.push_back(time_stamp);
     }
   }
-}
-
-void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
-  time_stamps_.clear();
-  poses_.clear();
-
-  // creat cloud ptr
-  pcl::PointCloud<PointXYZIRPYT>::Ptr cloud =
-      std::make_shared<pcl::PointCloud<PointXYZIRPYT>>();
-
-  // load PCD
-  int pcl_loaded =
-      pcl::io::loadPCDFile<PointXYZIRPYT>(input_pose_file_path, *cloud);
-  if (pcl_loaded == -1) {
-    BEAM_CRITICAL("Cannot load poses from PCD file");
-    throw std::runtime_error{
-        "Check point type used in PCD. Cannot create pose file."};
-  }
-
-  // process PCD
-  for (const auto& point : *cloud) {
-    Eigen::Matrix4d T;
-    ros::Time t;
-    beam::PCLPointToPose(point, t, T);
-    poses_.push_back(T);
-    time_stamps_.push_back(t);
-  }
-}
-
-void Poses::LoadFromBAG(const std::string& bag_file_path,
-                        const std::string& topic) {
-  time_stamps_.clear();
-  poses_.clear();
-
-  boost::filesystem::path p(bag_file_path);
-  bag_name_ = p.stem().string();
-
-  // open bag
-  rosbag::Bag bag;
-  BEAM_INFO("Opening bag: {}", bag_file_path);
-  bag.open(bag_file_path, rosbag::bagmode::Read);
-
-  rosbag::View view(bag, rosbag::TopicQuery(topic), ros::TIME_MIN,
-                    ros::TIME_MAX, true);
-
-  // first, check if input topic is odom or path
-  bool is_odom{true};
-  for (auto iter = view.begin(); iter != view.end(); iter++) {
-    auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-    if (odom_msg == NULL) {
-      is_odom = false;
-    } else {
-      break;
-    }
-
-    auto path_msg = iter->instantiate<nav_msgs::Path>();
-    if (path_msg == NULL) {
-      BEAM_CRITICAL("Input trajectory message in bag is not of type "
-                    "nav_msgs::Odometry or nav_msgs::Path");
-      throw std::runtime_error{"Invalid message type for input message topic."};
-    }
-    break;
-  }
-
-  if (is_odom) {
-    BEAM_INFO("Loading odom messages from bag");
-    for (auto iter = view.begin(); iter != view.end(); iter++) {
-      auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
-      if (odom_msg == NULL) {
-        throw std::runtime_error{"Cannot instantiate odometry msg."};
-      }
-
-      // convert to poses
-      utils::OdomMsgToPoses(*odom_msg, poses_, time_stamps_, fixed_frame_,
-                            moving_frame_);
-    }
-  } else {
-    BEAM_INFO("Loading path messages from bag");
-    boost::shared_ptr<nav_msgs::Path> path_msg;
-    // get last path message
-    for (auto iter = view.begin(); iter != view.end(); iter++) {
-      path_msg = iter->instantiate<nav_msgs::Path>();
-    }
-
-    if (path_msg == NULL) {
-      throw std::runtime_error{"Cannot instantiate path msg."};
-    }
-
-    // convert to poses
-    utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
-                          moving_frame_);
-  }
-
-  if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
-  if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
-  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
-            poses_.size());
 }
 
 void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
@@ -948,8 +953,126 @@ void Poses::LoadLoopClosedPathsInterpolated(
   }
 }
 
+void Poses::LoadFromBAG(const std::string& bag_file_path,
+                        const std::string& topic) {
+  time_stamps_.clear();
+  poses_.clear();
+
+  boost::filesystem::path p(bag_file_path);
+  bag_name_ = p.stem().string();
+
+  // open bag
+  rosbag::Bag bag;
+  BEAM_INFO("Opening bag: {}", bag_file_path);
+  bag.open(bag_file_path, rosbag::bagmode::Read);
+
+  rosbag::View view(bag, rosbag::TopicQuery(topic), ros::TIME_MIN,
+                    ros::TIME_MAX, true);
+  auto iter = view.begin();
+  auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
+  auto path_msg = iter->instantiate<nav_msgs::Path>();
+  auto geo_msg = iter->instantiate<geometry_msgs::TransformStamped>();
+
+  if (odom_msg != NULL) {
+    BEAM_INFO("Loading odom messages from bag");
+    for (auto iter = view.begin(); iter != view.end(); iter++) {
+      odom_msg = iter->instantiate<nav_msgs::Odometry>();
+      if (odom_msg == NULL) {
+        throw std::runtime_error{"Cannot instantiate odometry msg."};
+      }
+
+      if (fixed_frame_.empty()) { fixed_frame_ = odom_msg->header.frame_id; }
+      if (moving_frame_.empty()) { moving_frame_ = odom_msg->child_frame_id; }
+      time_stamps_.push_back(odom_msg->header.stamp);
+      Eigen::Affine3d T_FIXED_MOVING;
+      Eigen::fromMsg(odom_msg->pose.pose, T_FIXED_MOVING);
+      poses_.push_back(T_FIXED_MOVING.matrix());
+    }
+  } else if (path_msg != NULL) {
+    BEAM_INFO("Loading path messages from bag");
+    boost::shared_ptr<nav_msgs::Path> path_msg;
+    // get last path message
+    for (auto iter = view.begin(); iter != view.end(); iter++) {
+      path_msg = iter->instantiate<nav_msgs::Path>();
+    }
+
+    if (path_msg == NULL) {
+      throw std::runtime_error{"Cannot instantiate path msg."};
+    }
+
+    // convert to poses
+    utils::PathMsgToPoses(*path_msg, poses_, time_stamps_, fixed_frame_,
+                          moving_frame_);
+  } else if (geo_msg != NULL) {
+    BEAM_INFO("Loading geometry messages from bag");
+    for (auto iter = view.begin(); iter != view.end(); iter++) {
+      geo_msg = iter->instantiate<geometry_msgs::TransformStamped>();
+      if (geo_msg == NULL) {
+        throw std::runtime_error{"Cannot instantiate geometry msg."};
+      }
+
+      if (fixed_frame_.empty()) { fixed_frame_ = geo_msg->header.frame_id; }
+      if (moving_frame_.empty()) { moving_frame_ = geo_msg->child_frame_id; }
+      time_stamps_.push_back(geo_msg->header.stamp);
+      Eigen::Matrix4d T_FIXED_MOVING;
+      Eigen::Quaterniond q;
+      Eigen::fromMsg(geo_msg->transform.rotation, q);
+      Eigen::Matrix3d R = q.toRotationMatrix();
+      T_FIXED_MOVING.block(0, 0, 3, 3) = R;
+      T_FIXED_MOVING(0, 3) = geo_msg->transform.translation.x;
+      T_FIXED_MOVING(1, 3) = geo_msg->transform.translation.y;
+      T_FIXED_MOVING(2, 3) = geo_msg->transform.translation.z;
+      poses_.push_back(T_FIXED_MOVING.matrix());
+    }
+  } else {
+    BEAM_ERROR(
+        "Cannot instantiate message. Invalid message type. Options: "
+        "nav_msgs::Odometry, nav_msgs::Path, geometry_msgs::TransformStamped");
+    throw std::runtime_error{"Cannot instantiate message."};
+  }
+
+  if (fixed_frame_.empty()) { fixed_frame_ = "odom"; }
+  if (moving_frame_.empty()) { moving_frame_ = "base_link"; }
+  BEAM_INFO("Done loading poses from Bag. Saved {} total poses.",
+            poses_.size());
+}
+
+void Poses::LoadFromPCD(const std::string& input_pose_file_path) {
+  time_stamps_.clear();
+  poses_.clear();
+
+  // creat cloud ptr
+  pcl::PointCloud<PointXYZIRPYT>::Ptr cloud =
+      std::make_shared<pcl::PointCloud<PointXYZIRPYT>>();
+
+  // load PCD
+  int pcl_loaded =
+      pcl::io::loadPCDFile<PointXYZIRPYT>(input_pose_file_path, *cloud);
+  if (pcl_loaded == -1) {
+    BEAM_CRITICAL("Cannot load poses from PCD file");
+    throw std::runtime_error{
+        "Check point type used in PCD. Cannot create pose file."};
+  }
+
+  // process PCD
+  for (const auto& point : *cloud) {
+    Eigen::Matrix4d T;
+    ros::Time t;
+    beam::PCLPointToPose(point, t, T);
+    poses_.push_back(T);
+    time_stamps_.push_back(t);
+  }
+}
+
 std::ofstream Poses::CreateFile(const std::string& output_path,
                                 const std::string& extension) const {
+  std::string output_file = GetOutputFileName(output_path, extension);
+  BEAM_INFO("Saving poses to file: {}", output_file);
+  return std::ofstream(output_file);
+}
+
+std::string Poses::GetOutputFileName(const std::string& output_path,
+                                     const std::string& extension) const {
   // get lowercase of extension
   std::string output_ext = extension;
   std::transform(output_ext.begin(), output_ext.end(), output_ext.begin(),
@@ -992,8 +1115,7 @@ std::ofstream Poses::CreateFile(const std::string& output_path,
     }
   }
 
-  BEAM_INFO("Saving poses to file: {}", output_file);
-  return std::ofstream(output_file);
+  return output_file;
 }
 
 bool Poses::PopulateValues(const std::string& deliminator,

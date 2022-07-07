@@ -13,7 +13,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
 
   if (!image_initialized_ || !point_cloud_initialized_ ||
-      !intrinsics_initialized_ || input_point_cloud_->size() == 0) {
+      !camera_model_initialized_ || input_point_cloud_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
     return cloud_colored;
     BEAM_CRITICAL("Colorizer not properly initialized.");
@@ -28,7 +28,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
     }
     bool in_image = false;
     Eigen::Vector2d coords;
-    if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
+    if (!camera_model_->ProjectPoint(point, coords, in_image)) {
       continue;
     } else if (!in_image) {
       continue;
@@ -62,7 +62,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   pcl::copyPointCloud(*input_point_cloud_, *defect_cloud);
 
   if (!image_initialized_ || !point_cloud_initialized_ ||
-      !intrinsics_initialized_) {
+      !camera_model_initialized_) {
     return defect_cloud;
     throw std::runtime_error{"Colorizer not properly initialized."};
     BEAM_CRITICAL("Colorizer not properly initialized.");
@@ -78,7 +78,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
 
     bool in_image = false;
     Eigen::Vector2d coords;
-    if (!intrinsics_->ProjectPoint(point, coords, in_image)) {
+    if (!camera_model_->ProjectPoint(point, coords, in_image)) {
       continue;
     } else if (!in_image) {
       continue;

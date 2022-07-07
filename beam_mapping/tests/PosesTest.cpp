@@ -193,3 +193,13 @@ TEST_CASE(
   }
   boost::filesystem::remove(pose_file_path2);
 }
+
+// TODO: Update load/write functionality for BAG
+TEST_CASE("Test BAG read and write functionality") {
+  std::string pose_file_path = "/home/jake/data/LVIO/E5/Fisheye/lvi_results/lvi_out.bag";
+  beam_mapping::Poses poses_read;
+  INFO(pose_file_path);
+  poses_read.LoadFromBAG(pose_file_path, "/lvi_sam/lidar/mapping/path");
+  std::string pose_file_path2 = "/home/jake/data/LVIO/E5/Fisheye/lvi_results/loop_closed_path.txt";
+  poses_read.WriteToTXT2(pose_file_path2);
+}

@@ -156,13 +156,27 @@ public:
   void WriteToJSON(const std::string& output_dir) const;
 
   /**
+   * @brief writes all poses to a pcd file where each pose is a 3 axis RGB
+   * coordinate frame. Each point also has the timestamp embedded in the label
+   * field for each point in the frame. If directory is given (i.e. ending in /)
+   * the file will be named: "poses_file_date"_poses.pcd. If a full filename is
+   * given (i.e. /path/filename.pcd) it will keep that name.
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteCoordinateFramesToPCD(const std::string& output_dir) const;
+
+  /**
    * @brief loads the pose file in JSON format
    * @param input_pose_file_path full path to pose file
    */
   void LoadFromJSON(const std::string& input_pose_file_path);
 
   /**
-   * @brief writes the pose file to the specified directory as TXT type
+   * @brief writes the pose file to the specified directory as TXT type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.txt. If a full filename is given (i.e.
+   * /path/filename.txt) it will keep that name.
+   * Format: timestamp T_WORLD_SENSOR
    * @param output_dir full path to directory at which to save pose file
    * @param format_type int specifying i/o format type.
    */
@@ -171,6 +185,7 @@ public:
 
   /**
    * @brief loads the pose file in txt format
+   * Format: timestamp T_WORLD_SENSOR
    * @param input_pose_file_path full path to pose file
    * @param format_type int specifying i/o format type.
    */
@@ -178,7 +193,27 @@ public:
                    int format_type = format_type::Type1);
 
   /**
-   * @brief writes the pose file to the specified directory as PLY type
+   * @brief writes the pose file to the specified directory as TXT type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.txt. If a full filename is given (i.e.
+   * /path/filename.txt) it will keep that name.
+   * Format: timestamp tx ty tz qx qy qz qw
+   * @param output_dir full path to directory at which to save pose file
+   */
+  void WriteToTXT2(const std::string& output_dir) const;
+
+  /**
+   * @brief loads the pose file in txt format
+   * Format: timestamp tx ty tz qx qy qz qw
+   * @param input_pose_file_path full path to pose file
+   */
+  void LoadFromTXT2(const std::string& input_pose_file_path);
+
+  /**
+   * @brief writes the pose file to the specified directory as PLY type. If a
+   * directory is given (i.e. ending in /) the file will be named:
+   * "poses_file_date"_poses.ply. If a full filename is given (i.e.
+   * /path/filename.ply) it will keep that name.
    * @param output_dir full path to directory at which to save pose file
    * @param format_type int specifying i/o format type.
    */
@@ -237,6 +272,13 @@ public:
 
 private:
   /**
+   * @brief calls GetOutputFileName and then creates an ofstream with the
+   * result.
+   */
+  std::ofstream CreateFile(const std::string& output_path,
+                           const std::string& extension) const;
+
+  /**
    * @brief this is a helper function to create files to write to (e.g., .txt,
    * .ply). The goal of this is to make writing to a file more robust to user
    * input. Here is the logic:
@@ -249,8 +291,8 @@ private:
    *  - If the output_path ends in something else, we post-fix with
    *    _poses.extension
    */
-  std::ofstream CreateFile(const std::string& output_path,
-                           const std::string& extension) const;
+  std::string GetOutputFileName(const std::string& output_path,
+                                  const std::string& extension) const;
 
   /**
    * @brief converts tokens, seperated by a common deliminator, from an input

@@ -197,6 +197,18 @@ void MergeFrameToCloud(PointCloudCol& cloud, const PointCloudCol& frame,
   }
 }
 
+void MergeFrameToCloud(pcl::PointCloud<pcl::PointXYZRGBL>& cloud,
+                       const pcl::PointCloud<pcl::PointXYZRGBL>& frame,
+                       const Eigen::Matrix4d& T) {
+  if (T.isIdentity()) {
+    cloud += frame;
+  } else {
+    pcl::PointCloud<pcl::PointXYZRGBL> frame_transformed;
+    pcl::transformPointCloud(frame, frame_transformed, T);
+    cloud += frame_transformed;
+  }
+}
+
 PointCloud AddFrameToCloud(const PointCloud& cloud, const PointCloud& frame,
                            const Eigen::Matrix4d& T) {
   PointCloud cloud_out;

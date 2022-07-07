@@ -138,6 +138,11 @@ void TfTree::Clear() {
   is_calibration_date_set_ = false;
 }
 
+bool TfTree::IsValidFrame(const std::string& frame_id) {
+  if (frames_.find(frame_id) == frames_.end()) { return false; }
+  return true;
+}
+
 geometry_msgs::TransformStamped
     TfTree::LookupTransform(const std::string& to_frame,
                             const std::string& from_frame,

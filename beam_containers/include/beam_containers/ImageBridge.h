@@ -15,6 +15,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+#include <beam_utils/filesystem.h>
 #include <beam_utils/time.h>
 
 namespace beam_containers {
@@ -41,28 +42,28 @@ public:
    * @return is_bgr_image_set_
    */
 
-  bool IsBGRImageSet() { return is_bgr_image_set_; }
+  bool IsBGRImageSet() const { return is_bgr_image_set_; }
 
   /**
    * @brief Method getting whether or not the BGR mask has been set
    * @param is_bgr_mask_set_
    */
 
-  bool IsBGRMaskSet() { return is_bgr_mask_set_; }
+  bool IsBGRMaskSet() const { return is_bgr_mask_set_; }
 
   /**
    * @brief Method getting whether or not the IR image has been set
    * @return is_ir_image_set_
    */
 
-  bool IsIRImageSet() { return is_ir_image_set_; }
+  bool IsIRImageSet() const { return is_ir_image_set_; }
 
   /**
    * @brief Method getting whether or not the IR mask has been set
    * @param is_ir_mask_set_
    */
 
-  bool IsIRMaskSet() { return is_ir_mask_set_; }
+  bool IsIRMaskSet() const { return is_ir_mask_set_; }
 
   /**
    * @brief Method for setting the BGR image to the container
@@ -78,7 +79,7 @@ public:
    * @return bgr_image_ Image with standard b-g-r color fields, no processing
    * done
    */
-  cv::Mat GetBGRImage() { return bgr_image_; }
+  cv::Mat GetBGRImage() const { return bgr_image_; }
 
   /**
    * @brief Method for setting the BGR mask to the container
@@ -95,7 +96,7 @@ public:
    * @brief Method for getting the BGR mask in the container
    * @return bgr_mask_ Image mask with one "grayscale" field.
    */
-  cv::Mat GetBGRMask() { return bgr_mask_; }
+  cv::Mat GetBGRMask() const { return bgr_mask_; }
 
   /**
    * @brief Method for setting the IR image to the container
@@ -110,7 +111,7 @@ public:
    * @brief Method for getting the IR image in the container
    * @return ir_image_ Infrared image with standard grayscale color field.
    */
-  cv::Mat GetIRImage() { return ir_image_; }
+  cv::Mat GetIRImage() const { return ir_image_; }
 
   /**
    * @brief Method for setting the IR mask to the container
@@ -127,7 +128,7 @@ public:
    * @brief Method for getting the IR mask in the container
    * @return ir_mask_ Image with standard grayscale color fields.
    */
-  cv::Mat GetIRMask() { return ir_image_; }
+  cv::Mat GetIRMask() const { return ir_image_; }
 
   /**
    * @brief Method for setting the BGR mask method
@@ -143,7 +144,7 @@ public:
    * @return bgr_mask_method_ String with the method name that was used to
    * create the mask.
    */
-  std::string GetBGRMaskMethod() { return bgr_mask_method_; }
+  std::string GetBGRMaskMethod() const { return bgr_mask_method_; }
 
   /**
    * @brief Method for setting the IR mask method
@@ -159,7 +160,7 @@ public:
    * @return ir_mask_method_ String with the method name that was used to
    * create the mask.
    */
-  std::string GetIRMaskMethod() { return ir_mask_method_; }
+  std::string GetIRMaskMethod() const { return ir_mask_method_; }
 
   /**
    * @brief Method for setting the name of the frame id of the bgr camera
@@ -173,7 +174,7 @@ public:
    * @brief Method for getting the name of the frame id of the bgr camera
    * @return bgr_frame_id_
    */
-  std::string GetBGRFrameId() { return bgr_frame_id_; }
+  std::string GetBGRFrameId() const { return bgr_frame_id_; }
 
   /**
    * @brief Method for setting the name of the frame id of the IR camera
@@ -187,7 +188,7 @@ public:
    * @brief Method for getting the name of the frame id of the IR camera
    * @return bgr_frame_id_
    */
-  std::string GetIRFrameId() { return ir_frame_id_; }
+  std::string GetIRFrameId() const { return ir_frame_id_; }
 
   /**
    * @brief Method for setting the name of the bag the images were extracted
@@ -201,7 +202,7 @@ public:
    * from
    * @return bag_name_
    */
-  std::string GetBagName() { return bag_name_; }
+  std::string GetBagName() const { return bag_name_; }
 
   /**
    * @brief Method for setting the time stamp associated with the image
@@ -215,7 +216,13 @@ public:
    * @brief Method for getting the time stamp associated with the image
    * @return time_stamp_
    */
-  beam::TimePoint GetTimePoint() { return time_stamp_; }
+  beam::TimePoint GetTimePoint() const { return time_stamp_; }
+
+  /**
+   * @brief Method for getting the time stamp associated with the image
+   * @return time_stamp_
+   */
+  ros::Time GetRosTime() const { return beam::ChronoToRosTime(time_stamp_); }
 
   /**
    * @brief Method for setting the image sequence
@@ -227,7 +234,7 @@ public:
    * @brief Method for getting the image sequence
    * @return image_seq_
    */
-  int GetImageSeq() { return image_seq_; }
+  int GetImageSeq() const { return image_seq_; }
 
   /**
    * @brief Method for setting whether or not the input bgr image is distorted
@@ -243,7 +250,7 @@ public:
    * or undistorted
    * @return bgr_is_distorted_
    */
-  bool GetBGRIsDistorted() { return bgr_is_distorted_; }
+  bool GetBGRIsDistorted() const { return bgr_is_distorted_; }
 
   /**
    * @brief Method for setting whether or not the input ir image is distorted
@@ -259,13 +266,13 @@ public:
    * or undistorted
    * @return ir_is_distorted_
    */
-  bool GetIRIsDistorted() { return ir_is_distorted_; }
+  bool GetIRIsDistorted() const { return ir_is_distorted_; }
 
   /**
    * @brief Method for writing all the data inside this container
    * @param output_directory absolute path to output directory
    */
-  void Write(const std::string& output_directory) {
+  void Write(const std::string& output_directory) const {
     if (is_bgr_image_set_) {
       cv::imwrite(output_directory + "/BGRImage.jpg", bgr_image_);
     }
@@ -293,8 +300,8 @@ public:
                         {"is_bgr_mask_set", is_bgr_mask_set_},
                         {"is_ir_image_set", is_ir_image_set_},
                         {"is_ir_mask_set", is_ir_mask_set_}};
-
-    std::ofstream file(output_directory + "/ImageBridgeInfo.json");
+                        
+    std::ofstream file(output_directory + "/ImageInfo.json");
     file << std::setw(4) << J << std::endl;
   }
 
@@ -303,11 +310,10 @@ public:
    * @param path_to_json
    */
   void LoadFromJSON(const std::string& path_to_json) {
-    std::stringstream ss_json;
-    ss_json << path_to_json << "/ImageBridgeInfo.json";
     nlohmann::json json_config;
-    std::ifstream file(path_to_json + "/ImageBridgeInfo.json");
-    file >> json_config;
+    if (!beam::ReadJson(path_to_json + "/ImageInfo.json", json_config)) {
+      throw std::runtime_error{"invalid file path"};
+    }
 
     bag_name_ = json_config["bag_name"];
     bgr_frame_id_ = json_config["bgr_frame_id"];

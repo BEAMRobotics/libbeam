@@ -13,7 +13,8 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::Vector3d m1;
   Eigen::Vector3d m2;
   if (!cam1->BackProject(p1, m1) || !cam2->BackProject(p2, m2)) { return {}; }
-
+  m1.normalize();
+  m2.normalize();
   double mx1 = m1[0], my1 = m1[1], mz1 = m1[2];
   double mx2 = m2[0], my2 = m2[1], mz2 = m2[2];
   /* building the linear system for triangulation from here:
@@ -32,14 +33,16 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::Vector4d x;
   Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
   x = svd.matrixV().col(A.cols() - 1);
+  Eigen::Vector3d xp = x.hnormalized();
   // check if result is in front of both cameras
-  Eigen::Vector3d T_cam1_world_x = (T_cam1_world * x).hnormalized();
-  Eigen::Vector3d T_cam2_world_x = (T_cam2_world * x).hnormalized();
-  if (T_cam1_world_x[2] < 0.01 || T_cam2_world_x[2] < 0.01 ||
+  Eigen::Vector3d T_cam1_world_x =
+      (T_cam1_world * xp.homogeneous()).hnormalized();
+  Eigen::Vector3d T_cam2_world_x =
+      (T_cam2_world * xp.homogeneous()).hnormalized();
+  if (T_cam1_world_x[2] < 0 || T_cam2_world_x[2] < 0 ||
       T_cam2_world_x[2] > max_dist || T_cam1_world_x[2] > max_dist) {
     return {};
   }
-  Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
 
@@ -47,13 +50,14 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& T_cam_world,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-    double reprojection_threshold, double max_dist) {
+    double max_dist, double reprojection_threshold) {
   if (pixels.size() != T_cam_world.size()) { return {}; }
   int rows = pixels.size() * 2;
   Eigen::MatrixXd A(rows, 4);
   for (uint32_t i = 0; i < pixels.size(); i++) {
     Eigen::Vector3d m;
     cam->BackProject(pixels[i], m);
+    m.normalize();
     double mx = m[0], my = m[1], mz = m[2];
     Eigen::Matrix4d T = T_cam_world[i];
     Eigen::Vector4d P1 = T.row(0), P2 = T.row(1), P3 = T.row(2);
@@ -65,13 +69,15 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
   Eigen::Vector4d x;
   Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
   x = svd.matrixV().col(A.cols() - 1);
+  Eigen::Vector3d xp = x.hnormalized();
+
   // check if result is in front of all cameras
   for (uint16_t i = 0; i < T_cam_world.size(); i++) {
-    Eigen::Vector3d T_x = (T_cam_world[i] * x).hnormalized();
+    Eigen::Vector3d T_x = (T_cam_world[i] * xp.homogeneous()).hnormalized();
     // check if its behind the image plane
-    if (T_x[2] < 0.01 || T_x[2] > max_dist) { return {}; }
-    // compute reprojection error
-    if (reprojection_threshold != -1.0) {
+    if (T_x[2] < 0 || T_x[2] > max_dist) { return {}; }
+    // check reprojection
+    if (reprojection_threshold > 0.0) {
       Eigen::Vector2d reproj_pixel;
       cam->ProjectPoint(T_x, reproj_pixel);
       Eigen::Vector2i reproj_pixeli = reproj_pixel.cast<int>();
@@ -81,7 +87,6 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     }
   }
 
-  Eigen::Vector3d xp = x.hnormalized();
   return xp;
 }
 

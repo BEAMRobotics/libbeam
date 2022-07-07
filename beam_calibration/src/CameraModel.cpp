@@ -3,9 +3,11 @@
 #include <chrono>
 #include <ctime>
 
-#include <beam_utils/log.h>
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
+
+#include <beam_utils/log.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_calibration {
 
@@ -83,15 +85,23 @@ void CameraModel::InitUndistortMap() {
   BEAM_INFO("Done.");
 }
 
-Eigen::Vector2i CameraModel::UndistortPixel(Eigen::Vector2i pixel) {
+bool CameraModel::UndistortPixel(const Eigen::Vector2i& in_pixel,
+                                 Eigen::Vector2i& out_pixel) {
+  // create undistort map if it doesnt exist
   if (!pixel_map_) { InitUndistortMap(); }
-  cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(pixel[1], pixel[0]);
-  return Eigen::Vector2i(out[0], out[1]);
-}
 
-bool CameraModel::Undistortable(Eigen::Vector2i pixel) {
-  Eigen::Vector2i out = UndistortPixel(pixel);
-  if (out[0] == -999999 || out[1] == -999999) { return false; }
+  // add check for invalid input
+  if (in_pixel[1] >= (int)GetHeight() || in_pixel[0] >= (int)GetWidth() ||
+      in_pixel[1] < 0 || in_pixel[0] < 0) {
+    return false;
+  } else {
+    cv::Vec2i out = (*pixel_map_).at<cv::Vec2i>(in_pixel[1], in_pixel[0]);
+    if (out[0] == -999999 || out[1] == -999999) {
+      return false;
+    } else {
+      out_pixel = Eigen::Vector2i(out[0], out[1]);
+    }
+  }
   return true;
 }
 
@@ -269,6 +279,76 @@ void CameraModel::OutputCameraTypes() {
        it != intrinsics_types_.end(); it++) {
     std::cout << "    -" << it->first << "\n";
   }
+}
+
+pcl::PointCloud<pcl::PointXYZRGBL>
+    CameraModel::CreateCameraFrustum(const ros::Time& t, double increment,
+                                     double length,
+                                     const Eigen::Vector3i& RGB) {
+  // draw info needed to draw camera frustums
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> rays;
+  std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i>>
+      pixels;
+  pixels.emplace_back(0, 0);
+  pixels.emplace_back(0, image_height_);
+  pixels.emplace_back(image_width_, image_height_);
+  pixels.emplace_back(image_width_, 0);
+
+  for (int i = 0; i < 4; i++) {
+    Eigen::Vector3d ray;
+    if (!BackProject(pixels[i], ray)) {
+      BEAM_ERROR("cannot back project ray");
+      break;
+    }
+    rays.push_back(ray / ray.norm());
+  }
+
+  pcl::PointXYZRGBL point_start(0, 0, 0, RGB[0], RGB[1], RGB[2], t.toSec());
+  pcl::PointCloud<pcl::PointXYZRGBL> frustum;
+
+  // draw 4 corner rays and store end points
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
+      end_points;
+  for (int i = 0; i < 4; i++) {
+    Eigen::Vector3d point_end_eig = rays[i] * length;
+    pcl::PointXYZRGBL point_end = point_start;
+    point_end.x = point_end_eig[0];
+    point_end.y = point_end_eig[1];
+    point_end.z = point_end_eig[2];
+    pcl::PointCloud<pcl::PointXYZRGBL> line =
+        beam::DrawLine<pcl::PointXYZRGBL>(point_start, point_end, increment);
+    frustum += line;
+    end_points.push_back(point_end_eig);
+  }
+
+  // now connect the end points
+  for (int i = 0; i < 3; i++) {
+    pcl::PointXYZRGBL pt1 = point_start;
+    pt1.x = end_points[i][0];
+    pt1.y = end_points[i][1];
+    pt1.z = end_points[i][2];
+    pcl::PointXYZRGBL pt2 = point_start;
+    pt2.x = end_points[i + 1][0];
+    pt2.y = end_points[i + 1][1];
+    pt2.z = end_points[i + 1][2];
+    pcl::PointCloud<pcl::PointXYZRGBL> line =
+        beam::DrawLine<pcl::PointXYZRGBL>(pt1, pt2, increment);
+    frustum += line;
+  }
+
+  // draw final line
+  pcl::PointXYZRGBL pt1 = point_start;
+  pt1.x = end_points[0][0];
+  pt1.y = end_points[0][1];
+  pt1.z = end_points[0][2];
+  pcl::PointXYZRGBL pt2 = point_start;
+  pt2.x = end_points[3][0];
+  pt2.y = end_points[3][1];
+  pt2.z = end_points[3][2];
+  pcl::PointCloud<pcl::PointXYZRGBL> line =
+      beam::DrawLine<pcl::PointXYZRGBL>(pt1, pt2, increment);
+  frustum += line;
+  return frustum;
 }
 
 } // namespace beam_calibration

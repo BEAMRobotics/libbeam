@@ -49,7 +49,7 @@ int DepthMap::ExtractDepthMap(float thresh) {
 int DepthMap::ExtractDepthMapProjection(float thresh) {
   // create image with 3 channels for coordinates
   depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
-                                           model_->GetWidth(), CV_32FC1);
+                                           model_->GetWidth(), CV_32FC1, double(0));
   for (uint32_t i = 0; i < cloud_->points.size(); i++) {
     Eigen::Vector3d origin(0, 0, 0);
     Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
@@ -65,7 +65,7 @@ int DepthMap::ExtractDepthMapProjection(float thresh) {
     uint16_t col = coords(0, 0), row = coords(1, 0);
     float dist = beam::distance(point, origin);
     if ((depth_image_->at<float>(row, col) > dist ||
-         depth_image_->at<float>(row, col) > dist) &&
+         depth_image_->at<float>(row, col) == 0) &&
         dist < thresh) {
       depth_image_->at<float>(row, col) = dist;
     }
@@ -126,14 +126,14 @@ bool DepthMap::CheckState() {
 }
 
 Eigen::Vector3d DepthMap::GetXYZ(const Eigen::Vector2i& pixel) {
-  float distance = depth_image_->at<float>(pixel[0], pixel[1]);
+  float distance = depth_image_->at<float>(pixel[1], pixel[0]);
   if (distance == 0.0) {
     Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
-    distance = depth_image_->at<float>(c[0], c[1]);
+    distance = depth_image_->at<float>(c[1], c[0]);
   }
   Eigen::Vector3d direction;
   if (model_->BackProject(pixel, direction)) {
-    Eigen::Vector3d coords = distance * direction;
+    Eigen::Vector3d coords = distance * direction.normalized();
     return coords;
   } else {
     BEAM_WARN("Pixel cannot be back projected, skipping.");
@@ -148,10 +148,10 @@ float DepthMap::GetDistance(const Eigen::Vector2i& p1,
 }
 
 float DepthMap::GetPixelScale(const Eigen::Vector2i& pixel) {
-  float distance = depth_image_->at<float>(pixel[0], pixel[1]);
+  float distance = depth_image_->at<float>(pixel[1], pixel[0]);
   if (distance == 0.0) {
     Eigen::Vector2i c = beam_depth::FindClosest(pixel, *depth_image_);
-    distance = depth_image_->at<float>(c[0], c[1]);
+    distance = depth_image_->at<float>(c[1], c[0]);
   }
   Eigen::Vector2i left(pixel[0], pixel[1] - 1), right(pixel[0], pixel[1] - 1);
   Eigen::Vector3d dir_left, dir_right;
