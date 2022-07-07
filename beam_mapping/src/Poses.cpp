@@ -220,48 +220,50 @@ void Poses::WriteToTXT(const std::string& output_dir, int format_type) const {
     format_type = format_type::Type1;
   }
 
-  std::ofstream filetxt = CreateFile(output_dir, ".txt");
+  std::ofstream outfile = CreateFile(output_dir, ".txt");
 
   switch (format_type) {
     case format_type::Type1: {
       for (size_t k = 0; k < poses_.size(); k++) {
         const Eigen::Matrix4d& T = poses_.at(k);
-        filetxt << std::fixed << std::setprecision(9)
+        outfile << std::fixed << std::setprecision(9)
                 << time_stamps_[k].toNSec() << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(0, 0) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(0, 1) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(0, 2) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(0, 3) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(1, 0) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(1, 1) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(1, 2) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(1, 3) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(2, 0) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(2, 1) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(2, 2) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(2, 3) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(3, 0) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(3, 1) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(3, 2) << ", ";
-        filetxt << std::fixed << std::setprecision(7) << T(3, 3) << std::endl;
+        outfile << std::fixed << std::setprecision(9) << T(0, 0) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(0, 1) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(0, 2) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(0, 3) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(1, 0) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(1, 1) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(1, 2) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(1, 3) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(2, 0) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(2, 1) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(2, 2) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(2, 3) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(3, 0) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(3, 1) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(3, 2) << ", ";
+        outfile << std::fixed << std::setprecision(9) << T(3, 3) << std::endl;
       }
       break;
     }
     case format_type::Type2: {
-      filetxt << "# time x y z qx qy qz qw" << std::endl;
+      outfile << "# time x y z qx qy qz qw" << std::endl;
       for (size_t k = 0; k < poses_.size(); k++) {
         const Eigen::Matrix4d& T = poses_.at(k);
-        Eigen::Matrix3d R(T.block(0, 0, 3, 3));
-        Eigen::Quaterniond q(R);
-        filetxt << std::fixed << std::setprecision(9) << time_stamps_[k].toSec()
+        Eigen::Vector3d p;
+        Eigen::Quaterniond q;
+        beam::TransformMatrixToQuaternionAndTranslation(T, q, p);
+
+        outfile << std::fixed << std::setprecision(9) << time_stamps_[k].toSec()
                 << " ";
-        filetxt << std::fixed << std::setprecision(9) << T(0, 3) << " ";
-        filetxt << std::fixed << std::setprecision(9) << T(1, 3) << " ";
-        filetxt << std::fixed << std::setprecision(9) << T(2, 3) << " ";
-        filetxt << std::fixed << std::setprecision(9) << q.x() << " ";
-        filetxt << std::fixed << std::setprecision(9) << q.y() << " ";
-        filetxt << std::fixed << std::setprecision(9) << q.z() << " ";
-        filetxt << std::fixed << std::setprecision(9) << q.w() << std::endl;
+        outfile << std::fixed << std::setprecision(9) << p[0] << " ";
+        outfile << std::fixed << std::setprecision(9) << p[1] << " ";
+        outfile << std::fixed << std::setprecision(9) << p[2] << " ";
+        outfile << std::fixed << std::setprecision(9) << q.x() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.y() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.z() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.w() << std::endl;
       }
       break;
     }
@@ -327,81 +329,6 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path,
   }
 }
 
-void Poses::WriteToTXT2(const std::string& output_dir) const {
-  if (poses_.size() != time_stamps_.size()) {
-    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
-                  "outputting to pose file.");
-    throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose file."};
-  }
-
-  std::ofstream outfile = CreateFile(output_dir, ".txt");
-
-  for (size_t k = 0; k < poses_.size(); k++) {
-    Eigen::Matrix4d Tk = poses_[k];
-    Eigen::Vector3d p;
-    Eigen::Quaterniond q;
-    beam::TransformMatrixToQuaternionAndTranslation(Tk, q, p);
-
-    std::stringstream line;
-    line << std::fixed;
-    line << time_stamps_[k].toSec() << " " << p[0] << " " << p[1] << " " << p[2]
-         << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
-         << std::endl;
-    std::string line_str = line.str();
-    outfile << line_str;
-  }
-}
-
-void Poses::LoadFromTXT2(const std::string& input_pose_file_path) {
-  time_stamps_.clear();
-  poses_.clear();
-
-  // declare variables
-  std::ifstream infile;
-  std::string line;
-  Eigen::Matrix4d Tk;
-  ros::Time time_stamp_k;
-  // open file
-  infile.open(input_pose_file_path);
-  // extract poses
-  while (!infile.eof()) {
-    // get timestamp k
-    std::getline(infile, line, ' ');
-    if (line.length() > 0) {
-      try {
-        double t = std::stod(line);
-        time_stamp_k = ros::Time(t);
-      } catch (const std::invalid_argument& e) {
-        BEAM_CRITICAL("Invalid argument, probably at end of file");
-        throw std::invalid_argument{
-            "Invalid argument, probably at end of file"};
-      }
-      Eigen::Vector3d p;
-      Eigen::Quaterniond q;
-      std::getline(infile, line, ' ');
-      p[0] = std::stod(line);
-      std::getline(infile, line, ' ');
-      p[1] = std::stod(line);
-      std::getline(infile, line, ' ');
-      p[2] = std::stod(line);
-      std::getline(infile, line, ' ');
-      q.x() = std::stod(line);
-      std::getline(infile, line, ' ');
-      q.y() = std::stod(line);
-      std::getline(infile, line, ' ');
-      q.z() = std::stod(line);
-      std::getline(infile, line, '\n');
-      q.w() = std::stod(line);
-
-      beam::QuaternionAndTranslationToTransformMatrix(q, p, Tk);
-      time_stamps_.push_back(time_stamp_k);
-      poses_.push_back(Tk);
-    }
-  }
-  BEAM_INFO("Read {} poses.", poses_.size());
-}
- 
 void Poses::WriteToPLY(const std::string& output_dir, int format_type) const {
   if (poses_.size() != time_stamps_.size()) {
     BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
