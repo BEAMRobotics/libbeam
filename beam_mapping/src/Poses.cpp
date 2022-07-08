@@ -101,6 +101,7 @@ bool Poses::LoadFromFile(const std::string& input_pose_file_path,
   } else {
     return false;
   }
+  BEAM_INFO("Read {} poses.", poses_.size());
   return true;
 }
 
@@ -156,12 +157,7 @@ void Poses::WriteToJSON(const std::string& output_dir) const {
 }
 
 void Poses::WriteCoordinateFramesToPCD(const std::string& output_dir) const {
-  if (poses_.size() != time_stamps_.size()) {
-    BEAM_CRITICAL("Number of time stamps not equal to number of poses. Not "
-                  "outputting to pose file.");
-    throw std::runtime_error{"Number of time stamps not equal to number of "
-                             "poses. Cannot create pose file."};
-  }
+  CheckPoses();
 
   BEAM_INFO("Converting poses to pointclouds");
   pcl::PointCloud<pcl::PointXYZRGBL> cloud;
