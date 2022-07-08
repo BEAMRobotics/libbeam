@@ -2,9 +2,9 @@ ply
 format ascii 1.0
 comment UTC time at start 1563850853.876633
 comment Local time at start Mon Jul 22 23:00:53 2019 EDT
-comment bag_file: test_bag.bag
-comment fixed_frame: test_fixed_frame
-comment moving_frame: test_moving_frame
+comment bag_file test_bag.bag
+comment fixed_frame test_fixed_frame
+comment moving_frame test_moving_frame
 comment orientation_type quaternion
 element vertex 86
 property float x
