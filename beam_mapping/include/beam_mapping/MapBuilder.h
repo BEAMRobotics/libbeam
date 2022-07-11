@@ -68,9 +68,9 @@ public:
 
   /**
    * @brief performs the map building
-   * @param save_map set to true to save map to disk
+   * @param save_output set to true to generate poses and save map to disk
    */
-  void BuildMap(bool save_map = true);
+  void BuildMap(bool save_output = true);
 
   /**
    * @brief get sensor data for post-processing

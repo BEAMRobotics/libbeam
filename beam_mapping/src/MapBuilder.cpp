@@ -296,12 +296,12 @@ void MapBuilder::GeneratePoses() {
   }
 }
 
-void MapBuilder::BuildMap(bool save_map) {
-  if(prefix_with_date_){
+void MapBuilder::BuildMap(bool save_output) {
+  if (prefix_with_date_) {
     dateandtime_ = beam::ConvertTimeToDate(std::chrono::system_clock::now());
     boost::filesystem::create_directory(save_dir_ + dateandtime_ + "/");
   }
-  
+
   LoadTrajectory();
   for (uint8_t i = 0; i < sensors_.size(); i++) {
     scan_pose_last_ = Eigen::Matrix4d::Identity();
@@ -310,9 +310,10 @@ void MapBuilder::BuildMap(bool save_map) {
     LoadScans(i);
     GenerateMap(i);
   }
-  if (save_map) { SaveMaps(); };
-  GeneratePoses();
-  SaveMaps();
+  if (save_output) {
+    GeneratePoses();
+    SaveMaps();
+  };
 }
 
 } // namespace beam_mapping
