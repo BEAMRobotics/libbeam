@@ -113,6 +113,8 @@ bool Poses::WriteToFile(const std::string& output_dir,
     WriteToPLY(output_dir, format_type);
   } else if (file_type == "TXT") {
     WriteToTXT(output_dir, format_type);
+  } else if (file_type == "PCD") {
+    WriteCoordinateFramesToPCD(output_dir);
   } else {
     BEAM_ERROR("Invalid file type, using default: JSON");
     WriteToJSON(output_dir);
@@ -333,31 +335,31 @@ void Poses::WriteToPLY(const std::string& output_dir, int format_type) const {
                              "poses. Cannot create pose file."};
   }
 
-  std::ofstream fileply = CreateFile(output_dir, ".ply");
+  std::ofstream outfile = CreateFile(output_dir, ".ply");
   const ros::Time& t_start = time_stamps_.at(0);
 
-  fileply << "ply" << std::endl;
-  fileply << "format ascii 1.0" << std::endl;
-  fileply << "comment UTC time at start ";
-  fileply << std::fixed << std::setprecision(6) << t_start.toSec() << std::endl;
-  fileply << "comment Local time at start " << pose_file_date_ << std::endl;
-  fileply << "comment bag_file " << bag_name_ << std::endl;
-  fileply << "comment fixed_frame " << fixed_frame_ << std::endl;
-  fileply << "comment moving_frame " << moving_frame_ << std::endl;
+  outfile << "ply" << std::endl;
+  outfile << "format ascii 1.0" << std::endl;
+  outfile << "comment UTC time at start ";
+  outfile << std::fixed << std::setprecision(6) << t_start.toSec() << std::endl;
+  outfile << "comment Local time at start " << pose_file_date_ << std::endl;
+  outfile << "comment bag_file " << bag_name_ << std::endl;
+  outfile << "comment fixed_frame " << fixed_frame_ << std::endl;
+  outfile << "comment moving_frame " << moving_frame_ << std::endl;
 
   switch (format_type) {
     case format_type::Type1: {
-      fileply << "comment orientation_type RPY" << std::endl;
-      fileply << "element vertex " << time_stamps_.size() << std::endl;
-      fileply << "property float x" << std::endl;
-      fileply << "property float y" << std::endl;
-      fileply << "property float z" << std::endl;
-      fileply << "property float roll" << std::endl;
-      fileply << "property float pitch" << std::endl;
-      fileply << "property float yaw" << std::endl;
-      fileply << "property float time" << std::endl;
-      fileply << "property float scalar_confidence_metric" << std::endl;
-      fileply << "end_header" << std::endl;
+      outfile << "comment orientation_type RPY" << std::endl;
+      outfile << "element vertex " << time_stamps_.size() << std::endl;
+      outfile << "property float x" << std::endl;
+      outfile << "property float y" << std::endl;
+      outfile << "property float z" << std::endl;
+      outfile << "property float roll" << std::endl;
+      outfile << "property float pitch" << std::endl;
+      outfile << "property float yaw" << std::endl;
+      outfile << "property float time" << std::endl;
+      outfile << "property float scalar_confidence_metric" << std::endl;
+      outfile << "end_header" << std::endl;
 
       for (size_t k = 0; k < poses_.size(); k++) {
         double t = (time_stamps_.at(k) - t_start).toSec();
@@ -367,29 +369,29 @@ void Poses::WriteToPLY(const std::string& output_dir, int format_type) const {
         Eigen::Quaterniond q;
         beam::TransformMatrixToQuaternionAndTranslation(T, q, p);
         beam::QuaterniontoRPY(q, euler);
-        fileply << std::fixed << std::setprecision(7) << p.x() << " ";
-        fileply << std::fixed << std::setprecision(7) << p.y() << " ";
-        fileply << std::fixed << std::setprecision(7) << p.z() << " ";
-        fileply << std::fixed << std::setprecision(7) << euler.x() << " ";
-        fileply << std::fixed << std::setprecision(7) << euler.y() << " ";
-        fileply << std::fixed << std::setprecision(7) << euler.z() << " ";
-        fileply << std::fixed << std::setprecision(7) << t << " ";
-        fileply << std::fixed << std::setprecision(7) << 1.000000 << std::endl;
+        outfile << std::fixed << std::setprecision(9) << p.x() << " ";
+        outfile << std::fixed << std::setprecision(9) << p.y() << " ";
+        outfile << std::fixed << std::setprecision(9) << p.z() << " ";
+        outfile << std::fixed << std::setprecision(9) << euler.x() << " ";
+        outfile << std::fixed << std::setprecision(9) << euler.y() << " ";
+        outfile << std::fixed << std::setprecision(9) << euler.z() << " ";
+        outfile << std::fixed << std::setprecision(9) << t << " ";
+        outfile << std::fixed << std::setprecision(9) << 1.000000 << std::endl;
       }
       break;
     }
     case format_type::Type2: {
-      fileply << "comment orientation_type Quaternion" << std::endl;
-      fileply << "element vertex " << time_stamps_.size() << std::endl;
-      fileply << "property float x" << std::endl;
-      fileply << "property float y" << std::endl;
-      fileply << "property float z" << std::endl;
-      fileply << "property float qw" << std::endl;
-      fileply << "property float qx" << std::endl;
-      fileply << "property float qy" << std::endl;
-      fileply << "property float qz" << std::endl;
-      fileply << "property float time_nsec" << std::endl;
-      fileply << "end_header" << std::endl;
+      outfile << "comment orientation_type Quaternion" << std::endl;
+      outfile << "element vertex " << time_stamps_.size() << std::endl;
+      outfile << "property float x" << std::endl;
+      outfile << "property float y" << std::endl;
+      outfile << "property float z" << std::endl;
+      outfile << "property float qw" << std::endl;
+      outfile << "property float qx" << std::endl;
+      outfile << "property float qy" << std::endl;
+      outfile << "property float qz" << std::endl;
+      outfile << "property float time_nsec" << std::endl;
+      outfile << "end_header" << std::endl;
 
       for (size_t k = 0; k < poses_.size(); k++) {
         double t = (time_stamps_.at(k) - t_start).toNSec();
@@ -397,14 +399,14 @@ void Poses::WriteToPLY(const std::string& output_dir, int format_type) const {
         Eigen::Vector3d p;
         Eigen::Quaterniond q;
         beam::TransformMatrixToQuaternionAndTranslation(T, q, p);
-        fileply << std::fixed << std::setprecision(7) << p.x() << " ";
-        fileply << std::fixed << std::setprecision(7) << p.y() << " ";
-        fileply << std::fixed << std::setprecision(7) << p.z() << " ";
-        fileply << std::fixed << std::setprecision(7) << q.w() << " ";
-        fileply << std::fixed << std::setprecision(7) << q.x() << " ";
-        fileply << std::fixed << std::setprecision(7) << q.y() << " ";
-        fileply << std::fixed << std::setprecision(7) << q.z() << " ";
-        fileply << std::fixed << std::setprecision(0) << t << std::endl;
+        outfile << std::fixed << std::setprecision(9) << p.x() << " ";
+        outfile << std::fixed << std::setprecision(9) << p.y() << " ";
+        outfile << std::fixed << std::setprecision(9) << p.z() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.w() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.x() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.y() << " ";
+        outfile << std::fixed << std::setprecision(9) << q.z() << " ";
+        outfile << std::fixed << std::setprecision(0) << t << std::endl;
       }
       break;
     }
