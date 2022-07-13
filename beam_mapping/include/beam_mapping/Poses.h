@@ -141,10 +141,10 @@ public:
    * will be named: "poses_file_date"_poses.file_type. If a full filename is
    * given (i.e. /path/filename.file_type) it will keep that name.
    * @param file_type specifies the file type to which poses are written. File
-   * types supported include: "JSON", "PLY", "TXT"
+   * types supported include: "JSON", "PLY", "TXT", "PCD"
    * @param format_type int specifying i/o format type. Certain load
    * functions will have the option to load a file with different formats. See
-   * README for documentation
+   * load functions for documentation
    */
   bool WriteToFile(const std::string& output_dir, const std::string& file_type,
                    int format_type = format_type::Type1);
@@ -176,7 +176,8 @@ public:
    * directory is given (i.e. ending in /) the file will be named:
    * "poses_file_date"_poses.txt. If a full filename is given (i.e.
    * /path/filename.txt) it will keep that name.
-   * Type1 Format: timestamp T_WORLD_SENSOR
+   * Type1 Format: timestamp T_WORLD_SENSOR, where T_WORLD_SENSOR is in row
+   * major format
    * Type2 Format: timestamp tx ty tz qx qy qz qw
    * @param output_dir full path to directory at which to save pose file
    * @param format_type int specifying i/o format type.
@@ -186,7 +187,8 @@ public:
 
   /**
    * @brief loads the pose file in txt format in either Type1 or Type2 formats
-   * Type1 Format: timestamp T_WORLD_SENSOR
+   * Type1 Format: timestamp T_WORLD_SENSOR, where T_WORLD_SENSOR is in row
+   * major format
    * Type2 Format: timestamp tx ty tz qx qy qz qw
    * @param input_pose_file_path full path to pose file
    * @param format_type int specifying i/o format type.
@@ -280,9 +282,9 @@ private:
                                 const std::string& extension) const;
 
   /**
-   * @brief converts tokens, seperated by a common deliminator, from an input
+   * @brief converts tokens, separated by a common deliminator, from an input
    * string into a vector of numeric values
-   * @param deliminator deliminator seperating tokens
+   * @param deliminator deliminator separating tokens
    * @param input_string input string to parse
    * @param values vector containing tokens as numeric values
    * @return true if values is non-empty

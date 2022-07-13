@@ -831,6 +831,7 @@ void Poses::LoadLoopClosedPathsInterpolated(
         T_WORLDEST_BASELINKHR = iter_HR->second;
       }
 
+      // get correction at time of LC pose
       const Eigen::Matrix4d& T_WORLD_BASELINKLC = iter_LC->second;
       T_WORLDCORR_WORLDEST =
           T_WORLD_BASELINKLC * beam::InvertTransform(T_WORLDEST_BASELINKHR);
