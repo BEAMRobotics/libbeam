@@ -190,7 +190,7 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
 
   const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses =
       interpolated_poses_.GetPoses();
-  std::vector<Eigen::Matrix4d> scan_poses; // TODO: improve
+  std::vector<Eigen::Matrix4d> scan_poses;
   for (uint32_t k = 0; k < poses.size(); k++) {
     intermediary_size++;
 
