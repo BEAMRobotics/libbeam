@@ -15,11 +15,25 @@ namespace beam_mapping {
 /** @addtogroup mapping
  *  @{ */
 
-using scan_data_type =
+/**
+ * @brief scan data structure where the first element contains a vector of poses
+ * expressed as homogenous transformation matrices T_FIXED_MOVING and the second
+ * element contains a vector of scans associated with each pose
+ */
+using pose_and_scan_data_type =
     std::pair<std::vector<Eigen::Matrix4d>, std::vector<PointCloud::Ptr> >;
 
-using sensor_data_type = std::map<std::string, scan_data_type>;
+/**
+ * @brief sensor data stored as an ordered map, where the first element contains
+ * the sensor frame ID and the second element contains pose and scan data
+ */
+using sensor_data_type = std::map<std::string, pose_and_scan_data_type>;
 
+/**
+ * @brief pose data stored as an ordered map, where the first element contains
+ * the time of pose in nanoseconds and the second element expresses the pose of
+ * the sensor as a homogenous transformation matrix T_FIXED_MOVING
+ */
 using pose_map_type = std::map<
     uint64_t, Eigen::Matrix4d, std::less<uint64_t>,
     Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Matrix4d> > >;
