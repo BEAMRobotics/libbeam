@@ -131,4 +131,19 @@ bool ReadJson(const std::string& filename, nlohmann::json& J,
   return true;
 }
 
+bool PopulateValues(const std::string& deliminator, std::string& input_string,
+                    std::vector<double>& values) {
+  values.clear();
+  size_t pos = 0;
+  input_string += deliminator;
+  while ((pos = input_string.find(deliminator)) != std::string::npos) {
+    double val = std::stod(input_string.substr(0, pos));
+    input_string.erase(0, pos + deliminator.length());
+    values.push_back(val);
+  }
+
+  if (values.empty()) { return false; }
+  return true;
+}
+
 } // namespace beam

@@ -287,7 +287,7 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path,
     if (s[0] == '#') { continue; }
 
     std::vector<double> vals;
-    if (PopulateValues(delim, s, vals)) {
+    if (beam::PopulateValues(delim, s, vals)) {
       ros::Time time_stamp;
       Eigen::Matrix4d T;
 
@@ -484,7 +484,7 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path,
 
   while (std::getline(file, s)) {
     std::vector<double> vals;
-    if (PopulateValues(delim, s, vals)) {
+    if (beam::PopulateValues(delim, s, vals)) {
       ros::Duration duration;
       Eigen::Quaterniond q;
 
@@ -1042,22 +1042,6 @@ std::string Poses::GetOutputFileName(const std::string& output_path,
   }
 
   return output_file;
-}
-
-bool Poses::PopulateValues(const std::string& deliminator,
-                           std::string& input_string,
-                           std::vector<double>& values) {
-  values.clear();
-  size_t pos = 0;
-  input_string += deliminator;
-  while ((pos = input_string.find(deliminator)) != std::string::npos) {
-    double val = std::stod(input_string.substr(0, pos));
-    input_string.erase(0, pos + deliminator.length());
-    values.push_back(val);
-  }
-
-  if (values.empty()) { return false; }
-  return true;
 }
 
 bool Poses::CheckPoses() const {

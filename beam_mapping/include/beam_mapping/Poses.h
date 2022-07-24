@@ -282,17 +282,6 @@ private:
                                 const std::string& extension) const;
 
   /**
-   * @brief converts tokens, separated by a common deliminator, from an input
-   * string into a vector of numeric values
-   * @param deliminator deliminator separating tokens
-   * @param input_string input string to parse
-   * @param values vector containing tokens as numeric values
-   * @return true if values is non-empty
-   */
-  bool PopulateValues(const std::string& deliminator, std::string& input_string,
-                      std::vector<double>& values);
-
-  /**
    * @brief ensures that the numer of poses matches the number of time stamps
    */
   bool CheckPoses() const;
