@@ -287,7 +287,7 @@ void Poses::LoadFromTXT(const std::string& input_pose_file_path,
     if (s[0] == '#') { continue; }
 
     std::vector<double> vals;
-    if (beam::PopulateValues(delim, s, vals)) {
+    if (beam::StringToNumericValues(delim, s, vals)) {
       ros::Time time_stamp;
       Eigen::Matrix4d T;
 
@@ -484,7 +484,7 @@ void Poses::LoadFromPLY(const std::string& input_pose_file_path,
 
   while (std::getline(file, s)) {
     std::vector<double> vals;
-    if (beam::PopulateValues(delim, s, vals)) {
+    if (beam::StringToNumericValues(delim, s, vals)) {
       ros::Duration duration;
       Eigen::Quaterniond q;
 

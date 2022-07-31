@@ -98,3 +98,19 @@ TEST_CASE("LibbeamRoot tests", "[filesystem.hpp]") {
   REQUIRE(fs::exists(this_file_expected_location));
   REQUIRE(this_file_true_location == this_file_expected_location);
 }
+
+TEST_CASE("StringToNumericValues", "[filesystem.hpp]") {
+  std::string deliminator_1{","};
+  std::string deliminator_2{" "};
+  std::string input_string{"0 3.14159265359 -3.14159265359 10"};
+  std::vector<double> values;
+  REQUIRE(beam::StringToNumericValues(deliminator_1, input_string, values) ==
+          false);
+  REQUIRE(beam::StringToNumericValues(deliminator_2, input_string, values));
+
+  std::vector<double> expected_values{0, 3.14159265359, -3.14159265359, 10};
+  REQUIRE(expected_values.at(0) == values.at(0));
+  REQUIRE(expected_values.at(1) == values.at(1));
+  REQUIRE(expected_values.at(2) == values.at(2));
+  REQUIRE(expected_values.at(3) == values.at(3));
+}

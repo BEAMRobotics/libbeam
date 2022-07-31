@@ -95,8 +95,9 @@ bool ReadJson(const std::string& filename, nlohmann::json& J,
  * @param values vector containing tokens as numeric values
  * @return true if values is non-empty
  */
-bool PopulateValues(const std::string& deliminator, std::string& input_string,
-                    std::vector<double>& values);
+bool StringToNumericValues(const std::string& deliminator,
+                           std::string& input_string,
+                           std::vector<double>& values);
 
 /** @} group utils */
 } // namespace beam
