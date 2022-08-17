@@ -13,6 +13,7 @@
 #include <beam_calibration/TfTree.h>
 #include <beam_filtering/Utils.h>
 #include <beam_mapping/Poses.h>
+#include <beam_mapping/Utils.h>
 #include <beam_utils/math.h>
 
 namespace beam_mapping {
@@ -47,11 +48,13 @@ public:
    * @param poses_moving_frame optional moving frame associated with the poses.
    * This needs to match a frame in the extrinsics. If not provided, it will use
    * the frame from the poses file. Otherwise, it will override.
+   * @param poses_format_type int specifying i/o format type of pose file.
    */
   MapBuilder(const std::string& bag_file, const std::string& config_file,
              const std::string& pose_file, const std::string& output_directory,
              const std::string& extrinsics,
-             const std::string& poses_moving_frame = "");
+             const std::string& poses_moving_frame = "",
+             int poses_format_type = format_type::Type1);
 
   /**
    * @brief delete default constructor
@@ -65,8 +68,14 @@ public:
 
   /**
    * @brief performs the map building
+   * @param save_output set to true to generate poses and save map to disk
    */
-  void BuildMap();
+  void BuildMap(bool save_output = true);
+
+  /**
+   * @brief get sensor data for post-processing
+   */
+  sensor_data_type GetSensorData() { return sensor_data_; };
 
 private:
   /**
@@ -128,6 +137,7 @@ private:
   std::string save_dir_;
   std::string extrinsics_file_;
   std::string poses_moving_frame_;
+  int poses_format_type_;
 
   // From Config file
   int intermediary_map_size_;
@@ -139,7 +149,7 @@ private:
   std::vector<beam_filtering::FilterParamsType> intermediary_filters_;
   std::vector<beam_filtering::FilterParamsType> output_filters_;
 
-  // New objects
+  // Map Builder objects
   std::string map_frame_;
   beam_mapping::Poses slam_poses_;
   beam_mapping::Poses interpolated_poses_;
@@ -149,6 +159,7 @@ private:
   std::vector<PointCloud::Ptr> scans_;
   std::vector<PointCloud::Ptr> maps_;
   Eigen::Matrix4d scan_pose_last_;
+  sensor_data_type sensor_data_;
   std::string dateandtime_{""};
   bool prefix_with_date_{false};
 };

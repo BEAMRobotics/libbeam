@@ -6,6 +6,30 @@
 
 namespace beam_mapping { namespace utils {
 
+void OdomMsgToPoses(const nav_msgs::Odometry& odom,
+                    std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses,
+                    std::vector<ros::Time>& timestamps,
+                    std::string& fixed_frame, std::string& moving_frame) {
+  if (fixed_frame.empty()) { fixed_frame = odom.header.frame_id; }
+  if (moving_frame.empty()) { moving_frame = odom.child_frame_id; }
+  timestamps.push_back(odom.header.stamp);
+  Eigen::Affine3d T_FIXED_MOVING;
+  Eigen::fromMsg(odom.pose.pose, T_FIXED_MOVING);
+  poses.push_back(T_FIXED_MOVING.matrix());
+}
+
+void OdomMsgToPoses(const nav_msgs::Odometry& odom, pose_map_type& poses,
+                    std::string& fixed_frame, std::string& moving_frame) {
+  if (fixed_frame.empty()) { fixed_frame = odom.header.frame_id; }
+  if (moving_frame.empty()) { moving_frame = odom.child_frame_id; }
+  Eigen::Affine3d T_FIXED_MOVING;
+  Eigen::fromMsg(odom.pose.pose, T_FIXED_MOVING);
+  uint64_t stamp = odom.header.stamp.toNSec();
+
+  // odometry does not have duplicates
+  poses.emplace(stamp, T_FIXED_MOVING.matrix());
+}
+
 void PathMsgToPoses(const nav_msgs::Path& path,
                     std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses,
                     std::vector<ros::Time>& timestamps,

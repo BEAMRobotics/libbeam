@@ -427,7 +427,6 @@ Eigen::Matrix<double, 3, 2> S2TangentialBasis(const Eigen::Vector3d& x) {
   return (Eigen::Matrix<double, 3, 2>() << b1, b2).finished();
 }
 
-
 Eigen::Vector3d RToLieAlgebra(const Eigen::Matrix3d& R) {
   return InvSkewTransform(R.log());
 }
@@ -484,7 +483,6 @@ Eigen::VectorXd InterpolateVector(const Eigen::VectorXd& v1, const double& t1,
   Eigen::VectorXd slope = rise / run;
   return slope * (t - t1);
 }
-
 
 Eigen::Vector3d InvSkewTransform(const Eigen::Matrix3d& M) {
   Eigen::Vector3d V;
@@ -597,18 +595,56 @@ Eigen::Matrix4d PerturbTransformDegM(const Eigen::Matrix4d& T_in,
   return PerturbTransformRadM(T_in, perturbations_rad);
 }
 
-Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
-                                        double yawInDeg, double tx, double ty,
-                                        double tz) {
-  Eigen::Vector3d t(tx, ty, tz);
-  Eigen::Matrix3d R;
-  R = Eigen::AngleAxisd(beam::Deg2Rad(rollInDeg), Eigen::Vector3d::UnitX()) *
-      Eigen::AngleAxisd(beam::Deg2Rad(pitchInDeg), Eigen::Vector3d::UnitY()) *
-      Eigen::AngleAxisd(beam::Deg2Rad(yawInDeg), Eigen::Vector3d::UnitZ());
-  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-  T.block(0, 0, 3, 3) = R;
-  T.block(0, 3, 3, 1) = t;
-  return T;
+void RPYtoQuaternion(double roll, double pitch, double yaw,
+                     Eigen::Quaterniond& q) {
+  Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
+  Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
+  q = rollAngle * pitchAngle * yawAngle;
+  q.normalize();
+}
+
+void RPYtoQuaternion(const Eigen::Vector3d& rpy, Eigen::Quaterniond& q) {
+  RPYtoQuaternion(rpy[0], rpy[1], rpy[2], q);
+}
+
+void RPYtoQuaternionDeg(double roll, double pitch, double yaw,
+                        Eigen::Quaterniond& q) {
+  RPYtoQuaternion(beam::Deg2Rad(roll), beam::Deg2Rad(pitch), beam::Deg2Rad(yaw),
+                  q);
+}
+
+void RPYtoQuaternionDeg(const Eigen::Vector3d& rpy, Eigen::Quaterniond& q) {
+  RPYtoQuaternion(beam::Deg2Rad(rpy[0]), beam::Deg2Rad(rpy[1]),
+                  beam::Deg2Rad(rpy[2]), q);
+}
+
+void QuaterniontoRPY(const Eigen::Quaterniond& q, Eigen::Vector3d& rpy) {
+  rpy = q.toRotationMatrix().eulerAngles(0, 1, 2); // roll pitch yaw order
+}
+
+void QuaterniontoRPY(const Eigen::Quaterniond& q, double& roll, double& pitch,
+                     double& yaw) {
+  Eigen::Vector3d rpy;
+  QuaterniontoRPY(q, rpy);
+  roll = rpy[0];
+  pitch = rpy[1];
+  yaw = rpy[2];
+}
+
+void QuaterniontoRPYDeg(const Eigen::Quaterniond& q, Eigen::Vector3d& rpy) {
+  QuaterniontoRPY(q, rpy);
+  rpy[0] = beam::Rad2Deg(rpy[0]);
+  rpy[1] = beam::Rad2Deg(rpy[1]);
+  rpy[2] = beam::Rad2Deg(rpy[2]);
+}
+
+void QuaterniontoRPYDeg(const Eigen::Quaterniond& q, double& roll,
+                        double& pitch, double& yaw) {
+  QuaterniontoRPY(q, roll, pitch, yaw);
+  roll = beam::Rad2Deg(roll);
+  pitch = beam::Rad2Deg(pitch);
+  yaw = beam::Rad2Deg(yaw);
 }
 
 Eigen::Matrix4d

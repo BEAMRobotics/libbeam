@@ -87,5 +87,17 @@ bool ReadJson(const std::string& filename, nlohmann::json& J,
               JsonReadErrorType& error_type = tmp_json_read_error_type_,
               bool output_error = true);
 
+/**
+ * @brief converts tokens, separated by a common deliminator, from an input
+ * string into a vector of numeric values
+ * @param deliminator deliminator separating tokens
+ * @param input_string input string to parse
+ * @param values vector containing tokens as numeric values
+ * @return true if values is non-empty
+ */
+bool StringToNumericValues(const std::string& deliminator,
+                           std::string& input_string,
+                           std::vector<double>& values);
+
 /** @} group utils */
 } // namespace beam

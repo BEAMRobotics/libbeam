@@ -131,4 +131,27 @@ bool ReadJson(const std::string& filename, nlohmann::json& J,
   return true;
 }
 
+bool StringToNumericValues(const std::string& deliminator,
+                           std::string& input_string,
+                           std::vector<double>& values) {
+  values.clear();
+  size_t pos = 0;
+
+  if ((pos = input_string.find(deliminator)) == std::string::npos) {
+    BEAM_ERROR(
+        "Input string deliminator is not {}. Input vector remains empty.",
+        deliminator);
+    return false;
+  }
+
+  input_string += deliminator;
+  while ((pos = input_string.find(deliminator)) != std::string::npos) {
+    double val = std::stod(input_string.substr(0, pos));
+    input_string.erase(0, pos + deliminator.length());
+    values.push_back(val);
+  }
+
+  return true;
+}
+
 } // namespace beam

@@ -18,13 +18,15 @@ MapBuilder::MapBuilder(const std::string& bag_file,
                        const std::string& pose_file,
                        const std::string& output_directory,
                        const std::string& extrinsics,
-                       const std::string& poses_moving_frame)
+                       const std::string& poses_moving_frame,
+                       int poses_format_type)
     : bag_file_path_(bag_file),
       config_file_(config_file),
       pose_file_path_(pose_file),
       save_dir_(output_directory),
       extrinsics_file_(extrinsics),
-      poses_moving_frame_(poses_moving_frame) {
+      poses_moving_frame_(poses_moving_frame),
+      poses_format_type_(poses_format_type) {
   LoadConfigFromJSON();
 }
 
@@ -68,11 +70,11 @@ void MapBuilder::LoadConfigFromJSON() {
 }
 
 void MapBuilder::LoadTrajectory() {
-  if (!slam_poses_.LoadFromFile(pose_file_path_)) {
+  if (!slam_poses_.LoadFromFile(pose_file_path_, poses_format_type_)) {
     BEAM_CRITICAL(
-        "Invalid pose file type. Valid extensions: .ply, .json, .pcd");
+        "Invalid pose file type. Valid extensions: .ply, .json, .txt, .pcd");
     throw std::invalid_argument{
-        "Invalid pose file type. Valid extensions: .ply, .json, .pcd"};
+        "Invalid pose file type. Valid extensions: .ply, .json, .txt, .pcd"};
   }
 
   if (poses_moving_frame_.empty()) {
@@ -188,12 +190,14 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
 
   const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses =
       interpolated_poses_.GetPoses();
+  std::vector<Eigen::Matrix4d> scan_poses;
   for (uint32_t k = 0; k < poses.size(); k++) {
     intermediary_size++;
 
     // get the transforms we will need:
     Eigen::Matrix4d T_FIXED_MOVING = poses[k];
     Eigen::Matrix4d T_FIXED_LIDAR = T_FIXED_MOVING * T_MOVING_LIDAR;
+    scan_poses.push_back(T_FIXED_LIDAR);
     if (intermediary_size == 1) { T_FIXED_INT = T_FIXED_LIDAR; }
     T_INT_LIDAR = beam::InvertTransform(T_FIXED_INT) * T_FIXED_LIDAR;
 
@@ -216,6 +220,7 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
   PointCloud new_map = beam_filtering::FilterPointCloud<pcl::PointXYZ>(
       *scan_aggregate, output_filters_);
   maps_.push_back(std::make_shared<PointCloud>(new_map));
+  sensor_data_[sensor_frame] = std::make_pair(scan_poses, scans_);
 }
 
 void MapBuilder::SaveMaps() {
@@ -291,12 +296,12 @@ void MapBuilder::GeneratePoses() {
   }
 }
 
-void MapBuilder::BuildMap() {
-  if(prefix_with_date_){
+void MapBuilder::BuildMap(bool save_output) {
+  if (prefix_with_date_) {
     dateandtime_ = beam::ConvertTimeToDate(std::chrono::system_clock::now());
     boost::filesystem::create_directory(save_dir_ + dateandtime_ + "/");
   }
-  
+
   LoadTrajectory();
   for (uint8_t i = 0; i < sensors_.size(); i++) {
     scan_pose_last_ = Eigen::Matrix4d::Identity();
@@ -305,8 +310,10 @@ void MapBuilder::BuildMap() {
     LoadScans(i);
     GenerateMap(i);
   }
-  GeneratePoses();
-  SaveMaps();
+  if (save_output) {
+    GeneratePoses();
+    SaveMaps();
+  };
 }
 
 } // namespace beam_mapping

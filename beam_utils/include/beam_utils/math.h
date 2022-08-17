@@ -303,7 +303,7 @@ Eigen::Matrix3d SkewTransform(const Eigen::Vector3d& V);
 
 /**
  * @brief Inverts a 4x4 Transformation matrix by taking into account that
- *R^(-1)=R^T
+ * R^(-1)=R^T
  * @param T Transform matrix to be inverted
  * @return 4x4 inverted transformation matrix
  **/
@@ -311,8 +311,8 @@ Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T);
 
 /**
  * @brief Average a set of transforms by converting each to lie algebra space,
- *summing their quantities in this space, then dividing all by the number of
- *transforms and converting back to Lie Group
+ * summing their quantities in this space, then dividing all by the number of
+ * transforms and converting back to Lie Group
  * @param transforms vector of matrix4d transforms
  * @return averaged transform
  **/
@@ -355,19 +355,72 @@ Eigen::Matrix4d PerturbTransformDegM(const Eigen::Matrix4d& T_in,
                                      const Eigen::VectorXd& perturbations);
 
 /**
- * @brief build a 4x4 transformation matrix from rpy (in degrees) and
- * translation (in m)
- * @param rollInDeg rotation about x
- * @param pitchInDeg rotation about y
- * @param yawInDeg rotation about z
- * @param tx translation in x
- * @param ty translation in y
- * @param tz translation in z
- * @return transformation matrix [R t ; 0 1]
+ * @brief convert roll pitch yaw (in radians) to quaternion
+ * @param roll roll
+ * @param pitch pitch
+ * @param yaw yaw
+ * @param q quaternion
  */
-Eigen::Matrix4d BuildTransformEulerDegM(double rollInDeg, double pitchInDeg,
-                                        double yawInDeg, double tx, double ty,
-                                        double tz);
+void RPYtoQuaternion(double roll, double pitch, double yaw,
+                     Eigen::Quaterniond& q);
+
+/**
+ * @brief convert roll pitch yaw (in radians) to quaternion
+ * @param p roll pitch yaw as a vector
+ * @param q quaternion
+ */
+void RPYtoQuaternion(const Eigen::Vector3d& rpy, Eigen::Quaterniond& q);
+
+/**
+ * @brief convert roll pitch yaw (in degrees) to quaternion
+ * @param roll roll
+ * @param pitch pitch
+ * @param yaw yaw
+ * @param q quaternion
+ */
+void RPYtoQuaternionDeg(double roll, double pitch, double yaw,
+                        Eigen::Quaterniond& q);
+
+/**
+ * @brief convert roll pitch yaw (in degrees) to quaternion
+ * @param p roll pitch yaw as a vector
+ * @param q quaternion
+ */
+void RPYtoQuaternionDeg(const Eigen::Vector3d& rpy, Eigen::Quaterniond& q);
+
+/**
+ * @brief convert quaternion to roll pitch yaw (in radians)
+ * @param q quaternion
+ * @param p roll pitch yaw as a vector
+ */
+void QuaterniontoRPY(const Eigen::Quaterniond& q, Eigen::Vector3d& rpy);
+
+/**
+ * @brief convert quaternion to roll pitch yaw (in radians)
+ * @param q quaternion
+ * @param roll roll
+ * @param pitch pitch
+ * @param yaw yaw
+ */
+void QuaterniontoRPY(const Eigen::Quaterniond& q, double& roll, double& pitch,
+                     double& yaw);
+
+/**
+ * @brief convert quaternion to roll pitch yaw (in degrees)
+ * @param q quaternion
+ * @param p roll pitch yaw as a vector
+ */
+void QuaterniontoRPYDeg(const Eigen::Quaterniond& q, Eigen::Vector3d& rpy);
+
+/**
+ * @brief convert quaternion to roll pitch yaw (in degrees)
+ * @param q quaternion
+ * @param roll roll
+ * @param pitch pitch
+ * @param yaw yaw
+ */
+void QuaterniontoRPYDeg(const Eigen::Quaterniond& q, double& roll,
+                        double& pitch, double& yaw);
 
 /**
  * @brief convert vector of quaternion and translation [qw
