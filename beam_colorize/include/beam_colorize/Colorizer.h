@@ -127,7 +127,7 @@ protected:
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_distorted_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_undistorted_;
-  Eigen::Affine3d T_C_L_;
+  Eigen::Affine3d T_C_L_{Eigen::Matrix4d::Identity()};
   bool image_distorted_{true};
   bool image_initialized_{false};
   bool point_cloud_initialized_{false};
