@@ -51,7 +51,8 @@ public:
   static std::unique_ptr<Colorizer> Create(ColorizerType type);
   /**
    * @brief Method for adding a point cloud of point type XYZ. This is required.
-   * @param cloud_input Input point cloud
+   * @param cloud_input Input point cloud in lidar frame (see SetTransform to
+   * update)
    */
   void SetPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input);
 
@@ -98,18 +99,29 @@ public:
 
   /**
    * @brief Pure virtual method for colorizing a point cloud
+   * @param return_in_cam_frame set to false to return the cloud in its original
+   * frame. Internally, when a cloud is added it's converted to the camera
+   * frame, so here when we return the pointcloud it can be in either frame.
    * @return Colored point cloud pointer
    */
-  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const = 0;
+  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+      ColorizePointCloud(bool return_in_cam_frame = false) const = 0;
 
   /**
    * @brief Pure virtual method for colorizing a point cloud
    * @return Colored point cloud pointer
    */
   virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask() const = 0;
+      ColorizeMask(bool return_in_cam_frame = false) const = 0;
 
 protected:
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr GetCloudInLidarFrame(
+      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_colored) const;
+
+  pcl::PointCloud<beam_containers::PointBridge>::Ptr GetCloudInLidarFrame(
+      const pcl::PointCloud<beam_containers::PointBridge>::Ptr&
+          cloud_pointbridge) const;
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
   std::shared_ptr<cv::Mat> image_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
@@ -119,7 +131,7 @@ protected:
   bool image_distorted_{true};
   bool image_initialized_{false};
   bool point_cloud_initialized_{false};
-  bool camera_model_initialized_{false}; 
+  bool camera_model_initialized_{false};
   bool transform_set_{false};
 };
 

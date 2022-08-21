@@ -7,7 +7,8 @@ namespace beam_colorize {
 
 Projection::Projection() : Colorizer() {}
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+    Projection::ColorizePointCloud(bool return_in_cam_frame) const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
@@ -51,11 +52,16 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   }
   BEAM_INFO("Coloured {} of {} total points.", counter,
             input_point_cloud_->points.size());
-  return cloud_colored;
+
+  if (return_in_cam_frame) {
+    return cloud_colored;
+  } else {
+    return GetCloudInLidarFrame(cloud_colored);
+  }
 }
 
 pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    Projection::ColorizeMask() const {
+    Projection::ColorizeMask(bool return_in_cam_frame) const {
   pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_cloud(
       new pcl::PointCloud<beam_containers::PointBridge>);
 
@@ -104,7 +110,11 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   }
   BEAM_INFO("Coloured {} of {} total points.", counter,
             input_point_cloud_->points.size());
-  return defect_cloud;
+  if (return_in_cam_frame) {
+    return defect_cloud;
+  } else {
+    return GetCloudInLidarFrame(defect_cloud);
+  }
 }
 
 } // namespace beam_colorize

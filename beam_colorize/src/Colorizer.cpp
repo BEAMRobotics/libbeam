@@ -77,13 +77,35 @@ void Colorizer::SetTransform(const Eigen::Affine3d& T_C_L) {
   transform_set_ = true;
 }
 
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr Colorizer::GetCloudInLidarFrame(
+    const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_colored) const {
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored_in_lidar_frame =
+      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+  pcl::transformPointCloud(*cloud_colored, *cloud_colored_in_lidar_frame,
+                           T_C_L_.inverse());
+  return cloud_colored_in_lidar_frame;
+}
+
+pcl::PointCloud<beam_containers::PointBridge>::Ptr
+    Colorizer::GetCloudInLidarFrame(
+        const pcl::PointCloud<beam_containers::PointBridge>::Ptr&
+            cloud_pointbridge) const {
+  pcl::PointCloud<beam_containers::PointBridge>::Ptr cloud_in_lidar_frame =
+      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  pcl::transformPointCloud(*cloud_pointbridge, *cloud_in_lidar_frame,
+                           T_C_L_.inverse());
+  return cloud_in_lidar_frame;
+}
+
 std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
-  if (type == ColorizerType::PROJECTION)
-    return std::unique_ptr<Projection>(new Projection());
-  else if (type == ColorizerType::RAY_TRACE)
-    return std::unique_ptr<RayTrace>(new RayTrace());
-  else
+  if (type == ColorizerType::PROJECTION) {
+    return std::make_unique<Projection>();
+  } else if (type == ColorizerType::RAY_TRACE) {
+    return std::make_unique<RayTrace>();
+  } else {
+    BEAM_ERROR("Colorizer type not yet implemented in factory method");
     return nullptr;
+  }
 }
 
 } // namespace beam_colorize

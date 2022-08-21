@@ -17,7 +17,8 @@ void HitBehaviour(std::shared_ptr<cv::Mat> image,
 
 RayTrace::RayTrace() : Colorizer() {}
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+    RayTrace::ColorizePointCloud(bool return_in_cam_frame) const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored =
       std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
 
@@ -29,7 +30,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
     BEAM_CRITICAL("Colorizer not properly initialized.");
     return cloud_colored;
   }
-  beam_cv::Raycast<pcl::PointXYZRGB> caster(cloud_colored, camera_model_, image_);
+  beam_cv::Raycast<pcl::PointXYZRGB> caster(cloud_colored, camera_model_,
+                                            image_);
   // perform ray casting of cloud to colorize with image
   caster.Execute(hit_threshold_,
                  [&](std::shared_ptr<cv::Mat>& image,
@@ -40,12 +42,15 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr RayTrace::ColorizePointCloud() const {
                    cloud->points[index].g = pixel.y;
                    cloud->points[index].b = pixel.x;
                  });
-  return cloud_colored;
+  if (return_in_cam_frame) {
+    return cloud_colored;
+  } else {
+    return GetCloudInLidarFrame(cloud_colored);
+  }
 }
 
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-    RayTrace::ReduceCloud(
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const {
+    RayTrace::ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const {
   // cloud to search on
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
       new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -59,7 +64,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
     if (!camera_model_->ProjectPoint(point, coords, in_image)) {
       BEAM_WARN("Cannot project point.");
       continue;
-    } else if(!in_image){
+    } else if (!in_image) {
       BEAM_WARN("Cannot project point.");
       continue;
     }
@@ -74,7 +79,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 }
 
 pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    RayTrace::ColorizeMask() const {
+    RayTrace::ColorizeMask(bool return_in_cam_frame) const {
   pcl::PointCloud<beam_containers::PointBridge>::Ptr return_cloud;
   pcl::copyPointCloud(*input_point_cloud_, *return_cloud);
 
@@ -109,7 +114,11 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
                  });
   BEAM_INFO("Coloured {} of {} total points.", counter,
             input_point_cloud_->points.size());
-  return return_cloud;
+  if (return_in_cam_frame) {
+    return return_cloud;
+  } else {
+    return GetCloudInLidarFrame(return_cloud);
+  }
 }
 
 } // namespace beam_colorize
