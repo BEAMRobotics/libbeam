@@ -51,17 +51,18 @@ public:
   static std::unique_ptr<Colorizer> Create(ColorizerType type);
   /**
    * @brief Method for adding a point cloud of point type XYZ. This is required.
-   * @param cloud_input Input point cloud in lidar frame (see SetTransform to
-   * update)
+   * @param cloud_input Input point cloud in camera frame
    */
-  void SetPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input);
+  void SetPointCloud(
+      const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_in_camera_frame);
 
   /**
    * @brief Method for adding a point cloud of point type XYZRGB. This is
    * required.
-   * @param cloud_input Input point cloud
+   * @param cloud_input Input point cloud in camera frame
    */
-  void SetPointCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_input);
+  void SetPointCloud(
+      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_in_camera_frame);
 
   /**
    * @brief Method for adding an image of type scv::Mat. This is required.
@@ -81,14 +82,6 @@ public:
    * @param intrinsics pointer to intrinsics abstract object
    */
   void SetIntrinsics(std::shared_ptr<beam_calibration::CameraModel> intrinsics);
-
-  /**
-   * @brief Method for adding a transformation between the image and point
-   * cloud frames.
-   * @param T_C_L transform from lidar frame to camera frame. Default is
-   * the identity (no transformation)
-   */
-  void SetTransform(const Eigen::Matrix4d& T_C_L);
 
   /**
    * @brief Method for adding a the distortion condition of the image
@@ -122,8 +115,6 @@ protected:
       const pcl::PointCloud<beam_containers::PointBridge>::Ptr&
           cloud_pointbridge) const;
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_lidar_frame_{
-      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>()};
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_camera_frame_{
       std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>()};
   std::shared_ptr<cv::Mat> image_;
@@ -132,7 +123,6 @@ protected:
   std::shared_ptr<beam_calibration::CameraModel> camera_model_undistorted_;
   bool image_distorted_{true};
   bool image_initialized_{false};
-  Eigen::Matrix4d T_camera_lidar_{Eigen::Matrix4d::Identity()};
 };
 
 /** @} group colorizer */

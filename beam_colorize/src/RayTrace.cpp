@@ -42,11 +42,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
                    cloud->points[index].g = pixel.y;
                    cloud->points[index].b = pixel.x;
                  });
-  if (return_in_cam_frame) {
-    return cloud_colored;
-  } else {
-    return GetCloudInLidarFrame(cloud_colored);
-  }
+  return cloud_colored;
 }
 
 std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
@@ -114,11 +110,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
                  });
   BEAM_INFO("Coloured {} of {} total points.", counter,
             cloud_in_camera_frame_->points.size());
-  if (return_in_cam_frame) {
-    return return_cloud;
-  } else {
-    return GetCloudInLidarFrame(return_cloud);
-  }
+  return return_cloud;
 }
 
 } // namespace beam_colorize

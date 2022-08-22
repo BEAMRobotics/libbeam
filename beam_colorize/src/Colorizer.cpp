@@ -14,27 +14,13 @@ Colorizer::Colorizer() {
   image_initialized_ = false;
 }
 void Colorizer::SetPointCloud(
-    const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_input) {
-  cloud_in_lidar_frame_ = cloud_input;
-
-  if (T_camera_lidar_.isIdentity()) {
-    cloud_in_camera_frame_ = cloud_in_lidar_frame_;
-  } else {
-    pcl::transformPointCloud(*cloud_in_lidar_frame_, *cloud_in_camera_frame_,
-                             Eigen::Affine3d(T_camera_lidar_));
-  }
+    const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_in_camera_frame) {
+  cloud_in_camera_frame_ = cloud_in_camera_frame;
 }
 
 void Colorizer::SetPointCloud(
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_input) {
-  pcl::copyPointCloud(*cloud_input, *cloud_in_lidar_frame_);
-
-  if (T_camera_lidar_.isIdentity()) {
-    cloud_in_camera_frame_ = cloud_in_lidar_frame_;
-  } else {
-    pcl::transformPointCloud(*cloud_in_lidar_frame_, *cloud_in_camera_frame_,
-                             Eigen::Affine3d(T_camera_lidar_));
-  }
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_in_camera_frame) {
+  pcl::copyPointCloud(*cloud_in_camera_frame, *cloud_in_camera_frame_);
 }
 
 void Colorizer::SetImage(const cv::Mat& image_input) {
@@ -62,37 +48,6 @@ void Colorizer::SetDistortion(const bool& image_distored) {
   } else {
     camera_model_ = camera_model_undistorted_;
   }
-}
-
-void Colorizer::SetTransform(const Eigen::Matrix4d& T_C_L) {
-  T_camera_lidar_ = Eigen::Matrix4d::Identity();
-  T_camera_lidar_ = T_C_L;
-
-  // if point cloud already initialized, apply transformation now
-  if (cloud_in_lidar_frame_->size() > 0) {
-    pcl::transformPointCloud(*cloud_in_lidar_frame_, *cloud_in_camera_frame_,
-                             Eigen::Affine3d(T_C_L));
-  }
-}
-
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr Colorizer::GetCloudInLidarFrame(
-    const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_colored) const {
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored_in_lidar_frame =
-      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-  pcl::transformPointCloud(*cloud_colored, *cloud_colored_in_lidar_frame,
-                           Eigen::Affine3d(T_camera_lidar_).inverse());
-  return cloud_colored_in_lidar_frame;
-}
-
-pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    Colorizer::GetCloudInLidarFrame(
-        const pcl::PointCloud<beam_containers::PointBridge>::Ptr&
-            cloud_pointbridge) const {
-  pcl::PointCloud<beam_containers::PointBridge>::Ptr cloud_in_lidar_frame =
-      std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
-  pcl::transformPointCloud(*cloud_pointbridge, *cloud_in_lidar_frame,
-                           Eigen::Affine3d(T_camera_lidar_).inverse());
-  return cloud_in_lidar_frame;
 }
 
 std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
