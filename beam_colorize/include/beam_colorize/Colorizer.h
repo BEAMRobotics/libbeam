@@ -85,10 +85,10 @@ public:
   /**
    * @brief Method for adding a transformation between the image and point
    * cloud frames.
-   * @param T_C_L transfrom from lidar frame to camera frame. Default is
+   * @param T_C_L transform from lidar frame to camera frame. Default is
    * the identity (no transformation)
    */
-  void SetTransform(const Eigen::Affine3d& T_C_L);
+  void SetTransform(const Eigen::Matrix4d& T_C_L);
 
   /**
    * @brief Method for adding a the distortion condition of the image
@@ -122,17 +122,17 @@ protected:
       const pcl::PointCloud<beam_containers::PointBridge>::Ptr&
           cloud_pointbridge) const;
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_point_cloud_;
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_lidar_frame_{
+      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>()};
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_camera_frame_{
+      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>()};
   std::shared_ptr<cv::Mat> image_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_distorted_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_undistorted_;
-  Eigen::Affine3d T_C_L_{Eigen::Matrix4d::Identity()};
   bool image_distorted_{true};
   bool image_initialized_{false};
-  bool point_cloud_initialized_{false};
-  bool camera_model_initialized_{false};
-  bool transform_set_{false};
+  Eigen::Matrix4d T_camera_lidar_{Eigen::Matrix4d::Identity()};
 };
 
 /** @} group colorizer */

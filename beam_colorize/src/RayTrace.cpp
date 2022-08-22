@@ -22,10 +22,10 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored =
       std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
 
-  pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
+  pcl::copyPointCloud(*cloud_in_camera_frame_, *cloud_colored);
 
-  if (!image_initialized_ || !point_cloud_initialized_ ||
-      !camera_model_initialized_ || input_point_cloud_->size() == 0) {
+  if (!image_initialized_ || camera_model_ == nullptr ||
+      cloud_in_camera_frame_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
     BEAM_CRITICAL("Colorizer not properly initialized.");
     return cloud_colored;
@@ -81,7 +81,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 pcl::PointCloud<beam_containers::PointBridge>::Ptr
     RayTrace::ColorizeMask(bool return_in_cam_frame) const {
   pcl::PointCloud<beam_containers::PointBridge>::Ptr return_cloud;
-  pcl::copyPointCloud(*input_point_cloud_, *return_cloud);
+  pcl::copyPointCloud(*cloud_in_camera_frame_, *return_cloud);
 
   beam_cv::Raycast<beam_containers::PointBridge> caster(return_cloud,
                                                         camera_model_, image_);
@@ -113,7 +113,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
                    }
                  });
   BEAM_INFO("Coloured {} of {} total points.", counter,
-            input_point_cloud_->points.size());
+            cloud_in_camera_frame_->points.size());
   if (return_in_cam_frame) {
     return return_cloud;
   } else {

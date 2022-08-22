@@ -11,19 +11,19 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     Projection::ColorizePointCloud(bool return_in_cam_frame) const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::copyPointCloud(*input_point_cloud_, *cloud_colored);
+  pcl::copyPointCloud(*cloud_in_camera_frame_, *cloud_colored);
 
-  if (!image_initialized_ || !point_cloud_initialized_ ||
-      !camera_model_initialized_ || input_point_cloud_->size() == 0) {
+  if (!image_initialized_ || camera_model_ == nullptr ||
+      cloud_in_camera_frame_->size() == 0) {
     throw std::runtime_error{"Colorizer not properly initialized."};
     return cloud_colored;
     BEAM_CRITICAL("Colorizer not properly initialized.");
   }
   int counter = 0;
-  for (uint32_t i = 0; i < input_point_cloud_->points.size(); i++) {
-    Eigen::Vector3d point(input_point_cloud_->points[i].x,
-                          input_point_cloud_->points[i].y,
-                          input_point_cloud_->points[i].z);
+  for (uint32_t i = 0; i < cloud_in_camera_frame_->points.size(); i++) {
+    Eigen::Vector3d point(cloud_in_camera_frame_->points[i].x,
+                          cloud_in_camera_frame_->points[i].y,
+                          cloud_in_camera_frame_->points[i].z);
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
@@ -51,7 +51,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     }
   }
   BEAM_INFO("Coloured {} of {} total points.", counter,
-            input_point_cloud_->points.size());
+            cloud_in_camera_frame_->points.size());
 
   if (return_in_cam_frame) {
     return cloud_colored;
@@ -65,19 +65,19 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_cloud(
       new pcl::PointCloud<beam_containers::PointBridge>);
 
-  pcl::copyPointCloud(*input_point_cloud_, *defect_cloud);
+  pcl::copyPointCloud(*cloud_in_camera_frame_, *defect_cloud);
 
-  if (!image_initialized_ || !point_cloud_initialized_ ||
-      !camera_model_initialized_) {
+  if (!image_initialized_ || cloud_in_camera_frame_->size() == 0 ||
+      camera_model_ == nullptr) {
     return defect_cloud;
     throw std::runtime_error{"Colorizer not properly initialized."};
     BEAM_CRITICAL("Colorizer not properly initialized.");
   }
   int counter = 0;
-  for (uint32_t i = 0; i < input_point_cloud_->points.size(); i++) {
-    Eigen::Vector3d point(input_point_cloud_->points[i].x,
-                          input_point_cloud_->points[i].y,
-                          input_point_cloud_->points[i].z);
+  for (uint32_t i = 0; i < cloud_in_camera_frame_->points.size(); i++) {
+    Eigen::Vector3d point(cloud_in_camera_frame_->points[i].x,
+                          cloud_in_camera_frame_->points[i].y,
+                          cloud_in_camera_frame_->points[i].z);
     if (point(2, 0) < 0) {
       continue; // make sure points aren't behind image plane
     }
@@ -109,7 +109,7 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     }
   }
   BEAM_INFO("Coloured {} of {} total points.", counter,
-            input_point_cloud_->points.size());
+            cloud_in_camera_frame_->points.size());
   if (return_in_cam_frame) {
     return defect_cloud;
   } else {
