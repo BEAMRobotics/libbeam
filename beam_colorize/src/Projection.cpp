@@ -7,8 +7,7 @@ namespace beam_colorize {
 
 Projection::Projection() : Colorizer() {}
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-    Projection::ColorizePointCloud(bool return_in_cam_frame) const {
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::copyPointCloud(*cloud_in_camera_frame_, *cloud_colored);
@@ -56,7 +55,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 }
 
 pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    Projection::ColorizeMask(bool return_in_cam_frame) const {
+    Projection::ColorizeMask() const {
   pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_cloud(
       new pcl::PointCloud<beam_containers::PointBridge>);
 

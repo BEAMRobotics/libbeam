@@ -91,21 +91,18 @@ public:
   void SetDistortion(const bool& image_distored);
 
   /**
-   * @brief Pure virtual method for colorizing a point cloud
-   * @param return_in_cam_frame set to false to return the cloud in its original
-   * frame. Internally, when a cloud is added it's converted to the camera
-   * frame, so here when we return the pointcloud it can be in either frame.
+   * @brief Pure virtual method for colorizing a point cloud.
    * @return Colored point cloud pointer
    */
-  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud(bool return_in_cam_frame = false) const = 0;
+  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const = 0;
 
   /**
-   * @brief Pure virtual method for colorizing a point cloud
+   * @brief Pure virtual method for colorizing a point cloud. Returned point
+   * cloud will be in camera frame
    * @return Colored point cloud pointer
    */
   virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask(bool return_in_cam_frame = false) const = 0;
+      ColorizeMask() const = 0;
 
 protected:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr GetCloudInLidarFrame(

@@ -18,7 +18,7 @@ void HitBehaviour(std::shared_ptr<cv::Mat> image,
 RayTrace::RayTrace() : Colorizer() {}
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-    RayTrace::ColorizePointCloud(bool return_in_cam_frame) const {
+    RayTrace::ColorizePointCloud() const {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored =
       std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
 
@@ -75,7 +75,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
 }
 
 pcl::PointCloud<beam_containers::PointBridge>::Ptr
-    RayTrace::ColorizeMask(bool return_in_cam_frame) const {
+    RayTrace::ColorizeMask() const {
   pcl::PointCloud<beam_containers::PointBridge>::Ptr return_cloud;
   pcl::copyPointCloud(*cloud_in_camera_frame_, *return_cloud);
 
