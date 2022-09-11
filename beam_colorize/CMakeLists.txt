@@ -8,6 +8,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Colorizer.cpp
     src/Projection.cpp
+    src/ProjectionOcclusionSafe.cpp
     src/RayTrace.cpp
 )
 ################ tests ##################
