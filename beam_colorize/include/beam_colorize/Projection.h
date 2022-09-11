@@ -22,14 +22,13 @@ public:
   /**
    * @brief see Colorizer.h
    */
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-      ColorizePointCloud() const override;
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
 
   /**
    * @brief see Colorizer.h
    */
   pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask(bool return_in_cam_frame = false) const override;
+      ColorizeMask() const override;
 
 private:
 };
