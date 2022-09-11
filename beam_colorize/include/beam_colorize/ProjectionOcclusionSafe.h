@@ -3,11 +3,33 @@
  */
 
 #pragma once
+
 #include "beam_colorize/Colorizer.h"
 
 namespace beam_colorize {
 /** @addtogroup colorizer
  *  @{ */
+
+/**
+ * @brief class for storing a point projection map. This is stored as a 2D (or
+ * two level nested) hash map so we can lookup point IDs associated with image
+ * pixel coordinates (u,v)
+ *
+ */
+class ProjectionMap {
+public:
+  ProjectionMap() = default;
+
+  void Add(uint64_t u, uint64_t v, uint64_t point_id);
+
+  const std::vector<uint64_t>& Get(uint64_t u, uint64_t v);
+
+private:
+  // map: v -> {map: u -> vector<point IDs>}
+  std::unordered_map<uint64_t,
+                     std::unordered_map<uint64_t, std::vector<uint64_t>>>
+      map_;
+}
 
 /**
  * @brief Class which implements Colorizer interface and provides colorization
@@ -33,9 +55,10 @@ public:
    * @brief see Colorizer.h
    */
   pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask(bool return_in_cam_frame = false) const override;
+      ColorizeMask() const override;
 
 private:
+  ProjectionMap map_;
 };
 /** @} group colorizer */
 
