@@ -49,6 +49,31 @@ bool HasExtension(const std::string& input, const std::string& extension);
 std::string LibbeamRoot();
 
 /**
+ * @brief remove duplicate file separators in a string filepath
+ * 
+ * @param path 
+ * @return std::string 
+ */
+std::string RemoveDuplicateFileSeparators(const std::string& path);
+
+/**
+ * @brief safe way (for all OSs) of combining paths. Uses std::filesystem
+ *
+ * @param path1 first path to add
+ * @param path2 second path to add
+ * @return std::string
+ */
+std::string CombinePaths(const std::string& path1, const std::string& path2);
+
+/**
+ * @brief safe way (for all OSs) of combining paths. Uses std::filesystem
+ *
+ * @param paths vector of paths to combine in order
+ * @return std::string
+ */
+std::string CombinePaths(const std::vector<std::string>& paths);
+
+/**
  * @brief get a vector of absolute paths to files in a directory
  * @param directory absolute path to directory to search in
  * @param extension file extensions to find

@@ -36,6 +36,42 @@ std::string LibbeamRoot() {
   return root_location;
 }
 
+std::string CleanupPath(const std::string& path) {
+  namespace fs = boost::filesystem;
+  if (path.size() < 3) { return path; }
+  std::string return_path;
+  for (uint32_t i = 0; i < path.size() - 1; i++) {
+    return_path += path[i];
+    if (path[i] == fs::path::preferred_separator &&
+        path[i + 1] == fs::path::preferred_separator) {
+      i++;
+    }
+  }
+
+  // add last character only if not a file separator
+  if (path[path.size() - 1] != fs::path::preferred_separator) {
+    return_path += path[path.size() - 1];
+  }
+  return return_path;
+}
+std::string CombinePaths(const std::string& path1, const std::string& path2) {
+  namespace fs = boost::filesystem;
+  fs::path p1(path1);
+  fs::path p2(path2);
+  fs::path p = p1 / p2;
+  return CleanupPath(p.string());
+}
+
+std::string CombinePaths(const std::vector<std::string>& paths) {
+  namespace fs = boost::filesystem;
+  fs::path p;
+  for (uint32_t i = 0; i < paths.size(); i++) {
+    fs::path p_add(paths[i]);
+    p = p / p_add;
+  }
+  return CleanupPath(p.string());
+}
+
 std::vector<std::string> GetFiles(const std::string& directory,
                                   const std::string& extension,
                                   bool recursive) {

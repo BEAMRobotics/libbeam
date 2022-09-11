@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <sys/utsname.h>
 
 #include <boost/filesystem.hpp>
 #include <catch2/catch.hpp>
@@ -97,6 +98,38 @@ TEST_CASE("LibbeamRoot tests", "[filesystem.hpp]") {
       root_dir + "beam_utils/tests/filesystem_test.cpp";
   REQUIRE(fs::exists(this_file_expected_location));
   REQUIRE(this_file_true_location == this_file_expected_location);
+}
+
+TEST_CASE("CombinePaths tests", "[filesystem.hpp]") {
+  std::string p_root1 = "/home/nick";
+  std::string p_root2 = "/home/nick/";
+  std::string p_add1 = "/test.cpp";
+  std::string p_add2 = "test.cpp";
+  std::string p_add3 = "test";
+  std::string p_add4 = "/test/";
+
+  struct utsname os_name;
+  uname(&os_name);
+  if (std::string(os_name.sysname) == "Linux") {
+    std::cout << "Linux OS detected, running CombinePaths tests\n";
+    REQUIRE(beam::CombinePaths(p_root1, p_add1) == "/home/nick/test.cpp");
+    REQUIRE(beam::CombinePaths(p_root1, p_add2) == "/home/nick/test.cpp");
+    REQUIRE(beam::CombinePaths(p_root2, p_add1) == "/home/nick/test.cpp");
+    REQUIRE(beam::CombinePaths(p_root2, p_add2) == "/home/nick/test.cpp");
+    REQUIRE(beam::CombinePaths(p_root1, p_add3) == "/home/nick/test");
+    REQUIRE(beam::CombinePaths(p_root1, p_add4) == "/home/nick/test");
+
+    std::string combined1 = beam::CombinePaths(p_root1, p_add4);
+    REQUIRE(beam::CombinePaths(combined1, p_add1) ==
+            "/home/nick/test/test.cpp");
+    REQUIRE(beam::CombinePaths(std::vector<std::string>{
+                p_root1, p_add3, p_add1}) == "/home/nick/test/test.cpp");
+    REQUIRE(beam::CombinePaths(std::vector<std::string>{p_root1, p_add1}) ==
+            "/home/nick/test.cpp");
+  } else {
+    std::cout << "Cannot run CombinePaths tests which only work for Linux\n";
+    REQUIRE(true);
+  }
 }
 
 TEST_CASE("StringToNumericValues", "[filesystem.hpp]") {
