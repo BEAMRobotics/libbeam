@@ -7,8 +7,9 @@
 #include <beam_cv/descriptors/ORBDescriptor.h>
 #include <beam_cv/detectors/GFTTDetector.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/optional.h>
 
-namespace json = nlohmann::json;
+using json = nlohmann::json;
 
 const std::string DEFAULT_VOCAB_PATH =
     beam::LibbeamRoot() + "/beam_cv/data/orbvoc.dbow3";
@@ -21,18 +22,22 @@ namespace beam_cv {
 class ImageDatabase {
 public:
   /**
-   * @brief Constructor to initialize with empty database
-   * @param database_path path to database folder
+   * @brief Constructor to initialize with empty database and default params
    */
-  ImageDatabase(const GFTTDetector::Params& detector_params,
-                const ORBDescriptor::Params& descriptor_params);
+  ImageDatabase();
+
+  /**
+   * @brief Constructor to initialize with empty database
+   */
+  ImageDatabase(const beam_cv::GFTTDetector::Params& detector_params,
+                const beam_cv::ORBDescriptor::Params& descriptor_params);
 
   /**
    * @brief Constructor to initialize with already created dbow db
    * @param database_path path to database folder
    */
-  ImageDatabase(const GFTTDetector::Params& detector_params,
-                const ORBDescriptor::Params& descriptor_params,
+  ImageDatabase(const beam_cv::GFTTDetector::Params& detector_params,
+                const beam_cv::ORBDescriptor::Params& descriptor_params,
                 const std::string& dbow_file_path,
                 const std::string& timestamps_file_path);
 
@@ -56,17 +61,18 @@ public:
    * @brief Return list of N image id's best matching query image
    * @param query_image to query database with
    */
-  std::vector<uint64_t> QueryDatabase(const cv::Mat& query_image, int N = 2);
+  std::vector<unsigned int> QueryDatabase(const cv::Mat& query_image,
+                                          int N = 2);
 
   /**
    * @brief Add an image to the database
    */
-  uint64_t AddImage(const cv::Mat& image, const ros::Time& timestamp);
+  unsigned int AddImage(const cv::Mat& image, const ros::Time& timestamp);
 
   /**
    * @brief Gets the timestamp associated to image with index in the database
    */
-  ros::Time GetImageTimestamp(uint64_t index);
+  beam::opt<ros::Time> GetImageTimestamp(unsigned int index);
 
 private:
   json index_to_timestamp_map_;

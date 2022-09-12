@@ -6,10 +6,12 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::containers
     beam::utils
     beam::optimization
+    DBoW3
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
     src/OpenCVConversions.cpp
+    src/ImageDatabase.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp
@@ -30,17 +32,6 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/trackers/Tracker.cpp
     src/trackers/DescMatchingTracker.cpp
     src/trackers/KLTracker.cpp
-)
-
-add_executable(${PROJECT_NAME}_image_db_main
-  src/image_db_main.cpp
-)
-target_include_directories(${PROJECT_NAME}_image_db_main
-  PUBLIC
-    include
-)
-target_link_libraries(${PROJECT_NAME}_image_db_main
-  ${PROJECT_NAME}
 )
 
 ############# Test files #############
