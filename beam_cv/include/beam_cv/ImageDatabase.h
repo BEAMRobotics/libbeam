@@ -6,10 +6,12 @@
 
 #include <beam_cv/descriptors/ORBDescriptor.h>
 #include <beam_cv/detectors/GFTTDetector.h>
+#include <beam_utils/filesystem.h>
 
 namespace json = nlohmann::json;
 
-const std::string DEFAULT_VOCAB_PATH = "";
+const std::string DEFAULT_VOCAB_PATH =
+    beam::LibbeamRoot() + "/beam_cv/data/orbvoc.dbow3";
 
 namespace beam_cv {
 

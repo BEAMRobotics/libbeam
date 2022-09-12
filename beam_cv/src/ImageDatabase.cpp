@@ -66,11 +66,9 @@ uint64_t ImageDatabase::AddImage(const cv::Mat& image,
 }
 
 beam::opt<ros::Time> ImageDatabase::GetImageTimestamp(uint64_t index) {
-  if (index_to_timestamp_map_.contains(index)) {
-    double time = index_to_timestamp_map_[index];
-    return ros::Time(time);
-  }
-  return {};
+  if (!index_to_timestamp_map_.contains(index)) { return {}; }
+  double time = index_to_timestamp_map_[index];
+  return ros::Time(time);
 }
 
 } // namespace beam_cv

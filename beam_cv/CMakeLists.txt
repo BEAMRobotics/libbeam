@@ -32,6 +32,17 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/trackers/KLTracker.cpp
 )
 
+add_executable(${PROJECT_NAME}_image_db_main
+  src/image_db_main.cpp
+)
+target_include_directories(${PROJECT_NAME}_image_db_main
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_image_db_main
+  ${PROJECT_NAME}
+)
+
 ############# Test files #############
 add_executable(${PROJECT_NAME}_utils_tests
   tests/utils_test.cpp
