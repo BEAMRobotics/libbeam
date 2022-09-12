@@ -6,10 +6,12 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::containers
     beam::utils
     beam::optimization
+    DBoW3
   SOURCES
     src/Utils.cpp
     src/Raycast.cpp
     src/OpenCVConversions.cpp
+    src/ImageDatabase.cpp
     src/geometry/Triangulation.cpp
     src/geometry/RelativePoseEstimator.cpp
     src/geometry/AbsolutePoseEstimator.cpp

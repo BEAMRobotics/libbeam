@@ -5,6 +5,7 @@ FIND_PACKAGE(Boost 1.58.0 REQUIRED system filesystem)
 FIND_PACKAGE(PCL 1.11.1 REQUIRED COMPONENTS
     common filters registration kdtree search io visualization
     surface segmentation features)
+FIND_PACKAGE(DBoW3 REQUIRED)
 FIND_PACKAGE(Catch2 REQUIRED)
 FIND_PACKAGE(nlohmann_json 3.2.0 REQUIRED)
 FIND_PACKAGE(roscpp REQUIRED)
