@@ -597,5 +597,10 @@ inline bool
   return true;
 }
 
+template <class PointT>
+float CalculatePointNorm(PointT p) {
+  return std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+}
+
 /** @} group utils */
 } // namespace beam

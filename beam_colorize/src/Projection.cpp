@@ -23,9 +23,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr Projection::ColorizePointCloud() const {
     Eigen::Vector3d point(cloud_in_camera_frame_->points[i].x,
                           cloud_in_camera_frame_->points[i].y,
                           cloud_in_camera_frame_->points[i].z);
-    if (point(2, 0) < 0) {
-      continue; // make sure points aren't behind image plane
-    }
     bool in_image = false;
     Eigen::Vector2d coords;
     if (!camera_model_->ProjectPoint(point, coords, in_image)) {
@@ -72,9 +69,6 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     Eigen::Vector3d point(cloud_in_camera_frame_->points[i].x,
                           cloud_in_camera_frame_->points[i].y,
                           cloud_in_camera_frame_->points[i].z);
-    if (point(2, 0) < 0) {
-      continue; // make sure points aren't behind image plane
-    }
 
     bool in_image = false;
     Eigen::Vector2d coords;
