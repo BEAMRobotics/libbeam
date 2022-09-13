@@ -3,9 +3,10 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 
-#include "beam_colorize/Colorizer.h"
-#include "beam_colorize/Projection.h"
-#include "beam_colorize/RayTrace.h"
+#include <beam_colorize/Colorizer.h>
+#include <beam_colorize/Projection.h>
+#include <beam_colorize/ProjectionOcclusionSafe.h>
+#include <beam_colorize/RayTrace.h>
 #include <beam_cv/OpenCVConversions.h>
 
 namespace beam_colorize {
@@ -53,6 +54,8 @@ void Colorizer::SetDistortion(const bool& image_distored) {
 std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
   if (type == ColorizerType::PROJECTION) {
     return std::make_unique<Projection>();
+  } else if (type == ColorizerType::PROJECTION_OCCLUSION_SAFE) {
+    return std::make_unique<ProjectionOcclusionSafe>();
   } else if (type == ColorizerType::RAY_TRACE) {
     return std::make_unique<RayTrace>();
   } else {

@@ -83,6 +83,9 @@ TEST_CASE("Test correct projection colorization") {
   pcl::transformPointCloud(map, *map_in_cam_frame,
                            beam::InvertTransform(T_MAP_CAM));
 
+  // ---------------------------------------------------------
+  // Colorize with regular projection
+
   // create colorizer
   std::unique_ptr<beam_colorize::Colorizer> colorizer =
       beam_colorize::Colorizer::Create(
@@ -100,9 +103,38 @@ TEST_CASE("Test correct projection colorization") {
 
   // save
   std::string tmp_path = boost::filesystem::temp_directory_path().string();
-  std::string output_file =
-      beam::CombinePaths(tmp_path, "projection_occlusion_safe_test_result.pcd");
+  std::string output_file = beam::CombinePaths(
+      tmp_path, "projection_occlusion_safe_test_result1.pcd");
   std::string error;
+  if (!beam::SavePointCloud<PointTypeCol>(output_file, *map_colored,
+                                          beam::PointCloudFileType::PCDBINARY,
+                                          error)) {
+    std::cout << "unable to save results to: " << output_file << "\n";
+    std::cout << "error: " << error << "\n";
+  } else {
+    std::cout << "saved results to: " << output_file << "\n";
+  }
+
+  // ---------------------------------------------------------
+  // Colorize with occlusion safe projection
+
+  // create colorizer
+  colorizer = beam_colorize::Colorizer::Create(
+      beam_colorize::ColorizerType::PROJECTION_OCCLUSION_SAFE);
+  colorizer->SetPointCloud(map_in_cam_frame);
+  colorizer->SetImage(image_container.GetBGRImage());
+  colorizer->SetDistortion(image_container.GetBGRIsDistorted());
+  colorizer->SetIntrinsics(camera_model);
+
+  // colorize map
+  map_colored_in_cam = colorizer->ColorizePointCloud();
+  map_colored = std::make_shared<PointCloudCol>();
+  pcl::transformPointCloud(*map_colored_in_cam, *map_colored, T_MAP_CAM);
+  *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
+
+  // save
+  output_file = beam::CombinePaths(
+      tmp_path, "projection_occlusion_safe_test_result2.pcd");
   if (!beam::SavePointCloud<PointTypeCol>(output_file, *map_colored,
                                           beam::PointCloudFileType::PCDBINARY,
                                           error)) {

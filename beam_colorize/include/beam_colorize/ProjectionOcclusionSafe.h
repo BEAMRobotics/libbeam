@@ -10,6 +10,8 @@ namespace beam_colorize {
 /** @addtogroup colorizer
  *  @{ */
 
+using UMapType = std::unordered_map<uint64_t, uint64_t>;
+
 /**
  * @brief class for storing a point projection map. This is stored as a 2D (or
  * two level nested) hash map so we can lookup point IDs associated with image
@@ -30,9 +32,14 @@ public:
 
   void Erase(uint64_t u, uint64_t v);
 
+  std::unordered_map<uint64_t, UMapType>::iterator VBegin();
+
+  std::unordered_map<uint64_t, UMapType>::iterator VEnd();
+
 private:
-  // map: v -> {map: u -> closet point ID}
-  std::unordered_map<uint64_t, std::unordered_map<uint64_t, uint64_t>> map_;
+  // map: v -> {map: u -> closest point ID}
+  std::unordered_map<uint64_t, UMapType> map_;
+
   const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 };
 
@@ -63,10 +70,10 @@ public:
       ColorizeMask() const override;
 
 private:
-  void RemoveOccludedPointsFromMap(ProjectionMap& map);
+  void RemoveOccludedPointsFromMap(ProjectionMap& projection_map) const;
 
-  void RemoveOccludedPointsFromWindow(ProjectionMap& map, uint64_t u_start,
-                                      uint64_t v_start);
+  void RemoveOccludedPointsFromWindow(ProjectionMap& projection_map,
+                                      uint64_t u_start, uint64_t v_start) const;
 
   uint8_t window_size_{10};
   uint8_t window_stride_{5};
