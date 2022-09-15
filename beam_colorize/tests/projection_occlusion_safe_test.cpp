@@ -12,10 +12,10 @@
 #include <beam_calibration/CameraModel.h>
 #include <beam_calibration/TfTree.h>
 #include <beam_colorize/Projection.h>
+#include <beam_colorize/ProjectionOcclusionSafe.h>
 #include <beam_containers/ImageBridge.h>
 #include <beam_mapping/Poses.h>
 #include <beam_utils/pointclouds.h>
-// #include <beam_colorize/ProjectionOcclusionSafe.h>
 
 std::string GetTestFileRoot() {
   std::string current_file_path = "projection_occlusion_safe_test.cpp";
@@ -87,9 +87,8 @@ TEST_CASE("Test correct projection colorization") {
   // Colorize with regular projection
 
   // create colorizer
-  std::unique_ptr<beam_colorize::Colorizer> colorizer =
-      beam_colorize::Colorizer::Create(
-          beam_colorize::ColorizerType::PROJECTION);
+  auto colorizer = beam_colorize::Colorizer::Create(
+      beam_colorize::ColorizerType::PROJECTION_OCCLUSION_SAFE);
   colorizer->SetPointCloud(map_in_cam_frame);
   colorizer->SetImage(image_container.GetBGRImage());
   colorizer->SetDistortion(image_container.GetBGRIsDistorted());
@@ -119,16 +118,18 @@ TEST_CASE("Test correct projection colorization") {
   // Colorize with occlusion safe projection
 
   // create colorizer
-  colorizer = beam_colorize::Colorizer::Create(
-      beam_colorize::ColorizerType::PROJECTION_OCCLUSION_SAFE);
-  colorizer->SetPointCloud(map_in_cam_frame);
-  colorizer->SetImage(image_container.GetBGRImage());
-  colorizer->SetDistortion(image_container.GetBGRIsDistorted());
-  colorizer->SetIntrinsics(camera_model);
+  beam_colorize::ProjectionOcclusionSafe colorizer2;
+  colorizer2.SetPointCloud(map_in_cam_frame);
+  colorizer2.SetImage(image_container.GetBGRImage());
+  colorizer2.SetDistortion(image_container.GetBGRIsDistorted());
+  colorizer2.SetIntrinsics(camera_model);
+  colorizer2.SetWindowSize(5);
+  colorizer2.SetWindowStride(3);
+  colorizer2.SetDepthThreshold(0.3);
 
   // colorize map
-  map_colored_in_cam = colorizer->ColorizePointCloud();
   map_colored = std::make_shared<PointCloudCol>();
+  map_colored_in_cam = colorizer2.ColorizePointCloud();
   pcl::transformPointCloud(*map_colored_in_cam, *map_colored, T_MAP_CAM);
   *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
 

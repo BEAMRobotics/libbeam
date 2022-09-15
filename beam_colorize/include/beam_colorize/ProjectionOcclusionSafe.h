@@ -23,8 +23,7 @@ using UMapType = std::unordered_map<uint64_t, uint64_t>;
 class ProjectionMap {
 public:
   explicit ProjectionMap(
-      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_in_camera_frame)
-      : cloud_(cloud_in_camera_frame) {}
+      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_in_camera_frame);
 
   void Add(uint64_t u, uint64_t v, uint64_t point_id);
 
@@ -69,15 +68,21 @@ public:
   pcl::PointCloud<beam_containers::PointBridge>::Ptr
       ColorizeMask() const override;
 
+  void SetWindowSize(uint8_t window_size);
+
+  void SetWindowStride(uint8_t window_stride);
+
+  void SetDepthThreshold(uint8_t depth_seg_thresh_m);
+
 private:
   void RemoveOccludedPointsFromMap(ProjectionMap& projection_map) const;
 
   void RemoveOccludedPointsFromWindow(ProjectionMap& projection_map,
                                       uint64_t u_start, uint64_t v_start) const;
 
-  uint8_t window_size_{10};
-  uint8_t window_stride_{5};
-  double depth_segmentation_threshold_m_{0.3};
+  uint8_t window_size_{5};
+  uint8_t window_stride_{3};
+  double depth_seg_thresh_m_{0.3};
 };
 /** @} group colorizer */
 
