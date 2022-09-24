@@ -54,34 +54,27 @@ cv::Mat ImageDatabase::GetWord(const cv::Mat& descriptor) {
   return vocab->getWord(word_id);
 }
 
-std::vector<unsigned int>
+std::vector<DBoW3::Result>
     ImageDatabase::QueryDatabase(const cv::Mat& query_image, int N) {
   std::vector<cv::KeyPoint> kps = detector_.DetectFeatures(query_image);
   cv::Mat features = descriptor_.ExtractDescriptors(query_image, kps);
   DBoW3::QueryResults results;
   dbow_db_->query(features, results, N);
-
-  std::vector<unsigned int> indices;
-  for (size_t i = 0; i < results.size(); i++) {
-    DBoW3::Result res = results[i];
-    indices.push_back(res.Id);
-  }
-  return indices;
+  return results;
 }
 
-unsigned int ImageDatabase::AddImage(const cv::Mat& image,
-                                     const ros::Time& timestamp) {
+void ImageDatabase::AddImage(const cv::Mat& image, const ros::Time& timestamp) {
   std::vector<cv::KeyPoint> kps = detector_.DetectFeatures(image);
   cv::Mat features = descriptor_.ExtractDescriptors(image, kps);
-  unsigned int idx = dbow_db_->add(features);
+  DBoW3::EntryId idx = dbow_db_->add(features);
   index_to_timestamp_map_[std::to_string(idx)] = timestamp.toSec();
-  return idx;
 }
 
-beam::opt<ros::Time> ImageDatabase::GetImageTimestamp(unsigned int index) {
-  std::string index_str = std::to_string(index);
+beam::opt<ros::Time>
+    ImageDatabase::GetImageTimestamp(const DBoW3::EntryId& entry_id) {
+  std::string index_str = std::to_string(entry_id);
   if (!index_to_timestamp_map_.contains(index_str)) { return {}; }
-  double time = index_to_timestamp_map_[std::to_string(index)];
+  double time = index_to_timestamp_map_[std::to_string(entry_id)];
   return ros::Time(time);
 }
 

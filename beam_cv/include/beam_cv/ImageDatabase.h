@@ -61,18 +61,18 @@ public:
    * @brief Return list of N image id's best matching query image
    * @param query_image to query database with
    */
-  std::vector<unsigned int> QueryDatabase(const cv::Mat& query_image,
-                                          int N = 2);
+  std::vector<DBoW3::Result> QueryDatabase(const cv::Mat& query_image,
+                                           int N = 2);
 
   /**
    * @brief Add an image to the database
    */
-  unsigned int AddImage(const cv::Mat& image, const ros::Time& timestamp);
+  void AddImage(const cv::Mat& image, const ros::Time& timestamp);
 
   /**
    * @brief Gets the timestamp associated to image with index in the database
    */
-  beam::opt<ros::Time> GetImageTimestamp(unsigned int index);
+  beam::opt<ros::Time> GetImageTimestamp(const DBoW3::EntryId& entry_id);
 
 private:
   json index_to_timestamp_map_;
