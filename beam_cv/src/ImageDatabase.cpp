@@ -26,6 +26,20 @@ ImageDatabase::ImageDatabase(
   index_to_timestamp_map_ = json::object();
 }
 
+ImageDatabase::ImageDatabase(const std::string& dbow_file_path,
+                             const std::string& timestamps_file_path) {
+  // construct detector and descriptor
+  beam_cv::GFTTDetector::Params detector_params;
+  beam_cv::ORBDescriptor::Params descriptor_params;
+  detector_ = beam_cv::GFTTDetector(detector_params);
+  descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
+  // construct database
+  dbow_db_ = std::make_shared<DBoW3::Database>(dbow_file_path);
+  std::ifstream timestamps_file(timestamps_file_path);
+  index_to_timestamp_map_ = json::object();
+  timestamps_file >> index_to_timestamp_map_;
+}
+
 ImageDatabase::ImageDatabase(
     const beam_cv::GFTTDetector::Params& detector_params,
     const beam_cv::ORBDescriptor::Params& descriptor_params,

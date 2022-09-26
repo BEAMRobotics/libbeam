@@ -28,13 +28,26 @@ public:
 
   /**
    * @brief Constructor to initialize with empty database
+   * @param detector_params parameters to use for the gftt detector
+   * @param descriptor_params parameters to use for the orb descriptor
    */
   ImageDatabase(const beam_cv::GFTTDetector::Params& detector_params,
                 const beam_cv::ORBDescriptor::Params& descriptor_params);
 
   /**
    * @brief Constructor to initialize with already created dbow db
-   * @param database_path path to database folder
+   * @param dbow_file_path path to database (dbow3) file
+   * @param timestamps_file_path path to timestamp to Result id json file
+   */
+  ImageDatabase(const std::string& dbow_file_path,
+                const std::string& timestamps_file_path);
+
+  /**
+   * @brief Constructor to initialize with already created dbow db
+   * @param detector_params parameters to use for the gftt detector
+   * @param descriptor_params parameters to use for the orb descriptor
+   * @param dbow_file_path path to database (dbow3) file
+   * @param timestamps_file_path path to timestamp to Result id json file
    */
   ImageDatabase(const beam_cv::GFTTDetector::Params& detector_params,
                 const beam_cv::ORBDescriptor::Params& descriptor_params,
