@@ -53,6 +53,17 @@ void ProjectionMap::Erase(uint64_t u, uint64_t v) {
   v_iter->second.erase(u);
 }
 
+int ProjectionMap::Size() {
+  int counter = 0;
+  for (auto v_iter = VBegin(); v_iter != VEnd(); v_iter++) {
+    for (auto u_iter = v_iter->second.begin(); u_iter != v_iter->second.end();
+         u_iter++) {
+      counter++;
+    }
+  }
+  return counter;
+}
+
 std::unordered_map<uint64_t, UMapType>::iterator ProjectionMap::VBegin() {
   return map_.begin();
 }
@@ -89,14 +100,18 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     }
     projection_map.Add(coords[0], coords[1], i);
   }
-  RemoveOccludedPointsFromMap(projection_map);
+
+  ProjectionMap projection_map_final =
+      RemoveOccludedPointsFromMap(projection_map);
+  BEAM_INFO("Colorizing {} points from {} total valid projections",
+            projection_map_final.Size(), projection_map.Size());
 
   // color cloud
   auto cloud_colored = std::make_shared<PointCloudCol>();
   pcl::copyPointCloud(*cloud_in_camera_frame_, *cloud_colored);
   int counter = 0;
-  for (auto v_iter = projection_map.VBegin(); v_iter != projection_map.VEnd();
-       v_iter++) {
+  for (auto v_iter = projection_map_final.VBegin();
+       v_iter != projection_map_final.VEnd(); v_iter++) {
     const auto& u_map = v_iter->second;
     for (auto u_iter = u_map.begin(); u_iter != u_map.end(); u_iter++) {
       cv::Vec3b colors = image_->at<cv::Vec3b>(v_iter->first, u_iter->first);
@@ -130,46 +145,53 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
   return defect_cloud;
 }
 
-void ProjectionOcclusionSafe::RemoveOccludedPointsFromMap(
-    ProjectionMap& projection_map) const {
+ProjectionMap ProjectionOcclusionSafe::RemoveOccludedPointsFromMap(
+    ProjectionMap& projection_map_orig) const {
   uint64_t u_max = image_->cols;
   uint64_t v_max = image_->rows;
+  ProjectionMap projection_map_to_keep(cloud_in_camera_frame_);
   for (uint64_t v = 0; v < v_max; v += window_stride_) {
     for (uint64_t u = 0; u < u_max; u += window_stride_) {
-      RemoveOccludedPointsFromWindow(projection_map, u, v);
+      CheckOcclusionsInWindow(projection_map_to_keep, projection_map_orig, u,
+                              v);
     }
   }
+  return projection_map_to_keep;
 }
 
-void ProjectionOcclusionSafe::RemoveOccludedPointsFromWindow(
-    ProjectionMap& projection_map, uint64_t u_start, uint64_t v_start) const {
-  // map: distance -> [u, v]
-  std::map<float, std::vector<uint64_t>> points;
+void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
+    ProjectionMap& projection_map_to_keep, ProjectionMap& projection_map,
+    uint64_t u_start, uint64_t v_start) const {
+  // map: distance -> {u, v, id}
+  std::map<float, ProjectedPoint> points;
   for (uint64_t v = v_start; v < v_start + window_size_; v++) {
     for (uint64_t u = u_start; u < u_start + window_size_; u++) {
-      // get point id projected to this pixel
+      // get point id projected to this pixel. If none exists, then skip pixel
       uint64_t id;
       if (!projection_map.Get(u, v, id)) { continue; }
 
       // add point to sorted map
       float d = beam::CalculatePointNorm(cloud_in_camera_frame_->points.at(id));
-      points.emplace(d, std::vector<uint64_t>{u, v});
+      points.emplace(d, ProjectedPoint{.u = u, .v = v, .id = id});
     }
   }
 
-  if (points.size() < 2) { return; }
+  if (points.empty()) { return; }
 
-  // iterate through map sorted by distance and remove all points where the gap
-  // is larger than the threshold
+  // add the first point as we know it'll have the lowest depth
+  projection_map_to_keep.Add(points.begin()->second.u, points.begin()->second.v,
+                             points.begin()->second.id);
+
+  // iterate through map sorted by distance and colorize all points where the
+  // depth difference between two points is less than the threshold. Keep others
+  // in map to be revisited in another window
   for (auto curr_iter = std::next(points.begin()); curr_iter != points.end();
        curr_iter++) {
     auto prev_iter = std::prev(curr_iter);
-    if (curr_iter->first - prev_iter->first > depth_seg_thresh_m_) {
-      // remove current and all remaining points
-      for (auto iter = curr_iter; iter != points.end(); iter++) {
-        projection_map.Erase(iter->second[0], iter->second[1]);
-      }
-      break;
+    if (curr_iter->first - prev_iter->first < depth_seg_thresh_m_) {
+      projection_map.Erase(curr_iter->second.u, curr_iter->second.v);
+      projection_map_to_keep.Add(curr_iter->second.u, curr_iter->second.v,
+                                 curr_iter->second.id);
     }
   }
 }
@@ -182,7 +204,7 @@ void ProjectionOcclusionSafe::SetWindowStride(uint8_t window_stride) {
   window_stride_ = window_stride;
 }
 
-void ProjectionOcclusionSafe::SetDepthThreshold(uint8_t depth_seg_thresh_m) {
+void ProjectionOcclusionSafe::SetDepthThreshold(double depth_seg_thresh_m) {
   depth_seg_thresh_m_ = depth_seg_thresh_m;
 }
 

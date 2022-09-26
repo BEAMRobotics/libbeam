@@ -31,6 +31,8 @@ public:
 
   void Erase(uint64_t u, uint64_t v);
 
+  int Size();
+
   std::unordered_map<uint64_t, UMapType>::iterator VBegin();
 
   std::unordered_map<uint64_t, UMapType>::iterator VEnd();
@@ -72,17 +74,25 @@ public:
 
   void SetWindowStride(uint8_t window_stride);
 
-  void SetDepthThreshold(uint8_t depth_seg_thresh_m);
+  void SetDepthThreshold(double depth_seg_thresh_m);
 
 private:
-  void RemoveOccludedPointsFromMap(ProjectionMap& projection_map) const;
+  struct ProjectedPoint {
+    uint64_t u;
+    uint64_t v;
+    uint64_t id;
+  };
 
-  void RemoveOccludedPointsFromWindow(ProjectionMap& projection_map,
-                                      uint64_t u_start, uint64_t v_start) const;
+  ProjectionMap
+      RemoveOccludedPointsFromMap(ProjectionMap& projection_map_orig) const;
 
-  uint8_t window_size_{5};
+  void CheckOcclusionsInWindow(ProjectionMap& projection_map_to_keep,
+                               ProjectionMap& projection_map, uint64_t u_start,
+                               uint64_t v_start) const;
+
+  uint8_t window_size_{6};
   uint8_t window_stride_{3};
-  double depth_seg_thresh_m_{0.3};
+  double depth_seg_thresh_m_{0.1};
 };
 /** @} group colorizer */
 
