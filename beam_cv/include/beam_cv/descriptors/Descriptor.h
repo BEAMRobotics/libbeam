@@ -10,7 +10,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <beam_utils/log.h>
-#include <beam_utils/utils.h>
+#include <beam_utils/time.h>
 
 namespace beam_cv {
 
