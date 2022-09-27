@@ -100,11 +100,12 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     }
     projection_map.Add(coords[0], coords[1], i);
   }
+  int valid_projections = projection_map.Size();
 
   ProjectionMap projection_map_final =
       RemoveOccludedPointsFromMap(projection_map);
   BEAM_INFO("Colorizing {} points from {} total valid projections",
-            projection_map_final.Size(), projection_map.Size());
+            projection_map_final.Size(), valid_projections);
 
   // color cloud
   auto cloud_colored = std::make_shared<PointCloudCol>();
