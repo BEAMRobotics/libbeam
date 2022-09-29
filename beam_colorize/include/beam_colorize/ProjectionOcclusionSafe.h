@@ -90,9 +90,9 @@ private:
                                ProjectionMap& projection_map, uint64_t u_start,
                                uint64_t v_start) const;
 
-  uint8_t window_size_{6};
-  uint8_t window_stride_{3};
-  double depth_seg_thresh_m_{0.1};
+  uint8_t window_size_{90};
+  uint8_t window_stride_{67};
+  double depth_seg_thresh_m_{0.15};
 };
 /** @} group colorizer */
 

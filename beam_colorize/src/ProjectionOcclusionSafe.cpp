@@ -172,6 +172,7 @@ void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
       if (!projection_map.Get(u, v, id)) { continue; }
 
       // add point to sorted map
+      auto p = cloud_in_camera_frame_->points.at(id);
       float d = beam::CalculatePointNorm(cloud_in_camera_frame_->points.at(id));
       points.emplace(d, ProjectedPoint{.u = u, .v = v, .id = id});
     }
@@ -183,9 +184,9 @@ void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
   projection_map_to_keep.Add(points.begin()->second.u, points.begin()->second.v,
                              points.begin()->second.id);
 
-  // iterate through map sorted by distance and colorize all points where the
-  // depth difference between two points is less than the threshold. Keep others
-  // in map to be revisited in another window
+  // iterate through map sorted by distance and colorize all points up until
+  // there's a jump in distance more than the threshold. Keep others in map to
+  // be revisited in another window. 
   for (auto curr_iter = std::next(points.begin()); curr_iter != points.end();
        curr_iter++) {
     auto prev_iter = std::prev(curr_iter);
@@ -193,6 +194,8 @@ void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
       projection_map.Erase(curr_iter->second.u, curr_iter->second.v);
       projection_map_to_keep.Add(curr_iter->second.u, curr_iter->second.v,
                                  curr_iter->second.id);
+    } else {
+      break;
     }
   }
 }
