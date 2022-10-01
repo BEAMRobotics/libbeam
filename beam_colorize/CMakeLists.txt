@@ -8,9 +8,11 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
   SOURCES
     src/Colorizer.cpp
     src/Projection.cpp
+    src/ProjectionOcclusionSafe.cpp
     src/RayTrace.cpp
 )
 ################ tests ##################
+
 add_executable(${PROJECT_NAME}_tests
   tests/colorize_test.cpp
 )
@@ -21,6 +23,20 @@ target_include_directories(${PROJECT_NAME}_tests
 target_link_libraries(${PROJECT_NAME}_tests
   ${PROJECT_NAME}
   Catch2::Catch2
+)
+
+add_executable(${PROJECT_NAME}_tests_occlusion_safe
+  tests/projection_occlusion_safe_test.cpp
+)
+target_include_directories(${PROJECT_NAME}_tests_occlusion_safe
+  PUBLIC
+    include
+)
+target_link_libraries(${PROJECT_NAME}_tests_occlusion_safe
+  ${PROJECT_NAME}
+  Catch2::Catch2
+  beam::mapping
+  beam::utils
 )
 ############# Debug files #############
 add_executable(${PROJECT_NAME}_demo

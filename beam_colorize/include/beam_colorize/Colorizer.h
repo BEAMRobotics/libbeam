@@ -8,22 +8,14 @@
 
 #pragma once
 
-// Gen
 #include <boost/make_shared.hpp>
-
-// libbeam
-#include "beam_calibration/CameraModel.h"
-#include "beam_containers/PointBridge.h"
-
-// PCL
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-
-// OpenCV
 #include <opencv2/core.hpp>
-
-// ROS
 #include <sensor_msgs/Image.h>
+
+#include <beam_calibration/CameraModel.h>
+#include <beam_containers/PointBridge.h>
 
 namespace beam_colorize {
 /** @addtogroup colorizer
@@ -32,7 +24,7 @@ namespace beam_colorize {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class ColorizerType { PROJECTION = 0, RAY_TRACE = 1 };
+enum class ColorizerType { PROJECTION = 0, PROJECTION_OCCLUSION_SAFE, RAY_TRACE };
 
 /**
  * @brief Pixel type for iterating through the image
@@ -49,6 +41,7 @@ public:
   virtual ~Colorizer() = default;
 
   static std::unique_ptr<Colorizer> Create(ColorizerType type);
+  
   /**
    * @brief Method for adding a point cloud of point type XYZ. This is required.
    * @param cloud_input Input point cloud in camera frame

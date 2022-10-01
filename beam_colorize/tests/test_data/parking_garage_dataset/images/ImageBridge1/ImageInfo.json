@@ -1,0 +1,16 @@
+{
+    "bag_name": "/home/nick/datasets/ig2/2021_10_07_11_01_30_KitchenerParkingGarage//debayered_colour.bag",
+    "bgr_frame_id": "F1_link",
+    "bgr_is_distorted": true,
+    "bgr_mask_method": "",
+    "image_container_type": "ImageBridge",
+    "image_seq": 1,
+    "ir_frame_id": "",
+    "ir_is_distorted": false,
+    "ir_mask_method": "",
+    "is_bgr_image_set": true,
+    "is_bgr_mask_set": true,
+    "is_ir_image_set": false,
+    "is_ir_mask_set": false,
+    "time_stamp": 1633618897479147022
+}
