@@ -47,6 +47,19 @@ void SaveMap(const PointCloudCol& map, const std::string& filename) {
   }
 }
 
+void SaveMap(const pcl::PointCloud<beam_containers::PointBridge>& map,
+             const std::string& filename) {
+  std::string output_file = beam::CombinePaths(tmp_path_, filename);
+  std::string error;
+  if (!beam::SavePointCloud<beam_containers::PointBridge>(
+          output_file, map, beam::PointCloudFileType::PCDBINARY, error)) {
+    std::cout << "unable to save results to: " << output_file << "\n";
+    std::cout << "error: " << error << "\n";
+  } else {
+    std::cout << "saved results to: " << output_file << "\n";
+  }
+}
+
 // to be validate by viewing resulting maps
 TEST_CASE("Test on full datasets") {
   // get file paths
@@ -230,6 +243,77 @@ TEST_CASE("column occlusion") {
           tol * expected_num_colored);
 }
 
+// to be validate by viewing resulting maps
+TEST_CASE("Test mask colorization") {
+  // get file paths
+  std::string map_path =
+      beam::CombinePaths(std::vector<std::string>{root_path_, "map.pcd"});
+  // load data
+  std::shared_ptr<beam_calibration::CameraModel> camera_model =
+      beam_calibration::CameraModel::Create(intrinsics_path_);
+
+  PointCloud map;
+  pcl::io::loadPCDFile<pcl::PointXYZ>(map_path, map);
+
+  beam_calibration::TfTree extinsics_tree;
+  extinsics_tree.LoadJSON(extrinsics_path_);
+
+  beam_calibration::TfTree poses_tree;
+  beam_mapping::Poses poses_container;
+  poses_container.LoadFromJSON(poses_path_);
+  const auto& poses = poses_container.GetPoses();
+  const auto& timestamps = poses_container.GetTimeStamps();
+  for (uint8_t i = 0; i < poses.size(); i++) {
+    poses_tree.AddTransform(Eigen::Affine3d(poses[i]),
+                            poses_container.GetFixedFrame(),
+                            poses_container.GetMovingFrame(), timestamps[i]);
+  }
+
+  beam_containers::ImageBridge image_container;
+  image_container.LoadFromJSON(image_container_path_);
+
+  // transform map into camera frame
+  Eigen::Matrix4d T_MAP_MOVING =
+      poses_tree
+          .GetTransformEigen(poses_container.GetFixedFrame(),
+                             poses_container.GetMovingFrame(),
+                             image_container.GetRosTime())
+          .matrix();
+
+  Eigen::Matrix4d T_MOVING_CAM =
+      extinsics_tree
+          .GetTransformEigen(poses_container.GetMovingFrame(),
+                             image_container.GetBGRFrameId())
+          .matrix();
+
+  Eigen::Matrix4d T_MAP_CAM = T_MAP_MOVING * T_MOVING_CAM;
+
+  PointCloud::Ptr map_in_cam_frame = std::make_shared<PointCloud>();
+  pcl::transformPointCloud(map, *map_in_cam_frame,
+                           beam::InvertTransform(T_MAP_CAM));
+
+  // create colorizer
+  beam_colorize::ProjectionOcclusionSafe colorizer;
+  colorizer.SetPointCloud(map_in_cam_frame);
+  colorizer.SetImage(image_container.GetBGRMask());
+  colorizer.SetDistortion(image_container.GetBGRIsDistorted());
+  colorizer.SetIntrinsics(camera_model);
+  //   colorizer.SetWindowSize(10);
+  //   colorizer.SetWindowStride(4);
+  //   colorizer.SetDepthThreshold(0.3);
+  // these were picked from the params search's best result from the commented
+  // out code below
+  colorizer.SetWindowSize(90);
+  colorizer.SetWindowStride(67);
+  colorizer.SetDepthThreshold(0.2);
+
+  // colorize map
+  pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_map =
+      colorizer.ColorizeMask();
+  pcl::PointCloud<beam_containers::PointBridge> defect_map_in_map_frame;
+  pcl::transformPointCloud(*defect_map, defect_map_in_map_frame, T_MAP_CAM);
+  SaveMap(defect_map_in_map_frame, "projection_occlusion_safe_mask.pcd");
+}
 
 /*
 TEST_CASE("param searching") {

@@ -60,9 +60,8 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
 
   if (!image_initialized_ || cloud_in_camera_frame_->size() == 0 ||
       camera_model_ == nullptr) {
-    return defect_cloud;
-    throw std::runtime_error{"Colorizer not properly initialized."};
     BEAM_CRITICAL("Colorizer not properly initialized.");
+    throw std::runtime_error{"Colorizer not properly initialized."};
   }
   int counter = 0;
   for (uint32_t i = 0; i < cloud_in_camera_frame_->points.size(); i++) {

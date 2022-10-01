@@ -140,8 +140,66 @@ pcl::PointCloud<beam_containers::PointBridge>::Ptr
     ProjectionOcclusionSafe::ColorizeMask() const {
   auto defect_cloud =
       std::make_shared<pcl::PointCloud<beam_containers::PointBridge>>();
+  pcl::copyPointCloud(*cloud_in_camera_frame_, *defect_cloud);
 
-  // TODO
+  // check class is initialized correctly
+  if (!image_initialized_ || camera_model_ == nullptr ||
+      cloud_in_camera_frame_->size() == 0) {
+    BEAM_CRITICAL("Colorizer not properly initialized, image initialized: {}, "
+                  "camera model initialized: {}",
+                  image_initialized_, camera_model_ != nullptr);
+    throw std::runtime_error{"Colorizer not properly initialized."};
+  }
+
+  // build projection map
+  ProjectionMap projection_map(cloud_in_camera_frame_);
+  for (uint64_t i = 0; i < cloud_in_camera_frame_->points.size(); i++) {
+    Eigen::Vector3d point(cloud_in_camera_frame_->points[i].x,
+                          cloud_in_camera_frame_->points[i].y,
+                          cloud_in_camera_frame_->points[i].z);
+    bool in_image = false;
+    Eigen::Vector2d coords;
+    if (!camera_model_->ProjectPoint(point, coords, in_image)) {
+      continue;
+    } else if (!in_image) {
+      continue;
+    }
+
+    // point projected to image, now check if it projected to a defect
+    uchar color_scale = image_->at<uchar>(coords(1, 0), coords(0, 0));
+    if (color_scale == 0) { continue; }
+    projection_map.Add(coords[0], coords[1], i);
+  }
+  int valid_projections = projection_map.Size();
+
+  ProjectionMap projection_map_final =
+      RemoveOccludedPointsFromMap(projection_map);
+  BEAM_INFO("Colorizing {} points from {} total valid projections",
+            projection_map_final.Size(), valid_projections);
+
+  // color cloud
+  int counter = 0;
+  for (auto v_iter = projection_map_final.VBegin();
+       v_iter != projection_map_final.VEnd(); v_iter++) {
+    const auto& u_map = v_iter->second;
+    for (auto u_iter = u_map.begin(); u_iter != u_map.end(); u_iter++) {
+      uchar color_scale = image_->at<uchar>(v_iter->first, u_iter->first);
+      if (color_scale == 0) {
+        continue;
+      } else if (color_scale == 1) {
+        defect_cloud->points[u_iter->second].crack = 1;
+        counter++;
+      } else if (color_scale == 2) {
+        defect_cloud->points[u_iter->second].delam = 1;
+        counter++;
+      } else if (color_scale == 3) {
+        defect_cloud->points[u_iter->second].corrosion = 1;
+        counter++;
+      }
+    }
+  }
+  BEAM_INFO("Coloured {} of {} total points using mask.", counter,
+            cloud_in_camera_frame_->points.size());
 
   return defect_cloud;
 }
@@ -186,7 +244,7 @@ void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
 
   // iterate through map sorted by distance and colorize all points up until
   // there's a jump in distance more than the threshold. Keep others in map to
-  // be revisited in another window. 
+  // be revisited in another window.
   for (auto curr_iter = std::next(points.begin()); curr_iter != points.end();
        curr_iter++) {
     auto prev_iter = std::prev(curr_iter);
