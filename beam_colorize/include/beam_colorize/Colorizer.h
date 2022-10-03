@@ -9,13 +9,14 @@
 #pragma once
 
 #include <boost/make_shared.hpp>
+#include <opencv2/core.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <opencv2/core.hpp>
 #include <sensor_msgs/Image.h>
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_containers/PointBridge.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_colorize {
 /** @addtogroup colorizer
@@ -24,12 +25,59 @@ namespace beam_colorize {
 /**
  * @brief Enum class for different types of intrinsic calibrations
  */
-enum class ColorizerType { PROJECTION = 0, PROJECTION_OCCLUSION_SAFE, RAY_TRACE };
+enum class ColorizerType {
+  PROJECTION = 0,
+  PROJECTION_OCCLUSION_SAFE,
+  RAY_TRACE
+};
 
 /**
  * @brief Pixel type for iterating through the image
  */
 using Pixel = cv::Point3_<uchar>;
+
+/**
+ * @brief alias for defect clouds
+ */
+typedef pcl::PointCloud<beam_containers::PointBridge> DefectCloud;
+
+struct ProjectedPointMeta {
+  ProjectedPointMeta(uint64_t _id, double _depth) : id(_id), depth(_depth) {}
+
+  uint64_t id;  // id in original cloud
+  double depth; // depth from camera in m
+};
+
+using UMapType = std::unordered_map<uint64_t, ProjectedPointMeta>;
+
+/**
+ * @brief class for storing a point projection map. This is stored as a 2D (or
+ * two level nested) hash map so we can lookup point IDs associated with image
+ * pixel coordinates (u,v). Note that since we only want to colorize closest
+ * points to the image, we only store the closest points to each individual
+ * pixel
+ *
+ */
+class ProjectionMap {
+public:
+  void Add(uint64_t u, uint64_t v, uint64_t point_id, double depth = 0);
+
+  bool Get(uint64_t u, uint64_t v, ProjectedPointMeta& point_meta);
+
+  void Erase(uint64_t u, uint64_t v);
+
+  int Size();
+
+  std::unordered_map<uint64_t, UMapType>::iterator VBegin();
+
+  std::unordered_map<uint64_t, UMapType>::iterator VEnd();
+
+private:
+  // map: v -> {map: u -> closest point ID}
+  std::unordered_map<uint64_t, UMapType> map_;
+
+  const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
+};
 
 /**
  * @brief Abstract class which different colorization methods can implement
@@ -41,21 +89,20 @@ public:
   virtual ~Colorizer() = default;
 
   static std::unique_ptr<Colorizer> Create(ColorizerType type);
-  
-  /**
-   * @brief Method for adding a point cloud of point type XYZ. This is required.
-   * @param cloud_input Input point cloud in camera frame
-   */
-  void SetPointCloud(
-      const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_in_camera_frame);
 
   /**
-   * @brief Method for adding a point cloud of point type XYZRGB. This is
-   * required.
-   * @param cloud_input Input point cloud in camera frame
+   * @brief Pure virtual method for generating a projection map given a colored
+   * pointcloud
    */
-  void SetPointCloud(
-      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_in_camera_frame);
+  virtual ProjectionMap CreateProjectionMap(
+      const PointCloudCol::Ptr& cloud_in_camera_frame) const = 0;
+
+  /**
+   * @brief Pure virtual method for generating a projection map given a defect
+   * pointcloud
+   */
+  virtual ProjectionMap CreateProjectionMap(
+      const DefectCloud::Ptr& cloud_in_camera_frame) const = 0;
 
   /**
    * @brief Method for adding an image of type scv::Mat. This is required.
@@ -84,29 +131,50 @@ public:
   void SetDistortion(const bool& image_distored);
 
   /**
-   * @brief Pure virtual method for colorizing a point cloud.
-   * @return Colored point cloud pointer
+   * @brief colors map with RGB information from the stored image given a
+   * reference to a defect cloud
    */
-  virtual pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const = 0;
+  void ColorizePointCloud(DefectCloud::Ptr& cloud_in_camera_frame) const;
 
   /**
-   * @brief Pure virtual method for colorizing a point cloud. Returned point
-   * cloud will be in camera frame
-   * @return Colored point cloud pointer
+   * @brief colors map with RGB information from the stored image given a const
+   * pointer to an XYZ cloud
+   * @return colored cloud in camera frame
    */
-  virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask() const = 0;
+  PointCloudCol::Ptr
+      ColorizePointCloud(const PointCloud::Ptr& cloud_in_camera_frame) const;
+
+  /**
+   * @brief colors map with RGB information from the stored image given a const
+   * pointer to a colored cloud
+   * @return colored cloud in camera frame 
+   */
+  PointCloudCol::Ptr
+      ColorizePointCloud(const PointCloudCol::Ptr& cloud_in_camera_frame) const;
+
+  /**
+   * @brief labels map with defect information from the stored image (it must be
+   * a mask) given a reference to a defect cloud cloud
+   */
+  void ColorizeMask(DefectCloud::Ptr& cloud_in_camera_frame) const;
+
+  /**
+   * @brief labels map with defect information from the stored image (it must be
+   * a mask) given a const pointer to an XYZ cloud
+   * @return defect cloud in camera frame
+   */
+  DefectCloud::Ptr
+      ColorizeMask(const PointCloud::Ptr& cloud_in_camera_frame) const;
+
+  /**
+   * @brief labels map with defect information from the stored image (it must be
+   * a mask) given a const pointer to a colored cloud.
+   * @return defect cloud in camera frame
+   */
+  DefectCloud::Ptr
+      ColorizeMask(const PointCloudCol::Ptr& cloud_in_camera_frame) const;
 
 protected:
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr GetCloudInLidarFrame(
-      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_colored) const;
-
-  pcl::PointCloud<beam_containers::PointBridge>::Ptr GetCloudInLidarFrame(
-      const pcl::PointCloud<beam_containers::PointBridge>::Ptr&
-          cloud_pointbridge) const;
-
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in_camera_frame_{
-      std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>()};
   std::shared_ptr<cv::Mat> image_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_;
   std::shared_ptr<beam_calibration::CameraModel> camera_model_distorted_;

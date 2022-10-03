@@ -35,7 +35,6 @@ void LoadColorizer(beam_colorize::ColorizerType type) {
   image_ = cv::imread(image_location, cv::IMREAD_COLOR);
   // init variables
   bool image_distorted = true;
-  colorizer_->SetPointCloud(cloud_);
   colorizer_->SetImage(image_);
   colorizer_->SetIntrinsics(camera_model_);
   colorizer_->SetDistortion(image_distorted);
@@ -47,7 +46,7 @@ TEST_CASE("Test correct projection colorization") {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  cloud_colored = colorizer_->ColorizePointCloud();
+  cloud_colored = colorizer_->ColorizePointCloud(cloud_);
 
   int non_red = 0;
   for (uint32_t i = 0; i < cloud_colored->points.size(); i++) {
@@ -68,7 +67,7 @@ TEST_CASE("Test correct raytrace colorization") {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_colored(
       new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  cloud_colored = colorizer_->ColorizePointCloud();
+  cloud_colored = colorizer_->ColorizePointCloud(cloud_);
 
   int non_red = 0;
   for (uint32_t i = 0; i < cloud_colored->points.size(); i++) {
@@ -124,16 +123,12 @@ TEST_CASE("Test setter functions") {
       new pcl::PointCloud<pcl::PointXYZ>);
 
   beam_colorize::Projection projection;
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_THROWS(projection.ColorizePointCloud());
-  REQUIRE_NOTHROW(projection.SetPointCloud(XYZ_cloud));
+  REQUIRE_THROWS(projection.ColorizePointCloud(XYZRGB_cloud));
   REQUIRE_NOTHROW(projection.SetImage(image));
   REQUIRE_NOTHROW(projection.SetIntrinsics(model));
 
   beam_colorize::RayTrace raytrace;
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZRGB_cloud));
-  REQUIRE_THROWS(raytrace.ColorizePointCloud());
-  REQUIRE_NOTHROW(raytrace.SetPointCloud(XYZ_cloud));
+  REQUIRE_THROWS(raytrace.ColorizePointCloud(XYZRGB_cloud));
   REQUIRE_NOTHROW(raytrace.SetImage(image));
   REQUIRE_NOTHROW(raytrace.SetIntrinsics(model));
 }

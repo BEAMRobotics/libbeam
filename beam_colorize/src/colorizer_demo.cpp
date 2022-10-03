@@ -53,13 +53,12 @@ int main(int argc, char* argv[]) {
           new pcl::PointCloud<pcl::PointXYZRGB>);
       // set colorizer values
       bool image_distorted = true;
-      colorizer->SetPointCloud(cloud);
       colorizer->SetImage(image);
       colorizer->SetIntrinsics(model);
       colorizer->SetDistortion(image_distorted);
       struct timespec t;
       beam::tic(&t);
-      cloud_colored = colorizer->ColorizePointCloud();
+      cloud_colored = colorizer->ColorizePointCloud(cloud);
       float elapsed = beam::toc(&t);
       BEAM_INFO("Colorizing time elapsed: {}", elapsed);
 

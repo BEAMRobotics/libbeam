@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <pcl/kdtree/kdtree_flann.h>
+
 #include <beam_colorize/Colorizer.h>
 #include <mutex>
 #include <pcl/point_cloud.h>
@@ -28,21 +30,14 @@ public:
   /**
    * @brief see Colorizer.h
    */
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
+  ProjectionMap CreateProjectionMap(
+      const PointCloudCol::Ptr& cloud_in_camera_frame) const override;
 
   /**
    * @brief see Colorizer.h
    */
-  virtual pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask() const override;
-
-private:
-  /**
-   * @brief Method for removing unneccessary points in cloud
-   * @return Reduced point cloud
-   */
-  std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, std::vector<int>>
-      ReduceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input) const;
+  ProjectionMap CreateProjectionMap(
+      const DefectCloud::Ptr& cloud_in_camera_frame) const override;
 
 protected:
   double hit_threshold_ = 0.01;

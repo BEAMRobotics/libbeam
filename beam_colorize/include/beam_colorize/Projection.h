@@ -22,13 +22,14 @@ public:
   /**
    * @brief see Colorizer.h
    */
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr ColorizePointCloud() const override;
+  ProjectionMap CreateProjectionMap(
+      const PointCloudCol::Ptr& cloud_in_camera_frame) const override;
 
   /**
    * @brief see Colorizer.h
    */
-  pcl::PointCloud<beam_containers::PointBridge>::Ptr
-      ColorizeMask() const override;
+  ProjectionMap CreateProjectionMap(
+      const DefectCloud::Ptr& cloud_in_camera_frame) const override;
 
 private:
 };

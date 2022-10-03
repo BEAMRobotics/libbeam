@@ -112,13 +112,13 @@ TEST_CASE("Test on full datasets") {
   // create colorizer
   auto colorizer = beam_colorize::Colorizer::Create(
       beam_colorize::ColorizerType::PROJECTION);
-  colorizer->SetPointCloud(map_in_cam_frame);
   colorizer->SetImage(image_container.GetBGRImage());
   colorizer->SetDistortion(image_container.GetBGRIsDistorted());
   colorizer->SetIntrinsics(camera_model);
 
   // colorize map
-  PointCloudColPtr map_colored_in_cam = colorizer->ColorizePointCloud();
+  PointCloudColPtr map_colored_in_cam =
+      colorizer->ColorizePointCloud(map_in_cam_frame);
   PointCloudColPtr map_colored = std::make_shared<PointCloudCol>();
   pcl::transformPointCloud(*map_colored_in_cam, *map_colored, T_MAP_CAM);
   *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
@@ -129,7 +129,6 @@ TEST_CASE("Test on full datasets") {
 
   // create colorizer
   beam_colorize::ProjectionOcclusionSafe colorizer2;
-  colorizer2.SetPointCloud(map_in_cam_frame);
   colorizer2.SetImage(image_container.GetBGRImage());
   colorizer2.SetDistortion(image_container.GetBGRIsDistorted());
   colorizer2.SetIntrinsics(camera_model);
@@ -144,7 +143,7 @@ TEST_CASE("Test on full datasets") {
 
   // colorize map
   map_colored = std::make_shared<PointCloudCol>();
-  map_colored_in_cam = colorizer2.ColorizePointCloud();
+  map_colored_in_cam = colorizer2.ColorizePointCloud(map_in_cam_frame);
   pcl::transformPointCloud(*map_colored_in_cam, *map_colored, T_MAP_CAM);
   *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
   SaveMap(*map_colored, "projection_occlusion_full_safeproj.pcd");
@@ -201,7 +200,6 @@ TEST_CASE("column occlusion") {
 
   // create colorizer
   beam_colorize::ProjectionOcclusionSafe colorizer;
-  colorizer.SetPointCloud(map_in_cam_frame);
   colorizer.SetImage(image_container.GetBGRImage());
   colorizer.SetDistortion(image_container.GetBGRIsDistorted());
   colorizer.SetIntrinsics(camera_model);
@@ -213,7 +211,7 @@ TEST_CASE("column occlusion") {
 
   // colorize map
   auto map_colored = std::make_shared<PointCloudCol>();
-  auto map_colored_in_cam = colorizer.ColorizePointCloud();
+  auto map_colored_in_cam = colorizer.ColorizePointCloud(map_in_cam_frame);
   pcl::transformPointCloud(*map_colored_in_cam, *map_colored, T_MAP_CAM);
   *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
   SaveMap(*map_colored, "column_occlusion_test.pcd");
@@ -294,7 +292,6 @@ TEST_CASE("Test mask colorization") {
 
   // create colorizer
   beam_colorize::ProjectionOcclusionSafe colorizer;
-  colorizer.SetPointCloud(map_in_cam_frame);
   colorizer.SetImage(image_container.GetBGRMask());
   colorizer.SetDistortion(image_container.GetBGRIsDistorted());
   colorizer.SetIntrinsics(camera_model);
@@ -309,7 +306,7 @@ TEST_CASE("Test mask colorization") {
 
   // colorize map
   pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_map =
-      colorizer.ColorizeMask();
+      colorizer.ColorizeMask(map_in_cam_frame);
   pcl::PointCloud<beam_containers::PointBridge> defect_map_in_map_frame;
   pcl::transformPointCloud(*defect_map, defect_map_in_map_frame, T_MAP_CAM);
   SaveMap(defect_map_in_map_frame, "projection_occlusion_safe_mask.pcd");
@@ -367,7 +364,6 @@ TEST_CASE("param searching") {
 
   // create colorizer
   beam_colorize::ProjectionOcclusionSafe colorizer;
-  colorizer.SetPointCloud(map_in_cam_frame);
   colorizer.SetImage(image_container.GetBGRImage());
   colorizer.SetDistortion(image_container.GetBGRIsDistorted());
   colorizer.SetIntrinsics(camera_model);
@@ -394,10 +390,10 @@ TEST_CASE("param searching") {
         // colorize map
         auto map_colored = std::make_shared<PointCloudCol>();
         beam::tic(&t);
-        auto map_colored_in_cam = colorizer.ColorizePointCloud();
-        float time_elapsed = beam::toc(&t);
-        pcl::transformPointCloud(*map_colored_in_cam, *map_colored, T_MAP_CAM);
-        *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
+        auto map_colored_in_cam =
+colorizer.ColorizePointCloud(map_in_cam_frame); float time_elapsed =
+beam::toc(&t); pcl::transformPointCloud(*map_colored_in_cam, *map_colored,
+T_MAP_CAM); *map_colored = beam::AddFrameToCloud(*map_colored, T_MAP_CAM);
         std::string output_file = "test" + std::to_string(count) + ".pcd";
         SaveMap(*map_colored, output_file);
         int count_colored{0};
