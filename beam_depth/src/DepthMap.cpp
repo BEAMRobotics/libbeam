@@ -48,8 +48,8 @@ int DepthMap::ExtractDepthMap(float thresh) {
 
 int DepthMap::ExtractDepthMapProjection(float thresh) {
   // create image with 3 channels for coordinates
-  depth_image_ = std::make_shared<cv::Mat>(model_->GetHeight(),
-                                           model_->GetWidth(), CV_32FC1, double(0));
+  depth_image_ = std::make_shared<cv::Mat>(
+      model_->GetHeight(), model_->GetWidth(), CV_32FC1, double(0));
   for (uint32_t i = 0; i < cloud_->points.size(); i++) {
     Eigen::Vector3d origin(0, 0, 0);
     Eigen::Vector3d point(cloud_->points[i].x, cloud_->points[i].y,
@@ -94,8 +94,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
   BEAM_INFO("Performing Point Cloud Construction...");
   pcl::PointCloud<pcl::PointXYZ>::Ptr dense_cloud =
       std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  for (int row = 0; row < depth_image_->rows; row += 2) {
-    for (int col = 0; col < depth_image_->cols; col += 2) {
+  for (int row = 0; row < depth_image_->rows; row++) {
+    for (int col = 0; col < depth_image_->cols; col++) {
       float distance = depth_image_->at<float>(row, col);
       if (distance > 0) {
         Eigen::Vector2i pixel(col, row);
