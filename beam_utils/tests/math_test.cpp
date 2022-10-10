@@ -85,3 +85,20 @@ TEST_CASE("EigenTransformToVector and VectorToEigenTransform") {
     for (int j = 0; j < 4; j++) { REQUIRE(Tf(i, j) == Tf2(i, j)); }
   }
 }
+
+TEST_CASE("logit and logit inv", "[Math.h]") {
+  double l0 = beam::Logit(0.5);
+  REQUIRE(beam::LogitInv(l0) == 0.5);
+  double pk = 0.7;
+
+  double p1 = beam::BayesianLogitUpdate(pk, l0, 0.5);
+  REQUIRE(p1 == pk);
+
+  double p_cur = p1;
+  for (int i = 0; i < 20; i++) {
+    double p_last = p_cur;
+    p_cur = beam::BayesianLogitUpdate(pk, l0, p_last);
+    REQUIRE(p_cur > p_last);
+    REQUIRE(p_cur < 1);
+  }
+}

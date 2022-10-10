@@ -591,5 +591,28 @@ void OutputTransformInformation(const Eigen::Matrix4d& T,
  */
 std::string TransformationMatrixToString(const Eigen::Matrix4d& T);
 
+/**
+ * @brief return log odds of a probability
+ * @param p probability
+ * @return l 
+ */
+double Logit(double p);
+
+/**
+ * @brief returns the inverse of the log odds probability function 
+ * @param l log odds
+ * @return probability 
+ */
+double LogitInv(double l);
+
+/**
+ * @brief applies a Bayesian Log Odds update
+ * @param pk probability associated with each measurement
+ * @param l0 log odds of the original probability (usually Logit(0.5) if uncertain)
+ * @param p_prev previous probability
+ * @return updated probability 
+ */
+double BayesianLogitUpdate(double pk, double l0, double p_prev);
+
 /** @} group utils */
 } // namespace beam

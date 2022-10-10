@@ -826,4 +826,18 @@ std::string TransformationMatrixToString(const Eigen::Matrix4d& T) {
   return output;
 }
 
+double Logit(double p) {
+  return log(p / (1 - p));
+}
+
+double LogitInv(double l) {
+  return exp(l) / (1 + exp(l));
+}
+
+double BayesianLogitUpdate(double pk, double l0, double p_prev) {
+  double l_prev = Logit(p_prev);
+  double l_updated = Logit(pk) + l_prev - l0;
+  return LogitInv(l_updated);
+}
+
 } // namespace beam
