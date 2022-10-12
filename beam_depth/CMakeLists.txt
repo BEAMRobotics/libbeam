@@ -3,6 +3,7 @@ PROJECT(beam_depth)
 BEAM_ADD_MODULE(${PROJECT_NAME}
   DEPENDS
     beam::calibration
+    beam::colorize
     beam::utils
     beam::cv
   SOURCES
