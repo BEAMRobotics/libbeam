@@ -84,6 +84,14 @@ public:
    */
   int ExtractDepthMapProjection(float thresh);
 
+
+  /**
+   * @brief Computes the depth image based on the given point cloud and image
+   * using occlusion-safe projection from beam_colorize
+   * @return number of points extracted
+   */
+  int ExtractDepthMapProjectionNoOcclusions();
+
   /*
    * @brief Creates point cloud from interpolated depth image
    * @return point cloud

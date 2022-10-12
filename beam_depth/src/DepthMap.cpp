@@ -2,6 +2,7 @@
 
 #include <pcl/io/pcd_io.h>
 
+#include <beam_colorize/ProjectionOcclusionSafe.h>
 #include <beam_cv/Raycast.h>
 #include <beam_cv/Utils.h>
 #include <beam_depth/Utils.h>
@@ -84,6 +85,36 @@ int DepthMap::ExtractDepthMapProjection(float thresh) {
         }
       });
   return num_extracted;
+}
+
+int DepthMap::ExtractDepthMapProjectionNoOcclusions() {
+  beam_colorize::ProjectionOcclusionSafe projection;
+  projection.SetIntrinsics(model_);
+
+  // temporarily copy to color cloud
+  PointCloudCol::Ptr cloud_col = std::make_shared<PointCloudCol>();
+  pcl::copyPointCloud(*cloud_, *cloud_col);
+  beam_colorize::ProjectionMap projection_map =
+      projection.CreateProjectionMap(cloud_col);
+
+  // create image with 3 channels for coordinates
+  depth_image_ = std::make_shared<cv::Mat>(
+      model_->GetHeight(), model_->GetWidth(), CV_32FC1, double(0));
+  min_depth_ = 1000;
+  max_depth_ = 0;
+  for (auto v_iter = projection_map.VBegin(); v_iter != projection_map.VEnd();
+       v_iter++) {
+    uint64_t v = v_iter->first;
+    const auto u_map = v_iter->second;
+    for (const auto& [u, meta] : u_map) {
+      if (meta.depth > max_depth_) { max_depth_ = meta.depth; }
+      if (meta.depth < min_depth_) { min_depth_ = meta.depth; }
+      depth_image_->at<float>(v, u) = meta.depth;
+    }
+  }
+
+  depth_image_extracted_ = true;
+  return projection_map.Size();
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DepthMap::ExtractPointCloud() {
