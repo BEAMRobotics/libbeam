@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/kdtree/kdtree_flann.h>
 
 // MAKE SURE OPENCV IS INCLUDED AFTER FLANN
 #include <opencv2/core/core.hpp>
@@ -83,7 +83,6 @@ public:
    * @return number of points extracted
    */
   int ExtractDepthMapProjection(float thresh);
-
 
   /**
    * @brief Computes the depth image based on the given point cloud and image
