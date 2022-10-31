@@ -2,6 +2,7 @@
 
 #include <regex>
 
+#include <beam_utils/log.h>
 #include <boost/endian/conversion.hpp>
 #include <sensor_msgs/image_encodings.h>
 
@@ -120,6 +121,26 @@ cv::Mat OpenCVConversions::RosImgToMat(const sensor_msgs::Image& source) {
 
   // Interpret mat_swap back as the proper type
   mat_swap.reshape(num_channels);
+
+  // Debayer if necessary
+  if (source.encoding.find("bayer") != std::string::npos) {
+    int code = 0;
+    if (source.encoding == enc::BAYER_RGGB8)
+      code = cv::COLOR_BayerBG2BGR;
+    else if (source.encoding == enc::BAYER_BGGR8)
+      code = cv::COLOR_BayerRG2BGR;
+    else if (source.encoding == enc::BAYER_GBRG8)
+      code = cv::COLOR_BayerGR2BGR;
+    else if (source.encoding == enc::BAYER_GRBG8)
+      code = cv::COLOR_BayerGB2BGR;
+    else {
+      // unable to debayer
+      return mat_swap;
+    }
+    cv::Mat debayered;
+    cv::cvtColor(mat_swap, debayered, code);
+    return debayered;
+  }
 
   return mat_swap;
 }
