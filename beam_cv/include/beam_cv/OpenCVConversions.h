@@ -28,5 +28,13 @@ cv::Mat RosImgToMat(const sensor_msgs::Image& source);
 sensor_msgs::Image MatToRosImg(const cv::Mat source,
                                const std_msgs::Header& header,
                                const std::string& encoding);
+/**
+ * @brief Debayers an image according to its encoding
+ * @param source cv mat image to debayer
+ * @param encoding Image encoding ("mono8", "bgr8", etc.) See:
+ * http://docs.ros.org/en/jade/api/sensor_msgs/html/namespacesensor__msgs_1_1image__encodings.html
+ * @return cv mat
+ */
+cv::Mat Debayer(const cv::Mat& source, const std::string& encoding);
 
 }} // namespace beam_cv::OpenCVConversions

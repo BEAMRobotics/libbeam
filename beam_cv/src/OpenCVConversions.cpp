@@ -100,7 +100,7 @@ cv::Mat OpenCVConversions::RosImgToMat(const sensor_msgs::Image& source) {
       (boost::endian::order::native == boost::endian::order::little &&
        !source.is_bigendian) ||
       byte_depth == 1)
-    return mat;
+    return Debayer(mat, source.encoding); // debayer if necessary
 
   // Otherwise, reinterpret the data as bytes and switch the channels
   // accordingly
@@ -123,26 +123,7 @@ cv::Mat OpenCVConversions::RosImgToMat(const sensor_msgs::Image& source) {
   mat_swap.reshape(num_channels);
 
   // Debayer if necessary
-  if (source.encoding.find("bayer") != std::string::npos) {
-    int code = 0;
-    if (source.encoding == enc::BAYER_RGGB8)
-      code = cv::COLOR_BayerBG2BGR;
-    else if (source.encoding == enc::BAYER_BGGR8)
-      code = cv::COLOR_BayerRG2BGR;
-    else if (source.encoding == enc::BAYER_GBRG8)
-      code = cv::COLOR_BayerGR2BGR;
-    else if (source.encoding == enc::BAYER_GRBG8)
-      code = cv::COLOR_BayerGB2BGR;
-    else {
-      // unable to debayer
-      return mat_swap;
-    }
-    cv::Mat debayered;
-    cv::cvtColor(mat_swap, debayered, code);
-    return debayered;
-  }
-
-  return mat_swap;
+  return Debayer(mat_swap, source.encoding);
 }
 
 sensor_msgs::Image
@@ -174,6 +155,27 @@ sensor_msgs::Image
   }
 
   return ros_image;
+}
+
+cv::Mat OpenCVConversions::Debayer(const cv::Mat& source,
+                                   const std::string& encoding) {
+  // Debayer if necessary
+  if (encoding.find("bayer") != std::string::npos) {
+    int code = 0;
+    if (encoding == enc::BAYER_RGGB8)
+      code = cv::COLOR_BayerBG2BGR;
+    else if (encoding == enc::BAYER_BGGR8)
+      code = cv::COLOR_BayerRG2BGR;
+    else if (encoding == enc::BAYER_GBRG8)
+      code = cv::COLOR_BayerGR2BGR;
+    else if (encoding == enc::BAYER_GRBG8)
+      code = cv::COLOR_BayerGB2BGR;
+    else { return source; }
+    cv::Mat debayered;
+    cv::cvtColor(source, debayered, code);
+    return debayered;
+  }
+  return source;
 }
 
 } // namespace beam_cv
