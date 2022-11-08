@@ -33,6 +33,10 @@ std::shared_ptr<Detector> Detector::Create(DetectorType type,
     FASTDetector::Params params;
     params.LoadFromJson(file_to_read);
     return std::make_shared<FASTDetector>(params);
+  } else if (type == DetectorType::FASTSSC) {
+    FASTSSCDetector::Params params;
+    params.LoadFromJson(file_to_read);
+    return std::make_shared<FASTSSCDetector>(params);
   } else if (type == DetectorType::GFTT) {
     GFTTDetector::Params params;
     params.LoadFromJson(file_to_read);

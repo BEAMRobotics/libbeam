@@ -16,13 +16,14 @@ namespace beam_cv {
 /**
  * @brief Enum class for different types of detectors
  */
-enum class DetectorType { ORB = 0, SIFT, FAST, GFTT };
+enum class DetectorType { ORB = 0, SIFT, FAST, FASTSSC, GFTT };
 
 // Map for storing string input
 static std::map<std::string, DetectorType> DetectorTypeStringMap = {
     {"ORB", DetectorType::ORB},
     {"SIFT", DetectorType::SIFT},
     {"FAST", DetectorType::FAST},
+    {"FASSSC", DetectorType::FASTSSC},
     {"GFTT", DetectorType::GFTT}};
 
 // Map for storing int input
@@ -30,7 +31,8 @@ static std::map<uint8_t, DetectorType> DetectorTypeIntMap = {
     {0, DetectorType::ORB},
     {1, DetectorType::SIFT},
     {2, DetectorType::FAST},
-    {3, DetectorType::GFTT}};
+    {3, DetectorType::FASTSSC},
+    {4, DetectorType::GFTT}};
 
 // function for listing types of detectors available
 inline std::string GetDetectorTypes() {

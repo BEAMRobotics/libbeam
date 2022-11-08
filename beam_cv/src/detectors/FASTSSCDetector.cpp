@@ -21,7 +21,7 @@ void FASTSSCDetector::Params::LoadFromJson(const std::string& config_path) {
   std::ifstream file(config_path);
   file >> J;
   num_features = J["num_features"];
-  ssc_tolerance = J['ssc_tolerance'];
+  ssc_tolerance = J["ssc_tolerance"];
   threshold = J["threshold"];
   nonmax_suppression = J["nonmax_suppression"];
   std::string type_str = J["type"];
