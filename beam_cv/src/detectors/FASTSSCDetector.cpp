@@ -21,6 +21,7 @@ void FASTSSCDetector::Params::LoadFromJson(const std::string& config_path) {
   std::ifstream file(config_path);
   file >> J;
   num_features = J["num_features"];
+  ssc_tolerance = J['ssc_tolerance'];
   threshold = J["threshold"];
   nonmax_suppression = J["nonmax_suppression"];
   std::string type_str = J["type"];
@@ -43,11 +44,12 @@ FASTSSCDetector::FASTSSCDetector(const Params& params)
 };
 
 FASTSSCDetector::FASTSSCDetector(int num_features, int threshold,
-                                 bool nonmax_suppression,
+                                 bool nonmax_suppression, float ssc_tolerance,
                                  cv::FastFeatureDetector::DetectorType type)
     : Detector(0, 0) {
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
+  params_.ssc_tolerance = ssc_tolerance;
   params_.type = type;
   params_.num_features = num_features;
   Setup();
@@ -81,7 +83,9 @@ std::vector<cv::KeyPoint>
 void FASTSSCDetector::CheckConfig() {
   // Check parameters. If invalid, throw an exception.
   if (params_.threshold <= 0) {
-    throw std::invalid_argument("threshold must be greater than 0!");
+    throw std::invalid_argument("fast threshold must be greater than 0!");
+  } else if (params_.ssc_tolerance <= 0) {
+    throw std::invalid_argument("ssc threshold must be greater than 0!");
   } else if (params_.type < 0 || params_.type > 3) {
     throw std::invalid_argument("Invalid type for FASTSSCDetector!");
   } else if (params_.num_features < 0) {

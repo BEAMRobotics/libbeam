@@ -51,17 +51,19 @@ public:
   /**
    * @brief Constructor that specifies each param individually
    * @param num_features number of features to retain, 0 will keep all.
-   * @param threshold Threshold on difference between intensity of the central
-   * pixel, and pixels in a circle (Bresenham radius 3) around this pixel.
-   *  Recommended: 10. Must be greater than zero.
+   * @param threshold Threshold on difference between intensity of the
+   * central pixel, and pixels in a circle (Bresenham radius 3) around this
+   * pixel. Recommended: 10. Must be greater than zero.
    * @param nonmax_suppression Removes keypoints in adjacent locations.
    *  Recommended: true
+   * @param ssc_tolerance tolerance for ssc algorithm
+   *  Recommended: 0.1
    * @param type Threshold on difference between intensity of the central pixel,
    * and pixels in a circle (Bresenham radius 3) around this pixel.
    *  Recommended: 10. Must be greater than zero.
    */
   FASTSSCDetector(int num_features = 0, int threshold = 10,
-                  bool nonmax_suppression = true,
+                  bool nonmax_suppression = true, float ssc_tolerance = 0.1,
                   cv::FastFeatureDetector::DetectorType type =
                       cv::FastFeatureDetector::TYPE_9_16);
 
