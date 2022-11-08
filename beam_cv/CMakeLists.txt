@@ -24,6 +24,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/detectors/Detector.cpp
     src/detectors/ORBDetector.cpp
     src/detectors/FASTDetector.cpp
+    src/detectors/FASTSSCDetector.cpp
     src/detectors/SIFTDetector.cpp
     src/detectors/GFTTDetector.cpp
     src/matchers/Matcher.cpp
