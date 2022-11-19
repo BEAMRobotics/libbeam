@@ -23,7 +23,7 @@ static std::map<std::string, DetectorType> DetectorTypeStringMap = {
     {"ORB", DetectorType::ORB},
     {"SIFT", DetectorType::SIFT},
     {"FAST", DetectorType::FAST},
-    {"FASSSC", DetectorType::FASTSSC},
+    {"FASTSSC", DetectorType::FASTSSC},
     {"GFTT", DetectorType::GFTT}};
 
 // Map for storing int input
