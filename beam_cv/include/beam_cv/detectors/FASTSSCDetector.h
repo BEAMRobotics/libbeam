@@ -35,6 +35,9 @@ public:
     float ssc_tolerance = 0.1;
 
     // Options: TYPE_9_16, TYPE_7_12, TYPE_5_8. See opencv docs for more details
+    // 0 = TYPE_5_8
+    // 1 = TYPE_7_12
+    // 2 = TYPE_9_16
     cv::FastFeatureDetector::DetectorType type =
         cv::FastFeatureDetector::TYPE_9_16;
 
