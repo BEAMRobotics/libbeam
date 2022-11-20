@@ -39,14 +39,14 @@ void FASTSSCDetector::Params::LoadFromJson(const std::string& config_path) {
 }
 
 FASTSSCDetector::FASTSSCDetector(const Params& params)
-    : Detector(0, 0), params_(params) {
+    : Detector(1, 1), params_(params) {
   Setup();
 };
 
 FASTSSCDetector::FASTSSCDetector(int num_features, int threshold,
                                  bool nonmax_suppression, float ssc_tolerance,
                                  cv::FastFeatureDetector::DetectorType type)
-    : Detector(0, 0) {
+    : Detector(1, 1) {
   params_.threshold = threshold;
   params_.nonmax_suppression = nonmax_suppression;
   params_.ssc_tolerance = ssc_tolerance;
