@@ -18,7 +18,7 @@ cv::Mat AdaptiveHistogram(const cv::Mat& input) {
   dst.copyTo(lab_planes[0]);
   cv::merge(lab_planes, lab_image);
   cv::Mat new_image;
-  cv::cvtColor(lab_image, new_image, cv::COLOR_BGR2Lab);
+  cv::cvtColor(lab_image, new_image, cv::COLOR_Lab2BGR);
   return new_image;
 }
 
