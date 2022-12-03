@@ -98,7 +98,7 @@ bool Radtan::BackProject(const Eigen::Vector2i& in_pixel,
   cv::eigen2cv(camera_matrix, K);
 
   std::vector<double> dist_coeffs = {k1_, k2_, p1_, p2_};
-  // undsitortpoints automatically normalizes the output
+  // undistort points automatically normalizes the output
   cv::undistortPoints(src, dst, K, dist_coeffs);
 
   out_point << dst[0].x, dst[0].y, 1;

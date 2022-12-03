@@ -5,6 +5,7 @@
   "image_width": 2048,
   "image_height": 1536,
   "frame_id": "ds_link",
+  "safe_projection_radius": 0,
   "intrinsics": [
     2351.0,
     2351.0,

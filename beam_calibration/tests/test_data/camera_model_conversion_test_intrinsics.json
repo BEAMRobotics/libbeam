@@ -5,6 +5,7 @@
   "image_width": 512,
   "image_height": 384,
   "frame_id": "F1_link",
+  "safe_projection_radius": 0,
   "intrinsics": [
     443.4037529529496,
     443.4037529529496,
