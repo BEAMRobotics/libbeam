@@ -119,6 +119,8 @@ std::shared_ptr<CameraModel> CameraModel::GetRectifiedModel() {
 
     rectified_model_ =
         std::make_shared<Radtan>(GetHeight(), GetWidth(), intrinsics);
+    rectified_model_->SetFrameID(GetFrameID());
+    rectified_model_->SetSafeProjectionRadius(GetSafeProjectionRadius());
   }
   return rectified_model_;
 }
@@ -142,6 +144,10 @@ void CameraModel::SetImageDims(const uint32_t height, const uint32_t width) {
 
 void CameraModel::SetSafeProjectionRadius(uint32_t safe_projection_radius) {
   safe_projection_radius_ = safe_projection_radius;
+}
+
+uint32_t CameraModel::GetSafeProjectionRadius() {
+  return safe_projection_radius_;
 }
 
 void CameraModel::SetIntrinsics(const Eigen::VectorXd& intrinsics) {
@@ -191,15 +197,19 @@ bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
   double h = static_cast<double>(image_height_);
 
   // check if in image plane
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > w - 1 || pixel[1] > h - 1)
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > w - 1 || pixel[1] > h - 1) {
     return false;
+  }
 
   // check if in safe projection radius
   if (safe_projection_radius_ == 0) { return true; }
+
   double distance_from_center =
       std::sqrt((pixel[0] - w / 2) * (pixel[0] - w / 2) +
                 (pixel[1] - h / 2) * (pixel[1] - h / 2));
-  if (distance_from_center > safe_projection_radius_) { return false; }
+  if (distance_from_center > safe_projection_radius_) {
+    return false;
+  }
 
   // else, it's in the valid image range
   return true;
