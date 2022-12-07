@@ -1,19 +1,19 @@
 #pragma once
 
-#include <map>
-#include <iomanip>
 #include <fstream>
+#include <iomanip>
+#include <map>
 
+#include <boost/filesystem.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/version.hpp>
-#include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
-#include <beam_utils/log.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/log.h>
 
 namespace beam_containers {
 
@@ -289,6 +289,28 @@ public:
     for (auto& meas : landmark_index) {
       if (unique_ids.empty() || meas.landmark_id != unique_ids.back()) {
         if (meas.time_point >= start && meas.time_point <= end) {
+          unique_ids.push_back(meas.landmark_id);
+        }
+      }
+    }
+    return unique_ids;
+  }
+
+  /** @brief Get unique landmark IDs with measurements in the specific image
+   * @return a vector of landmark IDs, in increasing order
+   */
+  std::vector<LandmarkIdType>
+      GetLandmarkIDsInImage(const TimeType& img_time) const {
+    // Use the index sorted by landmark id
+    const auto& landmark_index = this->storage.template get<
+        typename internal::landmark_container<T>::landmark_index>();
+    auto unique_ids = std::vector<LandmarkIdType>{};
+    // Iterate over all measurements sorted by time first, then landmark_id.
+    // Copy landmark ids into a vector, skipping consecutive equal elements and
+    // elements outside the desired time window.
+    for (auto& meas : landmark_index) {
+      if (unique_ids.empty() || meas.landmark_id != unique_ids.back()) {
+        if (meas.time_point == img_time) {
           unique_ids.push_back(meas.landmark_id);
         }
       }
