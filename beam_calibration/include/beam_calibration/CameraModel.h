@@ -132,6 +132,18 @@ public:
   void SetImageDims(const uint32_t height, const uint32_t width);
 
   /**
+   * @brief Method for adding the safe projection radius. This is a radius from
+   * the center of the image where projections are valid. Of course, points also
+   * need to project to the image plane. By default, this is set to zero, if set
+   * to zero then it won't be applied. If this value is not in the config json,
+   * then it will also be set to zero
+   * @param safe_projection_radius distance in pixels from the center of the
+   * image to the edge of the projection circle. This may fall outside the image
+   * plane for some parts of the image.
+   */
+  void SetSafeProjectionRadius(uint32_t safe_projection_radius);
+
+  /**
    * @brief Method for adding intrinsic values
    * @param intrinsics of the camera
    */
@@ -162,6 +174,14 @@ public:
   uint32_t GetWidth() const;
 
   /**
+   * @brief Method for getting the safe projection radius. See definition in
+   * SetSafeProjectionRadius()
+   * @return safe projection radius, in pixels from center
+   */
+
+  uint32_t GetSafeProjectionRadius();
+
+  /**
    * @brief Method for retrieving the intrinsic values of the model
    * @return intrinsics of the camera
    */
@@ -174,14 +194,16 @@ public:
   CameraType GetType() const;
 
   /**
-   * @brief Method for checking if pixel is in image
+   * @brief Method for checking if pixel is in image, and in the safe projection
+   * radius
    * @return Returns boolean
    * @param pixel
    */
   bool PixelInImage(const Eigen::Vector2i& pixel);
 
   /**
-   * @brief Method for checking if pixel is in image
+   * @brief Method for checking if pixel is in image, and in the safe projection
+   * radius
    * @return Returns boolean
    * @param pixel
    */
@@ -228,6 +250,7 @@ protected:
   std::string calibration_date_{""};
   uint32_t image_height_{0};
   uint32_t image_width_{0};
+  uint32_t safe_projection_radius_{0};
   Eigen::VectorXd intrinsics_;
 
   unsigned int cam_id_ = 0;

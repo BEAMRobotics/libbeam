@@ -111,30 +111,6 @@ TEST_CASE("Test projection and back project with random pixels") {
 
 TEST_CASE("Test projection and back project with invalid points/pixels") {
   LoadCameraModel();
-  uint32_t w = camera_model_->GetWidth();
-  uint32_t h = camera_model_->GetHeight();
-
-  // create random test points
-  uint32_t numRandomCases1 = 20;
-  double min_u = -w;
-  double max_u = 2 * w;
-  double min_v = -h;
-  double max_v = 2 * h;
-
-  std::vector<Eigen::Vector2i, beam::AlignVec2i> pixels;
-  while (pixels.size() < numRandomCases1) {
-    double u = fRand(min_u, max_u);
-    double v = fRand(min_v, max_v);
-    Eigen::Vector2i pixel((int)u, (int)v);
-    if (camera_model_->PixelInImage(pixel)) { continue; }
-    pixels.push_back(pixel);
-  }
-
-  for (Eigen::Vector2i pixel : pixels) {
-    Eigen::Vector3d ray;
-    REQUIRE(!camera_model_->BackProject(pixel, ray));
-  }
-
   // create random test points that project out of image frame
   int numRandomCases2 = 30;
   double min_x = 6;

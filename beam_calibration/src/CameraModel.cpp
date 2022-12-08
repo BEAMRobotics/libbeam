@@ -119,6 +119,8 @@ std::shared_ptr<CameraModel> CameraModel::GetRectifiedModel() {
 
     rectified_model_ =
         std::make_shared<Radtan>(GetHeight(), GetWidth(), intrinsics);
+    rectified_model_->SetFrameID(GetFrameID());
+    rectified_model_->SetSafeProjectionRadius(GetSafeProjectionRadius());
   }
   return rectified_model_;
 }
@@ -138,6 +140,14 @@ void CameraModel::SetCalibrationDate(const std::string& date) {
 void CameraModel::SetImageDims(const uint32_t height, const uint32_t width) {
   image_width_ = width;
   image_height_ = height;
+}
+
+void CameraModel::SetSafeProjectionRadius(uint32_t safe_projection_radius) {
+  safe_projection_radius_ = safe_projection_radius;
+}
+
+uint32_t CameraModel::GetSafeProjectionRadius() {
+  return safe_projection_radius_;
 }
 
 void CameraModel::SetIntrinsics(const Eigen::VectorXd& intrinsics) {
@@ -178,18 +188,30 @@ CameraType CameraModel::GetType() const {
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
-  if (pixel[0] < 0 || pixel[1] < 0 ||
-      pixel[0] > static_cast<int>(image_width_ - 1) ||
-      pixel[1] > static_cast<int>(image_height_ - 1))
-    return false;
-  return true;
+  Eigen::Vector2d pixel_d = pixel.cast<double>();
+  return PixelInImage(pixel_d);
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
-  if (pixel[0] < 0 || pixel[1] < 0 ||
-      pixel[0] > static_cast<double>(image_width_ - 1) ||
-      pixel[1] > static_cast<double>(image_height_ - 1))
+  double w = static_cast<double>(image_width_);
+  double h = static_cast<double>(image_height_);
+
+  // check if in image plane
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > w - 1 || pixel[1] > h - 1) {
     return false;
+  }
+
+  // check if in safe projection radius
+  if (safe_projection_radius_ == 0) { return true; }
+
+  double distance_from_center =
+      std::sqrt((pixel[0] - w / 2) * (pixel[0] - w / 2) +
+                (pixel[1] - h / 2) * (pixel[1] - h / 2));
+  if (distance_from_center > safe_projection_radius_) {
+    return false;
+  }
+
+  // else, it's in the valid image range
   return true;
 }
 
@@ -205,6 +227,7 @@ void CameraModel::LoadJSON(const std::string& file_location) {
        it != intrinsics_types_.end(); it++) {
     if (intrinsics_types_[it->first] == type_) { class_type = it->first; }
   }
+
   // check type
   std::string camera_type = J["camera_type"];
   std::map<std::string, CameraType>::iterator it =
@@ -233,6 +256,10 @@ void CameraModel::LoadJSON(const std::string& file_location) {
     BEAM_CRITICAL("Invalid number of intrinsics read. read: {}, required: {}",
                   intrinsics_.size(), intrinsics_size_[type_]);
     throw std::invalid_argument{"Invalid number of instrinsics read."};
+  }
+
+  if (J.contains("safe_projection_radius")) {
+    safe_projection_radius_ = J["safe_projection_radius"];
   }
 }
 
