@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <set>
 
 #include <boost/filesystem.hpp>
 #include <boost/multi_index/composite_key.hpp>
@@ -145,6 +146,7 @@ public:
    * p.first points to the element inserted.
    */
   std::pair<iterator, bool> Insert(const MeasurementType& m) {
+    measurement_times_.insert(m.time_point);
     return this->composite().insert(m);
   }
 
@@ -156,16 +158,6 @@ public:
   template <typename InputIt>
   void Insert(InputIt first, InputIt last) {
     return this->composite().insert(first, last);
-  }
-
-  /** @brief Insert a Measurement constructed from the arguments if a
-   * measurement for the same time and sensor does not already exist.
-   * @return a pair p. If and only if insertion occurred, p.second is true and
-   * p.first points to the element inserted.
-   */
-  template <typename... Args>
-  std::pair<iterator, bool> Emplace(Args&&... args) {
-    return this->composite().emplace(std::forward<Args>(args)...);
   }
 
   /** @brief Delete the element with the matching time, sensor, and landmark id
@@ -361,6 +353,23 @@ public:
     return track;
   };
 
+  /** @brief Remove all landmark measurements at a specified time
+   */
+  void RemoveMeasurementsAtTime(const TimeType& time, const SensorIdType& s) {
+    // Get all IDs at this time
+    auto landmarks = GetLandmarkIDsInImage(time);
+    // Delete all landmarks in the container at this time.
+    for (const auto& l : landmarks) { Erase(time, s, l); }
+    // erase time from time set
+    measurement_times_.erase(time);
+  }
+
+  /** @brief Return a const reference to the measurement times set
+   */
+  const std::set<TimeType>& GetMeasurementTimes() const {
+    return measurement_times_;
+  }
+
   /**
    * @brief save all measurements in container to disk as json
    * @param output_filename full path to output dir + filename. The directory of
@@ -450,6 +459,8 @@ protected:
 
   // Internal multi_index_container
   typename internal::landmark_container<T>::type storage;
+
+  std::set<TimeType> measurement_times_;
 };
 
 } // namespace beam_containers

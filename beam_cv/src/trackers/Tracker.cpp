@@ -21,11 +21,8 @@ void Tracker::PurgeContainer() {
   ros::Time time;
   time.fromNSec(*iter);
 
-  // Get all IDs at this time
-  auto landmarks = landmarks_.GetLandmarkIDsInWindow(time, time);
-
-  // Delete all landmarks in the container at this time.
-  for (const auto& l : landmarks) { landmarks_.Erase(time, sensor_id_, l); }
+  // remove all landmarks at this time
+  landmarks_.RemoveMeasurementsAtTime(time, sensor_id_);
 }
 
 std::vector<FeatureTrack> Tracker::GetTracks(const uint64_t img_num) const {

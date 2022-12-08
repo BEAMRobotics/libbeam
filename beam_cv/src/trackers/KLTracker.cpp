@@ -191,8 +191,11 @@ void KLTracker::RegisterKeypoints(const std::vector<uchar>& status,
                              static_cast<double>(curr_kp_.at(i).y));
     cv::Mat landmark_descriptor;
     if (descriptor_ != nullptr) { landmark_descriptor = curr_desc_.row(i); }
-    landmarks_.Emplace(curr_time, sensor_id_, curr_ids_.at(i).first,
-                       img_times_.size() - 1, landmark, landmark_descriptor);
+
+    beam_containers::LandmarkMeasurement lm(
+        curr_time, sensor_id_, curr_ids_.at(i).first, img_times_.size() - 1,
+        landmark, landmark_descriptor);
+    landmarks_.Insert(lm);
   }
 }
 
@@ -222,8 +225,10 @@ void KLTracker::AddPrevTrackedLandmarks(const std::vector<uchar>& status,
     if (descriptor_ != nullptr) { prev_descriptor = prev_desc_.row(i); }
 
     // Add previous and current landmarks to container
-    landmarks_.Emplace(prev_time, sensor_id_, curr_ids_.at(i).first,
-                       img_times_.size() - 2, prev_landmark, prev_descriptor);
+    beam_containers::LandmarkMeasurement lm(
+        prev_time, sensor_id_, curr_ids_.at(i).first, img_times_.size() - 2,
+        prev_landmark, prev_descriptor);
+    landmarks_.Insert(lm);
   }
 }
 

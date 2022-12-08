@@ -34,8 +34,10 @@ std::map<int, uint64_t> DescMatchingTracker::RegisterKeypoints(
       cv::Mat landmark_descriptor = curr_desc.row(m.trainIdx);
 
       // Emplace LandmarkMeasurement into LandmarkMeasurementContainer
-      landmarks_.Emplace(curr_time, sensor_id_, curr_ids.at(m.trainIdx),
-                         img_times_.size() - 1, landmark, landmark_descriptor);
+      beam_containers::LandmarkMeasurement lm(
+          curr_time, sensor_id_, curr_ids.at(m.trainIdx), img_times_.size() - 1,
+          landmark, landmark_descriptor);
+      landmarks_.Insert(lm);
     } else {
       // Else, assign new ID
       auto id = GenerateFeatureID();
@@ -56,11 +58,15 @@ std::map<int, uint64_t> DescMatchingTracker::RegisterKeypoints(
       prev_time.fromNSec(*iter);
 
       // Add previous and current landmarks to container
-      landmarks_.Emplace(prev_time, sensor_id_, prev_ids_.at(m.queryIdx),
-                         img_times_.size() - 2, prev_landmark, prev_descriptor);
+      beam_containers::LandmarkMeasurement lm1(
+          prev_time, sensor_id_, prev_ids_.at(m.queryIdx),
+          img_times_.size() - 2, prev_landmark, prev_descriptor);
+      landmarks_.Insert(lm1);
 
-      landmarks_.Emplace(curr_time, sensor_id_, curr_ids.at(m.trainIdx),
-                         img_times_.size() - 1, curr_landmark, curr_descriptor);
+      beam_containers::LandmarkMeasurement lm2(
+          prev_time, sensor_id_, prev_ids_.at(m.queryIdx),
+          img_times_.size() - 2, prev_landmark, prev_descriptor);
+      landmarks_.Insert(lm1);
     }
   }
   return curr_ids;
