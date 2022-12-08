@@ -194,3 +194,33 @@ TEST_CASE("Test jacobian") {
     REQUIRE(J_numerical.isApprox(*J_analytical, 1e-2));
   }
 }
+
+TEST_CASE("Test safe projection") {
+  std::string tmp = __FILE__;
+  std::string current_file_path = "radtan_tests.cpp";
+  tmp.erase(tmp.end() - current_file_path.length(), tmp.end());
+  std::string intrinsics_location =
+      tmp + "test_data/safe_projection_test_calib.json";
+  std::string img_path = tmp += "test_data/safe_projection_test_img.jpg";
+
+  auto camera_model =
+      std::make_unique<beam_calibration::Radtan>(intrinsics_location);
+  cv::Mat img = cv::imread(img_path, cv::IMREAD_COLOR);
+  cv::Mat img_markedup = img.clone();
+
+  // iterate through image pixels, back project, then reproject, and color all
+  // images that land outside the visible range
+  for (int u = 0; u < img.cols; u++) {
+    for (int v = 0; v < img.rows; v++) {
+      Eigen::Vector2i pixels(u, v);
+      Eigen::Vector3d ray;
+      camera_model->BackProject(pixels, ray);
+      Eigen::Vector2d pixel_projected;
+      bool valid = true;
+      camera_model->ProjectPoint(ray, pixel_projected, valid);
+      cv::Point p(u, v);
+      if (!valid) { img_markedup.at<cv::Vec3b>(p) = cv::Vec3b(255, 0, 0); }
+    }
+  }
+  cv::imwrite("/home/nick/test.jpg", img_markedup);
+}

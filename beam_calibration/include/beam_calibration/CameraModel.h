@@ -145,7 +145,8 @@ public:
 
   /**
    * @brief Method for adding intrinsic values
-   * @param intrinsics of the camera
+   * @param intrinsics of the camera. We expect all intrinsics to start with fx,
+   * fy, cx, cy
    */
   void SetIntrinsics(const Eigen::VectorXd& instrinsics);
 

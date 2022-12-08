@@ -193,11 +193,9 @@ bool CameraModel::PixelInImage(const Eigen::Vector2i& pixel) {
 }
 
 bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
-  double w = static_cast<double>(image_width_);
-  double h = static_cast<double>(image_height_);
-
   // check if in image plane
-  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > w - 1 || pixel[1] > h - 1) {
+  if (pixel[0] < 0 || pixel[1] < 0 || pixel[0] > image_width_ - 1 ||
+      pixel[1] > image_height_ - 1) {
     return false;
   }
 
@@ -205,11 +203,9 @@ bool CameraModel::PixelInImage(const Eigen::Vector2d& pixel) {
   if (safe_projection_radius_ == 0) { return true; }
 
   double distance_from_center =
-      std::sqrt((pixel[0] - w / 2) * (pixel[0] - w / 2) +
-                (pixel[1] - h / 2) * (pixel[1] - h / 2));
-  if (distance_from_center > safe_projection_radius_) {
-    return false;
-  }
+      std::sqrt((pixel[0] - intrinsics_[2]) * (pixel[0] - intrinsics_[2]) +
+                (pixel[1] - intrinsics_[3]) * (pixel[1] - intrinsics_[3]));
+  if (distance_from_center > safe_projection_radius_) { return false; }
 
   // else, it's in the valid image range
   return true;
