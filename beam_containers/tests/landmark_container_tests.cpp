@@ -5,15 +5,15 @@
 
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
-#include <beam_utils/math.h>
 #include <beam_cv/descriptors/Descriptor.h>
+#include <beam_utils/math.h>
 
 std::string output_path = "/tmp/landmark_container_tests/";
 
 using namespace beam_containers;
 
 TEST(LandmarkContainer, ReadWrite) {
-  LandmarkContainer<LandmarkMeasurement> landmarks;
+  LandmarkContainer landmarks;
 
   for (uint64_t i = 0; i < 5; i++) {
     // create landmark data
@@ -44,7 +44,7 @@ TEST(LandmarkContainer, ReadWrite) {
   landmarks.SaveToJson(output_path + "landmarks.json");
 
   // read json
-  LandmarkContainer<LandmarkMeasurement> landmarks_read;
+  LandmarkContainer landmarks_read;
   landmarks_read.LoadFromJson(output_path + "landmarks.json");
   // landmarks_read.SaveToJson(output_path + "landmarks_read.json");
   boost::filesystem::remove_all(output_path);
@@ -55,8 +55,8 @@ TEST(LandmarkContainer, ReadWrite) {
   auto all_landmarks = landmarks.GetTimeWindow(ros::TIME_MIN, ros::TIME_MAX);
   for (auto m_iter = all_landmarks.first; m_iter != all_landmarks.second;
        m_iter++) {
-    LandmarkMeasurement m_match = landmarks_read.GetMeasurement(
-        m_iter->time_point, m_iter->sensor_id, m_iter->landmark_id);
+    LandmarkMeasurement m_match =
+        landmarks_read.GetMeasurement(m_iter->time_point, m_iter->landmark_id);
     EXPECT_TRUE(m_iter->image == m_match.image);
     EXPECT_TRUE(m_iter->value[0] == m_match.value[0]);
     EXPECT_TRUE(m_iter->value[1] == m_match.value[1]);

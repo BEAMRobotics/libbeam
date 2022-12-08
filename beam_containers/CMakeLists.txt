@@ -6,6 +6,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
       beam::cv
     SOURCES
       src/includes.cpp
+      src/LandmarkContainer.cpp
     )
 
 ################ tests ##################

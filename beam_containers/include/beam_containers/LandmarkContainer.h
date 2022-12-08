@@ -13,6 +13,7 @@
 #include <boost/version.hpp>
 #include <nlohmann/json.hpp>
 
+#include <beam_containers/LandmarkMeasurement.h>
 #include <beam_utils/filesystem.h>
 #include <beam_utils/log.h>
 
@@ -28,40 +29,30 @@ using boost::multi_index::ordered_non_unique;
 using boost::multi_index::ordered_unique;
 using boost::multi_index::tag;
 
-/** Holds all the type definitions required for a boost::multi_index_container
+/**
+ * Holds all the type definitions required for a boost::multi_index_container
  * holding measurements of type T. See `wave::internal::measurement_container`.
  */
-template <typename T>
+template <class T>
 struct landmark_container {
-  // First, define which members of the Measurement object are used as keys
-  struct time_key : member<T, decltype(T::time_point), &T::time_point> {};
-  struct sensor_key : member<T, decltype(T::sensor_id), &T::sensor_id> {};
-  struct landmark_key : member<T, decltype(T::landmark_id), &T::landmark_id> {};
-
-  // Define a composite key which combines the above three keys
-  // This lets us search elements sorted by time, then sensor id, then
-  // landmark ID
-  struct combined_key : composite_key<T, time_key, sensor_key, landmark_key> {};
-  struct sensor_composite_key
-      : composite_key<T, sensor_key, time_key, landmark_key> {};
+  using time_t = decltype(T::time_point);
+  using id_t = decltype(T::landmark_id);
+  // Keys being used in this composite index
+  struct time_key : member<T, time_t, &T::time_point> {};
+  struct landmark_key : member<T, id_t, &T::landmark_id> {};
+  struct combined_key : composite_key<T, time_key, landmark_key> {};
 
   // These types are used as tags to retrieve each index after the
   // multi_index_container is generated
   struct time_index {};
-  struct sensor_index {};
-  struct sensor_composite_index {};
   struct landmark_index {};
   struct composite_index {};
 
   // Define an index for each key. Each index will be accessible via its tag
   struct indices
-      : indexed_by<
-            ordered_non_unique<tag<time_index>, time_key>,
-            ordered_non_unique<tag<sensor_index>, sensor_key>,
-            ordered_non_unique<tag<landmark_index>, landmark_key>,
-            ordered_unique<tag<composite_index>, combined_key>,
-            ordered_unique<tag<sensor_composite_index>, sensor_composite_key>> {
-  };
+      : indexed_by<ordered_non_unique<tag<time_index>, time_key>,
+                   ordered_non_unique<tag<landmark_index>, landmark_key>,
+                   ordered_unique<tag<composite_index>, combined_key>> {};
 
   // Finally, define the multi_index_container type.
   // This is the container type which can actually be used to make objects
@@ -69,398 +60,187 @@ struct landmark_container {
   // For convenience, get the type of the indices, using their tags
   using composite_type = typename type::template index<composite_index>::type;
   using time_type = typename type::template index<time_index>::type;
-  using sensor_composite_type =
-      typename type::template index<sensor_composite_index>::type;
   using landmark_type = typename type::template index<landmark_index>::type;
   // Define a view indexed by time, for complex searches
   struct const_time_index
-      : indexed_by<ordered_non_unique<
-            member<T, const decltype(T::time_point), &T::time_point>>> {};
+      : indexed_by<
+            ordered_non_unique<member<T, const time_t, &T::time_point>>> {};
   using time_view = boost::multi_index_container<const T*, const_time_index>;
 };
 } // namespace internal
 
-/** Container which stores landmark measurements.
- * @tparam T is the stored measurement type. The `LandmarkMeasurement` class
- * template is designed to be used here.
- *
- * However, any class can be used that has the following public members:
- *   - `time_point` (any sortable type)
- *   - `sensor_id` (any sortable type)
- *   - `landmark_id` (any sortable type)
- *   - `value` (any type)
- *
- * A type is sortable if it can be compared by `std::less`.
+// Types
+
+using MeasurementType = beam_containers::LandmarkMeasurement;
+using TimeType = decltype(MeasurementType::time_point);
+using ValueType = decltype(MeasurementType::value);
+using LandmarkIdType = decltype(MeasurementType::landmark_id);
+using Track = std::vector<MeasurementType>;
+
+using landmark_container = internal::landmark_container<MeasurementType>;
+using landmark_container_iterator =
+    landmark_container::composite_type::iterator;
+using const_landmark_container_iterator =
+    typename landmark_container::composite_type::const_iterator;
+using composite_type = typename landmark_container::composite_type;
+
+/**
+ * @brief Container which stores  beam_containers::LandmarkMeasurement's.
  */
-template <typename T>
 class LandmarkContainer {
 public:
-  // Types
-
-  /** Alias for the template parameter, giving the type of measurement stored
-   * in this container */
-  using MeasurementType = T;
-  /** Alias for the measurement's time type */
-  using TimeType = decltype(MeasurementType::time_point);
-  /** Alias for the measurement's value type.
-   * Note this does *not* correspond to a typical container's value_type. */
-  using ValueType = decltype(MeasurementType::value);
-  /** Alias for the type of the sensor id */
-  using SensorIdType = decltype(MeasurementType::sensor_id);
-  /** Alias for the type of the landmark id */
-  using LandmarkIdType = decltype(MeasurementType::landmark_id);
-  /** A vector representing landmark / feature measurements across images */
-  using Track = std::vector<MeasurementType>;
-
-  using iterator =
-      typename internal::landmark_container<T>::composite_type::iterator;
-  using const_iterator =
-      typename internal::landmark_container<T>::composite_type::const_iterator;
-  using sensor_iterator =
-      typename internal::landmark_container<T>::sensor_composite_type::iterator;
-
-  // Constructors
-
-  /** Default construct an empty container */
+  /**
+   * @brief Default construct an empty container
+   */
   LandmarkContainer() {}
 
-  /** Construct the container with the contents of the range [first, last) */
-  template <typename InputIt>
-  LandmarkContainer(InputIt first, InputIt last) {
-    this->composite().insert(first, last);
-  };
+  /**
+   * @brief Return true if the container has no elements.
+   */
+  bool empty() const;
 
-  // Capacity
+  /**
+   * @brief Return the number of elements in the container.
+   */
+  size_t size() const;
 
-  /** Return true if the container has no elements. */
-  bool empty() const { return this->composite().empty(); }
+  /**
+   * @brief Delete all elements
+   */
+  void clear();
 
-  /** Return the number of elements in the container. */
-  size_t size() const { return this->composite().size(); }
-
-  // Modifiers
-
-  /** @brief Insert a Measurement if a measurement for the same time and sensor
+  /**
+   * @brief Insert a Measurement if a measurement for the same time and sensor
    * does not already exist.
-   * @return a pair p. If and only if insertion occurred, p.second is true and
-   * p.first points to the element inserted.
+   * @return success or not
    */
-  std::pair<iterator, bool> Insert(const MeasurementType& m) {
-    measurement_times_.insert(m.time_point);
-    return this->composite().insert(m);
-  }
+  bool Insert(const MeasurementType& m);
 
-  /** @brief For each element of the range [first, last), inserts a Measurement
-   * if a measurement for the same time and sensor does not already exist.
-   * @param first, last iterators representing a valid range of Measurements,
-   * but not iterators into this container
-   */
-  template <typename InputIt>
-  void Insert(InputIt first, InputIt last) {
-    return this->composite().insert(first, last);
-  }
-
-  /** @brief Delete the element with the matching time, sensor, and landmark id
+  /**
+   * @brief Delete the element with the matching time, sensor, and landmark id
    * if one exists.
-   * @return the number of elements deleted.
+   * @return pass or fail
    */
-  size_t Erase(const TimeType& t, SensorIdType s, LandmarkIdType id) {
-    auto& composite = this->composite();
-    auto it = composite.find(std::make_tuple(t, s, id));
-    if (it == composite.end()) { return 0; }
-    composite.erase(it);
-    return 1;
-  }
+  bool Erase(const TimeType& t, const LandmarkIdType id);
 
-  /** Delete the element at `position`
-   * @param position a valid dereferenceable iterator of this container
-   * @return An iterator pointing to the element following the deleted one, or
-   * `end()` if it was the last.
-   */
-  iterator Erase(iterator position) {
-    return this->composite().erase(position);
-  }
-
-  /** @brief Delete the elements in the range [first, last)
-   * @param first, last a valid range of this container
-   * @return `last`
-   */
-  iterator Erase(iterator first, iterator last) {
-    return this->composite().erase(first, last);
-  }
-
-  /** Delete all elements */
-  void clear() { return this->composite().clear(); }
-
-  // Retrieval
-
-  /** @brief Gets the value of a landmark measurement.
+  /**
+   * @brief Gets the value of a landmark measurement.
    * @throw std::out_of_range if a measurement with exactly matching time,
    * sensor, and landmark id does not exist.
    * No interpolation is performed.
+   * @param t timestamp
+   * @param id landmark id
+   * @return value in measurement object
    */
-  ValueType GetValue(const TimeType& t, SensorIdType s,
-                     LandmarkIdType id) const {
-    const auto& composite = this->composite();
-    auto iter = composite.find(std::make_tuple(t, s, id));
-    if (iter == composite.end()) {
-      // Requested key is not in this container
-      throw std::out_of_range("LandmarkContainer::get");
-    }
-    return iter->value;
-  }
+  ValueType GetValue(const TimeType& t, LandmarkIdType id) const;
 
-  /** @brief Gets the full measurement from a time point, sensor id and landmark
+  /**
+   * @brief Gets the full measurement from a time point, sensor id and landmark
    * id
    * @throw std::out_of_range if a measurement with exactly matching time,
    * sensor, and landmark id does not exist.
    * No interpolation is performed.
+   * @param t timestamp
+   * @param id landmark id
+   * @return measurement object
    */
-  MeasurementType GetMeasurement(const TimeType& t, SensorIdType s,
-                                 LandmarkIdType id) const {
-    const auto& composite = this->composite();
-    auto iter = composite.find(std::make_tuple(t, s, id));
-    if (iter == composite.end()) {
-      // Requested key is not in this container
-      throw std::out_of_range("LandmarkContainer::get");
-    }
-    return *iter;
-  }
+  MeasurementType GetMeasurement(const TimeType& t, LandmarkIdType id) const;
 
-  /** @brief Get all measurements from the given sensor
-   * @return a pair of iterators representing the start and end of the range.
-   * If the range is empty, both iterators will be equal.
-   * @note because these iterators use the underlying ordered index of
-   * sensor_ids, they are not the same type as those from `begin()`,
-   * `getTimeWindow()`, etc.
-   */
-  std::pair<sensor_iterator, sensor_iterator>
-      GetAllFromSensor(const SensorIdType& s) const {
-    // Get the measurements sorted by sensor_id
-    const auto& sensor_composite_index = this->storage.template get<
-        typename internal::landmark_container<T>::sensor_composite_index>();
-    return sensor_composite_index.equal_range(s);
-  };
-
-  /** @brief Get all measurements between the given times.
-   * @param start, end an inclusive range of times, with start <= end
+  /**
+   * @brief Get all measurements between the given times.
+   * @param start, start of an inclusive range of times, with start <= end
+   * @param end, end of an inclusive range of times, with start <= end
    * @return a pair of iterators representing the start and end of the range.
    * If the range is empty, both iterators will be equal.
    */
-  std::pair<iterator, iterator> GetTimeWindow(const TimeType& start,
-                                              const TimeType& end) const {
-    // Consider a "backward" window empty
-    if (start > end) { return {this->end(), this->end()}; }
-    // The composite index is already sorted by time first, thus it's enough to
-    // do a partial search. Find the start and end of the range.
-    const auto& composite = this->composite();
-    auto iter_begin = composite.lower_bound(std::make_tuple(start));
-    auto iter_end = composite.upper_bound(std::make_tuple(end));
-    return {iter_begin, iter_end};
-  }
+  std::pair<landmark_container_iterator, landmark_container_iterator>
+      GetTimeWindow(const TimeType& start, const TimeType& end) const;
 
-  /** Get a list of all unique landmark IDs in the container */
-  std::vector<LandmarkIdType> GetLandmarkIDs() const {
-    return this->GetLandmarkIDsInWindow(MeasurementType::MinTime(),
-                                        MeasurementType::MaxTime());
-  }
+  /**
+   * @brief Get a list of all unique landmark IDs in the container
+   */
+  std::vector<LandmarkIdType> GetLandmarkIDs() const;
 
-  /** @brief Get unique landmark IDs with measurements in the time window
+  /**
+   * @brief Get unique landmark IDs with measurements in the time window
+   * @param start, start of an inclusive range of times, with start <= end
+   * @param end, end of an inclusive range of times, with start <= end
    * @return a vector of landmark IDs, in increasing order
    * The window is inclusive. If `start > end`, the result will be empty.
    */
-  std::vector<LandmarkIdType>
-      GetLandmarkIDsInWindow(const TimeType& start, const TimeType& end) const {
-    // Use the index sorted by landmark id
-    const auto& landmark_index = this->storage.template get<
-        typename internal::landmark_container<T>::landmark_index>();
-    auto unique_ids = std::vector<LandmarkIdType>{};
-    // Iterate over all measurements sorted by time first, then landmark_id.
-    // Copy landmark ids into a vector, skipping consecutive equal elements and
-    // elements outside the desired time window.
-    for (auto& meas : landmark_index) {
-      if (unique_ids.empty() || meas.landmark_id != unique_ids.back()) {
-        if (meas.time_point >= start && meas.time_point <= end) {
-          unique_ids.push_back(meas.landmark_id);
-        }
-      }
-    }
-    return unique_ids;
-  }
+  std::vector<LandmarkIdType> GetLandmarkIDsInWindow(const TimeType& start,
+                                                     const TimeType& end) const;
 
-  /** @brief Get unique landmark IDs with measurements in the specific image
+  /**
+   * @brief Get unique landmark IDs with measurements in the specific image
+   * @param img_time time of image to get id's for
    * @return a vector of landmark IDs, in increasing order
    */
   std::vector<LandmarkIdType>
-      GetLandmarkIDsInImage(const TimeType& img_time) const {
-    // Use the index sorted by landmark id
-    const auto& landmark_index = this->storage.template get<
-        typename internal::landmark_container<T>::landmark_index>();
-    auto unique_ids = std::vector<LandmarkIdType>{};
-    // Iterate over all measurements sorted by time first, then landmark_id.
-    // Copy landmark ids into a vector, skipping consecutive equal elements and
-    // elements outside the desired time window.
-    for (auto& meas : landmark_index) {
-      if (unique_ids.empty() || meas.landmark_id != unique_ids.back()) {
-        if (meas.time_point == img_time) {
-          unique_ids.push_back(meas.landmark_id);
-        }
-      }
-    }
-    return unique_ids;
-  }
+      GetLandmarkIDsInImage(const TimeType& img_time) const;
 
-  /** @brief Get a sequence of measurements of a landmark from one sensor
+  /**
+   * @brief Get a sequence of measurements of a landmark from one sensor
+   * @param id id of landmark to get track for
    * @return a vector of landmark measurements sorted by time
    */
-  Track GetTrack(const SensorIdType& s, const LandmarkIdType& id) const {
-    return this->GetTrackInWindow(s, id, MeasurementType::MinTime(),
-                                  MeasurementType::MaxTime());
-  };
+  Track GetTrack(const LandmarkIdType& id) const;
 
-  /** @brief Get a sequence of measurements of a landmark from one sensor, in
+  /**
+   * @brief Get a sequence of measurements of a landmark from one sensor, in
    * the given time window.
+   * @param id landmark id to get track for
+   * @param start, start of an inclusive range of times, with start <= end
+   * @param end, end of an inclusive range of times, with start <= end
    * @return a vector of landmark measurements sorted by time
    * The window is inclusive. If `start > end`, the result will be empty.
    */
-  Track GetTrackInWindow(const SensorIdType& s, const LandmarkIdType& id,
-                         const TimeType& start, const TimeType& end) const {
-    // Consider a "backwards" window empty
-    if (start > end) { return Track{}; }
-    const auto& landmark_index = this->storage.template get<
-        typename internal::landmark_container<T>::landmark_index>();
-    // Get all measurements with desired landmark id
-    const auto res = landmark_index.equal_range(id);
-    // We need to get a track sorted by time, but landmark_index is not.
-    // Construct a view, indexed by time, with only those measurements
-    // This method is based on one described here:
-    // http://www.boost.org/doc/libs/1_63_0/libs/multi_index/doc/examples.html#example6
-    // While iterating, pick the measurements with desired sensor_id
-    auto time_view = typename internal::landmark_container<T>::time_view{};
-    for (auto it = res.first; it != res.second; ++it) {
-      if (it->sensor_id == s) {
-        // insert a pointer to the measurement
-        time_view.insert(&*it);
-      }
-    }
-    // Narrow down to the desired time window
-    const auto iter_begin = time_view.lower_bound(start);
-    const auto iter_end = time_view.upper_bound(end);
-    // Build a vector holding copies of the measurements
-    // Remember time_view holds pointers, so we can't copy it directly
-    auto track = Track{};
-    for (auto it = iter_begin; it != iter_end; ++it) { track.push_back(**it); }
-    return track;
-  };
+  Track GetTrackInWindow(const LandmarkIdType& id, const TimeType& start,
+                         const TimeType& end) const;
 
-  /** @brief Remove all landmark measurements at a specified time
+  /**
+   * @brief Remove all landmark measurements at a specified time
+   * @param time image time to remove measurements for
    */
-  void RemoveMeasurementsAtTime(const TimeType& time, const SensorIdType& s) {
-    // Get all IDs at this time
-    auto landmarks = GetLandmarkIDsInImage(time);
-    // Delete all landmarks in the container at this time.
-    for (const auto& l : landmarks) { Erase(time, s, l); }
-    // erase time from time set
-    measurement_times_.erase(time);
-  }
+  void RemoveMeasurementsAtTime(const TimeType& time);
 
-  /** @brief Return a const reference to the measurement times set
+  /**
+   * @brief Return a const reference to the measurement times set
    */
-  const std::set<TimeType>& GetMeasurementTimes() const {
-    return measurement_times_;
-  }
+  const std::set<uint64_t>& GetMeasurementTimes() const;
 
   /**
    * @brief save all measurements in container to disk as json
    * @param output_filename full path to output dir + filename. The directory of
    * this output file must exist.
    */
-  void SaveToJson(const std::string& output_filename) {
-    if (boost::filesystem::exists(output_filename)) {
-      BEAM_WARN("Overriding landmarks in: {}", output_filename);
-    }
-
-    if (boost::filesystem::extension(output_filename) != ".json") {
-      BEAM_ERROR("Output filename does not have a .json extension, not loading "
-                 "landmarks. Input: {}",
-                 output_filename);
-      return;
-    }
-
-    // create json
-    nlohmann::json J;
-
-    // Use the index sorted by landmark id
-    const auto& landmark_index = this->storage.template get<
-        typename internal::landmark_container<T>::landmark_index>();
-    auto unique_ids = std::vector<LandmarkIdType>{};
-    // Iterate over all measurements sorted by time first, then landmark_id.
-    // Copy landmark ids into a vector, skipping consecutive equal elements
-    for (auto& meas : landmark_index) {
-      if (unique_ids.empty() || meas.landmark_id != unique_ids.back()) {
-        unique_ids.push_back(meas.landmark_id);
-        J[std::to_string(meas.landmark_id)] = meas.ToJson();
-      }
-    }
-
-    std::ofstream file(output_filename);
-    file << std::setw(4) << J << std::endl;
-  }
+  void SaveToJson(const std::string& output_filename);
 
   /**
-   * @brief loam measurements from a json into container.
+   * @brief load measurements from a json into container.
    * @param input_filename full path to input json file
    * @param output_info outputs read file location and any errors that occur
    * @return true if successful
    */
-  bool LoadFromJson(const std::string& input_filename,
-                    bool output_info = true) {
-    nlohmann::json J;
-    beam::JsonReadErrorType error_type;
-    if (!beam::ReadJson(input_filename, J, error_type, output_info)) {
-      return false;
-    }
-
-    if (output_info) { BEAM_INFO("Loading landmarks from {}", input_filename); }
-
-    std::map<std::string, nlohmann::json> landmark_json_map = J;
-    for (auto iter = landmark_json_map.begin(); iter != landmark_json_map.end();
-         iter++) {
-      MeasurementType meas(iter->second);
-      this->composite().insert(meas);
-    }
-
-    return true;
-  }
+  bool LoadFromJson(const std::string& input_filename, bool output_info = true);
 
   // Iterators
-
-  iterator begin() { return this->composite().begin(); }
-  iterator end() { return this->composite().end(); }
-  const_iterator begin() const { return this->composite().begin(); }
-  const_iterator end() const { return this->composite().end(); }
-  const_iterator cbegin() const { return this->composite().cbegin(); }
-  const_iterator cend() const { return this->composite().cend(); }
+  landmark_container_iterator begin();
+  landmark_container_iterator end();
+  const_landmark_container_iterator begin() const;
+  const_landmark_container_iterator end() const;
+  const_landmark_container_iterator cbegin() const;
+  const_landmark_container_iterator cend() const;
 
 protected:
-  using composite_type =
-      typename internal::landmark_container<T>::composite_type;
+  composite_type& composite();
 
-  // Helper to get the composite index
-  composite_type& composite() {
-    return this->storage.template get<
-        typename internal::landmark_container<T>::composite_index>();
-  }
-
-  const composite_type& composite() const {
-    return this->storage.template get<
-        typename internal::landmark_container<T>::composite_index>();
-  }
+  const composite_type& composite() const;
 
   // Internal multi_index_container
-  typename internal::landmark_container<T>::type storage;
+  typename landmark_container::type storage;
 
-  std::set<TimeType> measurement_times_;
+  std::set<uint64_t> measurement_times_;
 };
 
 } // namespace beam_containers

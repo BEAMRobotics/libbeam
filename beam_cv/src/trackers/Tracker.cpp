@@ -22,7 +22,7 @@ void Tracker::PurgeContainer() {
   time.fromNSec(*iter);
 
   // remove all landmarks at this time
-  landmarks_.RemoveMeasurementsAtTime(time, sensor_id_);
+  landmarks_.RemoveMeasurementsAtTime(time);
 }
 
 std::vector<FeatureTrack> Tracker::GetTracks(const uint64_t img_num) const {
@@ -69,15 +69,14 @@ std::vector<FeatureTrack> Tracker::GetTracks(const ros::Time& stamp) const {
   }
 
   // Extract all of the IDs visible at this time
-  auto landmark_ids = landmarks_.GetLandmarkIDsInWindow(stamp, stamp);
+  auto landmark_ids = landmarks_.GetLandmarkIDsInImage(stamp);
 
   // For each ID, get the track.
   for (const auto& l : landmark_ids) {
     // Looking for track from first image.
     ros::Time start_time;
     start_time.fromNSec(*img_times_.begin());
-    FeatureTrack tracks =
-        landmarks_.GetTrackInWindow(sensor_id_, l, start_time, stamp);
+    FeatureTrack tracks = landmarks_.GetTrackInWindow(l, start_time, stamp);
 
     // Emplace new feature track back into vector
     feature_tracks.emplace_back(tracks);
@@ -112,13 +111,12 @@ std::vector<std::vector<FeatureTrack>>
 }
 
 Eigen::Vector2d Tracker::Get(const ros::Time& t, uint64_t landmark_id) const {
-  return landmarks_.GetValue(t, sensor_id_, landmark_id);
+  return landmarks_.GetValue(t, landmark_id);
 }
 
 std::vector<uint64_t>
-    Tracker::GetLandmarkIDsInImage(const ros::Time& now,
-                                   ros::Duration threshold) const {
-  return landmarks_.GetLandmarkIDsInWindow(now - threshold, now + threshold);
+    Tracker::GetLandmarkIDsInImage(const ros::Time& now) const {
+  return landmarks_.GetLandmarkIDsInImage(now);
 }
 
 std::vector<uint64_t>
@@ -134,14 +132,13 @@ FeatureTrack Tracker::GetTrack(uint64_t landmark_id) {
   auto iter_last = img_times_.end();
   iter_last--;
   end_time.fromNSec(*iter_last);
-  return landmarks_.GetTrackInWindow(sensor_id_, landmark_id, start_time,
-                                     end_time);
+  return landmarks_.GetTrackInWindow(landmark_id, start_time, end_time);
 }
 
 cv::Mat Tracker::GetDescriptor(const ros::Time& stamp,
                                const uint64_t& landmark_id) {
   beam_containers::LandmarkMeasurement m =
-      landmarks_.GetMeasurement(stamp, sensor_id_, landmark_id);
+      landmarks_.GetMeasurement(stamp, landmark_id);
   return m.descriptor;
 }
 
@@ -199,6 +196,10 @@ double Tracker::ComputeParallax(const ros::Time& frame1,
   } else {
     return total_parallax / num_correspondences;
   }
+}
+
+void Tracker::SetSensorID(uint8_t sensor_id) {
+  sensor_id_ = sensor_id;
 }
 
 } // namespace beam_cv

@@ -133,9 +133,7 @@ public:
    * @param now timestamp of image
    * @return the vector landmark ids
    */
-  std::vector<uint64_t> GetLandmarkIDsInImage(
-      const ros::Time& now,
-      ros::Duration threshold = ros::Duration(0.000001)) const;
+  std::vector<uint64_t> GetLandmarkIDsInImage(const ros::Time& now) const;
 
   /**
    * @brief Get all landmark ids in a given time window
@@ -174,6 +172,11 @@ public:
   double ComputeParallax(const ros::Time& frame1, const ros::Time& frame2,
                          bool compute_median = false);
 
+  /**
+   * @brief Sets the sensor id
+   */
+  void SetSensorID(uint8_t sensor_id);
+
 protected:
   /**
    * @brief Generate a new ID for each newly detected feature.
@@ -207,8 +210,7 @@ protected:
   std::set<uint64_t> img_times_;
 
   // Measurement container variables
-  beam_containers::LandmarkContainer<beam_containers::LandmarkMeasurement>
-      landmarks_;
+  beam_containers::LandmarkContainer landmarks_;
 
   // store current id
   uint64_t id_{0};
