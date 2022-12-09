@@ -222,5 +222,5 @@ TEST_CASE("Test safe projection") {
       if (!valid) { img_markedup.at<cv::Vec3b>(p) = cv::Vec3b(255, 0, 0); }
     }
   }
-  cv::imwrite("/home/nick/test.jpg", img_markedup);
+  cv::imwrite("/tmp/radtan_tests_result.jpg", img_markedup);
 }
