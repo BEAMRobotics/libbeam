@@ -31,7 +31,8 @@ struct PointBridge {
   float crack;                      
   float spall;                      
   float corrosion;                  
-  float delam;                      
+  float delam; 
+  uint64_t map_point_id{0};                     
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW   // ensure new allocators are aligned
 } EIGEN_ALIGN16;                    // enforce SSE padding for correct memory alignment
 
