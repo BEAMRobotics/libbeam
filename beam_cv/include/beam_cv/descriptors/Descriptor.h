@@ -10,6 +10,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <beam_utils/log.h>
+#include <beam_utils/optional.h>
 #include <beam_utils/time.h>
 
 namespace beam_cv {
@@ -19,31 +20,31 @@ namespace beam_cv {
  */
 enum class DescriptorType { ORB = 0, SIFT, BRISK, BEBLID };
 
-// vector for storing binary descriptor types
-static std::vector<DescriptorType> BinaryDescriptorTypes = {
-    DescriptorType::ORB, DescriptorType::BRISK, DescriptorType::BEBLID};
-
+namespace internal {
 // Map for storing string input
-static std::map<std::string, DescriptorType> DescriptorTypeStringMap = {
+const std::map<std::string, DescriptorType> DescriptorStringTypeMap = {
     {"ORB", DescriptorType::ORB},
     {"SIFT", DescriptorType::SIFT},
     {"BRISK", DescriptorType::BRISK},
     {"BEBLID", DescriptorType::BEBLID}};
 
-// Map for storing int input
-static std::map<uint8_t, DescriptorType> DescriptorTypeIntMap = {
-    {0, DescriptorType::ORB},
-    {1, DescriptorType::SIFT},
-    {2, DescriptorType::BRISK},
-    {3, DescriptorType::BEBLID}};
+const std::map<DescriptorType, std::string> DescriptorTypeStringMap = {
+    {DescriptorType::ORB, "ORB"},
+    {DescriptorType::SIFT, "SIFT"},
+    {DescriptorType::BRISK, "BRISK"},
+    {DescriptorType::BEBLID, "BEBLID"}};
+
+// vector for storing binary descriptor types
+const std::vector<DescriptorType> BinaryDescriptorTypes = {
+    DescriptorType::ORB, DescriptorType::BRISK, DescriptorType::BEBLID};
+
+} // namespace internal
 
 // function for listing types of Descriptor available
 inline std::string GetDescriptorTypes() {
   std::string types;
-  for (auto it = DescriptorTypeStringMap.begin();
-       it != DescriptorTypeStringMap.end(); it++) {
-    types += it->first;
-    types += ", ";
+  for (const auto& [string, type] : internal::DescriptorStringTypeMap) {
+    types += string + ", ";
   }
   types.erase(types.end() - 2, types.end());
   return types;
@@ -76,26 +77,65 @@ public:
    * keypoints vector size may change.
    *  @return descriptors, the computed keypoint descriptors.
    */
-  virtual cv::Mat ExtractDescriptors(const cv::Mat& image,
-                                     std::vector<cv::KeyPoint>& keypoints) = 0;
+  virtual cv::Mat
+      ExtractDescriptors(const cv::Mat& image,
+                         std::vector<cv::KeyPoint>& keypoints) const = 0;
 
-  /** @brief Creates a single descriptor from a vector of floats in the desired
-   * descriptor types encoding
+  /** @brief Gets the string representation of the type of descriptor
+   *  @return string of descriptor type
+   */
+  virtual std::string GetTypeString() const = 0;
+
+  /** @brief Gets the type of descriptor
+   *  @return descriptor type
+   */
+  virtual DescriptorType GetType() const = 0;
+
+  /** @brief Converts a string to the corresponding descritpor type if it exist
+   *  @param type desired descriptor type as a string
+   *  @return descriptor type
+   */
+  static beam::opt<DescriptorType>
+      StringToDescriptorType(const std::string& type_str) {
+    if (internal::DescriptorStringTypeMap.find(type_str) !=
+        internal::DescriptorStringTypeMap.end()) {
+      return internal::DescriptorStringTypeMap.at(type_str);
+    } else {
+      BEAM_ERROR("Invalid descriptor type, valid types: \n{}",
+                 GetDescriptorTypes());
+    }
+    return {};
+  }
+
+  /** @brief Creates a single descriptor from a vector of floats in the
+   * desired descriptor types encoding
    *  @param data raw descriptor data stored as floats
    *  @param type desired descriptor type
    *  @return cv mat of the descriptor in its associated encoding
    */
   static cv::Mat CreateDescriptor(std::vector<float> data,
-                                  DescriptorType type) {
+                                  const DescriptorType type) {
     cv::Mat descriptor(1, data.size(), CV_32FC1, data.data());
     // if the type is a binary type then convert to uint8
-    if (std::find(BinaryDescriptorTypes.begin(), BinaryDescriptorTypes.end(),
-                  type) != BinaryDescriptorTypes.end()) {
+    if (std::find(internal::BinaryDescriptorTypes.begin(),
+                  internal::BinaryDescriptorTypes.end(),
+                  type) != internal::BinaryDescriptorTypes.end()) {
       descriptor.convertTo(descriptor, CV_8U);
-    } else {
-      BEAM_ERROR("cannot create descriptor which is not of binary type.");
     }
     return descriptor;
+  }
+
+  /** @brief Creates a single descriptor from a vector of floats in the
+   * desired descriptor types encoding (binary or float)
+   *  @param data raw descriptor data stored as floats
+   *  @param type desired descriptor type in string format
+   *  @return cv mat of the descriptor in its associated encoding
+   */
+  static cv::Mat CreateDescriptor(std::vector<float> data,
+                                  const std::string& type_str) {
+    const auto type = StringToDescriptorType(type_str);
+    if (type.has_value()) { return CreateDescriptor(data, type.value()); }
+    return {};
   }
 
   /** @brief Converts a descriptor into a float vector using the specified tytpe
@@ -104,11 +144,12 @@ public:
    *  @return cv mat of the descriptor in its associated encoding
    */
   static std::vector<float> ConvertDescriptor(cv::Mat descriptor,
-                                              DescriptorType type) {
+                                              const DescriptorType type) {
     std::vector<float> descriptor_v;
     // if the type is a binary type then convert to uint8
-    if (std::find(BinaryDescriptorTypes.begin(), BinaryDescriptorTypes.end(),
-                  type) != BinaryDescriptorTypes.end()) {
+    if (std::find(internal::BinaryDescriptorTypes.begin(),
+                  internal::BinaryDescriptorTypes.end(),
+                  type) != internal::BinaryDescriptorTypes.end()) {
       for (int i = 0; i < descriptor.cols; i++) {
         float val = (float)descriptor.at<uchar>(0, i);
         descriptor_v.push_back(val);
@@ -120,6 +161,21 @@ public:
       }
     }
     return descriptor_v;
+  }
+
+  /** @brief Converts a descriptor into a float vector using the specified
+  type
+   *  @param descriptor opencv mat representing the descriptor
+   *  @param type desired descriptor type
+   *  @return cv mat of the descriptor in its associated encoding
+   */
+  static std::vector<float> ConvertDescriptor(cv::Mat descriptor,
+                                              const std::string& type_str) {
+    const auto type = StringToDescriptorType(type_str);
+    if (type.has_value()) {
+      return ConvertDescriptor(descriptor, type.value());
+    }
+    return {};
   }
 };
 

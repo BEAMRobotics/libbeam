@@ -208,7 +208,6 @@ void Poses::LoadFromJSON(const std::string& input_pose_file_path) {
                   e.what());
     throw std::runtime_error{"Invalid json"};
   }
-  BEAM_INFO("Read {} poses.", poses_.size());
 }
 
 void Poses::WriteToTXT(const std::string& output_dir, int format_type) const {

@@ -75,7 +75,17 @@ public:
    *  @return an array containing the computed descriptors.
    */
   cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+                             std::vector<cv::KeyPoint>& keypoints) const;
+
+  /** @brief Gets the string representation of the type of descriptor
+   *  @return string of descriptor type
+   */
+  std::string GetTypeString() const { return "ORB"; }
+
+  /** @brief Gets the type of descriptor
+   *  @return descriptor type
+   */
+  DescriptorType GetType() const { return DescriptorType::ORB; }
 
 private:
   // this gets called in each constructor

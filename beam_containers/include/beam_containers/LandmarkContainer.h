@@ -205,6 +205,14 @@ public:
   void RemoveMeasurementsAtTime(const TimeType& time);
 
   /**
+   * @brief Computes the parallax fo measurements between two times
+   * @param t1 first time
+   * @param t2 second time
+   */
+  double ComputeParallax(const TimeType& t1, const TimeType& t2,
+                         bool compute_median = false);
+
+  /**
    * @brief Return a const reference to the measurement times set
    */
   const std::set<uint64_t>& GetMeasurementTimes() const;

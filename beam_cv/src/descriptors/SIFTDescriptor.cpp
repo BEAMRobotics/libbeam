@@ -25,7 +25,9 @@ void SIFTDescriptor::Params::LoadFromJson(const std::string& config_path) {
   sigma = J["sigma"];
 }
 
-SIFTDescriptor::SIFTDescriptor(const Params& params) : params_(params) {Setup();};
+SIFTDescriptor::SIFTDescriptor(const Params& params) : params_(params) {
+  Setup();
+};
 
 // Default constructor. Struct may be default or user defined.
 SIFTDescriptor::SIFTDescriptor(int num_features, int num_octave_layers,
@@ -39,7 +41,7 @@ SIFTDescriptor::SIFTDescriptor(int num_features, int num_octave_layers,
   Setup();
 }
 
-void SIFTDescriptor::Setup(){
+void SIFTDescriptor::Setup() {
   // Ensure parameters are valid
   CheckConfig();
 
@@ -52,9 +54,8 @@ void SIFTDescriptor::CheckConfig() {
   return;
 }
 
-cv::Mat
-    SIFTDescriptor::ExtractDescriptors(const cv::Mat& image,
-                                       std::vector<cv::KeyPoint>& keypoints) {
+cv::Mat SIFTDescriptor::ExtractDescriptors(
+    const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints) const {
   cv::Mat descriptors;
   sift_descriptor_->compute(image, keypoints, descriptors);
   return descriptors;

@@ -65,6 +65,16 @@ inline void OutputTimePoint(const TimePoint time_point,
 }
 
 /**
+ * @brief Convert nanoseconds to a ros timestamp
+ * @param n_sec
+ */
+inline ros::Time NSecToRos(const uint64_t n_sec) {
+  ros::Time time;
+  time.fromNSec(n_sec);
+  return time;
+}
+
+/**
  * @brief convert ROS time to a chrono time point
  * @param hdr header from a ROS message
  * @return TimePoint
@@ -101,10 +111,8 @@ inline ros::Time ChronoToRosTime(const TimePoint& time_point) {
   return ros_time;
 }
 
-struct RosTimeHash
-{
-  std::size_t operator()(const ros::Time& k) const
-  {
+struct RosTimeHash {
+  std::size_t operator()(const ros::Time& k) const {
     return std::hash<uint64_t>()(k.toNSec());
   }
 };
@@ -156,4 +164,3 @@ double time_now(void);
 
 /** @} group utils */
 } // namespace beam
-

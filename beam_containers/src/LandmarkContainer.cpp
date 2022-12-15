@@ -151,6 +151,36 @@ void LandmarkContainer::RemoveMeasurementsAtTime(const TimeType& time) {
   measurement_times_.erase(time.toNSec());
 }
 
+double LandmarkContainer::ComputeParallax(const TimeType& t1,
+                                          const TimeType& t2,
+                                          bool compute_median) {
+  std::vector<uint64_t> frame1_ids = GetLandmarkIDsInImage(t1);
+  double total_parallax = 0.0;
+  double num_correspondences = 0.0;
+  std::vector<double> parallaxes;
+  for (auto& id : frame1_ids) {
+    try {
+      Eigen::Vector2d p1 = GetValue(t1, id);
+      Eigen::Vector2d p2 = GetValue(t2, id);
+      double d = beam::distance(p1, p2);
+      if (compute_median) {
+        parallaxes.push_back(d);
+      } else {
+        total_parallax += d;
+        num_correspondences += 1.0;
+      }
+    } catch (const std::out_of_range& oor) {}
+  }
+  if (compute_median) {
+    if (parallaxes.empty()) { return 0.0; }
+    std::sort(parallaxes.begin(), parallaxes.end());
+    return parallaxes[parallaxes.size() / 2];
+  } else {
+    if (num_correspondences == 0.0) { return 0.0; }
+    return total_parallax / num_correspondences;
+  }
+}
+
 const std::set<uint64_t>& LandmarkContainer::GetMeasurementTimes() const {
   return measurement_times_;
 }
