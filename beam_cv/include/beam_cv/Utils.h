@@ -15,6 +15,8 @@
 
 namespace beam_cv {
 
+void GetScreenResolution(int& width, int& height);
+
 /**
  * @brief Method to perform histogram equalization
  * @param input image

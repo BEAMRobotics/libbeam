@@ -4,7 +4,25 @@
 #include <beam_utils/angles.h>
 #include <opencv2/highgui/highgui_c.h>
 
+#if WIN32
+#  include <windows.h>
+#else
+#  include <X11/Xlib.h>
+#endif
+
 namespace beam_cv {
+
+void GetScreenResolution(int& width, int& height) {
+#if WIN32
+  width = (int)GetSystemMetrics(SM_CXSCREEN);
+  height = (int)GetSystemMetrics(SM_CYSCREEN);
+#else
+  Display* disp = XOpenDisplay(NULL);
+  Screen* scrn = DefaultScreenOfDisplay(disp);
+  width = scrn->width;
+  height = scrn->height;
+#endif
+}
 
 cv::Mat AdaptiveHistogram(const cv::Mat& input) {
   cv::Mat lab_image;
