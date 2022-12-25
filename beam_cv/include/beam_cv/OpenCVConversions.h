@@ -11,7 +11,7 @@ int GetCvType(const std::string& encoding);
 
 /**
  * @brief Converts a ROS Image to a cv::Mat by sharing the data or changing
- * its endianness if needed
+ * its endianness if needed. This will also debayer the image if necessary
  * @param source ros image message
  * @return cv::Mat of image
  */
