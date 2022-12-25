@@ -1,3 +1,5 @@
+#pragma once
+
 #include <opencv2/opencv.hpp>
 
 #include <boost/make_shared.hpp>
@@ -8,6 +10,14 @@ namespace beam_cv { namespace OpenCVConversions {
 int DepthStrToInt(const std::string depth);
 
 int GetCvType(const std::string& encoding);
+
+/** @brief maps image encoding string found in ros Image message, to it's
+ * debayered counterpart */
+static std::unordered_map<std::string, std::string> bayer_decoding_map{
+    {"bayer_bggr16", "bgr16"}, {"bayer_bggr8", "bgr8"},
+    {"bayer_gbrg16", "bgr16"}, {"bayer_gbrg8", "bgr8"},
+    {"bayer_grbg16", "bgr16"}, {"bayer_grbg8", "bgr8"},
+    {"bayer_rggb16", "bgr16"}, {"bayer_rggb8", "bgr8"}};
 
 /**
  * @brief Converts a ROS Image to a cv::Mat by sharing the data or changing

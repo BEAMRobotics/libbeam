@@ -170,7 +170,9 @@ cv::Mat OpenCVConversions::Debayer(const cv::Mat& source,
       code = cv::COLOR_BayerGR2BGR;
     else if (encoding == enc::BAYER_GRBG8)
       code = cv::COLOR_BayerGB2BGR;
-    else { return source; }
+    else {
+      return source;
+    }
     cv::Mat debayered;
     cv::cvtColor(source, debayered, code);
     return debayered;
