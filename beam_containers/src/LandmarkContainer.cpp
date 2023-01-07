@@ -1,5 +1,7 @@
 #include <beam_containers/LandmarkContainer.h>
 
+#include <beam_utils/time.h>
+
 namespace beam_containers {
 
 bool LandmarkContainer::empty() const {
@@ -183,6 +185,36 @@ double LandmarkContainer::ComputeParallax(const TimeType& t1,
 
 const std::set<uint64_t>& LandmarkContainer::GetMeasurementTimes() const {
   return measurement_times_;
+}
+
+const std::vector<uint64_t>
+    LandmarkContainer::GetMeasurementTimesVector() const {
+  std::vector<uint64_t> img_times;
+  std::for_each(measurement_times_.begin(), measurement_times_.end(),
+                [&](const uint64_t& time) { img_times.push_back(time); });
+  return img_times;
+}
+
+TimeType LandmarkContainer::FrontTimestamp() const {
+  const auto first_time = *(measurement_times_.begin());
+  return beam::NSecToRos(first_time);
+}
+
+TimeType LandmarkContainer::BackTimestamp() const {
+  const auto last_time = *(measurement_times_.rbegin());
+  return beam::NSecToRos(last_time);
+}
+
+void LandmarkContainer::PopFront() {
+  RemoveMeasurementsAtTime(FrontTimestamp());
+}
+
+void LandmarkContainer::PopBack() {
+  RemoveMeasurementsAtTime(BackTimestamp());
+}
+
+size_t LandmarkContainer::NumImages() const {
+  return measurement_times_.size();
 }
 
 void LandmarkContainer::SaveToJson(const std::string& output_filename) {

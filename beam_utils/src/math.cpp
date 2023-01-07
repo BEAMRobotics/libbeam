@@ -471,6 +471,31 @@ Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
   return T;
 }
 
+Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
+                                     const double& t1,
+                                     const Eigen::Matrix4d& m2,
+                                     const double& t2, const double& t) {
+  double w2 = 1.0 * (t - t1) / (t2 - t1);
+
+  Eigen::Matrix4d T1 = m1;
+  Eigen::Matrix4d T2 = m2;
+  Eigen::Matrix4d T;
+
+  Eigen::Matrix3d R1 = T1.block<3, 3>(0, 0);
+  Eigen::Matrix3d R2 = T2.block<3, 3>(0, 0);
+  Eigen::Matrix3d R = (R2 * R1.transpose()).pow(w2) * R1;
+
+  Eigen::Vector4d tr1 = T1.rightCols<1>();
+  Eigen::Vector4d tr2 = T2.rightCols<1>();
+  Eigen::Vector4d tr = (1 - w2) * tr1 + w2 * tr2;
+
+  T.setIdentity();
+  T.block<3, 3>(0, 0) = R;
+  T.rightCols<1>() = tr;
+
+  return T;
+}
+
 Eigen::VectorXd InterpolateVector(const Eigen::VectorXd& v1, const double& t1,
                                   const Eigen::VectorXd& v2, const double& t2,
                                   const double& t) {

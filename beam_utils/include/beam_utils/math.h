@@ -274,6 +274,21 @@ Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
                                      const Eigen::Matrix4d& m2,
                                      const beam::TimePoint& t2,
                                      const beam::TimePoint& t);
+
+/**
+ * @brief Linear interpolation of transformations using a method in Tim
+ *Barfoot's State Estimation textbook
+ * @param m1 first transformation matrix
+ * @param m2 second transformation matrix
+ * @param t1 time point of first transform
+ * @param t2 time point of second transform
+ * @param t time point that you want to interpolate at
+ * @return interpolated transformation matrix
+ **/
+Eigen::Matrix4d InterpolateTransform(const Eigen::Matrix4d& m1,
+                                     const double& t1,
+                                     const Eigen::Matrix4d& m2,
+                                     const double& t2, const double& t);
 /**
  * @brief Linear interpolation of a vector
  * @param v1 first vector

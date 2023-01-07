@@ -218,6 +218,36 @@ public:
   const std::set<uint64_t>& GetMeasurementTimes() const;
 
   /**
+   * @brief Return an ordered vector of measurement times
+   */
+  const std::vector<uint64_t> GetMeasurementTimesVector() const;
+
+  /**
+   * @brief Return the timestamp at the start of the container
+   */
+  TimeType FrontTimestamp() const;
+
+  /**
+   * @brief  Return the timestamp at the end of the container
+   */
+  TimeType BackTimestamp() const;
+
+  /**
+   * @brief Remove first image from the container
+   */
+  void PopFront();
+
+  /**
+   * @brief Remove last image from the container
+   */
+  void PopBack();
+
+  /**
+   * @brief Retrun the number of images in the container
+   */
+  size_t NumImages() const;
+
+  /**
    * @brief save all measurements in container to disk as json
    * @param output_filename full path to output dir + filename. The directory of
    * this output file must exist.
