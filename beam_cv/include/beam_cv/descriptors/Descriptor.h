@@ -113,8 +113,8 @@ public:
    *  @param type desired descriptor type
    *  @return cv mat of the descriptor in its associated encoding
    */
-  static cv::Mat CreateDescriptor(std::vector<float> data,
-                                  const DescriptorType type) {
+  static cv::Mat VectorDescriptorToCvMat(std::vector<float> data,
+                                         const DescriptorType type) {
     cv::Mat descriptor(1, data.size(), CV_32FC1, data.data());
     // if the type is a binary type then convert to uint8
     if (std::find(internal::BinaryDescriptorTypes.begin(),
@@ -131,10 +131,12 @@ public:
    *  @param type desired descriptor type in string format
    *  @return cv mat of the descriptor in its associated encoding
    */
-  static cv::Mat CreateDescriptor(std::vector<float> data,
-                                  const std::string& type_str) {
+  static cv::Mat VectorDescriptorToCvMat(std::vector<float> data,
+                                         const std::string& type_str) {
     const auto type = StringToDescriptorType(type_str);
-    if (type.has_value()) { return CreateDescriptor(data, type.value()); }
+    if (type.has_value()) {
+      return VectorDescriptorToCvMat(data, type.value());
+    }
     return {};
   }
 
@@ -143,22 +145,25 @@ public:
    *  @param type desired descriptor type
    *  @return cv mat of the descriptor in its associated encoding
    */
-  static std::vector<float> ConvertDescriptor(cv::Mat descriptor,
-                                              const DescriptorType type) {
-    std::vector<float> descriptor_v;
-    // if the type is a binary type then convert to uint8
+  static std::vector<float> CvMatDescriptorToVector(cv::Mat descriptor,
+                                                    const DescriptorType type) {
+    // if the type is a binary type then convert it to a float
     if (std::find(internal::BinaryDescriptorTypes.begin(),
                   internal::BinaryDescriptorTypes.end(),
-                  type) != internal::BinaryDescriptorTypes.end()) {
-      for (int i = 0; i < descriptor.cols; i++) {
-        float val = (float)descriptor.at<uchar>(0, i);
-        descriptor_v.push_back(val);
-      }
+                  type) == internal::BinaryDescriptorTypes.end()) {
+      descriptor.convertTo(descriptor, CV_32FC1);
+    }
+
+    // convert mat to std vector
+    std::vector<float> descriptor_v;
+    if (descriptor.isContinuous()) {
+      descriptor_v.assign(descriptor.data,
+                          descriptor.data +
+                              descriptor.total() * descriptor.channels());
     } else {
-      for (int i = 0; i < descriptor.cols; i++) {
-        float val = descriptor.at<float>(0, i);
-        descriptor_v.push_back(val);
-      }
+      BEAM_ERROR("Invalid descriptor, must be a continuous vector.");
+      throw std::logic_error{
+          "Invalid descriptor, must be a continuous vector."};
     }
     return descriptor_v;
   }
@@ -169,11 +174,11 @@ public:
    *  @param type desired descriptor type
    *  @return cv mat of the descriptor in its associated encoding
    */
-  static std::vector<float> ConvertDescriptor(cv::Mat descriptor,
-                                              const std::string& type_str) {
+  static std::vector<float>
+      CvMatDescriptorToVector(cv::Mat descriptor, const std::string& type_str) {
     const auto type = StringToDescriptorType(type_str);
     if (type.has_value()) {
-      return ConvertDescriptor(descriptor, type.value());
+      return CvMatDescriptorToVector(descriptor, type.value());
     }
     return {};
   }
