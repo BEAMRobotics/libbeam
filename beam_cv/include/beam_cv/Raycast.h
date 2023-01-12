@@ -4,22 +4,20 @@
 
 #pragma once
 
-#include <pcl/kdtree/kdtree_flann.h>
+#include <functional>
+#include <type_traits>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-// MAKE SURE OPENCV IS INCLUDED AFTER FLANN
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
-
 #include <beam_calibration/CameraModel.h>
 #include <beam_containers/PointBridge.h>
+#include <beam_utils/pointcloud_.h>
 #include <beam_utils/utils.h>
-
-#include <functional>
-#include <type_traits>
 
 namespace beam_cv {
 /**
@@ -96,8 +94,7 @@ public:
 
     // create kdtree
     BEAM_DEBUG("creating kd search tree");
-    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
-    kdtree.setInputCloud(search_cloud);
+    beam::nanoflann::KdTree<pcl::PointXYZ> kdtree(search_cloud);
 
     // cast ray for every pixel in the hit mask
     int current = 1;
