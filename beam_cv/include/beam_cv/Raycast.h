@@ -16,7 +16,7 @@
 
 #include <beam_calibration/CameraModel.h>
 #include <beam_containers/PointBridge.h>
-#include <beam_utils/pointcloud_.h>
+#include <beam_utils/kdtree.h>
 #include <beam_utils/utils.h>
 
 namespace beam_cv {

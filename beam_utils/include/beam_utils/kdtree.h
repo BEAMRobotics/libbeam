@@ -75,6 +75,12 @@ public:
     // todo
   }
 
+  void radiusSearch(const PointT& p, const float radius,
+                    std::vector<int>& point_ids,
+                    std::vector<float>& point_distances) {
+    // todo
+  }
+
   PointCloud<float> cloud;
   std::unique_ptr<KdTreeType> kdtree;
 };

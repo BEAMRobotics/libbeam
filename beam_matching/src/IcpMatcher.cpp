@@ -4,12 +4,12 @@
 #include <iostream>
 
 #include <Eigen/Geometry>
-#include <nlohmann/json.hpp>
-#include <pcl/search/impl/search.hpp>
+#include <beam_utils/kdtree.h>
 #include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
 
-#include <beam_utils/log.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/log.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
@@ -456,7 +456,7 @@ void IcpMatcher::EstimateLUMold() {
   Eigen::Matrix<double, 6, 6> edgeCov = Eigen::Matrix<double, 6, 6>::Identity();
 
   // build kd tree for source points
-  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+  beam::nanoflann::KdTree<pcl::PointXYZ> kdtree;
   kdtree.setInputCloud(targetc);
 
   // iterate through the source cloud and compute match covariance
