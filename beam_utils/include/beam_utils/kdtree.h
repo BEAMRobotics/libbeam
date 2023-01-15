@@ -10,6 +10,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+#include <beam_utils/nanoflann.hpp>
+
 namespace beam {
 /** @addtogroup utils
  *  @{ */
@@ -57,13 +59,13 @@ const int k_pointcloud_dims{3};
 const int k_max_leaf{10};
 
 using KdTreeType = nanoflann::KDTreeSingleIndexAdaptor<
-    nanoflann::L2_Simple_Adaptor<float, PointCloud<float>>, PointCloud<float>,
+    L2_Simple_Adaptor<float, PointCloud<float>>, PointCloud<float>,
     k_pointcloud_dims>;
 
 template <class PointT>
 class KdTree {
 public:
-  KdTree(const pcl::Pointcloud<PointT>& cloud_in) {
+  KdTree(const pcl::PointCloud<PointT>& cloud_in) {
     for (const auto& p : cloud_in) {
       cloud.pts.push_back(Point{.x = p.x, .y = p.y, z = p.z});
     }
@@ -78,6 +80,14 @@ public:
   void radiusSearch(const PointT& p, const float radius,
                     std::vector<int>& point_ids,
                     std::vector<float>& point_distances) {
+    // todo
+  }
+
+  void setInputPointCloud(const pcl::PointCloud<PointT>& point_cloud) {
+    // todo
+  }
+
+  const pcl::PointCloud<PointT>& getInputPointCloud() const {
     // todo
   }
 
