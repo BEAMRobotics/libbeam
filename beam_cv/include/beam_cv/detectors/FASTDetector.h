@@ -80,6 +80,16 @@ public:
    */
   std::vector<cv::KeyPoint> DetectLocalFeatures(const cv::Mat& image);
 
+  /** @brief Gets the string representation of the type of detector
+   *  @return string of detector type
+   */
+  std::string GetTypeString() const { return "FAST"; }
+
+  /** @brief Gets the type of detector
+   *  @return detector type
+   */
+  DetectorType GetType() const { return DetectorType::FAST; }
+
 private:
   // this gets called in each constructor
   void Setup();

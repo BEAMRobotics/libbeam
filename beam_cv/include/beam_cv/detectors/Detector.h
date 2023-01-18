@@ -18,27 +18,29 @@ namespace beam_cv {
  */
 enum class DetectorType { ORB = 0, SIFT, FAST, FASTSSC, GFTT };
 
+namespace internal {
 // Map for storing string input
-static std::map<std::string, DetectorType> DetectorTypeStringMap = {
+static std::map<std::string, DetectorType> DetectorStringTypeMap = {
     {"ORB", DetectorType::ORB},
     {"SIFT", DetectorType::SIFT},
     {"FAST", DetectorType::FAST},
     {"FASTSSC", DetectorType::FASTSSC},
     {"GFTT", DetectorType::GFTT}};
 
-// Map for storing int input
-static std::map<uint8_t, DetectorType> DetectorTypeIntMap = {
-    {0, DetectorType::ORB},
-    {1, DetectorType::SIFT},
-    {2, DetectorType::FAST},
-    {3, DetectorType::FASTSSC},
-    {4, DetectorType::GFTT}};
+const std::map<DetectorType, std::string> DetectorTypeStringMap = {
+    {DetectorType::ORB, "ORB"},
+    {DetectorType::SIFT, "SIFT"},
+    {DetectorType::FAST, "FAST"},
+    {DetectorType::FASTSSC, "FASTSSC"},
+    {DetectorType::GFTT, "GFTT"}};
+
+} // namespace internal
 
 // function for listing types of detectors available
 inline std::string GetDetectorTypes() {
   std::string types;
-  for (auto it = DetectorTypeStringMap.begin();
-       it != DetectorTypeStringMap.end(); it++) {
+  for (auto it = internal::DetectorTypeStringMap.begin();
+       it != internal::DetectorTypeStringMap.end(); it++) {
     types += it->first;
     types += ", ";
   }
@@ -70,6 +72,16 @@ public:
    *  @return a vector of the detected keypoints.
    */
   std::vector<cv::KeyPoint> DetectFeatures(const cv::Mat& image);
+
+  /** @brief Gets the string representation of the type of descriptor
+   *  @return string of descriptor type
+   */
+  virtual std::string GetTypeString() const = 0;
+
+  /** @brief Gets the type of descriptor
+   *  @return descriptor type
+   */
+  virtual DestectorType GetType() const = 0;
 
 private:
   /** @brief Detects keypoints in an image/grid space. Calls a different
