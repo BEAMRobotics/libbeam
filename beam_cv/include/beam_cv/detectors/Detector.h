@@ -41,7 +41,7 @@ inline std::string GetDetectorTypes() {
   std::string types;
   for (auto it = internal::DetectorTypeStringMap.begin();
        it != internal::DetectorTypeStringMap.end(); it++) {
-    types += it->first;
+    types += it->second;
     types += ", ";
   }
   types.erase(types.end() - 2, types.end());
@@ -81,7 +81,7 @@ public:
   /** @brief Gets the type of descriptor
    *  @return descriptor type
    */
-  virtual DestectorType GetType() const = 0;
+  virtual DetectorType GetType() const = 0;
 
 private:
   /** @brief Detects keypoints in an image/grid space. Calls a different
