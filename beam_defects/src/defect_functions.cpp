@@ -212,11 +212,10 @@ float MaxLength(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
 float HausdorffDist(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_a,
                     const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_b) {
   float hausdorff_dist = 0;
-  beam::nanoflann::KdTree<pcl::PointXYZ> tree;
-  tree.setInputCloud(cloud_b);
+  beam::KdTree<pcl::PointXYZ> tree(cloud_b);
   float max_dist = -std::numeric_limits<float>::max();
   for (const auto& point : cloud_a->points) {
-    std::vector<int> indices(1);
+    std::vector<uint32_t> indices(1);
     std::vector<float> sqr_distances(1);
 
     tree.nearestKSearch(point, 1, indices, sqr_distances);

@@ -55,47 +55,75 @@ struct PointCloud {
   }
 };
 
+} // namespace nanoflann
+
 const int k_pointcloud_dims{3};
 const int k_max_leaf{10};
 
 using KdTreeType = nanoflann::KDTreeSingleIndexAdaptor<
-    L2_Simple_Adaptor<float, PointCloud<float>>, PointCloud<float>,
-    k_pointcloud_dims>;
+    nanoflann::L2_Simple_Adaptor<float, nanoflann::PointCloud<float>>,
+    nanoflann::PointCloud<float>, k_pointcloud_dims>;
 
 template <class PointT>
 class KdTree {
 public:
   KdTree(const pcl::PointCloud<PointT>& cloud_in) {
     for (const auto& p : cloud_in) {
-      cloud.pts.push_back(Point{.x = p.x, .y = p.y, z = p.z});
+      cloud.pts.push_back(
+          nanoflann::PointCloud<float>::Point{.x = p.x, .y = p.y, .z = p.z});
     }
     kdtree = std::make_unique<KdTreeType>(k_pointcloud_dims, cloud, k_max_leaf);
   }
 
-  void nearestKSearch(const PointT& p, std::vector<int>& point_ids,
+  int nearestKSearch(const PointT& p, int k, std::vector<uint32_t>& point_ids,
+                     std::vector<float>& point_distances) {
+    point_ids = std::vector<uint32_t>(k);
+    point_distances = std::vector<float>(k);
+    std::vector<float> point_distances_sqr(k);
+    const float query_pt[3] = {p.x, p.y, p.z};
+    int num_results = kdtree->knnSearch(&query_pt[0], static_cast<size_t>(k),
+                                        &point_ids[0], &point_distances_sqr[0]);
+    for (int i = 0; i < k; i++) {
+      if (point_distances_sqr.at(i) > 0) {
+        point_distances.at(i) = std ::sqrt(point_distances_sqr.at(i));
+      }
+    }
+    return num_results;
+  }
+
+  size_t radiusSearch(const PointT& p, const float radius,
+                      std::vector<int>& point_ids,
                       std::vector<float>& point_distances) {
-    // todo
+    point_ids.clear();
+    point_distances.clear();
+    std::vector<std::pair<uint32_t, float>> ret_matches;
+    nanoflann::SearchParams params;
+    const float query_pt[3] = {p.x, p.y, p.z};
+    size_t n_matches =
+        kdtree->radiusSearch(&query_pt[0], radius, ret_matches, params);
+    for (size_t i = 0; i < n_matches; i++) {
+      point_ids.push_back(ret_matches[i].first);
+      point_ids.push_back(ret_matches[i].second);
+    }
+    return n_matches;
   }
 
-  void radiusSearch(const PointT& p, const float radius,
-                    std::vector<int>& point_ids,
-                    std::vector<float>& point_distances) {
-    // todo
+  void setInputCloud(const pcl::PointCloud<PointT>& point_cloud) {
+    cloud.pts.clear();
+    for (const auto& p : point_cloud) {
+      cloud.pts.push_back(
+          nanoflann::PointCloud<float>::Point{.x = p.x, .y = p.y, .z = p.z});
+    }
+    kdtree = std::make_unique<KdTreeType>(k_pointcloud_dims, cloud, k_max_leaf);
   }
 
-  void setInputPointCloud(const pcl::PointCloud<PointT>& point_cloud) {
-    // todo
+  void clear() {
+    cloud.pts.clear();
+    kdtree = std::make_unique<KdTreeType>(k_pointcloud_dims, cloud, k_max_leaf);
   }
-
-  const pcl::PointCloud<PointT>& getInputPointCloud() const {
-    // todo
-  }
-
-  PointCloud<float> cloud;
+  nanoflann::PointCloud<float> cloud;
   std::unique_ptr<KdTreeType> kdtree;
 };
-
-} // namespace nanoflann
 
 /** @} group utils */
 } // namespace beam

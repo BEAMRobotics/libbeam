@@ -43,7 +43,7 @@ struct LoamFeatureCloud {
   /** KD search tree for fast searching. Will only be built when BuildKDTree is
    * called. This will get cleared whenever TransformPointCloud is called as it
    * would need to be recalculated. */
-  beam::nanoflann::KdTree<pcl::PointXYZ> kdtree;
+  beam::KdTree<pcl::PointXYZ> kdtree;
 
   /** Builds the KD search tree and sets the kdtree_empty to false */
   void BuildKDTree(bool override_tree = false);

@@ -124,8 +124,7 @@ public:
     if (this->input_cloud_->size() == 0) { return false; }
 
     // init. kd search tree
-    beam::nanoflann::KdTree<pcl::PointXYZ> kd_tree;
-    kd_tree.setInputCloud(this->input_cloud_);
+    beam::KdTree<pcl::PointXYZ> kd_tree(*this->input_cloud_);
 
     // Go over all the points and check which doesn't have enough neighbors
     // perform filtering

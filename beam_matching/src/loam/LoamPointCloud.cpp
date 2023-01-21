@@ -20,7 +20,7 @@ void LoamFeatureCloud::Clear() {
 }
 
 void LoamFeatureCloud::ClearKDTree() {
-  kdtree = beam::nanoflann::KdTree<pcl::PointXYZ>;
+  kdtree.clear();
   kdtree_empty = true;
 }
 
@@ -28,7 +28,7 @@ void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   // if tree is not empty, and we do not want to override, then do nothing
   if (!kdtree_empty && !override_tree) { return; }
 
-  kdtree = beam::nanoflann::KdTree<pcl::PointXYZ>;
+  kdtree = beam::KdTree<pcl::PointXYZ>;
   kdtree.setInputCloud(std::make_shared<PointCloud>(cloud));
   kdtree_empty = false;
 }

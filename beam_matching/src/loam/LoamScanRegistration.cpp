@@ -100,7 +100,7 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
     auto& query_pt = tgt_->edges.strong.cloud.at(tgt_iter);
 
     // search for correspondence in strong fetures
-    std::vector<int> point_search_ind;
+    std::vector<uint32_t> point_search_ind;
     std::vector<float> point_search_sq_dist;
     int num_returned = ref_->edges.strong.kdtree.nearestKSearch(
         search_pt, 2, point_search_ind, point_search_sq_dist);

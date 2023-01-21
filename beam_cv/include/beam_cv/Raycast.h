@@ -94,7 +94,7 @@ public:
 
     // create kdtree
     BEAM_DEBUG("creating kd search tree");
-    beam::nanoflann::KdTree<pcl::PointXYZ> kdtree(search_cloud);
+    beam::KdTree<pcl::PointXYZ> kdtree(search_cloud);
 
     // cast ray for every pixel in the hit mask
     int current = 1;
@@ -121,7 +121,7 @@ public:
           search_point.z = ray(2, 0);
 
           // search for closest point to ray
-          std::vector<int> point_idx(1);
+          std::vector<uint32_t> point_idx(1);
           std::vector<float> point_distance(1);
           kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
           float distance = sqrt(point_distance[0]);

@@ -107,8 +107,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
     GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                        float tolerance, int min_size, int max_size) {
   std::vector<pcl::PointIndices> cluster_indices;
-  auto tree = std::make_shared<beam::nanoflann::KdTree<pcl::PointXYZ>>();
-  tree->setInputCloud(input_cloud);
+  auto tree = std::make_shared<beam::KdTree<pcl::PointXYZ>>(input_cloud);
   beam::ExtractEuclideanClusters(input_cloud, tree, tolerance, cluster_indices,
                                  min_size, max_size);
 

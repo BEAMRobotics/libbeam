@@ -604,11 +604,12 @@ float CalculatePointNorm(PointT p) {
 }
 
 template <typename PointT>
-void ExtractEuclideanClusters(
-    const pcl::PointCloud<PointT>& cloud,
-    const std::shared_ptr<beam::nanoflann::KdTree<PointT>>& tree,
-    float tolerance, std::vector<pcl::PointIndices>& clusters,
-    unsigned int min_pts_per_cluster, unsigned int max_pts_per_cluster) {
+void ExtractEuclideanClusters(const pcl::PointCloud<PointT>& cloud,
+                              const std::shared_ptr<beam::KdTree<PointT>>& tree,
+                              float tolerance,
+                              std::vector<pcl::PointIndices>& clusters,
+                              unsigned int min_pts_per_cluster,
+                              unsigned int max_pts_per_cluster) {
   if (tree->getInputCloud()->size() != cloud.size()) {
     PCL_ERROR("[pcl::extractEuclideanClusters] Tree built for a different "
               "point cloud "
