@@ -20,7 +20,7 @@ void LoamFeatureCloud::Clear() {
 }
 
 void LoamFeatureCloud::ClearKDTree() {
-  kdtree = pcl::KdTreeFLANN<pcl::PointXYZ>();
+  kdtree->clear();
   kdtree_empty = true;
 }
 
@@ -28,8 +28,7 @@ void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   // if tree is not empty, and we do not want to override, then do nothing
   if (!kdtree_empty && !override_tree) { return; }
 
-  kdtree = pcl::KdTreeFLANN<pcl::PointXYZ>();
-  kdtree.setInputCloud(std::make_shared<PointCloud>(cloud));
+  kdtree = std::make_unique<beam::KdTree<pcl::PointXYZ>>(cloud);
   kdtree_empty = false;
 }
 
@@ -210,10 +209,10 @@ void LoamPointCloud::Merge(const LoamPointCloud& cloud) {
 
   edges.weak.cloud += cloud.edges.weak.cloud;
   edges.weak.ClearKDTree();
-  
+
   surfaces.strong.cloud += cloud.surfaces.strong.cloud;
   surfaces.strong.ClearKDTree();
-  
+
   surfaces.weak.cloud += cloud.surfaces.weak.cloud;
   surfaces.weak.ClearKDTree();
 }
@@ -236,10 +235,10 @@ uint64_t LoamPointCloud::Size() const {
 }
 
 bool LoamPointCloud::Empty() const {
-  if(!edges.strong.cloud.empty()){return false;}
-  if(!edges.weak.cloud.empty()){return false;}
-  if(!surfaces.strong.cloud.empty()){return false;}
-  if(!surfaces.weak.cloud.empty()){return false;}
+  if (!edges.strong.cloud.empty()) { return false; }
+  if (!edges.weak.cloud.empty()) { return false; }
+  if (!surfaces.strong.cloud.empty()) { return false; }
+  if (!surfaces.weak.cloud.empty()) { return false; }
   return true;
 }
 

@@ -16,6 +16,7 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <beam_utils/filesystem.h>
+#include <beam_utils/kdtree.h>
 
 // Create point types of different lidars
 // Velodyne
@@ -602,5 +603,88 @@ float CalculatePointNorm(PointT p) {
   return std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
 }
 
+template <typename PointT>
+void ExtractEuclideanClusters(const pcl::PointCloud<PointT>& cloud,
+                              const std::shared_ptr<beam::KdTree<PointT>>& tree,
+                              float tolerance,
+                              std::vector<pcl::PointIndices>& clusters,
+                              int min_pts_per_cluster,
+                              int max_pts_per_cluster) {
+  throw std::runtime_error{"THIS FUNCTION HAS NOT BEEN FIXED - JAKE TO FIX"};
+  /**
+  ////////////////////////////////////////////////////////////////////////////////
+  [JAKE] TODO: fix this, tftree isn't compiling, and I don't really get the
+  logic
+  ////////////////////////////////////////////////////////////////////////////////
+  if (tree->cloud.pts.size() != cloud.size()) {
+    PCL_ERROR("[pcl::extractEuclideanClusters] Tree built for a different "
+              "point cloud "
+              "dataset (%zu) than the input cloud (%zu)!\n",
+              static_cast<std::size_t>(tree->cloud.pts.size()),
+              static_cast<std::size_t>(cloud.size()));
+    return;
+  }
+  // Create a bool vector of processed point indices, and initialize it to false
+  std::vector<bool> processed(cloud.size(), false);
+
+  pcl::Indices nn_indices;
+  std::vector<float> nn_distances;
+  // Process all points in the indices vector
+  for (int i = 0; i < static_cast<int>(cloud.size()); ++i) {
+    if (processed[i]) continue;
+
+    pcl::Indices seed_queue;
+    int sq_idx = 0;
+    seed_queue.push_back(i);
+
+    processed[i] = true;
+
+    while (sq_idx < static_cast<int>(seed_queue.size())) {
+      // Search for sq_idx
+      if (!tree->radiusSearch(seed_queue[sq_idx], tolerance, nn_indices,
+                              nn_distances)) {
+        sq_idx++;
+        continue;
+      }
+
+      for (std::size_t j = 0; j < nn_indices.size();
+           ++j) // can't assume sorted (default isn't!)
+      {
+        if (nn_indices[j] == pcl::UNAVAILABLE ||
+            processed[nn_indices[j]]) // Has this point been processed before ?
+          continue;
+
+        // Perform a simple Euclidean clustering
+        seed_queue.push_back(nn_indices[j]);
+        processed[nn_indices[j]] = true;
+      }
+
+      sq_idx++;
+    }
+
+    // If this queue is satisfactory, add to the clusters
+    if (seed_queue.size() >= min_pts_per_cluster &&
+        seed_queue.size() <= max_pts_per_cluster) {
+      pcl::PointIndices r;
+      r.indices.resize(seed_queue.size());
+      for (std::size_t j = 0; j < seed_queue.size(); ++j)
+        r.indices[j] = seed_queue[j];
+
+      // These two lines should not be needed: (can anyone confirm?) -FF
+      std::sort(r.indices.begin(), r.indices.end());
+      r.indices.erase(std::unique(r.indices.begin(), r.indices.end()),
+                      r.indices.end());
+
+      r.header = cloud.header;
+      clusters.push_back(r);
+    } else {
+      BEAM_DEBUG(
+          "[pcl::extractEuclideanClusters] This cluster has %zu points, which "
+          "is not between %u and %u points, so it is not a final cluster\n",
+          seed_queue.size(), min_pts_per_cluster, max_pts_per_cluster);
+    }
+  }
+  */
+}
 /** @} group utils */
 } // namespace beam

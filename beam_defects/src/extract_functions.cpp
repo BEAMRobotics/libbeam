@@ -1,8 +1,12 @@
 #define PCL_NO_PRECOMPILE
+
 #include "beam_defects/extract_functions.h"
 
 #include <pcl/filters/extract_indices.h>
 #include <pcl/segmentation/extract_clusters.h>
+
+#include <beam_utils/kdtree.h>
+#include <beam_utils/pointclouds.h>
 
 namespace beam_defects {
 
@@ -106,17 +110,10 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
 std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
     GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                        float tolerance, int min_size, int max_size) {
-  auto tree = std::make_shared<pcl::search::KdTree<pcl::PointXYZ>>();
-  tree->setInputCloud(input_cloud);
-
   std::vector<pcl::PointIndices> cluster_indices;
-  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-  ec.setClusterTolerance(tolerance); // in meters
-  ec.setMinClusterSize(min_size);
-  ec.setMaxClusterSize(max_size);
-  ec.setSearchMethod(tree);
-  ec.setInputCloud(input_cloud);
-  ec.extract(cluster_indices);
+  auto tree = std::make_shared<beam::KdTree<pcl::PointXYZ>>(*input_cloud);
+  beam::ExtractEuclideanClusters<pcl::PointXYZ>(
+      *input_cloud, tree, tolerance, cluster_indices, min_size, max_size);
 
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> defect_cloud;
   for (std::vector<pcl::PointIndices>::const_iterator it =

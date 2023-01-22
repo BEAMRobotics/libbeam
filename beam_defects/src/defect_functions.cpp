@@ -1,16 +1,15 @@
 #include "beam_defects/defect_functions.h"
 #include <beam_utils/pointclouds.h>
 
+#include <beam_utils/kdtree.h>
 #include <pcl/filters/project_inliers.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/surface/concave_hull.h>
 #include <pcl/surface/convex_hull.h>
-#include <pcl/search/kdtree.h>
 
 #include <boost/smart_ptr.hpp>
-
 
 namespace beam_defects {
 
@@ -213,19 +212,16 @@ float MaxLength(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud) {
 float HausdorffDist(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_a,
                     const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_b) {
   float hausdorff_dist = 0;
-  pcl::search::KdTree<pcl::PointXYZ> tree;
-  tree.setInputCloud(cloud_b);
+  beam::KdTree<pcl::PointXYZ> tree(*cloud_b);
   float max_dist = -std::numeric_limits<float>::max();
-  for (const auto &point : cloud_a->points) {
-    std::vector<int> indices (1);
-    std::vector<float> sqr_distances (1);
+  for (const auto& point : cloud_a->points) {
+    std::vector<uint32_t> indices(1);
+    std::vector<float> sqr_distances(1);
 
     tree.nearestKSearch(point, 1, indices, sqr_distances);
-    if (sqr_distances[0] > max_dist) {
-      max_dist = sqr_distances[0];
-    }
+    if (sqr_distances[0] > max_dist) { max_dist = sqr_distances[0]; }
   }
-  
+
   hausdorff_dist = std::sqrt(max_dist);
 
   return hausdorff_dist;

@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <pcl/kdtree/kdtree_flann.h>
-
-#include <beam_colorize/Colorizer.h>
 #include <mutex>
-#include <pcl/point_cloud.h>
 #include <thread>
 #include <tuple>
+
+#include <pcl/point_cloud.h>
+
+#include <beam_colorize/Colorizer.h>
 
 namespace beam_colorize {
 

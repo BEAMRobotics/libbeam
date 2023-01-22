@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <pcl/filters/radius_outlier_removal.h>
-
 #include <beam_filtering/Filter.h>
 
 namespace beam_filtering {
@@ -78,11 +76,22 @@ public:
 
     // check cloud has points
     if (this->input_cloud_->size() == 0) { return false; }
-    pcl::RadiusOutlierRemoval<PointT> outlier_removal;
-    outlier_removal.setInputCloud(this->input_cloud_);
-    outlier_removal.setRadiusSearch(radius_search_);
-    outlier_removal.setMinNeighborsInRadius(min_neighbors_);
-    outlier_removal.filter(this->output_cloud_);
+
+    // init. kd search tree
+    beam::KdTree<PointT> kd_tree(*this->input_cloud_);
+
+    // Go over all the points and check which doesn't have enough neighbors
+    // perform filtering
+    for (auto p = this->input_cloud_->begin(); p != this->input_cloud_->end();
+         p++) {
+      std::vector<uint32_t> point_id_radius_search;
+      std::vector<float> point_radius_squared_dist;
+      size_t neighbors =
+          kd_tree.radiusSearch(*p, radius_search_, point_id_radius_search,
+                               point_radius_squared_dist);
+      if (neighbors >= min_neighbors_) { this->output_cloud_.push_back(*p); }
+    }
+
     return true;
   }
 

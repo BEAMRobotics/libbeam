@@ -4,12 +4,12 @@
 #include <iostream>
 
 #include <Eigen/Geometry>
-#include <nlohmann/json.hpp>
-#include <pcl/search/impl/search.hpp>
+#include <beam_utils/kdtree.h>
 #include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
 
-#include <beam_utils/log.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/log.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
@@ -456,18 +456,16 @@ void IcpMatcher::EstimateLUMold() {
   Eigen::Matrix<double, 6, 6> edgeCov = Eigen::Matrix<double, 6, 6>::Identity();
 
   // build kd tree for source points
-  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
-  kdtree.setInputCloud(targetc);
+  beam::KdTree<pcl::PointXYZ> kdtree(*targetc);
 
   // iterate through the source cloud and compute match covariance
 
   for (uint64_t i = 0; i < numSourcePts; i++) {
     pcl::PointXYZ qpt = source_trans->points[i];
-    std::vector<int> nn_idx;
+    std::vector<uint32_t> nn_idx;
     std::vector<float> nn_sqr_dist;
-    kdtree.nearestKSearch(
-        qpt, 1, nn_idx,
-        nn_sqr_dist); // returns the index of the nn point in the targetc
+    // returns the index of the nn point in the targetc
+    kdtree.nearestKSearch(qpt, 1, nn_idx, nn_sqr_dist);
 
     if (nn_sqr_dist[0] <
         this->params_.max_corr * this->params_.max_corr) // if the distance to

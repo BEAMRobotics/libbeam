@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <pcl/kdtree/kdtree_flann.h>
 #include <beam_matching/Matcher.h>
+#include <beam_utils/kdtree.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
@@ -36,14 +36,15 @@ namespace beam_matching {
  * @brief struct for containing all data stored in a loam feature cloud (e.g.
  * sharp features)
  */
-struct LoamFeatureCloud {
+class LoamFeatureCloud {
+public:
   /** Pointcloud containing xyz coordinates of all features */
   PointCloud cloud;
 
   /** KD search tree for fast searching. Will only be built when BuildKDTree is
    * called. This will get cleared whenever TransformPointCloud is called as it
    * would need to be recalculated. */
-  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+  std::unique_ptr<beam::KdTree<pcl::PointXYZ>> kdtree{nullptr};
 
   /** Builds the KD search tree and sets the kdtree_empty to false */
   void BuildKDTree(bool override_tree = false);
@@ -80,11 +81,6 @@ struct LoamFeatures {
  */
 class LoamPointCloud {
 public:
-  /**
-   * @brief Default constructor
-   */
-  LoamPointCloud() = default;
-
   /**
    * @brief Constructor that takes in 2 or 4 point clouds of features (weak and
    * strong edge and planar features)
@@ -185,6 +181,11 @@ public:
    * @return true if all 4 feature clouds are empty, false otherwise.
    */
   bool Empty() const;
+
+  LoamPointCloud Copy() const {
+    return LoamPointCloud(edges.strong.cloud, surfaces.strong.cloud,
+                          edges.weak.cloud, surfaces.weak.cloud);
+  }
 
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;

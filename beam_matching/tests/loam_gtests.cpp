@@ -7,9 +7,9 @@
 #include <beam_matching/loam/LoamParams.h>
 #include <beam_matching/loam/LoamPointCloud.h>
 #include <beam_matching/loam/LoamScanRegistration.h>
+#include <beam_utils/log.h>
 #include <beam_utils/math.h>
 #include <beam_utils/pointclouds.h>
-#include <beam_utils/log.h>
 
 namespace beam_matching {
 
@@ -112,10 +112,10 @@ TEST(ScanRegistration, InitialGuess) {
   LoamFeatureExtractor fea_extractor(data_.params);
   LoamScanRegistration scan_reg(data_.params);
 
-  LoamPointCloudPtr loam_cloud1 = std::make_shared<LoamPointCloud>();
-  LoamPointCloudPtr loam_cloud2 = std::make_shared<LoamPointCloud>();
-  *loam_cloud1 = fea_extractor.ExtractFeatures(*data_.cloud1);
-  *loam_cloud2 = fea_extractor.ExtractFeatures(*data_.cloud2);
+  auto loam_cloud1 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud1).Copy());
+  auto loam_cloud2 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud2).Copy());
 
   Eigen::Matrix4d T_CLOUD1_CLOUD2 =
       beam::InvertTransform(data_.T_CLOUD2_CLOUD1);
@@ -143,11 +143,10 @@ TEST(ScanRegistration, SmallPerturb) {
   LoamFeatureExtractor fea_extractor(params);
   LoamScanRegistration scan_reg(params);
 
-  LoamPointCloudPtr loam_cloud1 = std::make_shared<LoamPointCloud>();
-  LoamPointCloudPtr loam_cloud3 = std::make_shared<LoamPointCloud>();
-  *loam_cloud1 = fea_extractor.ExtractFeatures(*data_.cloud1);
-  *loam_cloud3 =
-      fea_extractor.ExtractFeatures(*data_.cloud3);
+  auto loam_cloud1 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud1));
+  auto loam_cloud3 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud3));
 
   bool reg_successful = scan_reg.RegisterScans(loam_cloud1, loam_cloud3);
   Eigen::Matrix4d T_CLOUD1_CLOUD3_mea = scan_reg.GetT_REF_TGT();
@@ -163,7 +162,8 @@ TEST(ScanRegistration, SmallPerturb) {
   ///////////////////////////////
 
   EXPECT_TRUE(reg_successful);
-  EXPECT_TRUE(beam::ArePosesEqual(T_CLOUD1_CLOUD3_mea, T_CLOUD1_CLOUD3, 1, 0.05));
+  EXPECT_TRUE(
+      beam::ArePosesEqual(T_CLOUD1_CLOUD3_mea, T_CLOUD1_CLOUD3, 1, 0.05));
 }
 
 TEST(LoamMatcher, SmallPerturb) {
@@ -174,10 +174,10 @@ TEST(LoamMatcher, SmallPerturb) {
 
   // get loam cloud
   LoamFeatureExtractor fea_extractor(params);
-  LoamPointCloudPtr loam_cloud1 = std::make_shared<LoamPointCloud>();
-  LoamPointCloudPtr loam_cloud3 = std::make_shared<LoamPointCloud>();
-  *loam_cloud1 = fea_extractor.ExtractFeatures(*data_.cloud1);
-  *loam_cloud3 = fea_extractor.ExtractFeatures(*data_.cloud3);
+  auto loam_cloud1 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud1));
+  auto loam_cloud3 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud3));
 
   // setup matcher
   LoamMatcher matcher(*params);
@@ -201,10 +201,10 @@ TEST(LoamMatcher, LargePerturb) {
 
   // get loam cloud
   LoamFeatureExtractor fea_extractor(params);
-  LoamPointCloudPtr loam_cloud1 = std::make_shared<LoamPointCloud>();
-  LoamPointCloudPtr loam_cloud2 = std::make_shared<LoamPointCloud>();
-  *loam_cloud1 = fea_extractor.ExtractFeatures(*data_.cloud1);
-  *loam_cloud2 = fea_extractor.ExtractFeatures(*data_.cloud2);
+  auto loam_cloud1 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud1));
+  auto loam_cloud2 = std::make_shared<LoamPointCloud>(
+      fea_extractor.ExtractFeatures(*data_.cloud2));
 
   // setup matcher
   LoamMatcher matcher(*params);

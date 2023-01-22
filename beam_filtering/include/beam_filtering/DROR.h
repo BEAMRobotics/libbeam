@@ -6,8 +6,8 @@
 
 #include <math.h>
 
+#include <beam_utils/kdtree.h>
 #include <pcl/filters/extract_indices.h>
-#include <pcl/kdtree/kdtree_flann.h>
 
 #include <beam_filtering/Filter.h>
 
@@ -124,8 +124,7 @@ public:
     if (this->input_cloud_->size() == 0) { return false; }
 
     // init. kd search tree
-    pcl::KdTreeFLANN<PointT> kd_tree;
-    kd_tree.setInputCloud(this->input_cloud_);
+    beam::KdTree<pcl::PointXYZ> kd_tree(*this->input_cloud_);
 
     // Go over all the points and check which doesn't have enough neighbors
     // perform filtering
@@ -139,12 +138,12 @@ public:
         search_radius_dynamic = min_search_radius_;
       }
 
-      std::vector<int> point_id_radius_search;
+      std::vector<uint32_t> point_id_radius_search;
       std::vector<float> point_radius_squared_dist;
 
-      int neighbors =
-          kd_tree.radiusSearch(*p, search_radius_dynamic, point_id_radius_search,
-                               point_radius_squared_dist);
+      size_t neighbors = kd_tree.radiusSearch(*p, search_radius_dynamic,
+                                              point_id_radius_search,
+                                              point_radius_squared_dist);
 
       if (neighbors >= min_neighbors_) { this->output_cloud_.push_back(*p); }
     }

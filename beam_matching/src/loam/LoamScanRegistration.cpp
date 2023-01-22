@@ -100,9 +100,9 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
     auto& query_pt = tgt_->edges.strong.cloud.at(tgt_iter);
 
     // search for correspondence in strong fetures
-    std::vector<int> point_search_ind;
+    std::vector<uint32_t> point_search_ind;
     std::vector<float> point_search_sq_dist;
-    int num_returned = ref_->edges.strong.kdtree.nearestKSearch(
+    int num_returned = ref_->edges.strong.kdtree->nearestKSearch(
         search_pt, 2, point_search_ind, point_search_sq_dist);
 
     // if both correspondences are close enough, add measurement, else check in
@@ -137,7 +137,7 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
     // search for correspondence in weak features
     point_search_ind.clear();
     point_search_sq_dist.clear();
-    num_returned = ref_->edges.weak.kdtree.nearestKSearch(
+    num_returned = ref_->edges.weak.kdtree->nearestKSearch(
         search_pt, 2, point_search_ind, point_search_sq_dist);
 
     if (num_returned != 2) { continue; }
@@ -188,9 +188,9 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
     auto& query_pt = tgt_->surfaces.strong.cloud.at(tgt_iter);
 
     // search for correspondence in strong fetures
-    std::vector<int> point_search_ind;
+    std::vector<uint32_t> point_search_ind;
     std::vector<float> point_search_sq_dist;
-    int num_returned = ref_->surfaces.strong.kdtree.nearestKSearch(
+    size_t num_returned = ref_->surfaces.strong.kdtree->nearestKSearch(
         search_pt, 3, point_search_ind, point_search_sq_dist);
 
     // if both correspondences are close enough, add measurement, else check in
@@ -228,7 +228,7 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
     // search for correspondence in weak fetures
     point_search_ind.clear();
     point_search_sq_dist.clear();
-    num_returned = ref_->surfaces.weak.kdtree.nearestKSearch(
+    num_returned = ref_->surfaces.weak.kdtree->nearestKSearch(
         search_pt, 3, point_search_ind, point_search_sq_dist);
 
     if (num_returned != 3) { continue; }
@@ -430,11 +430,11 @@ void LoamScanRegistration::OutputResults(int iteration) {
   boost::filesystem::create_directory(current_dir + "target_initial/");
   ref_->Save(current_dir + "referece_cloud/", true);
 
-  LoamPointCloud target_aligned = *tgt_;
+  LoamPointCloud target_aligned = tgt_->Copy();
   target_aligned.TransformPointCloud(T_REF_TGT_);
   target_aligned.Save(current_dir + "target_aligned/", true);
 
-  LoamPointCloud target_initial = *tgt_;
+  LoamPointCloud target_initial = tgt_->Copy();
   target_initial.TransformPointCloud(T_REF_TGT_prev_iter_);
   target_initial.Save(current_dir + "target_initial/", true);
 }
@@ -469,7 +469,7 @@ void LoamScanRegistration::SaveResults(const std::string& output_path) {
   ref_->Save(output_path + "referece_cloud/", true, 0, 0, 255);
   tgt_->Save(output_path + "target_initial/", true, 255, 0, 0);
 
-  LoamPointCloud target_aligned = *tgt_;
+  LoamPointCloud target_aligned = tgt_->Copy();
   target_aligned.TransformPointCloud(T_REF_TGT_);
   target_aligned.Save(output_path + "target_aligned/", true, 0, 255, 0);
 }
