@@ -94,7 +94,7 @@ public:
 
     // create kdtree
     BEAM_DEBUG("creating kd search tree");
-    beam::KdTree<pcl::PointXYZ> kdtree(search_cloud);
+    beam::KdTree<pcl::PointXYZ> kdtree(*search_cloud);
 
     // cast ray for every pixel in the hit mask
     int current = 1;

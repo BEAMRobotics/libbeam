@@ -608,13 +608,19 @@ void ExtractEuclideanClusters(const pcl::PointCloud<PointT>& cloud,
                               const std::shared_ptr<beam::KdTree<PointT>>& tree,
                               float tolerance,
                               std::vector<pcl::PointIndices>& clusters,
-                              unsigned int min_pts_per_cluster,
-                              unsigned int max_pts_per_cluster) {
-  if (tree->getInputCloud()->size() != cloud.size()) {
+                              int min_pts_per_cluster,
+                              int max_pts_per_cluster) {
+  throw std::runtime_error{"THIS FUNCTION HAS NOT BEEN FIXED - JAKE TO FIX"};
+  /**
+  ////////////////////////////////////////////////////////////////////////////////
+  [JAKE] TODO: fix this, tftree isn't compiling, and I don't really get the
+  logic
+  ////////////////////////////////////////////////////////////////////////////////
+  if (tree->cloud.pts.size() != cloud.size()) {
     PCL_ERROR("[pcl::extractEuclideanClusters] Tree built for a different "
               "point cloud "
               "dataset (%zu) than the input cloud (%zu)!\n",
-              static_cast<std::size_t>(tree->getInputCloud()->size()),
+              static_cast<std::size_t>(tree->cloud.pts.size()),
               static_cast<std::size_t>(cloud.size()));
     return;
   }
@@ -678,6 +684,7 @@ void ExtractEuclideanClusters(const pcl::PointCloud<PointT>& cloud,
           seed_queue.size(), min_pts_per_cluster, max_pts_per_cluster);
     }
   }
+  */
 }
 /** @} group utils */
 } // namespace beam

@@ -92,7 +92,7 @@ public:
   }
 
   size_t radiusSearch(const PointT& p, const float radius,
-                      std::vector<int>& point_ids,
+                      std::vector<uint32_t>& point_ids,
                       std::vector<float>& point_distances) {
     point_ids.clear();
     point_distances.clear();

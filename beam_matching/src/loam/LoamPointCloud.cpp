@@ -20,7 +20,7 @@ void LoamFeatureCloud::Clear() {
 }
 
 void LoamFeatureCloud::ClearKDTree() {
-  kdtree.clear();
+  kdtree->clear();
   kdtree_empty = true;
 }
 
@@ -28,8 +28,7 @@ void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   // if tree is not empty, and we do not want to override, then do nothing
   if (!kdtree_empty && !override_tree) { return; }
 
-  kdtree = beam::KdTree<pcl::PointXYZ>;
-  kdtree.setInputCloud(std::make_shared<PointCloud>(cloud));
+  kdtree = std::make_unique<beam::KdTree<pcl::PointXYZ>>(cloud);
   kdtree_empty = false;
 }
 

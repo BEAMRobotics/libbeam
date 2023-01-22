@@ -138,12 +138,12 @@ public:
         search_radius_dynamic = min_search_radius_;
       }
 
-      std::vector<int> point_id_radius_search;
+      std::vector<uint32_t> point_id_radius_search;
       std::vector<float> point_radius_squared_dist;
 
-      int neighbors = kd_tree.radiusSearch(*p, search_radius_dynamic,
-                                           point_id_radius_search,
-                                           point_radius_squared_dist);
+      size_t neighbors = kd_tree.radiusSearch(*p, search_radius_dynamic,
+                                              point_id_radius_search,
+                                              point_radius_squared_dist);
 
       if (neighbors >= min_neighbors_) { this->output_cloud_.push_back(*p); }
     }
