@@ -116,12 +116,9 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
       *input_cloud, tree, tolerance, cluster_indices, min_size, max_size);
 
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> defect_cloud;
-  for (std::vector<pcl::PointIndices>::const_iterator it =
-           cluster_indices.begin();
-       it != cluster_indices.end(); ++it) {
+  for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
     auto cloud_cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    for (std::vector<int>::const_iterator pit = it->indices.begin();
-         pit != it->indices.end(); ++pit)
+    for (auto pit = it->indices.begin(); pit != it->indices.end(); ++pit)
       cloud_cluster->points.push_back(input_cloud->points[*pit]);
 
     cloud_cluster->width = cloud_cluster->points.size();
