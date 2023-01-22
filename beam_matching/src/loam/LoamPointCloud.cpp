@@ -28,7 +28,7 @@ void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   // if tree is not empty, and we do not want to override, then do nothing
   if (!kdtree_empty && !override_tree) { return; }
 
-  kdtree = std::make_unique<beam::KdTree<pcl::PointXYZ>>(cloud);
+  kdtree = std::make_shared<beam::KdTree<pcl::PointXYZ>>(cloud);
   kdtree_empty = false;
 }
 

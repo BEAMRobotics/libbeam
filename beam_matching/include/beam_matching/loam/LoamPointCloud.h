@@ -44,7 +44,7 @@ public:
   /** KD search tree for fast searching. Will only be built when BuildKDTree is
    * called. This will get cleared whenever TransformPointCloud is called as it
    * would need to be recalculated. */
-  std::unique_ptr<beam::KdTree<pcl::PointXYZ>> kdtree{nullptr};
+  std::shared_ptr<beam::KdTree<pcl::PointXYZ>> kdtree{nullptr};
 
   /** Builds the KD search tree and sets the kdtree_empty to false */
   void BuildKDTree(bool override_tree = false);
@@ -81,6 +81,8 @@ struct LoamFeatures {
  */
 class LoamPointCloud {
 public:
+  LoamPointCloud() = default;
+
   /**
    * @brief Constructor that takes in 2 or 4 point clouds of features (weak and
    * strong edge and planar features)
