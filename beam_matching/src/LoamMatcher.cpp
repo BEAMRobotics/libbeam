@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include <beam_utils/log.h>
+#include <beam_utils/math.h>
 
 namespace beam_matching {
 

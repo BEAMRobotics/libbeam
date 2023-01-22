@@ -9,7 +9,9 @@
 
 #pragma once
 
-#include <beam_utils/utils.h>
+#include <pcl/common/transforms.h>
+
+#include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
 /** @addtogroup matching

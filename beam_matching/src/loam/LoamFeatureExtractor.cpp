@@ -5,6 +5,7 @@
 
 #include <beam_utils/angles.h>
 #include <beam_utils/log.h>
+#include <beam_utils/time.h>
 
 namespace beam_matching {
 

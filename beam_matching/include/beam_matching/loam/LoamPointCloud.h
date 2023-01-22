@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <beam_matching/Matcher.h>
 #include <beam_utils/kdtree.h>
 #include <beam_utils/pointclouds.h>
 

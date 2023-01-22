@@ -10,6 +10,7 @@
 #include <beam_optimization/PointToLineCost.h>
 #include <beam_optimization/PointToPlaneCost.h>
 #include <beam_utils/log.h>
+#include <beam_utils/math.h>
 
 namespace beam_matching {
 

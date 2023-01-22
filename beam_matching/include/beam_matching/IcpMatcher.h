@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <pcl/registration/icp.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/registration/icp.h>
 
 #include <beam_matching/Matcher.h>
 #include <beam_utils/pointclouds.h>
@@ -63,7 +63,7 @@ public:
     /// not performed. If multiscale matching is set, this is the resolution
     /// of the final, fine-scale match
     float res{0.1};
-    
+
     enum covar_method : int {
       LUM,
       CENSI,
