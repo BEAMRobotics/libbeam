@@ -35,6 +35,8 @@ namespace beam_matching {
 /** @brief A pair describing the start end end index of a range. */
 using IndexRange = std::pair<size_t, size_t>;
 
+using PointCloudIRT = pcl::PointCloud<PointXYZIRT>;
+
 /** @brief Point label options. */
 enum PointLabel {
   CORNER_SHARP = 2,      // sharp corner point
@@ -80,8 +82,7 @@ public:
    * @param pointcloud pcl pointcloud of type PointXYZIRT (defined above)
    * @return loam pointcloud in lidar frame
    */
-  LoamPointCloud
-      ExtractFeatures(const pcl::PointCloud<PointXYZIRT>& cloud);
+  LoamPointCloud ExtractFeatures(const pcl::PointCloud<PointXYZIRT>& cloud);
 
   /**
    * @brief overload of the function above, where scan lines are separated based
@@ -90,8 +91,7 @@ public:
    * @param pointcloud pcl pointcloud of type PointXYZITRRNR
    * @return loam pointcloud in lidar frame
    */
-  LoamPointCloud
-      ExtractFeatures(const pcl::PointCloud<PointXYZITRRNR>& cloud);
+  LoamPointCloud ExtractFeatures(const pcl::PointCloud<PointXYZITRRNR>& cloud);
 
   /**
    * @brief If this is called, the following will get saved: one point cloud for
@@ -100,14 +100,14 @@ public:
   void SaveScanLines(const std::string& debug_output_path);
 
 private:
-  LoamPointCloud
-      ExtractFeaturesFromScanLines(const std::vector<PointCloud>& scan_lines);
+  LoamPointCloud ExtractFeaturesFromScanLines(
+      const std::vector<PointCloudIRT>& scan_lines);
 
   void Reset();
 
-  std::vector<PointCloud> GetScanLines(const PointCloud& cloud);
+  std::vector<PointCloudIRT> GetScanLines(const PointCloud& cloud);
 
-  void GetSortedScan(const std::vector<PointCloud>& scan_lines);
+  void GetSortedScan(const std::vector<PointCloudIRT>& scan_lines);
 
   void SetScanBuffersFor(size_t start_idx, size_t end_idx);
 
@@ -120,7 +120,7 @@ private:
 
   /** @brief scan sorted based on rings (one ring for each lidar beam) where
    * scan_indices_ stores the start and end of each ring */
-  PointCloud sorted_scan_;
+  PointCloudIRT sorted_scan_;
 
   /** @brief start and end indices of the individual scans withing
    * sorted_scan_. Type: vector<pair<size_t, size_t>> */
@@ -139,16 +139,16 @@ private:
   std::vector<int> scan_neighbor_picked_;
 
   /** @brief sharp corner points cloud */
-  PointCloud corner_points_sharp_;
+  PointCloudIRT corner_points_sharp_;
 
   /** @brief less sharp corner points cloud */
-  PointCloud corner_points_less_sharp_;
+  PointCloudIRT corner_points_less_sharp_;
 
   /** @brief flat surface points cloud */
-  PointCloud surface_points_flat_;
+  PointCloudIRT surface_points_flat_;
 
   /** @brief less flat surface points cloud */
-  PointCloud surface_points_less_flat_;
+  PointCloudIRT surface_points_less_flat_;
 
   // DEBUG TOOLS
   std::string debug_output_path_;
