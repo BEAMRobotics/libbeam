@@ -7,6 +7,8 @@
 
 #pragma once
 
+#define PCL_NO_PRECOMPILE
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
