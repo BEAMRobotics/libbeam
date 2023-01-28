@@ -24,12 +24,32 @@
 
 #pragma once
 
+#define PCL_NO_PRECOMPILE
+
 #include <beam_utils/kdtree.h>
 #include <beam_utils/pointclouds.h>
+
+struct PointLoam {
+  PCL_ADD_POINT4D
+  PCL_ADD_INTENSITY;
+  std::uint16_t ring;
+  float time;
+  std::int8_t type; // see LoamFeatureExtactor.h
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointLoam, (float, x, x)(float, y, y)(float, z, z)
+    (float, intensity, intensity)(std::uint16_t, ring, ring)(float, time, time)
+    (std::int8_t, type, type))
+// clang-format on
 
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
+
+using LoamPointCloudCombined = pcl::PointCloud<PointLoam>;
 
 /**
  * @brief struct for containing all data stored in a loam feature cloud (e.g.
@@ -38,12 +58,12 @@ namespace beam_matching {
 class LoamFeatureCloud {
 public:
   /** Pointcloud containing xyz coordinates of all features */
-  PointCloud cloud;
+  PointCloudIRT cloud;
 
   /** KD search tree for fast searching. Will only be built when BuildKDTree is
    * called. This will get cleared whenever TransformPointCloud is called as it
    * would need to be recalculated. */
-  std::shared_ptr<beam::KdTree<pcl::PointXYZ>> kdtree{nullptr};
+  std::shared_ptr<beam::KdTree<PointXYZIRT>> kdtree{nullptr};
 
   /** Builds the KD search tree and sets the kdtree_empty to false */
   void BuildKDTree(bool override_tree = false);
@@ -91,10 +111,17 @@ public:
    * @param edge_features_weak defaults to zero (weak features not required)
    * @param surface_features_weak defaults to zero (weak features not required)
    */
-  LoamPointCloud(const PointCloud& edge_features_strong,
-                 const PointCloud& surface_features_strong,
-                 const PointCloud& edge_features_weak = PointCloud(),
-                 const PointCloud& surface_features_weak = PointCloud());
+  LoamPointCloud(const PointCloudIRT& edge_features_strong,
+                 const PointCloudIRT& surface_features_strong,
+                 const PointCloudIRT& edge_features_weak = PointCloudIRT(),
+                 const PointCloudIRT& surface_features_weak = PointCloudIRT());
+
+  /**
+   * @brief load this loam pointcloud from a combined loam cloud. See
+   * GetCombinedCloud
+   * @param cloud
+   */
+  void LoadFromCombined(const LoamPointCloudCombined& cloud);
 
   /**
    * @brief Add a new set of strong surface features
@@ -103,7 +130,7 @@ public:
    * added to the cloud.
    */
   void AddSurfaceFeaturesStrong(
-      const PointCloud& new_features,
+      const PointCloudIRT& new_features,
       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
@@ -113,7 +140,7 @@ public:
    * added to the cloud.
    */
   void AddSurfaceFeaturesWeak(
-      const PointCloud& new_features,
+      const PointCloudIRT& new_features,
       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
@@ -123,7 +150,7 @@ public:
    * added to the cloud.
    */
   void AddEdgeFeaturesStrong(
-      const PointCloud& new_features,
+      const PointCloudIRT& new_features,
       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
@@ -133,7 +160,7 @@ public:
    * added to the cloud.
    */
   void AddEdgeFeaturesWeak(
-      const PointCloud& new_features,
+      const PointCloudIRT& new_features,
       const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
@@ -187,6 +214,13 @@ public:
     return LoamPointCloud(edges.strong.cloud, surfaces.strong.cloud,
                           edges.weak.cloud, surfaces.weak.cloud);
   }
+
+  /**
+   * @brief Get the Combined Cloud object
+   *
+   * @return LoamPointCloudCombined
+   */
+  LoamPointCloudCombined GetCombinedCloud() const;
 
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;

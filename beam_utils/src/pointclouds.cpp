@@ -128,10 +128,35 @@ std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud) {
   return cloud_vec;
 }
 
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloudIRT& cloud) {
+  std::vector<geometry_msgs::Vector3> cloud_vec;
+  for (const PointXYZIRT& p : cloud) {
+    geometry_msgs::Vector3 point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud_vec.push_back(point);
+  }
+  return cloud_vec;
+}
+
 PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector) {
   PointCloud cloud;
   for (const geometry_msgs::Vector3& p : vector) {
     pcl::PointXYZ point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud.push_back(point);
+  }
+  return cloud;
+}
+
+PointCloudIRT
+    ROSVectorToPCLIRT(const std::vector<geometry_msgs::Vector3>& vector) {
+  PointCloudIRT cloud;
+  for (const geometry_msgs::Vector3& p : vector) {
+    PointXYZIRT point;
     point.x = p.x;
     point.y = p.y;
     point.z = p.z;
@@ -157,6 +182,23 @@ void PCLPointToPose(const PointXYZIRPYT& point, ros::Time& time,
 }
 
 PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
+                              uint8_t b) {
+  PointCloudCol cloud_col;
+  for (uint32_t i = 0; i < cloud.size(); i++) {
+    auto& p_in = cloud[i];
+    pcl::PointXYZRGB p;
+    p.x = p_in.x;
+    p.y = p_in.y;
+    p.z = p_in.z;
+    p.r = r;
+    p.g = g;
+    p.b = b;
+    cloud_col.push_back(p);
+  }
+  return cloud_col;
+}
+
+PointCloudCol ColorPointCloud(const PointCloudIRT& cloud, uint8_t r, uint8_t g,
                               uint8_t b) {
   PointCloudCol cloud_col;
   for (uint32_t i = 0; i < cloud.size(); i++) {

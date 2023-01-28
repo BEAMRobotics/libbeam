@@ -13,7 +13,7 @@ LoamFeatureExtractor::LoamFeatureExtractor(const LoamParamsPtr& params)
     : params_(params) {}
 
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
-  std::vector<PointCloud> scan_lines = GetScanLines(cloud);
+  std::vector<PointCloudIRT> scan_lines = GetScanLines(cloud);
   if (static_cast<int>(scan_lines.size()) != params_->number_of_beams) {
     BEAM_WARN("Number of scan lines extracted is not equal to the specified "
               "number of lidar beams, please confirm lidar settings (number of "
@@ -25,14 +25,14 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeatures(const PointCloud& cloud) {
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
     const pcl::PointCloud<PointXYZIRT>& cloud) {
   // get scan lines based on label
-  std::vector<PointCloud> scan_lines(params_->number_of_beams);
+  std::vector<PointCloudIRT> scan_lines(params_->number_of_beams);
   for (const auto& p : cloud) {
     if (p.ring > params_->number_of_beams - 1) {
       BEAM_WARN("Point ring number is greater than specified number of beams, "
                 "not using point.");
       continue;
     }
-    scan_lines.at(p.ring).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+    scan_lines.at(p.ring).push_back(p);
   }
 
   return ExtractFeaturesFromScanLines(scan_lines);
@@ -41,27 +41,35 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
 LoamPointCloud LoamFeatureExtractor::ExtractFeatures(
     const pcl::PointCloud<PointXYZITRRNR>& cloud) {
   // get scan lines based on label
-  std::vector<PointCloud> scan_lines(params_->number_of_beams);
+  std::vector<PointCloudIRT> scan_lines(params_->number_of_beams);
   for (const auto& p : cloud) {
     if (p.ring > params_->number_of_beams - 1) {
       BEAM_WARN("Point ring number is greater than specified number of beams, "
                 "not using point.");
       continue;
     }
-    scan_lines.at(p.ring).push_back(pcl::PointXYZ(p.x, p.y, p.z));
+    PointXYZIRT pn;
+    pn.x = p.x;
+    pn.y = p.y;
+    pn.z = p.z;
+    pn.ring = p.ring;
+    pn.intensity = p.intensity;
+    pn.time = static_cast<float>(p.time);
+    scan_lines.at(p.ring).push_back(pn);
   }
 
   return ExtractFeaturesFromScanLines(scan_lines);
 }
 
 LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
-    const std::vector<PointCloud>& scan_lines) {
+    const std::vector<PointCloudIRT>& scan_lines) {
   Reset();
   GetSortedScan(scan_lines);
 
   // extract features from individual scans
   for (size_t i = 0; i < scan_indices_.size(); i++) {
-    PointCloudPtr surf_points_less_flat_scan = std::make_shared<PointCloud>();
+    PointCloudIRT::Ptr surf_points_less_flat_scan =
+        std::make_shared<PointCloudIRT>();
     size_t scan_start_idx = scan_indices_[i].first;
     size_t scan_end_idx = scan_indices_[i].second;
 
@@ -146,8 +154,8 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
     }
 
     // down size less flat surface point cloud of current scan
-    PointCloud surf_points_less_flat_scanDS;
-    pcl::VoxelGrid<pcl::PointXYZ> down_size_filter;
+    PointCloudIRT surf_points_less_flat_scanDS;
+    pcl::VoxelGrid<PointXYZIRT> down_size_filter;
     down_size_filter.setInputCloud(surf_points_less_flat_scan);
     down_size_filter.setLeafSize(params_->less_flat_filter_size,
                                  params_->less_flat_filter_size,
@@ -181,16 +189,21 @@ void LoamFeatureExtractor::Reset() {
   surface_points_less_flat_.clear();
 }
 
-std::vector<PointCloud>
+std::vector<PointCloudIRT>
     LoamFeatureExtractor::GetScanLines(const PointCloud& cloud) {
-  std::vector<PointCloud> scan_lines(params_->number_of_beams, PointCloud());
+  std::vector<PointCloudIRT> scan_lines(params_->number_of_beams,
+                                        PointCloudIRT());
 
   // calculate bins for angle of beams
   std::vector<double> beam_angle_bins_deg = params_->GetBeamAngleBinsDeg();
 
   // extract valid points from input cloud
   for (size_t point_id = 0; point_id < cloud.size(); point_id++) {
-    const pcl::PointXYZ& point = cloud[point_id];
+    const auto& p = cloud[point_id];
+    PointXYZIRT point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
 
     // skip NaN and INF valued points
     if (!std::isfinite(point.x) || !std::isfinite(point.y) ||
@@ -247,7 +260,7 @@ std::vector<PointCloud>
     std::string error_message{};
     for (size_t i = 0; i < scan_lines.size(); i++) {
       if (scan_lines[i].size() == 0) { continue; }
-      if (!beam::SavePointCloud<pcl::PointXYZ>(
+      if (!beam::SavePointCloud<PointXYZIRT>(
               current_save_path + "scan" + std::to_string(i) + ".pcd",
               scan_lines[i], beam::PointCloudFileType::PCDBINARY,
               error_message)) {
@@ -266,7 +279,7 @@ std::vector<PointCloud>
 }
 
 void LoamFeatureExtractor::GetSortedScan(
-    const std::vector<PointCloud>& scan_lines) {
+    const std::vector<PointCloudIRT>& scan_lines) {
   size_t cloud_size = 0;
   for (size_t i = 0; i < scan_lines.size(); i++) {
     sorted_scan_ += scan_lines[i];
@@ -286,18 +299,18 @@ void LoamFeatureExtractor::SetScanBuffersFor(size_t start_idx, size_t end_idx) {
   // mark unreliable points as picked
   for (size_t i = start_idx + params_->curvature_region;
        i < end_idx - params_->curvature_region; i++) {
-    const pcl::PointXYZ& previous_point = sorted_scan_[i - 1];
-    const pcl::PointXYZ& point = sorted_scan_[i];
-    const pcl::PointXYZ& next_point = sorted_scan_[i + 1];
+    const PointXYZIRT& previous_point = sorted_scan_[i - 1];
+    const PointXYZIRT& point = sorted_scan_[i];
+    const PointXYZIRT& next_point = sorted_scan_[i + 1];
 
-    float diff_next = beam::SquaredDiff<pcl::PointXYZ>(next_point, point);
+    float diff_next = beam::SquaredDiff<PointXYZIRT>(next_point, point);
 
     if (diff_next > 0.1) {
-      float depth1 = beam::PointDistance<pcl::PointXYZ>(point);
-      float depth2 = beam::PointDistance<pcl::PointXYZ>(next_point);
+      float depth1 = beam::PointDistance<PointXYZIRT>(point);
+      float depth2 = beam::PointDistance<PointXYZIRT>(next_point);
 
       if (depth1 > depth2) {
-        float weighted_distance = std::sqrt(beam::SquaredDiff<pcl::PointXYZ>(
+        float weighted_distance = std::sqrt(beam::SquaredDiff<PointXYZIRT>(
                                       next_point, point, depth2 / depth1)) /
                                   depth2;
 
@@ -308,7 +321,7 @@ void LoamFeatureExtractor::SetScanBuffersFor(size_t start_idx, size_t end_idx) {
           continue;
         }
       } else {
-        float weighted_distance = std::sqrt(beam::SquaredDiff<pcl::PointXYZ>(
+        float weighted_distance = std::sqrt(beam::SquaredDiff<PointXYZIRT>(
                                       point, next_point, depth1 / depth2)) /
                                   depth1;
 
@@ -319,9 +332,8 @@ void LoamFeatureExtractor::SetScanBuffersFor(size_t start_idx, size_t end_idx) {
       }
     }
 
-    float diffPrevious =
-        beam::SquaredDiff<pcl::PointXYZ>(point, previous_point);
-    float dis = beam::SquaredPointDistance<pcl::PointXYZ>(point);
+    float diffPrevious = beam::SquaredDiff<PointXYZIRT>(point, previous_point);
+    float dis = beam::SquaredPointDistance<PointXYZIRT>(point);
 
     if (diff_next > 0.0002 * dis && diffPrevious > 0.0002 * dis) {
       scan_neighbor_picked_[i - start_idx] = 1;
@@ -371,8 +383,8 @@ void LoamFeatureExtractor::MarkAsPicked(size_t cloud_idx, size_t scan_idx) {
   scan_neighbor_picked_[scan_idx] = 1;
 
   for (int i = 1; i <= params_->curvature_region; i++) {
-    if (beam::SquaredDiff<pcl::PointXYZ>(sorted_scan_[cloud_idx + i],
-                                         sorted_scan_[cloud_idx + i - 1]) >
+    if (beam::SquaredDiff<PointXYZIRT>(sorted_scan_[cloud_idx + i],
+                                       sorted_scan_[cloud_idx + i - 1]) >
         0.05) {
       break;
     }
@@ -380,8 +392,8 @@ void LoamFeatureExtractor::MarkAsPicked(size_t cloud_idx, size_t scan_idx) {
   }
 
   for (int i = 1; i <= params_->curvature_region; i++) {
-    if (beam::SquaredDiff<pcl::PointXYZ>(sorted_scan_[cloud_idx - i],
-                                         sorted_scan_[cloud_idx - i + 1]) >
+    if (beam::SquaredDiff<PointXYZIRT>(sorted_scan_[cloud_idx - i],
+                                       sorted_scan_[cloud_idx - i + 1]) >
         0.05) {
       break;
     }

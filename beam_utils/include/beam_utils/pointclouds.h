@@ -28,6 +28,8 @@ struct PointXYZIRT {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
+using PointCloudIRT = pcl::PointCloud<PointXYZIRT>;
+
 // clang-format off
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     PointXYZIRT, (float, x, x)(float, y, y)(float, z, z)
@@ -223,11 +225,28 @@ void ROSToPCL(pcl::PointCloud<PointXYZITRRNR>& cloud_out,
 std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud);
 
 /**
+ * @brief Convert from a pcl pointcloud to a vector of ros vectors. Note we only
+ * copy xyz
+ * @param cloud pcl pointcloud
+ * @return ros vector
+ */
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloudIRT& cloud);
+
+/**
  * @brief Convert from a vector of ros vectors to a pcl pointcloud
  * @param vector ros vector
  * @return cloud
  */
 PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector);
+
+/**
+ * @brief Convert from a vector of ros vectors to a pcl pointcloud with IRT
+ * fields
+ * @param vector ros vector
+ * @return cloud
+ */
+PointCloudIRT
+    ROSVectorToPCLIRT(const std::vector<geometry_msgs::Vector3>& vector);
 
 /**
  * @brief converts PointXYZIRPYT to pose + ROS stamp
@@ -245,6 +264,16 @@ void PCLPointToPose(const PointXYZIRPYT& point, ros::Time& time,
  * @return colored pointcloud
  */
 PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
+                              uint8_t b);
+
+/**
+ * @brief Add RGB color to a pcl pointcloud
+ * @param r red color intensity
+ * @param g green color intensity
+ * @param b blue color intensity
+ * @return colored pointcloud
+ */
+PointCloudCol ColorPointCloud(const PointCloudIRT& cloud, uint8_t r, uint8_t g,
                               uint8_t b);
 
 /**
