@@ -128,10 +128,35 @@ std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud) {
   return cloud_vec;
 }
 
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloudIRT& cloud) {
+  std::vector<geometry_msgs::Vector3> cloud_vec;
+  for (const PointXYZIRT& p : cloud) {
+    geometry_msgs::Vector3 point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud_vec.push_back(point);
+  }
+  return cloud_vec;
+}
+
 PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector) {
   PointCloud cloud;
   for (const geometry_msgs::Vector3& p : vector) {
     pcl::PointXYZ point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
+    cloud.push_back(point);
+  }
+  return cloud;
+}
+
+PointCloudIRT
+    ROSVectorToPCLIRT(const std::vector<geometry_msgs::Vector3>& vector) {
+  PointCloudIRT cloud;
+  for (const geometry_msgs::Vector3& p : vector) {
+    PointXYZIRT point;
     point.x = p.x;
     point.y = p.y;
     point.z = p.z;

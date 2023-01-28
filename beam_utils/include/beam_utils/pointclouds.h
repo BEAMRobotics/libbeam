@@ -225,11 +225,28 @@ void ROSToPCL(pcl::PointCloud<PointXYZITRRNR>& cloud_out,
 std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloud& cloud);
 
 /**
+ * @brief Convert from a pcl pointcloud to a vector of ros vectors. Note we only
+ * copy xyz
+ * @param cloud pcl pointcloud
+ * @return ros vector
+ */
+std::vector<geometry_msgs::Vector3> PCLToROSVector(const PointCloudIRT& cloud);
+
+/**
  * @brief Convert from a vector of ros vectors to a pcl pointcloud
  * @param vector ros vector
  * @return cloud
  */
 PointCloud ROSVectorToPCL(const std::vector<geometry_msgs::Vector3>& vector);
+
+/**
+ * @brief Convert from a vector of ros vectors to a pcl pointcloud with IRT
+ * fields
+ * @param vector ros vector
+ * @return cloud
+ */
+PointCloudIRT
+    ROSVectorToPCLIRT(const std::vector<geometry_msgs::Vector3>& vector);
 
 /**
  * @brief converts PointXYZIRPYT to pose + ROS stamp
