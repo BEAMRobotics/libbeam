@@ -242,6 +242,30 @@ bool LoamPointCloud::Empty() const {
   return true;
 }
 
+void LoamPointCloud::LoadFromCombined(const LoamPointCloudCombined& cloud) {
+  for (const PointLoam& p : cloud) {
+    PointXYZIRT pnew;
+    pnew.x = p.x;
+    pnew.y = p.y;
+    pnew.z = p.z;
+    pnew.intensity = p.intensity;
+    pnew.ring = p.ring;
+    pnew.time = p.time;
+    if (p.type == 2) {
+      edges.strong.cloud.push_back(pnew);
+    } else if (p.type == 1) {
+      edges.weak.cloud.push_back(pnew);
+    } else if (p.type == 0) {
+      surfaces.strong.cloud.push_back(pnew);
+    } else if (p.type == -1) {
+      surfaces.weak.cloud.push_back(pnew);
+    } else {
+      BEAM_ERROR("invalid type parameter in cloud.");
+      throw std::runtime_error{"invalid type parameter in cloud"};
+    }
+  }
+}
+
 LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
   LoamPointCloudCombined cloud;
   for (const PointXYZIRT& p : edges.strong.cloud.points) {

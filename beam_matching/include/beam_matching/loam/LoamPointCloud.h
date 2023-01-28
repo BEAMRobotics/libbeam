@@ -29,10 +29,6 @@
 #include <beam_utils/kdtree.h>
 #include <beam_utils/pointclouds.h>
 
-namespace beam_matching {
-/** @addtogroup matching
- *  @{ */
-
 struct PointLoam {
   PCL_ADD_POINT4D
   PCL_ADD_INTENSITY;
@@ -41,6 +37,17 @@ struct PointLoam {
   std::int8_t type; // see LoamFeatureExtactor.h
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointLoam, (float, x, x)(float, y, y)(float, z, z)
+    (float, intensity, intensity)(std::uint16_t, ring, ring)(float, time, time)
+    (std::int8_t, type, type))
+// clang-format on
+
+namespace beam_matching {
+/** @addtogroup matching
+ *  @{ */
 
 using LoamPointCloudCombined = pcl::PointCloud<PointLoam>;
 
@@ -108,6 +115,13 @@ public:
                  const PointCloudIRT& surface_features_strong,
                  const PointCloudIRT& edge_features_weak = PointCloudIRT(),
                  const PointCloudIRT& surface_features_weak = PointCloudIRT());
+
+  /**
+   * @brief load this loam pointcloud from a combined loam cloud. See
+   * GetCombinedCloud
+   * @param cloud
+   */
+  void LoadFromCombined(const LoamPointCloudCombined& cloud);
 
   /**
    * @brief Add a new set of strong surface features
