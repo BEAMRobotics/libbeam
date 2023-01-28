@@ -28,6 +28,8 @@ struct PointXYZIRT {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
+using PointCloudIRT = pcl::PointCloud<PointXYZIRT>;
+
 // clang-format off
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     PointXYZIRT, (float, x, x)(float, y, y)(float, z, z)
@@ -245,6 +247,16 @@ void PCLPointToPose(const PointXYZIRPYT& point, ros::Time& time,
  * @return colored pointcloud
  */
 PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
+                              uint8_t b);
+
+/**
+ * @brief Add RGB color to a pcl pointcloud
+ * @param r red color intensity
+ * @param g green color intensity
+ * @param b blue color intensity
+ * @return colored pointcloud
+ */
+PointCloudCol ColorPointCloud(const PointCloudIRT& cloud, uint8_t r, uint8_t g,
                               uint8_t b);
 
 /**

@@ -80,7 +80,7 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
   edge_measurements_.clear();
 
   // transform target cloud to reference frame with current estimate
-  PointCloud tgt_features;
+  PointCloudIRT tgt_features;
   if (T_REF_TGT_.isIdentity()) {
     tgt_features = tgt_->edges.strong.cloud;
   } else {
@@ -167,7 +167,7 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
   surface_measurements_.clear();
 
   // transform target cloud to reference frame with current estimate
-  PointCloud tgt_features;
+  PointCloudIRT tgt_features;
   if (T_REF_TGT_.isIdentity()) {
     tgt_features = tgt_->surfaces.strong.cloud;
   } else {

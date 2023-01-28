@@ -35,8 +35,6 @@ namespace beam_matching {
 /** @brief A pair describing the start end end index of a range. */
 using IndexRange = std::pair<size_t, size_t>;
 
-using PointCloudIRT = pcl::PointCloud<PointXYZIRT>;
-
 /** @brief Point label options. */
 enum PointLabel {
   CORNER_SHARP = 2,      // sharp corner point

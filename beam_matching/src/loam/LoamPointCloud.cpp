@@ -28,24 +28,24 @@ void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   // if tree is not empty, and we do not want to override, then do nothing
   if (!kdtree_empty && !override_tree) { return; }
 
-  kdtree = std::make_shared<beam::KdTree<pcl::PointXYZ>>(cloud);
+  kdtree = std::make_shared<beam::KdTree<PointXYZIRT>>(cloud);
   kdtree_empty = false;
 }
 
-LoamPointCloud::LoamPointCloud(const PointCloud& edge_features_strong,
-                               const PointCloud& surface_features_strong,
-                               const PointCloud& edge_features_weak,
-                               const PointCloud& surface_features_weak) {
+LoamPointCloud::LoamPointCloud(const PointCloudIRT& edge_features_strong,
+                               const PointCloudIRT& surface_features_strong,
+                               const PointCloudIRT& edge_features_weak,
+                               const PointCloudIRT& surface_features_weak) {
   edges.strong.cloud = edge_features_strong;
   surfaces.strong.cloud = surface_features_strong;
   edges.weak.cloud = edge_features_weak;
   surfaces.weak.cloud = surface_features_weak;
 }
 
-void LoamPointCloud::AddSurfaceFeaturesStrong(const PointCloud& new_features,
+void LoamPointCloud::AddSurfaceFeaturesStrong(const PointCloudIRT& new_features,
                                               const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
-    PointCloud new_features_transformed;
+    PointCloudIRT new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
     surfaces.strong.cloud += new_features_transformed;
     return;
@@ -54,10 +54,10 @@ void LoamPointCloud::AddSurfaceFeaturesStrong(const PointCloud& new_features,
   return;
 }
 
-void LoamPointCloud::AddEdgeFeaturesStrong(const PointCloud& new_features,
+void LoamPointCloud::AddEdgeFeaturesStrong(const PointCloudIRT& new_features,
                                            const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
-    PointCloud new_features_transformed;
+    PointCloudIRT new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
     edges.strong.cloud += new_features_transformed;
     return;
@@ -66,10 +66,10 @@ void LoamPointCloud::AddEdgeFeaturesStrong(const PointCloud& new_features,
   return;
 }
 
-void LoamPointCloud::AddSurfaceFeaturesWeak(const PointCloud& new_features,
+void LoamPointCloud::AddSurfaceFeaturesWeak(const PointCloudIRT& new_features,
                                             const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
-    PointCloud new_features_transformed;
+    PointCloudIRT new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
     surfaces.weak.cloud += new_features_transformed;
     return;
@@ -78,10 +78,10 @@ void LoamPointCloud::AddSurfaceFeaturesWeak(const PointCloud& new_features,
   return;
 }
 
-void LoamPointCloud::AddEdgeFeaturesWeak(const PointCloud& new_features,
+void LoamPointCloud::AddEdgeFeaturesWeak(const PointCloudIRT& new_features,
                                          const Eigen::Matrix4d& T) {
   if (!T.isIdentity()) {
-    PointCloud new_features_transformed;
+    PointCloudIRT new_features_transformed;
     pcl::transformPointCloud(new_features, new_features_transformed, T);
     edges.weak.cloud += new_features_transformed;
     return;
@@ -119,7 +119,7 @@ void LoamPointCloud::Save(const std::string& output_path, bool combine_features,
     return;
   }
 
-  PointCloud cloud_combined;
+  PointCloudIRT cloud_combined;
   if (combine_features) {
     cloud_combined = edges.strong.cloud;
     cloud_combined += edges.weak.cloud;
@@ -135,29 +135,29 @@ void LoamPointCloud::Save(const std::string& output_path, bool combine_features,
   if (r == 255 && g == 255 && b == 255) {
     std::string error_message{};
     if (combine_features) {
-      if (!beam::SavePointCloud<pcl::PointXYZ>(
+      if (!beam::SavePointCloud<PointXYZIRT>(
               output_path + "combined_features.pcd", cloud_combined,
               beam::PointCloudFileType::PCDBINARY, error_message)) {
         BEAM_ERROR("Unable to save loam cloud. Reason: {}", error_message);
       }
     }
 
-    if (!beam::SavePointCloud<pcl::PointXYZ>(
+    if (!beam::SavePointCloud<PointXYZIRT>(
             output_path + "edge_features_strong.pcd", edges.strong.cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
-    if (!beam::SavePointCloud<pcl::PointXYZ>(
+    if (!beam::SavePointCloud<PointXYZIRT>(
             output_path + "edge_features_weak.pcd", edges.weak.cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
-    if (!beam::SavePointCloud<pcl::PointXYZ>(
+    if (!beam::SavePointCloud<PointXYZIRT>(
             output_path + "surface_features_strong.pcd", surfaces.strong.cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
-    if (!beam::SavePointCloud<pcl::PointXYZ>(
+    if (!beam::SavePointCloud<PointXYZIRT>(
             output_path + "surface_features_weak.pcd", surfaces.weak.cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
@@ -240,6 +240,55 @@ bool LoamPointCloud::Empty() const {
   if (!surfaces.strong.cloud.empty()) { return false; }
   if (!surfaces.weak.cloud.empty()) { return false; }
   return true;
+}
+
+LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() {
+  LoamPointCloudCombined cloud;
+  for (const PointXYZIRT& p : edges.strong.cloud.points) {
+    PointLoam pnew;
+    pnew.x = p.x;
+    pnew.y = p.y;
+    pnew.z = p.z;
+    pnew.intensity = p.intensity;
+    pnew.ring = p.ring;
+    pnew.time = p.time;
+    pnew.type = 2;
+    cloud.push_back(pnew);
+  }
+  for (const PointXYZIRT& p : edges.weak.cloud.points) {
+    PointLoam pnew;
+    pnew.x = p.x;
+    pnew.y = p.y;
+    pnew.z = p.z;
+    pnew.intensity = p.intensity;
+    pnew.ring = p.ring;
+    pnew.time = p.time;
+    pnew.type = 1;
+    cloud.push_back(pnew);
+  }
+  for (const PointXYZIRT& p : surfaces.strong.cloud.points) {
+    PointLoam pnew;
+    pnew.x = p.x;
+    pnew.y = p.y;
+    pnew.z = p.z;
+    pnew.intensity = p.intensity;
+    pnew.ring = p.ring;
+    pnew.time = p.time;
+    pnew.type = 0;
+    cloud.push_back(pnew);
+  }
+  for (const PointXYZIRT& p : surfaces.weak.cloud.points) {
+    PointLoam pnew;
+    pnew.x = p.x;
+    pnew.y = p.y;
+    pnew.z = p.z;
+    pnew.intensity = p.intensity;
+    pnew.ring = p.ring;
+    pnew.time = p.time;
+    pnew.type = -1;
+    cloud.push_back(pnew);
+  }
+  return cloud;
 }
 
 } // namespace beam_matching

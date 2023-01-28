@@ -173,6 +173,23 @@ PointCloudCol ColorPointCloud(const PointCloud& cloud, uint8_t r, uint8_t g,
   return cloud_col;
 }
 
+PointCloudCol ColorPointCloud(const PointCloudIRT& cloud, uint8_t r, uint8_t g,
+                              uint8_t b) {
+  PointCloudCol cloud_col;
+  for (uint32_t i = 0; i < cloud.size(); i++) {
+    auto& p_in = cloud[i];
+    pcl::PointXYZRGB p;
+    p.x = p_in.x;
+    p.y = p_in.y;
+    p.z = p_in.z;
+    p.r = r;
+    p.g = g;
+    p.b = b;
+    cloud_col.push_back(p);
+  }
+  return cloud_col;
+}
+
 PointCloudCol AddFrameToCloud(const PointCloudCol& cloud,
                               const PointCloudCol& frame,
                               const Eigen::Matrix4d& T) {

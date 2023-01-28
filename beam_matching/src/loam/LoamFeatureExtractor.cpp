@@ -200,7 +200,10 @@ std::vector<PointCloudIRT>
   // extract valid points from input cloud
   for (size_t point_id = 0; point_id < cloud.size(); point_id++) {
     const auto& p = cloud[point_id];
-    PointXYZIRT point(p.x, p.y, p.z, 0, 0, 0);
+    PointXYZIRT point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = p.z;
 
     // skip NaN and INF valued points
     if (!std::isfinite(point.x) || !std::isfinite(point.y) ||
@@ -265,7 +268,7 @@ std::vector<PointCloudIRT>
       }
     }
 
-    if (!beam::SavePointCloud<PointXYZIRT>(
+    if (!beam::SavePointCloud<pcl::PointXYZ>(
             current_save_path + "scan_orig.pcd", cloud,
             beam::PointCloudFileType::PCDBINARY, error_message)) {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
