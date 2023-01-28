@@ -206,7 +206,7 @@ public:
    *
    * @return LoamPointCloudCombined
    */
-  LoamPointCloudCombined GetCombinedCloud();
+  LoamPointCloudCombined GetCombinedCloud() const;
 
   /** Edge (or sharp) features are directly accessible for ease of use */
   LoamFeatures edges;

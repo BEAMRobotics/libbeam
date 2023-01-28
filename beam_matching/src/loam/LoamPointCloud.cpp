@@ -242,7 +242,7 @@ bool LoamPointCloud::Empty() const {
   return true;
 }
 
-LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() {
+LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
   LoamPointCloudCombined cloud;
   for (const PointXYZIRT& p : edges.strong.cloud.points) {
     PointLoam pnew;
