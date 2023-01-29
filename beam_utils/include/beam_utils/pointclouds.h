@@ -17,6 +17,7 @@
 
 #include <beam_utils/filesystem.h>
 #include <beam_utils/kdtree.h>
+#include <beam_utils/pcl_conversions.h>
 
 // Create point types of different lidars
 // Velodyne
@@ -134,36 +135,26 @@ static uint32_t seq_tmp = 0;
  * @param seq scan number
  * @return ros pointcloud
  */
-sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
+template <typename PointT>
+sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointT>& cloud,
                                   const ros::Time& time = ros::Time(0),
                                   const std::string& frame_id = "",
-                                  uint32_t seq = 0);
+                                  uint32_t seq = 0) {
+  // Convert to pointcloud2 data type
+  pcl::PCLPointCloud2 cloud2;
+  pcl::toPCLPointCloud2(cloud, cloud2);
 
-/**
- * @brief Convert from a pcl pointcloud to a ROS pointcloud
- * @param cloud pcl pointcloud
- * @param time stamp
- * @param frame_id frame associated with the lidar
- * @param seq scan number
- * @return ros pointcloud
- */
-sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointXYZITRRNR>& cloud,
-                                  const ros::Time& time = ros::Time(0),
-                                  const std::string& frame_id = "",
-                                  uint32_t seq = 0);
+  // Convert to ros msg
+  sensor_msgs::PointCloud2 ros_cloud;
+  beam::pcl_conversions::fromPCL(cloud2, ros_cloud);
 
-/**
- * @brief Convert from a pcl pointcloud to a ROS pointcloud
- * @param cloud pcl pointcloud
- * @param time stamp
- * @param frame_id frame associated with the lidar
- * @param seq scan number
- * @return ros pointcloud
- */
-sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointXYZIRT>& cloud,
-                                  const ros::Time& time = ros::Time(0),
-                                  const std::string& frame_id = "",
-                                  uint32_t seq = 0);
+  // update header info
+  ros_cloud.header.stamp = time;
+  ros_cloud.header.seq = seq;
+  ros_cloud.header.frame_id = frame_id;
+
+  return ros_cloud;
+}
 
 /**
  * @brief Convert from a ROS pointcloud to a pcl pointcloud

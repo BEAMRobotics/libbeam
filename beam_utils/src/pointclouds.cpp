@@ -3,49 +3,10 @@
 #include <pcl/common/transforms.h>
 
 #include <beam_utils/math.h>
-#include <beam_utils/pcl_conversions.h>
 
 namespace beam {
 
 sensor_msgs::PointCloud2 PCLToROS(const PointCloud& cloud,
-                                  const ros::Time& time,
-                                  const std::string& frame_id, uint32_t seq) {
-  // Convert to pointcloud2 data type
-  pcl::PCLPointCloud2 cloud2;
-  pcl::toPCLPointCloud2(cloud, cloud2);
-
-  // Convert to ros msg
-  sensor_msgs::PointCloud2 ros_cloud;
-  beam::pcl_conversions::fromPCL(cloud2, ros_cloud);
-
-  // update header info
-  ros_cloud.header.stamp = time;
-  ros_cloud.header.seq = seq;
-  ros_cloud.header.frame_id = frame_id;
-
-  return ros_cloud;
-}
-
-sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointXYZITRRNR>& cloud,
-                                  const ros::Time& time,
-                                  const std::string& frame_id, uint32_t seq) {
-  // Convert to pointcloud2 data type
-  pcl::PCLPointCloud2 cloud2;
-  pcl::toPCLPointCloud2(cloud, cloud2);
-
-  // Convert to ros msg
-  sensor_msgs::PointCloud2 ros_cloud;
-  beam::pcl_conversions::fromPCL(cloud2, ros_cloud);
-
-  // update header info
-  ros_cloud.header.stamp = time;
-  ros_cloud.header.seq = seq;
-  ros_cloud.header.frame_id = frame_id;
-
-  return ros_cloud;
-}
-
-sensor_msgs::PointCloud2 PCLToROS(const pcl::PointCloud<PointXYZIRT>& cloud,
                                   const ros::Time& time,
                                   const std::string& frame_id, uint32_t seq) {
   // Convert to pointcloud2 data type
