@@ -92,11 +92,8 @@ void LoamPointCloud::AddEdgeFeaturesWeak(const PointCloudIRT& new_features,
 
 void LoamPointCloud::TransformPointCloud(const Eigen::Matrix4d& T) {
   if (edges.strong.cloud.size() > 0) {
-    std::cout << "TESTB_0\n";
     pcl::transformPointCloud(edges.strong.cloud, edges.strong.cloud, T);
-    std::cout << "TESTB_1\n";
     edges.strong.ClearKDTree();
-    std::cout << "TESTB_2\n";
   }
   if (edges.weak.cloud.size() > 0) {
     pcl::transformPointCloud(edges.weak.cloud, edges.weak.cloud, T);
