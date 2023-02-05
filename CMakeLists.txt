@@ -8,6 +8,8 @@ SET(BEAM_PACKAGE_VERSION 0.1.0)
 SET(CMAKE_CXX_STANDARD 14)
 ADD_COMPILE_OPTIONS(-Wall -Wextra -Wno-strict-overflow)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Default to Release build type, otherwise some modules will be slow
 IF(NOT CMAKE_BUILD_TYPE)
    MESSAGE(STATUS "Using 'Release' build type as CMAKE_BUILD_TYPE is not set")
