@@ -251,13 +251,13 @@ void LoamPointCloud::LoadFromCombined(const LoamPointCloudCombined& cloud) {
     pnew.intensity = p.intensity;
     pnew.ring = p.ring;
     pnew.time = p.time;
-    if (p.type == 2) {
+    if (p.type == PointLabel::CORNER_SHARP) {
       edges.strong.cloud.push_back(pnew);
-    } else if (p.type == 1) {
+    } else if (p.type == PointLabel::CORNER_LESS_SHARP) {
       edges.weak.cloud.push_back(pnew);
-    } else if (p.type == 0) {
+    } else if (p.type == PointLabel::SURFACE_FLAT) {
       surfaces.strong.cloud.push_back(pnew);
-    } else if (p.type == -1) {
+    } else if (p.type == PointLabel::SURFACE_LESS_FLAT) {
       surfaces.weak.cloud.push_back(pnew);
     } else {
       BEAM_ERROR("invalid type parameter in cloud.");
@@ -276,7 +276,7 @@ LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
     pnew.intensity = p.intensity;
     pnew.ring = p.ring;
     pnew.time = p.time;
-    pnew.type = 2;
+    pnew.type = PointLabel::CORNER_SHARP;
     cloud.push_back(pnew);
   }
   for (const PointXYZIRT& p : edges.weak.cloud.points) {
@@ -287,7 +287,7 @@ LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
     pnew.intensity = p.intensity;
     pnew.ring = p.ring;
     pnew.time = p.time;
-    pnew.type = 1;
+    pnew.type = PointLabel::CORNER_LESS_SHARP;
     cloud.push_back(pnew);
   }
   for (const PointXYZIRT& p : surfaces.strong.cloud.points) {
@@ -298,7 +298,7 @@ LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
     pnew.intensity = p.intensity;
     pnew.ring = p.ring;
     pnew.time = p.time;
-    pnew.type = 0;
+    pnew.type = PointLabel::SURFACE_FLAT;
     cloud.push_back(pnew);
   }
   for (const PointXYZIRT& p : surfaces.weak.cloud.points) {
@@ -309,7 +309,7 @@ LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
     pnew.intensity = p.intensity;
     pnew.ring = p.ring;
     pnew.time = p.time;
-    pnew.type = -1;
+    pnew.type = PointLabel::SURFACE_LESS_FLAT;
     cloud.push_back(pnew);
   }
   return cloud;

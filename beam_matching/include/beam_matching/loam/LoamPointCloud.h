@@ -29,12 +29,21 @@
 #include <beam_utils/kdtree.h>
 #include <beam_utils/pointclouds.h>
 
+/** @brief Point label options. */
+enum PointLabel {
+  CORNER_SHARP = 255,      // sharp corner point
+  CORNER_LESS_SHARP = 170, // less sharp corner point
+  SURFACE_LESS_FLAT = 85, // less flat surface point
+  SURFACE_FLAT = 0      // flat surface point
+};
+
+
 struct PointLoam {
   PCL_ADD_POINT4D
   PCL_ADD_INTENSITY;
   std::uint16_t ring;
   float time;
-  std::int8_t type; // see LoamFeatureExtactor.h
+  std::int8_t type; // see PointLabel
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 

@@ -35,14 +35,6 @@ namespace beam_matching {
 /** @brief A pair describing the start end end index of a range. */
 using IndexRange = std::pair<size_t, size_t>;
 
-/** @brief Point label options. */
-enum PointLabel {
-  CORNER_SHARP = 2,      // sharp corner point
-  CORNER_LESS_SHARP = 1, // less sharp corner point
-  SURFACE_LESS_FLAT = 0, // less flat surface point
-  SURFACE_FLAT = -1      // flat surface point
-};
-
 /**
  * @brief class for extracting loam features from a regular pcl pointcloud
  */
