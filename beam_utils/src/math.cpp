@@ -515,6 +515,19 @@ Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T) {
   return T_inv;
 }
 
+Eigen::Matrix4d RelativeTransform(const Eigen::Matrix4d& T_W_A,
+                                  const Eigen::Matrix4d& T_W_B) {
+  Eigen::Matrix4d W_T_A_B;
+  Eigen::Matrix3d R_W_A = T_W_A.block<3, 3>(0, 0);
+  Eigen::Matrix3d R_W_B = T_W_B.block<3, 3>(0, 0);
+  Eigen::Matrix3d R_A_B = R_W_A.transpose() * R_W_B;
+  Eigen::Vector3d t_A_B =
+      T_W_A.block<3, 1>(0, 3).transpose() - T_W_B.block<3, 1>(0, 3).transpose();
+  W_T_A_B.block<3, 3>(0, 0) = R_A_B;
+  W_T_A_B.block<3, 1>(0, 3) = t_A_B.transpose();
+  return W_T_A_B;
+}
+
 Eigen::Matrix4d AverageTransforms(
     const std::vector<Eigen::Matrix4d, AlignMat4d>& transforms) {
   if (transforms.size() == 1) { return transforms[0]; }

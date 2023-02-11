@@ -7,8 +7,8 @@
 #include <Eigen/Dense>
 
 #include <beam_calibration/CameraModel.h>
-#include <beam_utils/optional.h>
 #include <beam_cv/Utils.h>
+#include <beam_utils/optional.h>
 
 namespace beam_cv {
 
@@ -39,11 +39,12 @@ public:
    * @param p1_v corresponding pixels in image 1 (min 7)
    * @param p2_v corresponding pixels in image 2 (min 7)
    */
-  static beam::opt<std::vector<Eigen::Matrix3d, beam::AlignMat3d>> EssentialMatrix7Point(
-      const std::shared_ptr<beam_calibration::CameraModel>& cam1,
-      const std::shared_ptr<beam_calibration::CameraModel>& cam2,
-      const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
-      const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v);
+  static beam::opt<std::vector<Eigen::Matrix3d, beam::AlignMat3d>>
+      EssentialMatrix7Point(
+          const std::shared_ptr<beam_calibration::CameraModel>& cam1,
+          const std::shared_ptr<beam_calibration::CameraModel>& cam2,
+          const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
+          const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v);
 
   /**
    * @brief Performs RANSAC on the given estimator
@@ -56,7 +57,7 @@ public:
    * use time as seed
    * @param max_iterations number of ransac iterations to perform
    * @param inlier_threshold pixel distance to count an inlier as
-   * @return transformation matrix from cam1 to cam2
+   * @return transformation matrix from cam1 to cam2 (T_CAM2_CAM1)
    */
   static beam::opt<Eigen::Matrix4d> RANSACEstimator(
       const std::shared_ptr<beam_calibration::CameraModel>& cam1,
@@ -72,7 +73,8 @@ public:
    * @param R vector to return possible rotations
    * @param t vector to return possible translations
    */
-  static void RtFromE(const Eigen::Matrix3d& E, std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
+  static void RtFromE(const Eigen::Matrix3d& E,
+                      std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
                       std::vector<Eigen::Vector3d, beam::AlignVec3d>& t);
 
   /**
@@ -93,7 +95,8 @@ public:
                   const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
                   const std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
                   const std::vector<Eigen::Vector3d, beam::AlignVec3d>& t,
-                  beam::opt<Eigen::Matrix4d>& pose, double inlier_threshold = 10.0);
+                  beam::opt<Eigen::Matrix4d>& pose,
+                  double inlier_threshold = 10.0);
 };
 
 } // namespace beam_cv

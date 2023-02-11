@@ -310,6 +310,15 @@ Eigen::Matrix3d SkewTransform(const Eigen::Vector3d& V);
 Eigen::Matrix4d InvertTransform(const Eigen::MatrixXd& T);
 
 /**
+ * @brief Computes the transform W_T_A_B (B to A in the world frame)
+ * @param T_W_A transform from B to world
+ * @param T_W_B transform from A to world
+ * @return 4x4 transformation matrix
+ **/
+Eigen::Matrix4d RelativeTransform(const Eigen::Matrix4d& T_W_A,
+                                  const Eigen::Matrix4d& T_W_B);
+
+/**
  * @brief Average a set of transforms by converting each to lie algebra space,
  * summing their quantities in this space, then dividing all by the number of
  * transforms and converting back to Lie Group
@@ -594,23 +603,24 @@ std::string TransformationMatrixToString(const Eigen::Matrix4d& T);
 /**
  * @brief return log odds of a probability
  * @param p probability
- * @return l 
+ * @return l
  */
 double Logit(double p);
 
 /**
- * @brief returns the inverse of the log odds probability function 
+ * @brief returns the inverse of the log odds probability function
  * @param l log odds
- * @return probability 
+ * @return probability
  */
 double LogitInv(double l);
 
 /**
  * @brief applies a Bayesian Log Odds update
  * @param pk probability associated with each measurement
- * @param l0 log odds of the original probability (usually Logit(0.5) if uncertain)
+ * @param l0 log odds of the original probability (usually Logit(0.5) if
+ * uncertain)
  * @param p_prev previous probability
- * @return updated probability 
+ * @return updated probability
  */
 double BayesianLogitUpdate(double pk, double l0, double p_prev);
 
