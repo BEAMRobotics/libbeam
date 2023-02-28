@@ -91,6 +91,16 @@ public:
                            const int num_features, const int cols,
                            const int rows) const;
 
+  /** @brief Gets the string representation of the type of detector
+   *  @return string of detector type
+   */
+  std::string GetTypeString() const { return "FASTSSC"; }
+
+  /** @brief Gets the type of detector
+   *  @return detector type
+   */
+  DetectorType GetType() const { return DetectorType::FASTSSC; }
+
 private:
   // this gets called in each constructor
   void Setup();

@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <beam_cv/descriptors/ORBDescriptor.h>
-#include <beam_cv/detectors/GFTTDetector.h>
+#include <beam_cv/detectors/FASTSSCDetector.h>
 #include <beam_utils/filesystem.h>
 #include <beam_utils/optional.h>
 
@@ -28,10 +28,10 @@ public:
 
   /**
    * @brief Constructor to initialize with empty database
-   * @param detector_params parameters to use for the gftt detector
+   * @param detector_params parameters to use for the FASTSSC detector
    * @param descriptor_params parameters to use for the orb descriptor
    */
-  ImageDatabase(const beam_cv::GFTTDetector::Params& detector_params,
+  ImageDatabase(const beam_cv::FASTSSCDetector::Params& detector_params,
                 const beam_cv::ORBDescriptor::Params& descriptor_params);
 
   /**
@@ -44,12 +44,12 @@ public:
 
   /**
    * @brief Constructor to initialize with already created dbow db
-   * @param detector_params parameters to use for the gftt detector
+   * @param detector_params parameters to use for the FASTSSC detector
    * @param descriptor_params parameters to use for the orb descriptor
    * @param dbow_file_path path to database (dbow3) file
    * @param timestamps_file_path path to timestamp to Result id json file
    */
-  ImageDatabase(const beam_cv::GFTTDetector::Params& detector_params,
+  ImageDatabase(const beam_cv::FASTSSCDetector::Params& detector_params,
                 const beam_cv::ORBDescriptor::Params& descriptor_params,
                 const std::string& dbow_file_path,
                 const std::string& timestamps_file_path);
@@ -91,7 +91,7 @@ private:
   json index_to_timestamp_map_;
   std::shared_ptr<DBoW3::Database> dbow_db_;
   beam_cv::ORBDescriptor descriptor_;
-  beam_cv::GFTTDetector detector_;
+  beam_cv::FASTSSCDetector detector_;
 };
 
 } // namespace beam_cv

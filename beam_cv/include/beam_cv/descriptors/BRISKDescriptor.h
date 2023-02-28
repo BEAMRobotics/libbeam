@@ -87,7 +87,17 @@ public:
    *  @return an array containing the computed descriptors.
    */
   cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+                             std::vector<cv::KeyPoint>& keypoints) const;
+
+  /** @brief Gets the string representation of the type of descriptor
+   *  @return string of descriptor type
+   */
+  std::string GetTypeString() const { return "BRISK"; }
+
+  /** @brief Gets the type of descriptor
+   *  @return descriptor type
+   */
+  DescriptorType GetType() const { return DescriptorType::BRISK; }
 
 private:
   /** this gets called in each constructor */
@@ -100,6 +110,5 @@ private:
 
   /** The pointer to the wrapped cv::BRISK object. */
   cv::Ptr<cv::BRISK> brisk_descriptor_;
-
 };
 } // namespace beam_cv

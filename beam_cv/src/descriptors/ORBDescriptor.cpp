@@ -66,7 +66,7 @@ void ORBDescriptor::CheckConfig() {
 
 cv::Mat
     ORBDescriptor::ExtractDescriptors(const cv::Mat& image,
-                                      std::vector<cv::KeyPoint>& keypoints) {
+                                      std::vector<cv::KeyPoint>& keypoints)const {
   cv::Mat descriptors;
   orb_descriptor_->compute(image, keypoints, descriptors);
   return descriptors;

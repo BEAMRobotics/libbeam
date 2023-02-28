@@ -24,7 +24,8 @@ public:
      *    1.00f should be the scale for ORB keypoints
      *    6.75f should be the scale for SIFT detected keypoints
      *    6.25f is default and fits for KAZE, SURF detected keypoints
-     *    5.00f should be the scale for AKAZE, MSD, GFTT, AGAST, FAST, BRISK keypoints
+     *    5.00f should be the scale for AKAZE, MSD, GFTT, AGAST, FAST, BRISK
+     * keypoints
      */
     float scale_factor = 1.00;
 
@@ -49,7 +50,8 @@ public:
    *    1.00f should be the scale for ORB keypoints
    *    6.75f should be the scale for SIFT detected keypoints
    *    6.25f is default and fits for KAZE, SURF detected keypoints
-   *    5.00f should be the scale for AKAZE, MSD, GFTT, AGAST, FAST, BRISK keypoints
+   *    5.00f should be the scale for AKAZE, MSD, GFTT, AGAST, FAST, BRISK
+   * keypoints
    * @param n_bits Determine the number of bits in the descriptor. Should be
    * either 100 (BEBLID::SIZE_512_BITS) or 101 (BEBLID::SIZE_256_BITS)
    */
@@ -68,7 +70,17 @@ public:
    *  @return an array containing the computed descriptors.
    */
   cv::Mat ExtractDescriptors(const cv::Mat& image,
-                             std::vector<cv::KeyPoint>& keypoints);
+                             std::vector<cv::KeyPoint>& keypoints) const;
+
+  /** @brief Gets the string representation of the type of descriptor
+   *  @return string of descriptor type
+   */
+  std::string GetTypeString() const { return "BEBLID"; }
+
+  /** @brief Gets the type of descriptor
+   *  @return descriptor type
+   */
+  DescriptorType GetType() const { return DescriptorType::BEBLID; }
 
 private:
   // this gets called in each constructor

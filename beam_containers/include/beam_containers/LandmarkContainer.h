@@ -205,9 +205,47 @@ public:
   void RemoveMeasurementsAtTime(const TimeType& time);
 
   /**
+   * @brief Computes the parallax fo measurements between two times
+   * @param t1 first time
+   * @param t2 second time
+   */
+  double ComputeParallax(const TimeType& t1, const TimeType& t2,
+                         bool compute_median = false);
+
+  /**
    * @brief Return a const reference to the measurement times set
    */
   const std::set<uint64_t>& GetMeasurementTimes() const;
+
+  /**
+   * @brief Return an ordered vector of measurement times
+   */
+  const std::vector<uint64_t> GetMeasurementTimesVector() const;
+
+  /**
+   * @brief Return the timestamp at the start of the container
+   */
+  TimeType FrontTimestamp() const;
+
+  /**
+   * @brief  Return the timestamp at the end of the container
+   */
+  TimeType BackTimestamp() const;
+
+  /**
+   * @brief Remove first image from the container
+   */
+  void PopFront();
+
+  /**
+   * @brief Remove last image from the container
+   */
+  void PopBack();
+
+  /**
+   * @brief Retrun the number of images in the container
+   */
+  size_t NumImages() const;
 
   /**
    * @brief save all measurements in container to disk as json

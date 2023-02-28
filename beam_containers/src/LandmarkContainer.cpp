@@ -1,5 +1,7 @@
 #include <beam_containers/LandmarkContainer.h>
 
+#include <beam_utils/time.h>
+
 namespace beam_containers {
 
 bool LandmarkContainer::empty() const {
@@ -151,8 +153,68 @@ void LandmarkContainer::RemoveMeasurementsAtTime(const TimeType& time) {
   measurement_times_.erase(time.toNSec());
 }
 
+double LandmarkContainer::ComputeParallax(const TimeType& t1,
+                                          const TimeType& t2,
+                                          bool compute_median) {
+  std::vector<uint64_t> frame1_ids = GetLandmarkIDsInImage(t1);
+  double total_parallax = 0.0;
+  double num_correspondences = 0.0;
+  std::vector<double> parallaxes;
+  for (auto& id : frame1_ids) {
+    try {
+      Eigen::Vector2d p1 = GetValue(t1, id);
+      Eigen::Vector2d p2 = GetValue(t2, id);
+      double d = beam::distance(p1, p2);
+      if (compute_median) {
+        parallaxes.push_back(d);
+      } else {
+        total_parallax += d;
+        num_correspondences += 1.0;
+      }
+    } catch (const std::out_of_range& oor) {}
+  }
+  if (compute_median) {
+    if (parallaxes.empty()) { return 0.0; }
+    std::sort(parallaxes.begin(), parallaxes.end());
+    return parallaxes[parallaxes.size() / 2];
+  } else {
+    if (num_correspondences == 0.0) { return 0.0; }
+    return total_parallax / num_correspondences;
+  }
+}
+
 const std::set<uint64_t>& LandmarkContainer::GetMeasurementTimes() const {
   return measurement_times_;
+}
+
+const std::vector<uint64_t>
+    LandmarkContainer::GetMeasurementTimesVector() const {
+  std::vector<uint64_t> img_times;
+  std::for_each(measurement_times_.begin(), measurement_times_.end(),
+                [&](const uint64_t& time) { img_times.push_back(time); });
+  return img_times;
+}
+
+TimeType LandmarkContainer::FrontTimestamp() const {
+  const auto first_time = *(measurement_times_.begin());
+  return beam::NSecToRos(first_time);
+}
+
+TimeType LandmarkContainer::BackTimestamp() const {
+  const auto last_time = *(measurement_times_.rbegin());
+  return beam::NSecToRos(last_time);
+}
+
+void LandmarkContainer::PopFront() {
+  RemoveMeasurementsAtTime(FrontTimestamp());
+}
+
+void LandmarkContainer::PopBack() {
+  RemoveMeasurementsAtTime(BackTimestamp());
+}
+
+size_t LandmarkContainer::NumImages() const {
+  return measurement_times_.size();
 }
 
 void LandmarkContainer::SaveToJson(const std::string& output_filename) {
