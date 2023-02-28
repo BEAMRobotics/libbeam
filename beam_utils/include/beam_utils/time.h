@@ -117,6 +117,21 @@ struct RosTimeHash {
   }
 };
 
+struct RosTimeCmp {
+  bool operator()(const ros::Time& a, const ros::Time& b) const {
+    return a < b;
+  }
+};
+
+template <class ValueType>
+using RosTimeMap = std::map<ros::Time, ValueType, RosTimeCmp>;
+
+template <class ValueType>
+using RosTimeHashMap = std::map<ros::Time, ValueType, RosTimeHash>;
+
+template <class ValueType>
+using RosTimeSet = std::map<ros::Time, ValueType, RosTimeCmp>;
+
 /**
  * @brief Simple timer object
  */
