@@ -15,6 +15,11 @@ namespace beam {
 /** @addtogroup utils
  *  @{ */
 
+struct Pose{
+  Eigen::Matrix4d T_FIXED_MOVING;
+  int64_t timestampInNs;
+};
+
 // *************************************************
 // THE  FOLLOWING FUNCTIONS WERE TAKEN FROM OPENVINS
 // *************************************************
