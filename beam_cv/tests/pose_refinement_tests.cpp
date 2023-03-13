@@ -10,6 +10,7 @@
 
 #include <beam_calibration/Radtan.h>
 #include <beam_utils/math.h>
+#include <beam_utils/se3.h>
 #include <beam_utils/time.h>
 
 std::shared_ptr<beam_calibration::CameraModel> cam;

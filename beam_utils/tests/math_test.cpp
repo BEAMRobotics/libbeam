@@ -1,4 +1,6 @@
 #include "beam_utils/math.h"
+#include "beam_utils/se3.h"
+
 #include <catch2/catch.hpp>
 #include <iostream>
 

@@ -9,6 +9,7 @@
 #include <beam_matching/loam/LoamScanRegistration.h>
 #include <beam_utils/log.h>
 #include <beam_utils/math.h>
+#include <beam_utils/se3.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {

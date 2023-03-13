@@ -10,6 +10,7 @@
 #include <beam_utils/math.h>
 #include <beam_utils/pcl_conversions.h>
 #include <beam_utils/pointclouds.h>
+#include <beam_utils/se3.h>
 
 namespace beam_mapping {
 
