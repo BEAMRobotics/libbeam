@@ -21,7 +21,6 @@
  */
 
 #include <beam_utils/bspline.h>
-#include <beam_utils/bspline_utils.h>
 #include <beam_utils/log.h>
 
 namespace beam {

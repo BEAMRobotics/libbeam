@@ -7,9 +7,6 @@
 
 #pragma once
 
-namespace beam {
-/** @addtogroup utils
- *  @{ */
 
 /*
  * ADAPTED FOR BEAM FROM:
@@ -39,6 +36,10 @@ namespace beam {
 #include <Eigen/Eigen>
 
 #include <beam_utils/bspline_utils.h>
+
+namespace beam {
+/** @addtogroup utils
+ *  @{ */
 
 /**
  * @brief B-Spline which performs interpolation over SE(3) manifold.

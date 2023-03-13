@@ -7,11 +7,11 @@
 
 #pragma once
 
+#include <Eigen/Eigen>
+
 namespace beam {
 /** @addtogroup utils
  *  @{ */
-
-#include <Eigen/Eigen>
 
 /* 
  * ADAPTED FOR BEAM FROM:s
@@ -592,6 +592,7 @@ inline Eigen::Matrix<double, 3, 3> rot_z(double t) {
   r << ct, -st, 0.0, st, ct, 0.0, 0.0, 0.0, 1.0;
   return r;
 }
+
 
 /** @} group utils */
 } // namespace beam
