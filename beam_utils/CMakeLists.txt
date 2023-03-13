@@ -22,6 +22,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     src/pointclouds.cpp
     src/simple_path_generator.cpp
     src/bspline.cpp
+    src/se3.cpp
 )
 
 add_executable(${PROJECT_NAME}_unit_tests

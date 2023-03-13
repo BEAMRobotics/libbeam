@@ -35,7 +35,7 @@
 
 #include <Eigen/Eigen>
 
-#include <beam_utils/bspline_utils.h>
+#include <beam_utils/se3.h>
 
 namespace beam {
 /** @addtogroup utils

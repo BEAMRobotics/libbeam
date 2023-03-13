@@ -42,7 +42,7 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
   for (size_t i = 0; i < traj_points.size() - 1; i++) {
     Eigen::Matrix4d T_IinG = Eigen::Matrix4d::Identity();
     T_IinG.block(0, 0, 3, 3) =
-        quat_2_Rot(traj_points.at(i).block(4, 0, 4, 1)).transpose();
+        Quat2Rot(traj_points.at(i).block(4, 0, 4, 1)).transpose();
     T_IinG.block(0, 3, 3, 1) = traj_points.at(i).block(1, 0, 3, 1);
     trajectory_points.insert({traj_points.at(i)(0), T_IinG});
   }
@@ -74,7 +74,7 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
     // Linear interpolation and append to our control points
     double lambda = (timestamp_curr - t0) / (t1 - t0);
     Eigen::Matrix4d pose_interp =
-        exp_se3(lambda * log_se3(pose1 * Inv_se3(pose0))) * pose0;
+        ExpSe3(lambda * LogSe3(pose1 * InvSe3(pose0))) * pose0;
     control_points.insert({timestamp_curr, pose_interp});
     timestamp_curr += dt;
   }
@@ -108,9 +108,9 @@ bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d& R_GtoI,
   double b2 = 1.0 / 6.0 * (u * u * u);
 
   // Calculate interpolated poses
-  Eigen::Matrix4d A0 = exp_se3(b0 * log_se3(Inv_se3(pose0) * pose1));
-  Eigen::Matrix4d A1 = exp_se3(b1 * log_se3(Inv_se3(pose1) * pose2));
-  Eigen::Matrix4d A2 = exp_se3(b2 * log_se3(Inv_se3(pose2) * pose3));
+  Eigen::Matrix4d A0 = ExpSe3(b0 * LogSe3(InvSe3(pose0) * pose1));
+  Eigen::Matrix4d A1 = ExpSe3(b1 * LogSe3(InvSe3(pose1) * pose2));
+  Eigen::Matrix4d A2 = ExpSe3(b2 * LogSe3(InvSe3(pose2) * pose3));
 
   // Finally get the interpolated pose
   Eigen::Matrix4d pose_interp = pose0 * A0 * A1 * A2;
@@ -146,17 +146,17 @@ bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d& R_GtoI,
   double b2dot = 1.0 / (6.0 * DT) * (3 * u * u);
 
   // Cache some values we use alot
-  Eigen::Matrix<double, 6, 1> omega_10 = log_se3(Inv_se3(pose0) * pose1);
-  Eigen::Matrix<double, 6, 1> omega_21 = log_se3(Inv_se3(pose1) * pose2);
-  Eigen::Matrix<double, 6, 1> omega_32 = log_se3(Inv_se3(pose2) * pose3);
+  Eigen::Matrix<double, 6, 1> omega_10 = LogSe3(InvSe3(pose0) * pose1);
+  Eigen::Matrix<double, 6, 1> omega_21 = LogSe3(InvSe3(pose1) * pose2);
+  Eigen::Matrix<double, 6, 1> omega_32 = LogSe3(InvSe3(pose2) * pose3);
 
   // Calculate interpolated poses
-  Eigen::Matrix4d A0 = exp_se3(b0 * omega_10);
-  Eigen::Matrix4d A1 = exp_se3(b1 * omega_21);
-  Eigen::Matrix4d A2 = exp_se3(b2 * omega_32);
-  Eigen::Matrix4d A0dot = b0dot * hat_se3(omega_10) * A0;
-  Eigen::Matrix4d A1dot = b1dot * hat_se3(omega_21) * A1;
-  Eigen::Matrix4d A2dot = b2dot * hat_se3(omega_32) * A2;
+  Eigen::Matrix4d A0 = ExpSe3(b0 * omega_10);
+  Eigen::Matrix4d A1 = ExpSe3(b1 * omega_21);
+  Eigen::Matrix4d A2 = ExpSe3(b2 * omega_32);
+  Eigen::Matrix4d A0dot = b0dot * HatSe3(omega_10) * A0;
+  Eigen::Matrix4d A1dot = b1dot * HatSe3(omega_21) * A1;
+  Eigen::Matrix4d A2dot = b2dot * HatSe3(omega_32) * A2;
 
   // Get the interpolated pose
   Eigen::Matrix4d pose_interp = pose0 * A0 * A1 * A2;
@@ -167,7 +167,7 @@ bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d& R_GtoI,
   // NOTE: Rdot = R*skew(omega) => R^T*Rdot = skew(omega)
   Eigen::Matrix4d vel_interp =
       pose0 * (A0dot * A1 * A2 + A0 * A1dot * A2 + A0 * A1 * A2dot);
-  w_IinI = vee(pose_interp.block(0, 0, 3, 3).transpose() *
+  w_IinI = Vee(pose_interp.block(0, 0, 3, 3).transpose() *
                vel_interp.block(0, 0, 3, 3));
   v_IinG = vel_interp.block(0, 3, 3, 1);
   return true;
@@ -206,17 +206,17 @@ bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d& R_GtoI,
   double b2dotdot = 1.0 / (6.0 * DT * DT) * (6 * u);
 
   // Cache some values we use alot
-  Eigen::Matrix<double, 6, 1> omega_10 = log_se3(Inv_se3(pose0) * pose1);
-  Eigen::Matrix<double, 6, 1> omega_21 = log_se3(Inv_se3(pose1) * pose2);
-  Eigen::Matrix<double, 6, 1> omega_32 = log_se3(Inv_se3(pose2) * pose3);
-  Eigen::Matrix4d omega_10_hat = hat_se3(omega_10);
-  Eigen::Matrix4d omega_21_hat = hat_se3(omega_21);
-  Eigen::Matrix4d omega_32_hat = hat_se3(omega_32);
+  Eigen::Matrix<double, 6, 1> omega_10 = LogSe3(InvSe3(pose0) * pose1);
+  Eigen::Matrix<double, 6, 1> omega_21 = LogSe3(InvSe3(pose1) * pose2);
+  Eigen::Matrix<double, 6, 1> omega_32 = LogSe3(InvSe3(pose2) * pose3);
+  Eigen::Matrix4d omega_10_hat = HatSe3(omega_10);
+  Eigen::Matrix4d omega_21_hat = HatSe3(omega_21);
+  Eigen::Matrix4d omega_32_hat = HatSe3(omega_32);
 
   // Calculate interpolated poses
-  Eigen::Matrix4d A0 = exp_se3(b0 * omega_10);
-  Eigen::Matrix4d A1 = exp_se3(b1 * omega_21);
-  Eigen::Matrix4d A2 = exp_se3(b2 * omega_32);
+  Eigen::Matrix4d A0 = ExpSe3(b0 * omega_10);
+  Eigen::Matrix4d A1 = ExpSe3(b1 * omega_21);
+  Eigen::Matrix4d A2 = ExpSe3(b2 * omega_32);
   Eigen::Matrix4d A0dot = b0dot * omega_10_hat * A0;
   Eigen::Matrix4d A1dot = b1dot * omega_21_hat * A1;
   Eigen::Matrix4d A2dot = b2dot * omega_32_hat * A2;
@@ -236,7 +236,7 @@ bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d& R_GtoI,
   // NOTE: Rdot = R*skew(omega) => R^T*Rdot = skew(omega)
   Eigen::Matrix4d vel_interp =
       pose0 * (A0dot * A1 * A2 + A0 * A1dot * A2 + A0 * A1 * A2dot);
-  w_IinI = vee(pose_interp.block(0, 0, 3, 3).transpose() *
+  w_IinI = Vee(pose_interp.block(0, 0, 3, 3).transpose() *
                vel_interp.block(0, 0, 3, 3));
   v_IinG = vel_interp.block(0, 3, 3, 1);
 
@@ -250,7 +250,7 @@ bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d& R_GtoI,
                2 * A0dot * A1 * A2dot);
   Eigen::Matrix3d omegaskew =
       pose_interp.block(0, 0, 3, 3).transpose() * vel_interp.block(0, 0, 3, 3);
-  alpha_IinI = vee(pose_interp.block(0, 0, 3, 3).transpose() *
+  alpha_IinI = Vee(pose_interp.block(0, 0, 3, 3).transpose() *
                    (acc_interp.block(0, 0, 3, 3) -
                     vel_interp.block(0, 0, 3, 3) * omegaskew));
   a_IinG = acc_interp.block(0, 3, 3, 1);
