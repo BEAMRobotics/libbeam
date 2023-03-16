@@ -171,7 +171,7 @@ Eigen::Matrix<double, 4, 1> QuatMultiply(const Eigen::Matrix<double, 4, 1>& q,
  * @param[in] w_x skew-symmetric matrix
  * @return 3x1 vector portion of skew
  */
-inline Eigen::Matrix<double, 3, 1> Vee(const Eigen::Matrix<double, 3, 3>& w_x);
+Eigen::Matrix<double, 3, 1> Vee(const Eigen::Matrix<double, 3, 3>& w_x);
 
 /**
  * @brief SO(3) matrix exponential
