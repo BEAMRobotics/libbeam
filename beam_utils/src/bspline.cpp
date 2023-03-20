@@ -25,7 +25,16 @@
 
 namespace beam {
 
-void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
+void BsplineSE3::feed_trajectory(const std::vector<beam::Pose>& trajectory) {
+  std::vector<Eigen::VectorXd> traj_points;
+  for (const auto& p : trajectory) {
+    traj_points.push_back(pose_to_vectorXd(p));
+  }
+  feed_trajectory(traj_points);
+}
+
+void BsplineSE3::feed_trajectory(
+    const std::vector<Eigen::VectorXd>& traj_points) {
   // Find the average frequency to use as our uniform timesteps
   double sumdt = 0;
   for (size_t i = 0; i < traj_points.size() - 1; i++) {
@@ -83,6 +92,33 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
   // control points
   timestamp_start = timestamp_min + 2 * dt;
   BEAM_DEBUG("[B-SPLINE]: start trajectory time of {}", timestamp_start);
+}
+
+bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix4d& T_G_I) {
+  Eigen::Matrix3d R_GtoI;
+  Eigen::Vector3d p_IinG;
+
+  if (!get_pose(timestamp, R_GtoI, p_IinG)) { return false; }
+
+  Eigen::Matrix4d T;
+  T_G_I.block(0, 0, 3, 3) = R_GtoI;
+  T_G_I.block(0, 3, 3, 1) = p_IinG;
+  return true;
+}
+
+// Loop through this line (timestamp(s) tx ty tz qx qy qz qw)
+Eigen::VectorXd BsplineSE3::pose_to_vectorXd(const Pose& pose) {
+  Eigen::Matrix3d R = pose.T_FIXED_MOVING.block(0, 0, 3, 3).transpose();
+  Eigen::Vector3d t = pose.T_FIXED_MOVING.block(0, 3, 3, 1);
+  Eigen::Quaterniond q(R);
+  Eigen::VectorXd v(8);
+  v(0) = static_cast<double>(pose.timestampInNs * 1e-9);
+  v.block(1, 0, 3, 1) = t;
+  v(4) = q.x();
+  v(5) = q.y();
+  v(6) = q.z();
+  v(7) = q.w();
+  return v;
 }
 
 bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d& R_GtoI,

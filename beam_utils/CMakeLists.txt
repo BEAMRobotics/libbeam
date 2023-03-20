@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}_unit_tests
   tests/angles_test.cpp
   tests/time_test.cpp
   tests/math_test.cpp
+  tests/bspline_test.cpp
   tests/filesystem_test.cpp
   tests/utils_tests_main.cpp
 )
@@ -39,7 +40,20 @@ target_include_directories(${PROJECT_NAME}_unit_tests
 target_link_libraries(${PROJECT_NAME}_unit_tests
   ${PROJECT_NAME}
     Catch2::Catch2
+    beam::mapping
 )
+
+# add_executable(${PROJECT_NAME}_debug
+#   tests/bspline_test.cpp
+# )
+# target_include_directories(${PROJECT_NAME}_debug
+#   PUBLIC
+#   ../include
+# )
+# target_link_libraries(${PROJECT_NAME}_debug
+#   ${PROJECT_NAME}
+#     beam::mapping
+# )
 
 file(COPY tests/run_all_tests.bash
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}

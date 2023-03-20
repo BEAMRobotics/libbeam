@@ -15,7 +15,7 @@ namespace beam {
 /** @addtogroup utils
  *  @{ */
 
-struct Pose{
+struct Pose {
   Eigen::Matrix4d T_FIXED_MOVING;
   int64_t timestampInNs;
 };
@@ -379,7 +379,6 @@ Eigen::Matrix<double, 3, 3> RotY(double t);
  * @param t yaw angle
  */
 Eigen::Matrix<double, 3, 3> RotZ(double t);
-
 
 // *************************************************
 // OPENVINS FUNCTIONS DONE
@@ -787,7 +786,6 @@ int quat2euler(const Eigen::Quaterniond& q, int euler_seq,
 
 /** Convert quaternion to rotation matrix **/
 int quat2rot(const Eigen::Quaterniond& q, Eigen::Matrix3d& R);
-
 
 /** @} group utils */
 } // namespace beam
