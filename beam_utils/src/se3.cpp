@@ -660,7 +660,34 @@ Eigen::Matrix4d AverageTransforms(
   if (transforms.size() == 1) { return transforms[0]; }
 
   std::vector<double> sum(6);
-  for (const Eigen::Matrix4d T : transforms) {
+  for (const Eigen::Matrix4d& T : transforms) {
+    Eigen::Vector3d r = beam::RToLieAlgebra(T.block(0, 0, 3, 3));
+    sum[0] += T(0, 3);
+    sum[1] += T(1, 3);
+    sum[2] += T(2, 3);
+    sum[3] += r[0];
+    sum[4] += r[1];
+    sum[5] += r[2];
+  }
+
+  Eigen::Matrix4d T_AVG = Eigen::Matrix4d::Identity();
+  Eigen::Vector3d r(sum[3] / transforms.size(), sum[4] / transforms.size(),
+                    sum[5] / transforms.size());
+  T_AVG.block(0, 0, 3, 3) = beam::LieAlgebraToR(r);
+  T_AVG(0, 3) = sum[0] / transforms.size();
+  T_AVG(1, 3) = sum[1] / transforms.size();
+  T_AVG(2, 3) = sum[2] / transforms.size();
+
+  return T_AVG;
+}
+
+Eigen::Matrix4d AverageTransforms(
+    const std::list<Eigen::Matrix4d, AlignMat4d>& transforms) {
+  if (transforms.size() == 1) { return transforms.front(); }
+
+  std::vector<double> sum(6);
+  for (auto iter = transforms.begin(); iter != transforms.end(); iter++) {
+    const Eigen::Matrix4d& T = *iter;
     Eigen::Vector3d r = beam::RToLieAlgebra(T.block(0, 0, 3, 3));
     sum[0] += T(0, 3);
     sum[1] += T(1, 3);

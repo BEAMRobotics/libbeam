@@ -681,6 +681,16 @@ Eigen::Matrix4d AverageTransforms(
     const std::vector<Eigen::Matrix4d, AlignMat4d>& transforms);
 
 /**
+ * @brief Average a set of transforms by converting each to lie algebra space,
+ * summing their quantities in this space, then dividing all by the number of
+ * transforms and converting back to Lie Group
+ * @param transforms vector of matrix4d transforms
+ * @return averaged transform
+ **/
+Eigen::Matrix4d AverageTransforms(
+    const std::list<Eigen::Matrix4d, AlignMat4d>& transforms);
+
+/**
  * @brief Convert from rotation matrix to its associated Lie Algebra
  * @param R rotation matrix
  * @return 3x1 vector representing R in Lie Algebra space
