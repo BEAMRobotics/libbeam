@@ -34,6 +34,15 @@ void BsplineSE3::feed_trajectory(const std::vector<beam::Pose>& trajectory) {
 }
 
 void BsplineSE3::feed_trajectory(
+    const std::map<int64_t, beam::Pose>& trajectory) {
+  std::vector<Eigen::VectorXd> traj_points;
+  for (const auto& [t, p] : trajectory) {
+    traj_points.push_back(pose_to_vectorXd(p));
+  }
+  feed_trajectory(traj_points);
+}
+
+void BsplineSE3::feed_trajectory(
     const std::vector<Eigen::VectorXd>& traj_points) {
   // Find the average frequency to use as our uniform timesteps
   double sumdt = 0;

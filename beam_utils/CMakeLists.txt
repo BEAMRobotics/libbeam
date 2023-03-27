@@ -43,18 +43,6 @@ target_link_libraries(${PROJECT_NAME}_unit_tests
     beam::mapping
 )
 
-# add_executable(${PROJECT_NAME}_debug
-#   tests/bspline_test.cpp
-# )
-# target_include_directories(${PROJECT_NAME}_debug
-#   PUBLIC
-#   ../include
-# )
-# target_link_libraries(${PROJECT_NAME}_debug
-#   ${PROJECT_NAME}
-#     beam::mapping
-# )
-
 file(COPY tests/run_all_tests.bash
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 )

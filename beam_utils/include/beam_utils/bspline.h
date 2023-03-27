@@ -130,6 +130,8 @@ public:
 
   void feed_trajectory(const std::vector<beam::Pose>& trajectory);
 
+  void feed_trajectory(const std::map<int64_t, beam::Pose>& trajectory);
+
   /**
    * @brief Gets the orientation and position at a given timestamp
    * @param timestamp Desired time to get the pose at
