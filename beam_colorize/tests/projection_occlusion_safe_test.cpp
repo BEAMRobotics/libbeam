@@ -16,6 +16,7 @@
 #include <beam_containers/ImageBridge.h>
 #include <beam_mapping/Poses.h>
 #include <beam_utils/pointclouds.h>
+#include <beam_utils/se3.h>
 
 std::string GetTestFileRoot() {
   std::string current_file_path = "projection_occlusion_safe_test.cpp";

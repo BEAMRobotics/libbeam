@@ -11,9 +11,6 @@ TEST_CASE("ros and chrono conversions", "[Time.h]") {
   beam::TimePoint time_point_true(seconds_chrono + nanoseconds_chrono);
   beam::TimePoint time_point_returned = beam::RosTimeToChrono(ros_time_true);
   ros::Time ros_time_returned = beam::ChronoToRosTime(time_point_true);
-  std::cout << "ros_time_true.sec: " << ros_time_true.sec << "\n";
-  std::cout << "ros_time_true.nsec: " << ros_time_true.nsec << "\n";
-  std::cout << "time_point_true: " << time_point_true.time_since_epoch().count() << "\n";
   REQUIRE(ros_time_returned.sec == seconds);
   REQUIRE(ros_time_returned.nsec == nanoseconds);
   REQUIRE(ros_time_returned == ros_time_true);

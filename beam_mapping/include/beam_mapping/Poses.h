@@ -151,7 +151,8 @@ public:
 
   /**
    * @brief writes the pose file to the specified directory as JSON type
-   * @param output_dir full path to directory at which to save pose file
+   * @param output_dir full path to directory at which to save pose file. See
+   * WriteToFile definition for format of input
    */
   void WriteToJSON(const std::string& output_dir) const;
 

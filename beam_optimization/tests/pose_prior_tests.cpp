@@ -5,6 +5,7 @@
 
 #include <beam_utils/filesystem.h>
 #include <beam_utils/math.h>
+#include <beam_utils/se3.h>
 
 #include <beam_optimization/CeresParams.h>
 #include <beam_optimization/PosePriorCost.h>
@@ -57,8 +58,8 @@ TEST_CASE("Test prior pose cost function with identity covariance") {
   std::unique_ptr<ceres::CostFunction> cost_function(
       CeresPosePriorCostFunction::Create(T, covariance));
 
-  problem->AddResidualBlock(cost_function.release(),
-                            loss_function.get(), &(results[0]));
+  problem->AddResidualBlock(cost_function.release(), loss_function.get(),
+                            &(results[0]));
 
   // solve problem
   ceres::Solver::Summary ceres_summary;

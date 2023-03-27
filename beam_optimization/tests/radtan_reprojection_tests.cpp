@@ -14,6 +14,7 @@
 #include <beam_optimization/CamPoseReprojectionCost.h>
 #include <beam_utils/angles.h>
 #include <beam_utils/math.h>
+#include <beam_utils/se3.h>
 #include <beam_utils/visualizer.h>
 
 namespace beam_optimization {
