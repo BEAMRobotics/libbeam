@@ -188,6 +188,12 @@ public:
     return std::move(se3_parameterization);
   }
 
+  ceres::Problem::Options& GetProblemOptionsMutable() {
+    return problem_options_;
+  }
+
+  ceres::Solver::Options& GetSolverOptionsMutable() { return solver_options_; }
+
 private:
   void LoadDefaultParams(bool cost_function_take_ownership = false,
                          bool loss_function_take_ownership = false,

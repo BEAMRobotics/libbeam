@@ -33,10 +33,9 @@
 enum PointLabel {
   CORNER_SHARP = 255,      // sharp corner point
   CORNER_LESS_SHARP = 170, // less sharp corner point
-  SURFACE_LESS_FLAT = 85, // less flat surface point
-  SURFACE_FLAT = 0      // flat surface point
+  SURFACE_LESS_FLAT = 85,  // less flat surface point
+  SURFACE_FLAT = 0         // flat surface point
 };
-
 
 struct PointLoam {
   PCL_ADD_POINT4D
@@ -52,6 +51,23 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
     PointLoam, (float, x, x)(float, y, y)(float, z, z)
     (float, intensity, intensity)(std::uint16_t, ring, ring)(float, time, time)
     (std::int8_t, type, type))
+// clang-format on
+
+struct PointLoamColored {
+  PCL_ADD_POINT4D
+  PCL_ADD_INTENSITY;
+  PCL_ADD_RGB;
+  std::uint16_t ring;
+  float time;
+  std::int8_t type; // see PointLabel
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    PointLoamColored, (float, x, x)(float, y, y)(float, z, z)
+    (float, intensity, intensity)(float, rgb, rgb)(std::uint16_t, ring, ring)
+    (float, time, time)(std::int8_t, type, type))
 // clang-format on
 
 namespace beam_matching {
@@ -184,19 +200,32 @@ public:
    * @brief method for saving a loam pointcloud. It will output 4 separate
    * clouds if all 4 features clouds are specified. If colors are not specified,
    * all will be output as white.
-   * @param output_path full path to output directory which must already exist
-   * @param combine_features optionally specify if you want to combine all
-   * features into a single cloud in addition to all feature clouds.
+   * @param output_path full path to output directory which must already exist.
+   * @param prefix clouds will be named:
    * @param r red color
    * @param g green color
    * @param b blue color
    */
-  void Save(const std::string& output_path, bool combine_features = false,
+  void Save(const std::string& output_path, const std::string& prefix = "cloud",
             uint8_t r = 255, uint8_t g = 255, uint8_t b = 255) const;
 
   /**
-   * @brief add a new loam pointcloud to this cloud. This will also clear all kd
-   * search trees.
+   * @brief method for saving a loam pointcloud. It will combine into a
+   * LoamPointCloudCombined before saving. If colors are not specified,
+   * all will be output as white.
+   * @param output_path full path to output directory which must already exist
+   * @param filename for output cloud
+   * @param r red color
+   * @param g green color
+   * @param b blue color
+   */
+  void SaveCombined(const std::string& output_path,
+                    const std::string& filename = "combined_features.pcd",
+                    uint8_t r = 255, uint8_t g = 255, uint8_t b = 255) const;
+
+  /**
+   * @brief add a new loam pointcloud to this cloud. This will also clear
+   * all kd search trees.
    * @param cloud new cloud to add
    */
   void Merge(const LoamPointCloud& cloud);

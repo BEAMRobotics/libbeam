@@ -95,7 +95,8 @@ public:
    *  cloud frame using the refined pose (or transform calculated herein)
    *
    */
-  virtual void SaveResults(const std::string& output_path) = 0;
+  virtual void SaveResults(const std::string& output_dir,
+                           const std::string& prefix = "cloud") = 0;
 
 protected:
   /**
@@ -103,16 +104,18 @@ protected:
    * matchers) this function can be called as an implementation to the above
    * SaveResults()
    */
-  inline void SaveResultsPCLXYZ(const std::string& output_path,
+  inline void SaveResultsPCLXYZ(const std::string& output_dir,
+                                const std::string& prefix,
                                 const PointCloudPtr& ref,
                                 const PointCloudPtr& target) {
     // check dir exits
-    if (!boost::filesystem::exists(output_path)) {
+    if (!boost::filesystem::exists(output_dir)) {
       BEAM_WARN(
           "Output path does not exist, cannot save matcher results. Input: {}",
-          output_path);
+          output_dir);
       return;
     }
+    std::string output_path = beam::CombinePaths(output_dir, prefix);
 
     // transform tgt cloud
     PointCloud tgt_aligned;

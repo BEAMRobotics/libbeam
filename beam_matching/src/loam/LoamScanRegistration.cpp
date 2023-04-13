@@ -423,22 +423,18 @@ void LoamScanRegistration::OutputResults(int iteration) {
     return;
   }
 
-  std::string current_dir =
-      debug_output_path_ + "iteration" + std::to_string(iteration) + "/";
+  std::string current_dir = beam::CombinePaths(
+      debug_output_path_, "iteration" + std::to_string(iteration));
   boost::filesystem::create_directory(current_dir);
-
-  boost::filesystem::create_directory(current_dir + "referece_cloud/");
-  boost::filesystem::create_directory(current_dir + "target_aligned/");
-  boost::filesystem::create_directory(current_dir + "target_initial/");
-  ref_->Save(current_dir + "referece_cloud/", true);
+  ref_->SaveCombined(current_dir, "referece_cloud.pcd");
 
   LoamPointCloud target_aligned = tgt_->Copy();
   target_aligned.TransformPointCloud(T_REF_TGT_);
-  target_aligned.Save(current_dir + "target_aligned/", true);
+  target_aligned.Save(current_dir, "target_aligned.pcd");
 
   LoamPointCloud target_initial = tgt_->Copy();
   target_initial.TransformPointCloud(T_REF_TGT_prev_iter_);
-  target_initial.Save(current_dir + "target_initial/", true);
+  target_initial.Save(current_dir, "target_initial.pcd");
 }
 
 void LoamScanRegistration::OptimizationSummary::Print() {
@@ -456,7 +452,8 @@ void LoamScanRegistration::OptimizationSummary::Print() {
             << "\n";
 }
 
-void LoamScanRegistration::SaveResults(const std::string& output_path) {
+void LoamScanRegistration::SaveResults(const std::string& output_path,
+                                       const std::string& prefix) const {
   if (!boost::filesystem::exists(output_path)) {
     BEAM_WARN(
         "Output path does not exist, cannot save matcher results. Input: {}",
@@ -464,16 +461,16 @@ void LoamScanRegistration::SaveResults(const std::string& output_path) {
     return;
   }
 
-  boost::filesystem::create_directory(output_path + "referece_cloud/");
-  boost::filesystem::create_directory(output_path + "target_initial/");
-  boost::filesystem::create_directory(output_path + "target_aligned/");
+  std::string output_final = beam::CombinePaths(output_path, prefix);
+  BEAM_INFO("saving registration results to: {}", output_final + "*");
 
-  ref_->Save(output_path + "referece_cloud/", true, 0, 0, 255);
-  tgt_->Save(output_path + "target_initial/", true, 255, 0, 0);
+  ref_->SaveCombined(output_path, prefix + "_referece_cloud.pcd", 0, 0, 255);
+  tgt_->SaveCombined(output_path, prefix + "_target_initial.pcd", 255, 0, 0);
 
   LoamPointCloud target_aligned = tgt_->Copy();
   target_aligned.TransformPointCloud(T_REF_TGT_);
-  target_aligned.Save(output_path + "target_aligned/", true, 0, 255, 0);
+  target_aligned.SaveCombined(output_path, prefix + "_target_aligned.pcd", 0,
+                              255, 0);
 }
 
 } // namespace beam_matching

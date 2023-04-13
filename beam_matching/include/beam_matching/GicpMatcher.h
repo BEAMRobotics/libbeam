@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <pcl/registration/gicp.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/registration/gicp.h>
 
 #include <beam_matching/Matcher.h>
 #include <beam_utils/pointclouds.h>
@@ -66,7 +66,8 @@ public:
   /**
    * @brief see matcher.h for details
    */
-  void SaveResults(const std::string& output_path) override;
+  void SaveResults(const std::string& output_dir,
+                   const std::string& prefix = "cloud") override;
 
 private:
   /**

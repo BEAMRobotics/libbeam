@@ -82,7 +82,8 @@ public:
   /**
    * @brief see matcher.h for details
    */
-  void SaveResults(const std::string& output_path) override;
+  void SaveResults(const std::string& output_dir,
+                   const std::string& prefix = "cloud") override;
 
 private:
   LoamPointCloudPtr ref_;

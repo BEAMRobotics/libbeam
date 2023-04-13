@@ -51,8 +51,9 @@ bool LoamMatcher::Match() {
   return registration_successful;
 }
 
-void LoamMatcher::SaveResults(const std::string& output_path) {
-  loam_scan_registration_->SaveResults(output_path);
+void LoamMatcher::SaveResults(const std::string& output_dir,
+                              const std::string& prefix) {
+  loam_scan_registration_->SaveResults(output_dir, prefix);
 }
 
 } // namespace beam_matching

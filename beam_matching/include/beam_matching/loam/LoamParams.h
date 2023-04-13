@@ -51,7 +51,7 @@ public:
    * @brief construct given json config file
    * @param param_config full path to json config file
    */
-  LoamParams(std::string& param_config) {
+  LoamParams(const std::string& param_config) {
     if (param_config.empty()) { return; }
 
     std::string read_file = param_config;

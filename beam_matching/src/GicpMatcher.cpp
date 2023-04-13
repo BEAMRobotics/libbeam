@@ -6,8 +6,8 @@
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
-#include <beam_utils/log.h>
 #include <beam_utils/filesystem.h>
+#include <beam_utils/log.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
@@ -101,8 +101,9 @@ bool GicpMatcher::Match() {
   return false;
 }
 
-void GicpMatcher::SaveResults(const std::string& output_path) {
-  SaveResultsPCLXYZ(output_path, ref_, target_);
+void GicpMatcher::SaveResults(const std::string& output_dir,
+                              const std::string& prefix) {
+  SaveResultsPCLXYZ(output_dir, prefix, ref_, target_);
 }
 
 } // namespace beam_matching

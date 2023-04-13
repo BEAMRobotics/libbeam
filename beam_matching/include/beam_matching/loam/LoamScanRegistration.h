@@ -67,7 +67,7 @@ public:
   Eigen::Matrix4d GetT_REF_TGT();
 
   /**
-   * @brief Pure virtual function for saving results. Stores the results as 3
+   * @brief Function for saving results. Stores the results as 3
    * separate clouds:
    *
    *  (1) reference cloud (blue points)
@@ -81,7 +81,7 @@ public:
    *  cloud frame using the refined pose (or transform calculated herein)
    *
    */
-  void SaveResults(const std::string& output_path);
+  void SaveResults(const std::string& output_path, const std::string& prefix = "cloud") const;
 
 private:
   void Setup();
