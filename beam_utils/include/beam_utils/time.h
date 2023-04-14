@@ -151,6 +151,16 @@ struct HighResolutionTimer {
     return double(take_time_stamp() - start_time) * 1e-9;
   }
 
+  /**
+   * @brief Return elapsed time in seconds, then restart.
+   * @return
+   */
+  double elapsedAndRestart() {
+    double t = double(take_time_stamp() - start_time) * 1e-9;
+    start_time = take_time_stamp();
+    return t;
+  }
+
   std::uint64_t elapsed_nanoseconds() const {
     return take_time_stamp() - start_time;
   }
