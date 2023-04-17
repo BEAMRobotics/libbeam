@@ -24,6 +24,23 @@ void LoamFeatureCloud::ClearKDTree() {
   kdtree_empty = true;
 }
 
+LoamPointCloud::LoamPointCloud(const LoamPointCloud& cloud,
+                               const Eigen::Matrix4d& T) {
+  Eigen::Affine3d TA(T);
+  for (const auto& p : cloud.edges.strong.cloud) {
+    edges.strong.cloud.push_back(pcl::transformPoint(p, TA));
+  }
+  for (const auto& p : cloud.edges.weak.cloud) {
+    edges.weak.cloud.push_back(pcl::transformPoint(p, TA));
+  }
+  for (const auto& p : cloud.surfaces.strong.cloud) {
+    surfaces.strong.cloud.push_back(pcl::transformPoint(p, TA));
+  }
+  for (const auto& p : cloud.surfaces.weak.cloud) {
+    surfaces.weak.cloud.push_back(pcl::transformPoint(p, TA));
+  }
+}
+
 void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   // if tree is not empty, and we do not want to override, then do nothing
   if (!kdtree_empty && !override_tree) { return; }

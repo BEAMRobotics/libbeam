@@ -129,6 +129,13 @@ public:
   LoamPointCloud() = default;
 
   /**
+   * @brief initialize copy cloud and apply transform T simultaneously. This is
+   * slightly more efficient than using the copy constructor, then using
+   * TransformPointCloud()
+   */
+  LoamPointCloud(const LoamPointCloud& cloud, const Eigen::Matrix4d& T);
+
+  /**
    * @brief Constructor that takes in 2 or 4 point clouds of features (weak and
    * strong edge and planar features)
    * @param edge_features_strong required strong edge (sharp) features
@@ -268,6 +275,7 @@ public:
    * use */
   LoamFeatures surfaces;
 };
+
 
 using LoamPointCloudPtr = std::shared_ptr<LoamPointCloud>;
 
