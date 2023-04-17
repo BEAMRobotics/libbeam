@@ -162,7 +162,8 @@ bool BsplineSE3::extrapolate(double timestamp,
   Eigen::Vector3d p_IinG;
   Eigen::Vector3d w_IinI;
   Eigen::Vector3d v_IinG;
-  double end_time = control_points.rend()->first;
+  double end_time = control_points.rbegin()->first;
+
   if (!get_velocity(end_time, R_GtoI, p_IinG, w_IinI, v_IinG)) { return false; }
 
   // extrapolate
