@@ -134,15 +134,34 @@ public:
 
   /**
    * @brief Gets the orientation and position at a given timestamp
-   * @param timestamp Desired time to get the pose at
+   * @param timestamp Desired time to get the pose at in s
    * @param T_G_I SE(3) orientation of the pose in the global frame
    * @return False if we can't find it
    */
   bool get_pose(double timestamp, Eigen::Matrix4d& T_G_I);
 
   /**
+   * @brief run get_pose(), and if that fails, run extrapolate()
+   * @param timestamp Desired time to get the pose at in s
+   * @param T_G_I SE(3) orientation of the pose in the global frame
+   * @return False if both functions fail
+   */
+  bool get_pose_or_extrapolate(double timestamp, Eigen::Matrix4d& T_G_I);
+
+  /**
+   * @brief Use last saved pose and velocity estimate to forward predict a pose
+   * at a timestamp
+   * @param timestamp desired pose time in s
+   * @param T_G_I reference to output SE(3) orientation of the pose in the
+   * global frame
+   * @return true if successful, false otherwise (e.g., if the query pose is
+   * before the spline)
+   */
+  bool extrapolate(double timestamp, Eigen::Matrix4d& T_G_I);
+
+  /**
    * @brief Gets the angular and linear velocity at a given timestamp
-   * @param timestamp Desired time to get the pose at
+   * @param timestamp Desired time to get the pose at in s
    * @param R_GtoI SO(3) orientation of the pose in the global frame
    * @param p_IinG Position of the pose in the global
    * @param w_IinI Angular velocity in the inertial frame
@@ -155,7 +174,7 @@ public:
 
   /**
    * @brief Gets the angular and linear acceleration at a given timestamp
-   * @param timestamp Desired time to get the pose at
+   * @param timestamp Desired time to get the pose at in s
    * @param R_GtoI SO(3) orientation of the pose in the global frame
    * @param p_IinG Position of the pose in the global
    * @param w_IinI Angular velocity in the inertial frame
@@ -169,7 +188,11 @@ public:
                         Eigen::Vector3d& v_IinG, Eigen::Vector3d& alpha_IinI,
                         Eigen::Vector3d& a_IinG);
 
-  /// Returns the simulation start time that we should start simulating from
+  /**
+   * @brief Returns the simulation start time in s that we should start
+   * simulating from
+   * @return start time in s
+   */
   double get_start_time() { return timestamp_start; }
 
 protected:
@@ -201,7 +224,7 @@ protected:
   /// Uniform sampling time for our control points
   double dt;
 
-  /// Start time of the system
+  /// Start and end time of the system
   double timestamp_start;
 
   /// Type defintion of our aligned eigen4d matrix:
@@ -255,6 +278,26 @@ protected:
                                            double& t1, Eigen::Matrix4d& pose1,
                                            double& t2, Eigen::Matrix4d& pose2,
                                            double& t3, Eigen::Matrix4d& pose3);
+
+  /**
+   * @brief get the two end boundaries based on whichever timestamp is closest
+   * to (tStart, tStart+1, or tEnd-1, tEnd)
+   */
+  static bool get_2_boundary_points(const double timestamp,
+                                    const AlignedEigenMat4d& poses, double& t0,
+                                    Eigen::Matrix4d& pose0, double& t1,
+                                    Eigen::Matrix4d& pose1);
+
+  /**
+   * @brief get the 4 end boundaries based on whichever timestamp is closest to
+   * (tStart, tStart+1, ... or ... tEnd-1, tEnd)
+   */
+  static bool get_4_boundary_points(const double timestamp,
+                                    const AlignedEigenMat4d& poses, double& t0,
+                                    Eigen::Matrix4d& pose0, double& t1,
+                                    Eigen::Matrix4d& pose1, double& t2,
+                                    Eigen::Matrix4d& pose2, double& t3,
+                                    Eigen::Matrix4d& pose3);
 };
 
 /** @} group utils */

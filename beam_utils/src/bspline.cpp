@@ -57,7 +57,7 @@ void BsplineSE3::feed_trajectory(
   // convert all our trajectory points into SE(3) matrices
   // we are given [timestamp, p_IinG, q_GtoI]
   AlignedEigenMat4d trajectory_points;
-  for (size_t i = 0; i < traj_points.size() - 1; i++) {
+  for (size_t i = 0; i < traj_points.size(); i++) {
     Eigen::Matrix4d T_IinG = Eigen::Matrix4d::Identity();
     T_IinG.block(0, 0, 3, 3) =
         Quat2Rot(traj_points.at(i).block(4, 0, 4, 1)).transpose();
@@ -84,7 +84,12 @@ void BsplineSE3::feed_trajectory(
     bool success = find_bounding_poses(timestamp_curr, trajectory_points, t0,
                                        pose0, t1, pose1);
 
-    // If we didn't find a bounding pose, then that means we are at the end of
+    if (!success) {
+      success = get_2_boundary_points(timestamp_curr, trajectory_points, t0,
+                                      pose0, t1, pose1);
+    }
+
+    // If we didn't find a bounding pose, then that means we are at outside of
     // the dataset Thus break out of this loop since we have created our max
     // number of control points
     if (!success) break;
@@ -112,6 +117,46 @@ bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix4d& T_G_I) {
   Eigen::Matrix4d T;
   T_G_I.block(0, 0, 3, 3) = R_GtoI;
   T_G_I.block(0, 3, 3, 1) = p_IinG;
+  return true;
+}
+
+bool BsplineSE3::get_pose_or_extrapolate(double timestamp,
+                                         Eigen::Matrix4d& T_G_I) {
+  Eigen::Matrix3d R_GtoI;
+  Eigen::Vector3d p_IinG;
+
+  if (get_pose(timestamp, R_GtoI, p_IinG)) {
+    Eigen::Matrix4d T;
+    T_G_I.block(0, 0, 3, 3) = R_GtoI;
+    T_G_I.block(0, 3, 3, 1) = p_IinG;
+    return true;
+  }
+
+  return extrapolate(timestamp, T_G_I);
+}
+
+bool BsplineSE3::extrapolate(double timestamp,
+                             Eigen::Matrix4d& T_FIXED_BASELINK) {
+  T_FIXED_BASELINK.setIdentity();
+  Eigen::Matrix3d R_GtoI;
+  Eigen::Vector3d p_IinG;
+  Eigen::Vector3d w_IinI;
+  Eigen::Vector3d v_IinG;
+  double end_time = control_points.rend()->first;
+  if (!get_velocity(end_time, R_GtoI, p_IinG, w_IinI, v_IinG)) { return false; }
+
+  // extrapolate
+  double dt = timestamp - end_time;
+  const Eigen::Matrix3d& R_FIXED_BASELINKLAST = R_GtoI;
+  const Eigen::Vector3d& t_FIXED_BASELINKLAST = p_IinG;
+  Eigen::Matrix3d R_BaselinkLast_BaselinkQuery =
+      (beam::ExpSo3(w_IinI * dt)).transpose();
+  Eigen::Vector3d t_BaselinkLast_BaselinkQuery_in_fixed = v_IinG * dt;
+
+  T_FIXED_BASELINK.block(0, 0, 3, 3) =
+      R_FIXED_BASELINKLAST * R_BaselinkLast_BaselinkQuery;
+  T_FIXED_BASELINK.block(0, 3, 3, 1) =
+      t_FIXED_BASELINKLAST + t_BaselinkLast_BaselinkQuery_in_fixed;
   return true;
 }
 
@@ -354,6 +399,84 @@ bool BsplineSE3::find_bounding_poses(const double timestamp,
   return (found_older && found_newer);
 }
 
+bool BsplineSE3::get_2_boundary_points(const double timestamp,
+                                       const AlignedEigenMat4d& poses,
+                                       double& t0, Eigen::Matrix4d& pose0,
+                                       double& t1, Eigen::Matrix4d& pose1) {
+  // check if outside bounds
+  if (timestamp < poses.begin()->first || timestamp > poses.rbegin()->first) {
+    return false;
+  }
+
+  auto iter_mid = poses.begin();
+  std::advance(iter_mid, poses.size() / 2);
+  if (timestamp < iter_mid->first) {
+    // get start boundary points
+    auto r_iter = poses.begin();
+    t0 = r_iter->first;
+    pose0 = r_iter->second;
+    r_iter++;
+    t1 = r_iter->first;
+    pose1 = r_iter->second;
+  } else {
+    // get end boundary points
+    auto r_iter = poses.rbegin();
+    t1 = r_iter->first;
+    pose1 = r_iter->second;
+    r_iter++;
+    t0 = r_iter->first;
+    pose0 = r_iter->second;
+  }
+
+  return true;
+}
+
+bool BsplineSE3::get_4_boundary_points(const double timestamp,
+                                       const AlignedEigenMat4d& poses,
+                                       double& t0, Eigen::Matrix4d& pose0,
+                                       double& t1, Eigen::Matrix4d& pose1,
+                                       double& t2, Eigen::Matrix4d& pose2,
+                                       double& t3, Eigen::Matrix4d& pose3) {
+  // check if outside bounds
+  if (timestamp < poses.begin()->first || timestamp > poses.rbegin()->first) {
+    return false;
+  }
+
+  auto iter_mid = poses.begin();
+  std::advance(iter_mid, poses.size() / 2);
+  if (timestamp < iter_mid->first) {
+    // get start boundary points
+    auto r_iter = poses.begin();
+    t0 = r_iter->first;
+    pose0 = r_iter->second;
+    r_iter++;
+    t1 = r_iter->first;
+    pose1 = r_iter->second;
+    r_iter++;
+    t2 = r_iter->first;
+    pose2 = r_iter->second;
+    r_iter++;
+    t3 = r_iter->first;
+    pose3 = r_iter->second;
+  } else {
+    // get end boundary points
+    auto r_iter = poses.rbegin();
+    t3 = r_iter->first;
+    pose3 = r_iter->second;
+    r_iter++;
+    t2 = r_iter->first;
+    pose2 = r_iter->second;
+    r_iter++;
+    t1 = r_iter->first;
+    pose1 = r_iter->second;
+    r_iter++;
+    t0 = r_iter->first;
+    pose0 = r_iter->second;
+  }
+
+  return true;
+}
+
 bool BsplineSE3::find_bounding_control_points(
     const double timestamp, const AlignedEigenMat4d& poses, double& t0,
     Eigen::Matrix4d& pose0, double& t1, Eigen::Matrix4d& pose1, double& t2,
@@ -371,15 +494,21 @@ bool BsplineSE3::find_bounding_control_points(
   // Get the two bounding poses
   bool success = find_bounding_poses(timestamp, poses, t1, pose1, t2, pose2);
 
-  // Return false if this was a failure
-  if (!success) return false;
+  // if this fails, then grab boundary points
+  if (!success) {
+    return get_4_boundary_points(timestamp, poses, t0, pose0, t1, pose1, t2,
+                                 pose2, t3, pose3);
+  }
 
   // Now find the poses that are below and above
   auto iter_t1 = poses.find(t1);
   auto iter_t2 = poses.find(t2);
 
   // Check that t1 is not the first timestamp
-  if (iter_t1 == poses.begin()) { return false; }
+  if (iter_t1 == poses.begin()) {
+    return get_4_boundary_points(timestamp, poses, t0, pose0, t1, pose1, t2,
+                                 pose2, t3, pose3);
+  }
 
   // Move the older pose backwards in time
   // Move the newer one forwards in time
@@ -387,7 +516,10 @@ bool BsplineSE3::find_bounding_control_points(
   auto iter_t3 = ++iter_t2;
 
   // Check that it is valid
-  if (iter_t3 == poses.end()) { return false; }
+  if (iter_t3 == poses.end()) {
+    return get_4_boundary_points(timestamp, poses, t0, pose0, t1, pose1, t2,
+                                 pose2, t3, pose3);
+  }
 
   // Set the oldest one
   t0 = iter_t0->first;
