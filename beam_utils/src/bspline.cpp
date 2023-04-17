@@ -44,6 +44,11 @@ void BsplineSE3::feed_trajectory(
 
 void BsplineSE3::feed_trajectory(
     const std::vector<Eigen::VectorXd>& traj_points) {
+  if (traj_points.size() < 4) {
+    BEAM_ERROR("spline trajectory must contain at least 4 poses");
+    return;
+  }
+
   // Find the average frequency to use as our uniform timesteps
   double sumdt = 0;
   for (size_t i = 0; i < traj_points.size() - 1; i++) {
@@ -109,6 +114,11 @@ void BsplineSE3::feed_trajectory(
 }
 
 bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix4d& T_G_I) {
+  if (control_points.size() < 4) {
+    BEAM_ERROR("spline not properly initialized, cannot get pose");
+    return false;
+  }
+
   Eigen::Matrix3d R_GtoI;
   Eigen::Vector3d p_IinG;
 
@@ -122,6 +132,11 @@ bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix4d& T_G_I) {
 
 bool BsplineSE3::get_pose_or_extrapolate(double timestamp,
                                          Eigen::Matrix4d& T_G_I) {
+  if (control_points.size() < 4) {
+    BEAM_ERROR("spline not properly initialized, cannot get pose");
+    return false;
+  }
+
   Eigen::Matrix3d R_GtoI;
   Eigen::Vector3d p_IinG;
 
@@ -137,6 +152,11 @@ bool BsplineSE3::get_pose_or_extrapolate(double timestamp,
 
 bool BsplineSE3::extrapolate(double timestamp,
                              Eigen::Matrix4d& T_FIXED_BASELINK) {
+  if (control_points.size() < 4) {
+    BEAM_ERROR("spline not properly initialized, cannot get pose");
+    return false;
+  }
+
   T_FIXED_BASELINK.setIdentity();
   Eigen::Matrix3d R_GtoI;
   Eigen::Vector3d p_IinG;
@@ -177,6 +197,11 @@ Eigen::VectorXd BsplineSE3::pose_to_vectorXd(const Pose& pose) {
 
 bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d& R_GtoI,
                           Eigen::Vector3d& p_IinG) {
+  if (control_points.size() < 4) {
+    BEAM_ERROR("spline not properly initialized, cannot get pose");
+    return false;
+  }
+
   // Get the bounding poses for the desired timestamp
   double t0, t1, t2, t3;
   Eigen::Matrix4d pose0, pose1, pose2, pose3;
@@ -212,6 +237,11 @@ bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d& R_GtoI,
 bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d& R_GtoI,
                               Eigen::Vector3d& p_IinG, Eigen::Vector3d& w_IinI,
                               Eigen::Vector3d& v_IinG) {
+  if (control_points.size() < 4) {
+    BEAM_ERROR("spline not properly initialized, cannot get pose");
+    return false;
+  }
+
   // Get the bounding poses for the desired timestamp
   double t0, t1, t2, t3;
   Eigen::Matrix4d pose0, pose1, pose2, pose3;
@@ -269,6 +299,11 @@ bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d& R_GtoI,
                                   Eigen::Vector3d& v_IinG,
                                   Eigen::Vector3d& alpha_IinI,
                                   Eigen::Vector3d& a_IinG) {
+  if (control_points.size() < 4) {
+    BEAM_ERROR("spline not properly initialized, cannot get pose");
+    return false;
+  }
+
   // Get the bounding poses for the desired timestamp
   double t0, t1, t2, t3;
   Eigen::Matrix4d pose0, pose1, pose2, pose3;

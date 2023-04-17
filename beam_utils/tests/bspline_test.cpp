@@ -135,7 +135,7 @@ TEST_CASE("Spline Extrapolate", "[spline.h]") {
   }
 
   /** Uncomment to view trajectories */
-  bm_poses_gt.WriteToFile("/home/nick/poses_gt.pcd", "PCD");
-  bm_poses_spline.WriteToFile("/home/nick/poses_spline.pcd", "PCD");
-  bm_poses_extr.WriteToFile("/home/nick/poses_extrapolated.pcd", "PCD");
+  // bm_poses_gt.WriteToFile("/home/nick/poses_gt.pcd", "PCD");
+  // bm_poses_spline.WriteToFile("/home/nick/poses_spline.pcd", "PCD");
+  // bm_poses_extr.WriteToFile("/home/nick/poses_extrapolated.pcd", "PCD");
 }

@@ -128,8 +128,18 @@ public:
    */
   BsplineSE3() {}
 
+  /**
+   * @brief initialize spline with poses
+   * @param trajectory input discrete trajectory, must be at least greater than
+   * 4 poses
+   */
   void feed_trajectory(const std::vector<beam::Pose>& trajectory);
 
+  /**
+   * @brief initialize spline with poses
+   * @param trajectory input discrete trajectory, must be at least greater than
+   * 4 poses
+   */
   void feed_trajectory(const std::map<int64_t, beam::Pose>& trajectory);
 
   /**
