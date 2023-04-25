@@ -129,8 +129,7 @@ using RosTimeMap = std::map<ros::Time, ValueType, RosTimeCmp>;
 template <class ValueType>
 using RosTimeHashMap = std::map<ros::Time, ValueType, RosTimeHash>;
 
-template <class ValueType>
-using RosTimeSet = std::map<ros::Time, ValueType, RosTimeCmp>;
+using RosTimeSet = std::set<ros::Time, RosTimeCmp>;
 
 /**
  * @brief Simple timer object
