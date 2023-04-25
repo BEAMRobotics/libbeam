@@ -127,7 +127,7 @@ template <class ValueType>
 using RosTimeMap = std::map<ros::Time, ValueType, RosTimeCmp>;
 
 template <class ValueType>
-using RosTimeHashMap = std::map<ros::Time, ValueType, RosTimeHash>;
+using RosTimeHashMap = std::unordered_map<ros::Time, ValueType, RosTimeHash>;
 
 using RosTimeSet = std::set<ros::Time, RosTimeCmp>;
 
