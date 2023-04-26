@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -71,8 +72,8 @@ int randi(int ub, int lb);
  * uniform random distribution. */
 double randf(double ub, double lb);
 
-/** Compares two floating point numbers `f1` and `f2` with an error threshold
- * defined by `threshold`.
+/** Compares two floating point numbers `f1` and `f2` with an error
+ * threshold defined by `threshold`.
  * @return
  * - `0`: If `f1` == `f2` or the difference is less then `threshold`
  * - `1`: If `f1` > `f2`
@@ -236,6 +237,96 @@ double LogitInv(double l);
  * @return updated probability
  */
 double BayesianLogitUpdate(double pk, double l0, double p_prev);
+
+/// @brief
+/// @param mean
+/// @param stddev
+/// @return
+double GaussianRandomNumber(double mean, double stddev) {
+  std::random_device rd{};
+  std::mt19937 gen{rd()};
+  std::normal_distribution<> dist{mean, stddev};
+  return dist(gen);
+}
+
+/// @brief
+/// @tparam size
+/// @param mean
+/// @param stddev
+/// @return
+template <int size>
+Eigen::Vector<double, size, 1> GaussianRandomVector(double mean,
+                                                    double stddev) {
+  std::random_device rd{};
+  std::mt19937 gen{rd()};
+  std::normal_distribution<> dist{mean, stddev};
+  Eigen::Vector<double, size, 1> v;
+  for (int i = 0; i < size; i++) { v(i) = dist(gen); }
+  return v;
+}
+
+/// @brief
+/// @param R
+/// @return
+Eigen::Vector3d RotationMatrixToCompactQuaternion(const Eigen::Matrix3d& R) {
+  Eigen::Quaterniond q(R);
+  q.normalize();
+  if (q.w() < 0) { return Eigen::Vector3d(-q.vec()); };
+  return q.vec();
+}
+
+/// @brief
+/// @param q
+/// @return
+Eigen::Matrix3d CompactQuaternionToRotationMatrix(const Eigen::Vector3d& q) {
+  double w = 1.0 - q.squaredNorm();
+  asser(w >= 0);
+  w = std::sqrt(w);
+  return Eigen::Quaterniond(w, q(1), q(2), q(3)).toRotationMatrix();
+}
+
+/// @brief Convert an SE(3) transform into a twist vector {tx, ty, tz, qx, qy,
+/// qz}, A compact quaternion is the imaginary part of a quaternion, the real
+/// part can be recovered with 1 - q.squaredNorm()
+/// @param T input transform
+/// @return twist vector representation of transform
+Eigen::Vector6d TransformToTwistVector(const Eigen::Matrix4d& T) {
+  assert(beam::IsTransformationMatrix(T));
+  const auto linear = T.block<3, 3>(0, 0);
+  const auto translation = T.block<3, 1>(0, 3);
+
+  Eigen::Vector6d v;
+  v.block<3, 1>(0, 0) = translation;
+  v.block<3, 1>(3, 0) = RotationMatrixToCompactQuaternion(linear);
+  return v;
+}
+
+/// @brief
+/// @param v
+/// @return
+Eigen::Matrix4d TwistVectorToTransform(const Eigen::Vector6d& v) {
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T.block<3, 3>(0, 0) = CompactQuaternionToRotationMatrix(v.tail<3>());
+  T.block<3, 1>(0, 3) = v.head<3>().transpose();
+  return T;
+}
+
+/// @brief Computes the difference between two poses as a twist vector
+/// @param T1
+/// @param T2
+/// @return
+Eigen::Vector6d BoxMinus(const Eigen::Matrix4d& T1, const Eigen::Matrix4d& T2) {
+  return TransformToTwistVector(beam::InvertTransform(T1) * T2);
+}
+
+/// @brief Perturbs a pose with parameters (given as a twist vector)
+/// @param T1
+/// @param perturbation
+/// @return
+Eigen::Matrix4d BoxPlus(const Eigen::Matrix4d& T,
+                        const Vector6d& perturbation) {
+  return T * TwistVectorToTransform(perturbation);
+}
 
 /** @} group utils */
 } // namespace beam
