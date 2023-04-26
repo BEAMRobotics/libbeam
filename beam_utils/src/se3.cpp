@@ -961,4 +961,57 @@ std::string TransformationMatrixToString(const Eigen::Matrix4d& T) {
   return output;
 }
 
+Eigen::Vector3d RotationMatrixToCompactQuaternion(const Eigen::Matrix3d& R) {
+  Eigen::Quaterniond q(R);
+  q.normalize();
+  if (q.w() < 0) { return Eigen::Vector3d(-q.vec()); };
+  return q.vec();
+}
+
+Eigen::Matrix3d CompactQuaternionToRotationMatrix(const Eigen::Vector3d& q) {
+  double w = 1.0 - q.squaredNorm();
+  assert(w >= 0);
+  w = std::sqrt(w);
+  return Eigen::Quaterniond(w, q(1), q(2), q(3)).toRotationMatrix();
+}
+
+Eigen::Matrix<double, 6, 1> TransformToTwistVector(const Eigen::Matrix4d& T) {
+  assert(beam::IsTransformationMatrix(T));
+  const auto linear = T.block<3, 3>(0, 0);
+  const auto translation = T.block<3, 1>(0, 3);
+
+  Eigen::Matrix<double, 6, 1> v;
+  v.block<3, 1>(0, 0) = translation;
+  v.block<3, 1>(3, 0) = RotationMatrixToCompactQuaternion(linear);
+  return v;
+}
+
+Eigen::Matrix4d TwistVectorToTransform(const Eigen::Matrix<double, 6, 1>& v) {
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T.block<3, 3>(0, 0) = CompactQuaternionToRotationMatrix(v.tail<3>());
+  T.block<3, 1>(0, 3) = v.head<3>().transpose();
+  return T;
+}
+
+Eigen::Matrix<double, 6, 1> BoxMinus(const Eigen::Matrix4d& T1,
+                                     const Eigen::Matrix4d& T2) {
+  return TransformToTwistVector(InvertTransform(T1) * T2);
+}
+
+Eigen::Matrix4d BoxPlus(const Eigen::Matrix4d& T,
+                        const Eigen::Matrix<double, 6, 1>& perturbation) {
+  return T * TwistVectorToTransform(perturbation);
+}
+
+Eigen::Matrix4d GenerateRandomPose(const double lb, const double ub) {
+  Eigen::Vector3d compact_quaternion =
+      beam::UniformRandomVector<3>(0.0, 1.0).normalized();
+  Eigen::Vector3d translation = beam::UniformRandomVector<3>(lb, ub);
+  Eigen::Matrix<double, 6, 1> twist_vec;
+  twist_vec << compact_quaternion, translation;
+  const auto T = TwistVectorToTransform(twist_vec);
+  assert(beam::IsTransformationMatrix(T));
+  return T;
+}
+
 } // namespace beam
