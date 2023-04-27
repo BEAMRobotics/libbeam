@@ -972,7 +972,7 @@ Eigen::Matrix3d CompactQuaternionToRotationMatrix(const Eigen::Vector3d& q) {
   double w = 1.0 - q.squaredNorm();
   assert(w >= 0);
   w = std::sqrt(w);
-  return Eigen::Quaterniond(w, q(1), q(2), q(3)).toRotationMatrix();
+  return Eigen::Quaterniond(w, q(0), q(1), q(2)).toRotationMatrix();
 }
 
 Eigen::Matrix<double, 6, 1> TransformToTwistVector(const Eigen::Matrix4d& T) {
@@ -1004,12 +1004,11 @@ Eigen::Matrix4d BoxPlus(const Eigen::Matrix4d& T,
 }
 
 Eigen::Matrix4d GenerateRandomPose(const double lb, const double ub) {
-  Eigen::Vector3d compact_quaternion =
-      beam::UniformRandomVector<3>(0.0, 1.0).normalized();
+  Eigen::Vector4d q_vec = beam::GaussianRandomVector<4>(0.0, 1.0).normalized();
+  Eigen::Quaterniond quaternion(q_vec[0], q_vec[1], q_vec[2], q_vec[3]);
   Eigen::Vector3d translation = beam::UniformRandomVector<3>(lb, ub);
-  Eigen::Matrix<double, 6, 1> twist_vec;
-  twist_vec << compact_quaternion, translation;
-  const auto T = TwistVectorToTransform(twist_vec);
+  Eigen::Matrix4d T;
+  beam::QuaternionAndTranslationToTransformMatrix(quaternion, translation, T);
   assert(beam::IsTransformationMatrix(T));
   return T;
 }
