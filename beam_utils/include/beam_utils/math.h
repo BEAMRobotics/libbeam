@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -71,8 +72,8 @@ int randi(int ub, int lb);
  * uniform random distribution. */
 double randf(double ub, double lb);
 
-/** Compares two floating point numbers `f1` and `f2` with an error threshold
- * defined by `threshold`.
+/** Compares two floating point numbers `f1` and `f2` with an error
+ * threshold defined by `threshold`.
  * @return
  * - `0`: If `f1` == `f2` or the difference is less then `threshold`
  * - `1`: If `f1` > `f2`
@@ -236,6 +237,43 @@ double LogitInv(double l);
  * @return updated probability
  */
 double BayesianLogitUpdate(double pk, double l0, double p_prev);
+
+/// @brief
+/// @param mean
+/// @param stddev
+/// @return
+double GaussianRandomNumber(double mean, double stddev);
+
+/// @brief
+/// @tparam size
+/// @param mean
+/// @param stddev
+/// @return
+template <int size>
+Eigen::Matrix<double, size, 1> GaussianRandomVector(double mean,
+                                                    double stddev) {
+  std::random_device rd{};
+  std::mt19937 gen{rd()};
+  std::normal_distribution<double> dist{mean, stddev};
+  Eigen::Matrix<double, size, 1> v;
+  for (int i = 0; i < size; i++) { v(i) = dist(gen); }
+  return v;
+}
+
+/// @brief
+/// @tparam size
+/// @param lb
+/// @param ub
+/// @return
+template <int size>
+Eigen::Matrix<double, size, 1> UniformRandomVector(double lb, double ub) {
+  std::random_device rd{};
+  std::mt19937 gen{rd()};
+  std::uniform_real_distribution<double> dist(lb, ub);
+  Eigen::Matrix<double, size, 1> v;
+  for (int i = 0; i < size; i++) { v(i) = dist(gen); }
+  return v;
+}
 
 /** @} group utils */
 } // namespace beam

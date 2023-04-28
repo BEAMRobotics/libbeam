@@ -226,4 +226,11 @@ double BayesianLogitUpdate(double pk, double l0, double p_prev) {
   return LogitInv(l_updated);
 }
 
+double GaussianRandomNumber(double mean, double stddev) {
+  std::random_device rd{};
+  std::mt19937 gen{rd()};
+  std::normal_distribution<> dist{mean, stddev};
+  return dist(gen);
+}
+
 } // namespace beam
