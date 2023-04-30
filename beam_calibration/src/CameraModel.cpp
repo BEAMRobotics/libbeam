@@ -142,6 +142,15 @@ void CameraModel::SetImageDims(const uint32_t height, const uint32_t width) {
   image_height_ = height;
 }
 
+Eigen::Matrix2d CameraModel : GetIntrinsicMatrix() {
+  Eigen::Matrix2d K = Eigen::Matrix2d::Identity();
+  K(0, 0) = intrinsics_[0];
+  K(1, 1) = intrinsics_[1];
+  K(0, 2) = intrinsics_[2];
+  K(1, 2) = intrinsics_[3];
+  return K;
+}
+
 void CameraModel::SetSafeProjectionRadius(uint32_t safe_projection_radius) {
   safe_projection_radius_ = safe_projection_radius;
 }

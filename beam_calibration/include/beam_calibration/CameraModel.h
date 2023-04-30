@@ -114,6 +114,11 @@ public:
   std::shared_ptr<CameraModel> GetRectifiedModel();
 
   /**
+   * @brief Returns a rectified camera model
+   */
+  Eigen::Matrix2d GetIntrinsicMatrix();
+
+  /**
    * @brief Method for adding the frame id
    * @param frame_id frame associated with the intrinsics calibration object
    */
