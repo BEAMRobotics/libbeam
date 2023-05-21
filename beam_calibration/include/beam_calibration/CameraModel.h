@@ -116,7 +116,7 @@ public:
   /**
    * @brief Returns a rectified camera model
    */
-  Eigen::Matrix2d GetIntrinsicMatrix();
+  Eigen::Matrix3d GetIntrinsicMatrix();
 
   /**
    * @brief Method for adding the frame id

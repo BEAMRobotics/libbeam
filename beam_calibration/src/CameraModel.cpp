@@ -142,8 +142,8 @@ void CameraModel::SetImageDims(const uint32_t height, const uint32_t width) {
   image_height_ = height;
 }
 
-Eigen::Matrix2d CameraModel : GetIntrinsicMatrix() {
-  Eigen::Matrix2d K = Eigen::Matrix2d::Identity();
+Eigen::Matrix3d CameraModel::GetIntrinsicMatrix() {
+  Eigen::Matrix3d K = Eigen::Matrix3d::Identity();
   K(0, 0) = intrinsics_[0];
   K(1, 1) = intrinsics_[1];
   K(0, 2) = intrinsics_[2];

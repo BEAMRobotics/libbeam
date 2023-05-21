@@ -687,8 +687,8 @@ Eigen::Matrix4d AverageTransforms(
  * @param transforms vector of matrix4d transforms
  * @return averaged transform
  **/
-Eigen::Matrix4d AverageTransforms(
-    const std::list<Eigen::Matrix4d, AlignMat4d>& transforms);
+Eigen::Matrix4d
+    AverageTransforms(const std::list<Eigen::Matrix4d, AlignMat4d>& transforms);
 
 /**
  * @brief Convert from rotation matrix to its associated Lie Algebra
@@ -797,44 +797,12 @@ int quat2euler(const Eigen::Quaterniond& q, int euler_seq,
 /** Convert quaternion to rotation matrix **/
 int quat2rot(const Eigen::Quaterniond& q, Eigen::Matrix3d& R);
 
-/// @brief
-/// @param R
-/// @return
-Eigen::Vector3d RotationMatrixToCompactQuaternion(const Eigen::Matrix3d& R);
-
-/// @brief
-/// @param q
-/// @return
-Eigen::Matrix3d CompactQuaternionToRotationMatrix(const Eigen::Vector3d& q);
-
-/// @brief Convert an SE(3) transform into a twist vector {tx, ty, tz, qx, qy,
-/// qz}, A compact quaternion is the imaginary part of a quaternion, the real
-/// part can be recovered with 1 - q.squaredNorm()
-/// @param T input transform
-/// @return twist vector representation of transform
-Eigen::Matrix<double, 6, 1> TransformToTwistVector(const Eigen::Matrix4d& T);
-
-/// @brief
-/// @param v
-/// @return
-Eigen::Matrix4d TwistVectorToTransform(const Eigen::Matrix<double, 6, 1>& v);
-
-/// @brief Computes the difference between two poses as a twist vector
-/// @param T1
-/// @param T2
-/// @return
-Eigen::Matrix<double, 6, 1> BoxMinus(const Eigen::Matrix4d& T1,
-                                     const Eigen::Matrix4d& T2);
-
-/// @brief Perturbs a pose with parameters (given as a twist vector)
-/// @param T1
-/// @param perturbation
-/// @return
-Eigen::Matrix4d BoxPlus(const Eigen::Matrix4d& T,
-                        const Eigen::Matrix<double, 6, 1>& perturbation);
-
 /// @brief 
 /// @return 
+Eigen::Quaterniond RandomQuaternion();
+
+/// @brief
+/// @return
 Eigen::Matrix4d GenerateRandomPose(const double lb, const double ub);
 
 /** @} group utils */
