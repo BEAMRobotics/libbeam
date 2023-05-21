@@ -112,26 +112,3 @@ TEST_CASE("Random pose generation", "[se3.h]") {
     REQUIRE(beam::IsTransformationMatrix(T));
   }
 }
-
-TEST_CASE("Rotation matrix to compact Quaternion and back", "[se3.h]") {
-  int N = 100;
-  for (int i = 0; i < N; i++) {
-    const Eigen::Matrix4d T = beam::GenerateRandomPose(0.0, 1.0);
-    const Eigen::Matrix3d R = T.block<3,3>(0,0);
-    REQUIRE(beam::IsRotationMatrix(R));
-    const Eigen::Vector3d compact_quat = beam::RotationMatrixToCompactQuaternion(R);
-    const Eigen::Matrix3d R_back = beam::CompactQuaternionToRotationMatrix(compact_quat);
-    REQUIRE(R.isApprox(R_back));
-  }
-}
-
-TEST_CASE("Transform to twist and back", "[se3.h]") {
-  int N = 100;
-  for (int i = 0; i < N; i++) {
-    const Eigen::Matrix4d T = beam::GenerateRandomPose(0.0, 1.0);
-    REQUIRE(beam::IsTransformationMatrix(T));
-    const Eigen::Matrix<double, 6, 1> twist = beam::TransformToTwistVector(T);
-    const Eigen::Matrix4d T_back = beam::TwistVectorToTransform(twist);
-    REQUIRE(T.isApprox(T_back));
-  }
-}
