@@ -258,6 +258,7 @@ protected:
   uint32_t image_width_{0};
   uint32_t safe_projection_radius_{0};
   Eigen::VectorXd intrinsics_;
+  bool undistort_map_initialized_{false};
 
   unsigned int cam_id_ = 0;
 

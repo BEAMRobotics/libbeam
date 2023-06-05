@@ -4,9 +4,10 @@ namespace beam_cv {
 
 ImageDatabase::ImageDatabase() {
   // construct default detector and descriptor
-  beam_cv::FASTSSCDetector::Params detector_params;
+  beam_cv::ORBDetector::Params detector_params;
+  detector_params.num_features = 1000;
   beam_cv::ORBDescriptor::Params descriptor_params;
-  detector_ = beam_cv::FASTSSCDetector(detector_params);
+  detector_ = beam_cv::ORBDetector(detector_params);
   descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
   // construct database
   DBoW3::Vocabulary default_vocab(DEFAULT_VOCAB_PATH);
@@ -15,10 +16,10 @@ ImageDatabase::ImageDatabase() {
 }
 
 ImageDatabase::ImageDatabase(
-    const beam_cv::FASTSSCDetector::Params& detector_params,
+    const beam_cv::ORBDetector::Params& detector_params,
     const beam_cv::ORBDescriptor::Params& descriptor_params) {
   // construct detector and descriptor
-  detector_ = beam_cv::FASTSSCDetector(detector_params);
+  detector_ = beam_cv::ORBDetector(detector_params);
   descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
   // construct database
   DBoW3::Vocabulary default_vocab(DEFAULT_VOCAB_PATH);
@@ -29,9 +30,9 @@ ImageDatabase::ImageDatabase(
 ImageDatabase::ImageDatabase(const std::string& dbow_file_path,
                              const std::string& timestamps_file_path) {
   // construct detector and descriptor
-  beam_cv::FASTSSCDetector::Params detector_params;
+  beam_cv::ORBDetector::Params detector_params;
   beam_cv::ORBDescriptor::Params descriptor_params;
-  detector_ = beam_cv::FASTSSCDetector(detector_params);
+  detector_ = beam_cv::ORBDetector(detector_params);
   descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
   // construct database
   dbow_db_ = std::make_shared<DBoW3::Database>(dbow_file_path);
@@ -41,12 +42,12 @@ ImageDatabase::ImageDatabase(const std::string& dbow_file_path,
 }
 
 ImageDatabase::ImageDatabase(
-    const beam_cv::FASTSSCDetector::Params& detector_params,
+    const beam_cv::ORBDetector::Params& detector_params,
     const beam_cv::ORBDescriptor::Params& descriptor_params,
     const std::string& dbow_file_path,
     const std::string& timestamps_file_path) {
   // construct detector and descriptor
-  detector_ = beam_cv::FASTSSCDetector(detector_params);
+  detector_ = beam_cv::ORBDetector(detector_params);
   descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
   // construct database
   dbow_db_ = std::make_shared<DBoW3::Database>(dbow_file_path);
