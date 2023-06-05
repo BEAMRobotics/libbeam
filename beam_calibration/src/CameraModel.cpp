@@ -53,6 +53,9 @@ std::shared_ptr<CameraModel> CameraModel::Create(std::string& file_location) {
 }
 
 void CameraModel::InitUndistortMap() {
+  if(undistort_map_initialized_){
+    return;
+  }
   BEAM_INFO("Creating undistortion map...");
   // get the rectified model
   GetRectifiedModel();
@@ -82,6 +85,7 @@ void CameraModel::InitUndistortMap() {
       }
     }
   }
+  undistort_map_initialized_ = true;
   BEAM_INFO("Done.");
 }
 
