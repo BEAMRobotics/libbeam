@@ -14,6 +14,23 @@
 #include <beam_optimization/CamPoseUnitSphereCost.h>
 #include <beam_optimization/PosePriorCost.h>
 
+class WelschLoss : public ceres::LossFunction {
+public:
+  explicit WelschLoss(const double a) : b_(a * a), c_(-1.0 / b_) {}
+
+  void Evaluate(double s, double rho[3]) const override {
+    const double exp = std::exp(s * c_);
+
+    rho[0] = b_ * (1 - exp);
+    rho[1] = exp;
+    rho[2] = c_ * exp;
+  }
+
+private:
+  const double b_;
+  const double c_;
+};
+
 namespace beam_cv {
 
 PoseRefinement::PoseRefinement() {
@@ -147,8 +164,11 @@ std::shared_ptr<ceres::Problem> PoseRefinement::SetupCeresProblem() {
   std::shared_ptr<ceres::Problem> problem =
       std::make_shared<ceres::Problem>(ceres_problem_options);
 
+  // loss_function_ =
+  //     std::unique_ptr<ceres::LossFunction>(new ceres::HuberLoss(1.0));
+
   loss_function_ =
-      std::unique_ptr<ceres::LossFunction>(new ceres::HuberLoss(1.0));
+      std::unique_ptr<ceres::LossFunction>(new WelschLoss(1.0));
 
   std::unique_ptr<ceres::LocalParameterization> quat_parameterization(
       new ceres::QuaternionParameterization());
