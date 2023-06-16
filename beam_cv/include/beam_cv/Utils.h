@@ -143,7 +143,7 @@ int CheckInliers(std::shared_ptr<beam_calibration::CameraModel> cam1,
                  std::shared_ptr<beam_calibration::CameraModel> cam2,
                  const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
                  const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
-                 const std::vector<beam::opt<Eigen::Vector3d>>& points,
+                 const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
                  const Eigen::Matrix4d& T_cam1_world,
                  const Eigen::Matrix4d& T_cam2_world, double inlier_threshold);
 

@@ -46,7 +46,7 @@ public:
   /**
    * @brief Refines an estimated transformation matrix to minimize
    * reprojection error for a set of points/pixel correspondences.
-   * @param estimate Initial transformation matrix estimate
+   * @param T_CAMERA_WORLD Initial transformation matrix estimate
    * @param cam camera model for image
    * @param pixels projected pixel locations of feature points in cam
    * @param points 3d locations of features
@@ -57,7 +57,7 @@ public:
    * @returns Refined transformation matrix
    */
   Eigen::Matrix4d
-      RefinePose(const Eigen::Matrix4d& estimate,
+      RefinePose(const Eigen::Matrix4d& T_CAMERA_WORLD,
                  const std::shared_ptr<beam_calibration::CameraModel>& cam,
                  const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
                  const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
