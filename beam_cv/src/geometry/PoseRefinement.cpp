@@ -69,7 +69,7 @@ PoseRefinement::PoseRefinement(const ceres::Solver::Options options,
 }
 
 Eigen::Matrix4d PoseRefinement::RefinePose(
-    const Eigen::Matrix4d& T_CAMERA_WORLD,
+    const Eigen::Matrix4d& estimate,
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
     const std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
@@ -77,12 +77,11 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     std::shared_ptr<Eigen::Matrix<double, 6, 6>> A_out, std::string& report,
     bool remove_points_outside_domain) {
   // vector to store optimized pose quaternion and translation
-  Eigen::Matrix3d estimate_r = T_CAMERA_WORLD.block(0, 0, 3, 3);
+  Eigen::Matrix3d estimate_r = estimate.block(0, 0, 3, 3);
   Eigen::Quaterniond estimate_q(estimate_r);
-  std::vector<double> results{estimate_q.w(),       estimate_q.x(),
-                              estimate_q.y(),       estimate_q.z(),
-                              T_CAMERA_WORLD(0, 3), T_CAMERA_WORLD(1, 3),
-                              T_CAMERA_WORLD(2, 3)};
+  std::vector<double> results{estimate_q.w(), estimate_q.x(), estimate_q.y(),
+                              estimate_q.z(), estimate(0, 3), estimate(1, 3),
+                              estimate(2, 3)};
 
   // use member function to instantiate solver
   std::shared_ptr<ceres::Problem> problem = SetupCeresProblem();
@@ -96,7 +95,7 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     if (remove_points_outside_domain) {
       Eigen::Vector4d point_h;
       point_h << points[i][0], points[i][1], points[i][2], 1;
-      Eigen::Vector4d point_transformed = T_CAMERA_WORLD * point_h;
+      Eigen::Vector4d point_transformed = estimate * point_h;
       if (!cam->InProjectionDomain(point_transformed.hnormalized())) {
         continue;
       }
@@ -119,7 +118,7 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
   // add a prior to the pose if a weighting matrix is passed in
   if (A_in) {
     std::unique_ptr<ceres::CostFunction> prior_pose_cost(
-        CeresPosePriorCostFunction::Create(T_CAMERA_WORLD, *A_in));
+        CeresPosePriorCostFunction::Create(estimate, *A_in));
     problem->AddResidualBlock(prior_pose_cost.release(), loss_function_.get(),
                               &(results[0]));
   }
@@ -168,7 +167,8 @@ std::shared_ptr<ceres::Problem> PoseRefinement::SetupCeresProblem() {
   // loss_function_ =
   //     std::unique_ptr<ceres::LossFunction>(new ceres::HuberLoss(1.0));
 
-  loss_function_ = std::unique_ptr<ceres::LossFunction>(new WelschLoss(1.0));
+  loss_function_ =
+      std::unique_ptr<ceres::LossFunction>(new WelschLoss(1.0));
 
   std::unique_ptr<ceres::LocalParameterization> quat_parameterization(
       new ceres::QuaternionParameterization());

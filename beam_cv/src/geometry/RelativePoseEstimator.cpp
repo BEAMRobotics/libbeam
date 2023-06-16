@@ -7,8 +7,8 @@
 #include <beam_cv/Utils.h>
 #include <beam_cv/geometry/Triangulation.h>
 #include <beam_utils/math.h>
-#include <beam_utils/roots.h>
 #include <beam_utils/se3.h>
+#include <beam_utils/roots.h>
 
 namespace beam_cv {
 
@@ -160,9 +160,8 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
-    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
-    EstimatorMethod method, int max_iterations, double inlier_threshold,
-    int seed) {
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v, EstimatorMethod method,
+    int max_iterations, double inlier_threshold, int seed) {
   if (p2_v.size() != p1_v.size()) {
     BEAM_CRITICAL("Point match vectors are not of the same size.");
     return {};
@@ -246,9 +245,9 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
   }
 }
 
-void RelativePoseEstimator::RtFromE(
-    const Eigen::Matrix3d& E, std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
-    std::vector<Eigen::Vector3d, beam::AlignVec3d>& t) {
+void RelativePoseEstimator::RtFromE(const Eigen::Matrix3d& E,
+                                    std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
+                                    std::vector<Eigen::Vector3d, beam::AlignVec3d>& t) {
   Eigen::JacobiSVD<Eigen::Matrix3d> E_svd(E, Eigen::ComputeFullU |
                                                  Eigen::ComputeFullV);
   Eigen::Matrix3d U, V;
@@ -275,44 +274,37 @@ int RelativePoseEstimator::RecoverPose(
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
     const std::vector<Eigen::Matrix3d, beam::AlignMat3d>& R,
-    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& t,
-    beam::opt<Eigen::Matrix4d>& pose, double inlier_threshold) {
-  Eigen::Matrix4d T_world_cam1 = Eigen::Matrix4d::Identity();
-  Eigen::Matrix4d T_world_cam2 = Eigen::Matrix4d::Identity();
+    const std::vector<Eigen::Vector3d, beam::AlignVec3d>& t, beam::opt<Eigen::Matrix4d>& pose,
+    double inlier_threshold) {
+  Eigen::Matrix4d T_cam2_world;
   // iterate through each possibility
   int max_count = 0;
   int ret_inliers = 0;
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       // build relative pose possibility
-      T_world_cam2.block<3, 3>(0, 0) = R[i];
-      T_world_cam2.block<3, 1>(0, 3) = t[j].transpose();
-
+      T_cam2_world.block<3, 3>(0, 0) = R[i];
+      T_cam2_world.block<3, 1>(0, 3) = t[j].transpose();
+      Eigen::Vector4d v{0, 0, 0, 1};
+      T_cam2_world.row(3) = v;
+      Eigen::Matrix4d I = Eigen::Matrix4d::Identity();
       // triangulate correspondences
-      const auto points = Triangulation::TriangulatePoints(
-          cam1, cam2, T_world_cam1, T_world_cam2, p1_v, p2_v);
-      int inliers =
-          beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, points, T_world_cam1,
-                                T_world_cam2, inlier_threshold);
+      std::vector<beam::opt<Eigen::Vector3d>> points =
+          Triangulation::TriangulatePoints(cam1, cam2, I, T_cam2_world, p1_v,
+                                           p2_v);
+      int inliers = beam_cv::CheckInliers(cam1, cam2, p1_v, p2_v, points, I,
+                                          T_cam2_world, inlier_threshold);
       int size = points.size();
       int count = 0;
       // check if each point is in front of both cameras
       for (int point_idx = 0; point_idx < size; point_idx++) {
-        // check if result is in front of both cameras
-        auto p = points[point_idx];
-        Eigen::Vector3d p_cam1 =
-            (beam::InvertTransform(T_world_cam1) * p.homogeneous())
-                .hnormalized();
-        Eigen::Vector3d p_cam2 =
-            (beam::InvertTransform(T_world_cam1) * p.homogeneous())
-                .hnormalized();
-        if (p_cam1[2] > 0 && p_cam2[2] < 0) { count++; }
+        if (points[point_idx].has_value()) { count++; }
       }
       // kep track of pose that has the most points in front of both cameras
       if (count > max_count) {
         max_count = count;
         ret_inliers = inliers;
-        pose = T_world_cam2;
+        pose = T_cam2_world;
       }
     }
   }

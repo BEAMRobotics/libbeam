@@ -22,8 +22,7 @@
 #include <beam_calibration/Radtan.h>
 #include <beam_utils/math.h>
 
-void ReadMatches(std::string file,
-                 std::vector<Eigen::Vector2i, beam::AlignVec2i>& matches1,
+void ReadMatches(std::string file, std::vector<Eigen::Vector2i, beam::AlignVec2i>& matches1,
                  std::vector<Eigen::Vector2i, beam::AlignVec2i>& matches2) {
   // declare variables
   std::ifstream infile;
@@ -52,8 +51,7 @@ void ReadMatches(std::string file,
 
 void GenerateP3PMatches(std::shared_ptr<beam_calibration::CameraModel> cam,
                         std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-                        std::vector<Eigen::Vector3d, beam::AlignVec3d>& points,
-                        int n) {
+                        std::vector<Eigen::Vector3d, beam::AlignVec3d>& points, int n) {
   for (int i = 0; i < n; i++) {
     int x = rand() % cam->GetWidth();
     int y = rand() % cam->GetHeight();
@@ -209,12 +207,15 @@ TEST_CASE("Test P3P Absolute Pose Estimator") {
           cam, cam, frame1_matches, frame2_matches,
           beam_cv::EstimatorMethod::SEVENPOINT, 20, 5, 13);
   REQUIRE(Pr.has_value());
-  auto t_points = beam_cv::Triangulation::TriangulatePoints(
-      cam, cam, Pl, Pr.value(), frame1_matches, frame2_matches);
+  std::vector<beam::opt<Eigen::Vector3d>> t_points =
+      beam_cv::Triangulation::TriangulatePoints(cam, cam, Pl, Pr.value(),
+                                                frame1_matches, frame2_matches);
+  std::vector<Eigen::Vector3d, beam::AlignVec3d> points;
+  for (auto& p : t_points) { points.push_back(p.value()); }
 
   // find the pose
   std::vector<Eigen::Matrix4d, beam::AlignMat4d> poses =
-      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, frame2_matches, t_points);
+      beam_cv::AbsolutePoseEstimator::P3PEstimator(cam, frame2_matches, points);
 
   // check if the solution was found
   bool check = false;
