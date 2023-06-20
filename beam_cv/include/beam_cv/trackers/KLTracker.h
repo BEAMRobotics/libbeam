@@ -71,6 +71,15 @@ public:
             int window_size = 100);
 
   /**
+   * @brief Modified constructor for when outlier rejection is wanted
+   * @param K camera matrix
+   */
+  KLTracker(const Eigen::Matrix3d& K,
+            std::shared_ptr<beam_cv::Detector> detector,
+            std::shared_ptr<beam_cv::Descriptor> descriptor = nullptr,
+            int window_size = 100);
+
+  /**
    * @brief Constructor with custom variables
    * @param params see struct defined above
    * @param detector pointer to detector object (FAST, ORB, etc...)
@@ -84,6 +93,15 @@ public:
    * kept for offline use.
    */
   KLTracker(const Params& params, std::shared_ptr<beam_cv::Detector> detector,
+            std::shared_ptr<beam_cv::Descriptor> descriptor = nullptr,
+            int window_size = 100);
+
+  /**
+   * @brief Modified constructor for when outlier rejection is wanted
+   * @param K camera matrix
+   */
+  KLTracker(const Params& params, const Eigen::Matrix3d& K,
+            std::shared_ptr<beam_cv::Detector> detector,
             std::shared_ptr<beam_cv::Descriptor> descriptor = nullptr,
             int window_size = 100);
 

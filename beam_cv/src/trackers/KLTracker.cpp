@@ -40,11 +40,30 @@ KLTracker::KLTracker(std::shared_ptr<beam_cv::Detector> detector,
   ValidateParams();
 }
 
+KLTracker::KLTracker(const Eigen::Matrix3d& K,
+                     std::shared_ptr<beam_cv::Detector> detector,
+                     std::shared_ptr<beam_cv::Descriptor> descriptor,
+                     int window_size)
+    : Tracker(K, window_size), detector_(detector), descriptor_(descriptor) {
+  ValidateParams();
+}
+
 KLTracker::KLTracker(const Params& params,
                      std::shared_ptr<beam_cv::Detector> detector,
                      std::shared_ptr<beam_cv::Descriptor> descriptor,
                      int window_size)
     : Tracker(window_size),
+      params_(params),
+      detector_(detector),
+      descriptor_(descriptor) {
+  ValidateParams();
+}
+
+KLTracker::KLTracker(const Params& params, const Eigen::Matrix3d& K,
+                     std::shared_ptr<beam_cv::Detector> detector,
+                     std::shared_ptr<beam_cv::Descriptor> descriptor,
+                     int window_size)
+    : Tracker(K, window_size),
       params_(params),
       detector_(detector),
       descriptor_(descriptor) {
@@ -97,6 +116,24 @@ void KLTracker::AddImage(const cv::Mat& image, const ros::Time& current_time) {
 
   // assign current keypoints and descriptors & add to landmarks
   RegisterKeypoints(status, image, new_points_start_id);
+
+  // Find essential matrix
+  if (use_outlier_rejection_) {
+    std::vector<uchar> mask;
+    cv::Mat essential_matrix = cv::findEssentialMat(
+        prev_kp_, curr_kp_, K_, cv::RANSAC, 2.0, 0.99, mask);
+
+    std::vector<cv::Point2f> filtered_kp;
+    cv::Mat filtered_desc;
+    for (size_t i = 0; i < mask.size(); i++) {
+      if (mask.at(i) != 0) {
+        filtered_kp.push_back(curr_kp_.at(i));
+        filtered_desc.push_back(curr_desc_.row(i));
+      }
+    }
+    curr_kp_ = filtered_kp;
+    curr_desc_ = filtered_desc;
+  }
 
   // Update previous keypoints & image
   prev_image_ = image.clone();
