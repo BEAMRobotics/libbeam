@@ -54,7 +54,9 @@ bool Radtan::ProjectPoint(const Eigen::Vector3d& in_point,
   Eigen::Vector2d tmp;
   tmp << (x * rz), (y * rz);
   // Distort point using radtan distortion model
-  out_pixel = DistortPixel(out_pixel);
+  if (k1_ > 0 && k2_ > 0 && p1_ > 0 && p2_ > 0) {
+    out_pixel = DistortPixel(out_pixel);
+  }
   double xx = out_pixel[0], yy = out_pixel[1];
   out_pixel[0] = (fx_ * xx + cx_);
   out_pixel[1] = (fy_ * yy + cy_);
@@ -97,11 +99,15 @@ bool Radtan::BackProject(const Eigen::Vector2i& in_pixel,
   cv::Mat K(3, 3, CV_32F);
   cv::eigen2cv(camera_matrix, K);
 
-  std::vector<double> dist_coeffs = {k1_, k2_, p1_, p2_};
-  // undistort points automatically normalizes the output
-  cv::undistortPoints(src, dst, K, dist_coeffs);
+  if (k1_ > 0 && k2_ > 0 && p1_ > 0 && p2_ > 0) {
+    std::vector<double> dist_coeffs = {k1_, k2_, p1_, p2_};
+    // undistort points automatically normalizes the output
+    cv::undistortPoints(src, dst, K, dist_coeffs);
+    out_point << dst[0].x, dst[0].y, 1;
+  } else {
+    out_point << (p.x - cx_) / fx_, (p.y - cy_) / fy_, 1;
+  }
 
-  out_point << dst[0].x, dst[0].y, 1;
   return true;
 }
 
