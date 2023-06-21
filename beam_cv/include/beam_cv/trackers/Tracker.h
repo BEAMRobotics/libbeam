@@ -10,12 +10,6 @@
 #include <string>
 #include <vector>
 
-#include <Eigen/Eigen>
-#include <opencv2/core/core.hpp>
-#include <opencv2/core/eigen.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/opencv.hpp>
-
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
 #include <beam_cv/Utils.h>
@@ -66,12 +60,6 @@ public:
    * kept for offline use.
    */
   Tracker(int window_size = 0);
-
-  /**
-   * @brief Modified constructor for when outlier rejection is wanted
-   * @param K camera matrix
-   */
-  Tracker(const Eigen::Matrix3d& K, int window_size = 0);
 
   /**
    * @brief Default destructor
@@ -226,9 +214,6 @@ protected:
 
   // store current id
   uint64_t id_{0};
-
-  cv::Mat K_;
-  bool use_outlier_rejection_ = false;
 };
 
 } // namespace beam_cv

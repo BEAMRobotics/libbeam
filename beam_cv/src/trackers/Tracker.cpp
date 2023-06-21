@@ -4,12 +4,6 @@ namespace beam_cv {
 
 Tracker::Tracker(int window_size) : window_size_(window_size) {}
 
-Tracker::Tracker(const Eigen::Matrix3d& K, int window_size)
-    : window_size_(window_size) {
-  cv::eigen2cv(K, K_);
-  use_outlier_rejection_ = true;
-}
-
 void Tracker::TimestampImage(const ros::Time& current_time) {
   img_times_.insert(current_time.toNSec());
 }
