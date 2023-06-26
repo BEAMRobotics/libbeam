@@ -37,6 +37,11 @@ inline void LogTimePoint(const TimePoint time_point,
            (double)time_point.time_since_epoch().count());
 }
 
+/**
+ * @brief convert time point to readable string (YYYY_MM_DD_HH_MM_SS). 
+ * Example usage:
+ * auto date = beam::ConvertTimeToDate(std::chrono::system_clock::now());
+ */
 inline std::string
     ConvertTimeToDate(std::chrono::system_clock::time_point time_) {
   using namespace std;

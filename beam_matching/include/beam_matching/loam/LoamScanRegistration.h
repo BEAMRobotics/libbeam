@@ -146,11 +146,12 @@ private:
 
   // Debugging tools
   std::string debug_output_path_{"/home/nick/debug/loam_tests/"};
+  std::string debug_output_path_stamped_;
 
   /* outputs scans before and after registration. This is diffent than running
    * the OutputResults private function which outputs results for each
    * iteration. */
-  bool output_results_{false};
+  bool output_results_{true};
 };
 
 /** @} group matching */

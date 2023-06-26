@@ -35,6 +35,14 @@ bool LoamScanRegistration::RegisterScans(const LoamPointCloudPtr& ref,
 
   Setup();
 
+  if (output_results_) {
+    std::string time_now =
+        beam::ConvertTimeToDate(std::chrono::system_clock::now());
+    debug_output_path_stamped_ =
+        beam::CombinePaths(debug_output_path_, time_now);
+    boost::filesystem::create_directory(debug_output_path_stamped_); 
+  }
+
   int iteration = 0;
   while (true) {
     if (!GetEdgeMeasurements()) {
@@ -424,17 +432,17 @@ void LoamScanRegistration::OutputResults(int iteration) {
   }
 
   std::string current_dir = beam::CombinePaths(
-      debug_output_path_, "iteration" + std::to_string(iteration));
+      {debug_output_path_stamped_, "iteration" + std::to_string(iteration)});
   boost::filesystem::create_directory(current_dir);
   ref_->SaveCombined(current_dir, "referece_cloud.pcd");
 
   LoamPointCloud target_aligned = tgt_->Copy();
   target_aligned.TransformPointCloud(T_REF_TGT_);
-  target_aligned.Save(current_dir, "target_aligned.pcd");
+  target_aligned.SaveCombined(current_dir, "target_aligned.pcd");
 
   LoamPointCloud target_initial = tgt_->Copy();
   target_initial.TransformPointCloud(T_REF_TGT_prev_iter_);
-  target_initial.Save(current_dir, "target_initial.pcd");
+  target_initial.SaveCombined(current_dir, "target_initial.pcd");
 }
 
 void LoamScanRegistration::OptimizationSummary::Print() {
