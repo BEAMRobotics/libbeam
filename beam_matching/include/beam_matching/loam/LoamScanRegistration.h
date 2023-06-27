@@ -151,7 +151,7 @@ private:
   /* outputs scans before and after registration. This is diffent than running
    * the OutputResults private function which outputs results for each
    * iteration. */
-  bool output_results_{true};
+  bool output_results_{false};
 };
 
 /** @} group matching */
