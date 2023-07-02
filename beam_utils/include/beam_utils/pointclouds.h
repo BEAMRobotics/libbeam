@@ -23,7 +23,7 @@
 // Velodyne
 struct PointXYZIRT {
   PCL_ADD_POINT4D
-  PCL_ADD_INTENSITY;
+  float intensity;
   std::uint16_t ring;
   float time;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -33,15 +33,21 @@ using PointCloudIRT = pcl::PointCloud<PointXYZIRT>;
 
 // clang-format off
 POINT_CLOUD_REGISTER_POINT_STRUCT(
-    PointXYZIRT, (float, x, x)(float, y, y)(float, z, z)
-    (float, intensity, intensity)(std::uint16_t, ring, ring)(float, time, time))
+    PointXYZIRT, 
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (std::uint16_t, ring, ring)
+    (float, time, time) // offset in seconds from cloud time 
+    )
 // clang-format on
 
 // Ouster
 struct PointXYZITRRNR {
   PCL_ADD_POINT4D;
   float intensity;
-  std::uint32_t time;
+  std::uint32_t time; // time since beginning of scan in nanoseconds
   std::uint16_t reflectivity;
   std::uint8_t ring;
   std::uint16_t noise;
@@ -51,10 +57,16 @@ struct PointXYZITRRNR {
 
 // clang-format off
 POINT_CLOUD_REGISTER_POINT_STRUCT(
-    PointXYZITRRNR, (float, x, x)(float, y, y)(float, z, z)
-    (float, intensity, intensity)(std::uint32_t, time, time)
-    (std::uint16_t, reflectivity, reflectivity)(std::uint8_t, ring, ring)
-    (std::uint16_t, noise, noise)(std::uint32_t, range, range))
+    PointXYZITRRNR, 
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (std::uint32_t, time, time)
+    (std::uint16_t, reflectivity, reflectivity)
+    (std::uint8_t, ring, ring)
+    (std::uint16_t, noise, noise)
+    (std::uint32_t, range, range))
 // clang-format on
 
 /**
