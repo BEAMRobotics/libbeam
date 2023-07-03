@@ -56,4 +56,21 @@ void LoamMatcher::SaveResults(const std::string& output_dir,
   loam_scan_registration_->SaveResults(output_dir, prefix);
 }
 
+void LoamMatcher::CalculateCovariance() {
+  Eigen::Matrix<double, 7, 7> covariance_full =
+      loam_scan_registration_->GetCovariance();
+
+  // loam scan registration returns a covariance of form:
+  // [dqw, dqx, dqy, dqz, dx, dy, dz]
+  // whereas Matcher base class requires the form: [dx, dy, dz, dqx, dqy, dqz]
+  // therefore we need to drop the first column and row and then convert
+  // according to:
+  // | A B | ---\  | D C | 
+  // | C D | ---/  | B A |
+  covariance_.block(0,0,3,3) = covariance_full.block(4,4,3,3); 
+  covariance_.block(0,3,3,3) = covariance_full.block(4,1,3,3); 
+  covariance_.block(3,0,3,3) = covariance_full.block(1,4,3,3); 
+  covariance_.block(3,3,3,3) = covariance_full.block(1,1,3,3); 
+}
+
 } // namespace beam_matching

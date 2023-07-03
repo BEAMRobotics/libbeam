@@ -51,13 +51,13 @@ IcpMatcher::Params::Params(const std::string& param_config) {
   this->res = J["res"];
   this->multiscale_steps = J["multiscale_steps"];
 
-  if ((covar_est_temp >= IcpMatcherParams::covar_method::LUM) &&
-      (covar_est_temp <= IcpMatcherParams::covar_method::LUMold)) {
+  if ((covar_est_temp >= IcpMatcherParams::CovarMethod::LUM) &&
+      (covar_est_temp <= IcpMatcherParams::CovarMethod::LUMold)) {
     this->covar_estimator =
-        static_cast<IcpMatcherParams::covar_method>(covar_est_temp);
+        static_cast<IcpMatcherParams::CovarMethod>(covar_est_temp);
   } else {
     LOG_ERROR("Invalid covariance estimate method, using LUM");
-    this->covar_estimator = IcpMatcherParams::covar_method::LUM;
+    this->covar_estimator = IcpMatcherParams::CovarMethod::LUM;
   }
 }
 
@@ -166,11 +166,11 @@ bool IcpMatcher::Match() {
   return false;
 }
 
-void IcpMatcher::EstimateInfo() {
+void IcpMatcher::CalculateCovariance() {
   switch (this->params_.covar_estimator) {
-    case IcpMatcherParams::covar_method::LUM: this->EstimateLUM(); break;
-    case IcpMatcherParams::covar_method::CENSI: this->EstimateCensi(); break;
-    case IcpMatcherParams::covar_method::LUMold: this->EstimateLUMold(); break;
+    case IcpMatcherParams::CovarMethod::LUM: this->EstimateLUM(); break;
+    case IcpMatcherParams::CovarMethod::CENSI: this->EstimateCensi(); break;
+    case IcpMatcherParams::CovarMethod::LUMold: this->EstimateLUMold(); break;
     default: return;
   }
 }
@@ -429,9 +429,7 @@ void IcpMatcher::EstimateCensi() {
     // The covariance is approximately: (Prakhya eqn. 3)
     // d2J_dX2^-1 * d2J_dZdX*cov(z)*d2J_dZdX' *  d2J_dX2^-1
     // = d2J_dX2^-1 * middle * d2J_dX2^-1
-    //
-    // To get the information matrix, we apply the inverse
-    this->information_ = (d2J_dX2 * middle.inverse() * d2J_dX2);
+    this->covariance_ = (d2J_dX2.inverse() * middle * d2J_dX2.inverse());
   }
 }
 
@@ -554,13 +552,12 @@ void IcpMatcher::EstimateLUMold() {
   // When reaching the limitations of computation due to linearization
   if (ss < 0.0000000000001 || !std::isfinite(ss)) {
     LOG_ERROR("Covariance matrix calculation was unsuccessful");
-    this->information_ = Eigen::Matrix<double, 6, 6>::Identity();
   }
 
   // Store the results in the slam graph
   edgeCov = MM * (1.0f / ss);
 
-  this->information_ = edgeCov;
+  this->covariance_ = edgeCov.inverse();
 }
 
 /** Taken from the Lu and Milios matcher in PCL */
@@ -663,11 +660,11 @@ void IcpMatcher::EstimateLUM() {
     // When reaching the limitations of computation due to linearization
     if (ss < 0.0000000000001 || !std::isfinite(ss)) {
       LOG_ERROR("Covariance matrix calculation was unsuccessful");
-      this->information_ = Eigen::Matrix<double, 6, 6>::Identity();
       return;
     }
 
-    this->information_ = MM * (1.0f / ss);
+    auto information = MM * (1.0f / ss);
+    this->covariance_ = information.inverse();
   }
 }
 

@@ -29,7 +29,10 @@ namespace beam_matching {
 
 class IcpMatcher : public Matcher<PointCloudPtr> {
 public:
+
   struct Params {
+    enum CovarMethod : int { LUM, CENSI, LUMold };
+    
     Params(const std::string& param_config);
     Params() {}
 
@@ -64,11 +67,7 @@ public:
     /// of the final, fine-scale match
     float res{0.1};
 
-    enum covar_method : int {
-      LUM,
-      CENSI,
-      LUMold
-    } covar_estimator = covar_method::LUM;
+    CovarMethod covar_estimator = CovarMethod::LUM;
   };
 
   IcpMatcher() = default;
@@ -107,9 +106,10 @@ public:
   bool Match() override;
 
   /**
-   * @brief runs covariance estimator, blocks until finished.
+   * @brief estimates the covariance using the method expressed in params
+   * (covar_estimator)
    */
-  void EstimateInfo();
+  void CalculateCovariance() override;
 
   /**
    * @brief gets the parameters for the matcher

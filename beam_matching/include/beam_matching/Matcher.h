@@ -47,10 +47,13 @@ public:
   Eigen::Affine3d GetResult() { return this->result_; };
 
   /**
-   * @brief returns the calculated information matrix. Make sure you call
-   * EstimateInfo() before
+   * @brief returns the calculated covariance matrix. 
+   * Covariance has the form: 6x6 matrix [dx, dy, dz, dqx, dqy, dqz]
    */
-  Eigen::Matrix<double, 6, 6>& GetInfo() { return this->information_; };
+  Eigen::Matrix<double, 6, 6>& GetCovariance() {
+    if (covariance_.isIdentity()) { CalculateCovariance(); }
+    return this->covariance_;
+  };
 
   float GetRes() { return this->resolution_; };
 
@@ -76,10 +79,6 @@ public:
    */
   virtual bool Match() = 0;
 
-  virtual void EstimateInfo() {
-    this->information_ = Eigen::Matrix<double, 6, 6>::Identity(6, 6);
-  }
-
   /**
    * @brief Pure virtual function for saving results. Stores the results as 3
    * separate clouds:
@@ -99,6 +98,8 @@ public:
                            const std::string& prefix = "cloud") = 0;
 
 protected:
+  virtual void CalculateCovariance() = 0;
+
   /**
    * @brief for pcl::PointCloud<pcl::PointXYZ> (which is most of the case for
    * matchers) this function can be called as an implementation to the above
@@ -169,13 +170,11 @@ protected:
   Eigen::Affine3d result_;
 
   /**
-   * The information matrix calculated by the scan-matching algorithm. The
-   * diagonal elements correpond to translational perturbations in the x, y,
-   * and z directions and angular perturbations on the 3-2-1 euler angles, in
-   * that order and in the frame of the reference pointcloud. This may change
-   * as the kinematics module of libbeam progresses.
+   * The information matrix calculated by the scan-matching algorithm. (6x6
+   * matrix: dx, dy, dz, dqx, dqy, dqz)
    */
-  Eigen::Matrix<double, 6, 6> information_;
+  Eigen::Matrix<double, 6, 6> covariance_{
+      Eigen::Matrix<double, 6, 6>::Identity()};
 };
 
 /** @} group matching */

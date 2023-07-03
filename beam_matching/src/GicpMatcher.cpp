@@ -106,4 +106,8 @@ void GicpMatcher::SaveResults(const std::string& output_dir,
   SaveResultsPCLXYZ(output_dir, prefix, ref_, target_);
 }
 
+void GicpMatcher::CalculateCovariance(){
+  BEAM_ERROR("covariance estimation not implemented for GicpMatcher");
+  throw std::runtime_error{"function not implemented"};
+}
 } // namespace beam_matching

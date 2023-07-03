@@ -103,4 +103,9 @@ void NdtMatcher::SaveResults(const std::string& output_dir,
   SaveResultsPCLXYZ(output_dir, prefix, ref_, target_);
 }
 
+void NdtMatcher::CalculateCovariance(){
+  BEAM_ERROR("covariance estimation not implemented for NdtMatcher");
+  throw std::runtime_error{"function not implemented"};
+}
+
 } // namespace beam_matching

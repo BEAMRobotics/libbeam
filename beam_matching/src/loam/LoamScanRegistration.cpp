@@ -40,7 +40,7 @@ bool LoamScanRegistration::RegisterScans(const LoamPointCloudPtr& ref,
         beam::ConvertTimeToDate(std::chrono::system_clock::now());
     debug_output_path_stamped_ =
         beam::CombinePaths(debug_output_path_, time_now);
-    boost::filesystem::create_directory(debug_output_path_stamped_); 
+    boost::filesystem::create_directory(debug_output_path_stamped_);
   }
 
   int iteration = 0;
@@ -346,6 +346,18 @@ bool LoamScanRegistration::Solve(int iteration) {
     optimization_summary_.edge_measurements = edge_measurements_.size();
   }
 
+  // compute covariance
+  ceres::Covariance::Options cov_options;
+  ceres::Covariance covariance(cov_options);
+  std::vector<const double*> covariance_block;
+  covariance_block.push_back(&(pose[0]));
+  covariance.Compute(covariance_block, problem.get());
+
+  // setup covariance to return as eigen matrix
+  double covariance_arr[7 * 7];
+  covariance.GetCovarianceBlock(&(pose[0]), &(pose[0]), covariance_arr);
+  covariance_ = Eigen::Matrix<double, 7, 7>(covariance_arr);
+
   return ceres_summary.IsSolutionUsable();
 }
 
@@ -479,6 +491,10 @@ void LoamScanRegistration::SaveResults(const std::string& output_path,
   target_aligned.TransformPointCloud(T_REF_TGT_);
   target_aligned.SaveCombined(output_path, prefix + "_target_aligned.pcd", 0,
                               255, 0);
+}
+
+Eigen::Matrix<double, 7, 7> LoamScanRegistration::GetCovariance() const {
+  return covariance_;
 }
 
 } // namespace beam_matching

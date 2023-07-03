@@ -86,6 +86,11 @@ public:
                    const std::string& prefix = "cloud") override;
 
 private:
+  /**
+   * @brief Uses covariance estimate from Ceres
+   */
+  void CalculateCovariance() override;
+
   LoamPointCloudPtr ref_;
   LoamPointCloudPtr target_;
 
