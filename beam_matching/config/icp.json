@@ -1,4 +1,5 @@
 {
+  "matcher_type": "ICP",
   "max_corr": 0.3,
   "max_iter": 80,
   "t_eps": 1e-8,
