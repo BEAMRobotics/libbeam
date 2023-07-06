@@ -81,7 +81,14 @@ public:
    *  cloud frame using the refined pose (or transform calculated herein)
    *
    */
-  void SaveResults(const std::string& output_path, const std::string& prefix = "cloud") const;
+  void SaveResults(const std::string& output_path,
+                   const std::string& prefix = "cloud") const;
+
+  /**
+   * @brief return covariance of pose estimate.
+   * Cov has the form: 7x7 matrix [dqw, dqx, dqy, dqz, dx, dy, dz]
+   */
+  Eigen::Matrix<double, 7, 7> GetCovariance() const;
 
 private:
   void Setup();
@@ -143,9 +150,12 @@ private:
   bool converged_{false};
   Eigen::Matrix4d T_REF_TGT_{Eigen::Matrix4d::Identity()};
   Eigen::Matrix4d T_REF_TGT_prev_iter_{Eigen::Matrix4d::Identity()};
+  Eigen::Matrix<double, 7, 7> covariance_{
+      Eigen::Matrix<double, 7, 7>::Identity()};
 
   // Debugging tools
   std::string debug_output_path_{"/home/nick/debug/loam_tests/"};
+  std::string debug_output_path_stamped_;
 
   /* outputs scans before and after registration. This is diffent than running
    * the OutputResults private function which outputs results for each

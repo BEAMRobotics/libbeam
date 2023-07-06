@@ -9,8 +9,8 @@
 #include <beam_matching/loam/LoamScanRegistration.h>
 #include <beam_utils/log.h>
 #include <beam_utils/math.h>
-#include <beam_utils/se3.h>
 #include <beam_utils/pointclouds.h>
+#include <beam_utils/se3.h>
 
 namespace beam_matching {
 
@@ -219,6 +219,8 @@ TEST(LoamMatcher, LargePerturb) {
   EXPECT_TRUE(match_success);
   EXPECT_TRUE(beam::ArePosesEqual(T_CLOUD2_CLOUD1_meas, data_.T_CLOUD2_CLOUD1,
                                   1, 0.05));
+  auto cov = matcher.GetCovariance();
+  EXPECT_TRUE(!cov.isIdentity());
 }
 
 } // namespace beam_matching

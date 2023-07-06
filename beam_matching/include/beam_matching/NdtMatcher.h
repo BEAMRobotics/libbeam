@@ -96,6 +96,11 @@ private:
    */
   void SetNdtParams();
 
+  /**
+   * @brief Not yet implemented, will throw exception if called
+   */
+  void CalculateCovariance() override;
+
   /** An instance of the NDT class from PCL */
   pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt_;
 

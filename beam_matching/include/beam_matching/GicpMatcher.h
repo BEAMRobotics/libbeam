@@ -75,6 +75,11 @@ private:
    */
   void SetGicpParams();
 
+  /**
+   * @brief Not yet implemented, will throw exception if called
+   */
+  void CalculateCovariance() override;
+
   pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> gicp_;
   pcl::VoxelGrid<pcl::PointXYZ> filter_;
   PointCloudPtr ref_;

@@ -9,13 +9,57 @@
 
 #pragma once
 
+#include <boost/filesystem.hpp>
+#include <nlohmann/json.hpp>
 #include <pcl/common/transforms.h>
 
+#include <beam_utils/log.h>
 #include <beam_utils/pointclouds.h>
 
 namespace beam_matching {
 /** @addtogroup matching
  *  @{ */
+
+/**
+ * @brief Enum class for different types of matchers
+ */
+enum class MatcherType { ICP = 0, GICP, NDT, LOAM, UNKNOWN };
+
+/**
+ * @brief lookup matcher type from config file. This will load a json and look
+ * for matcher_type field
+ */
+static MatcherType GetTypeFromConfig(const std::string& file_location) {
+  if (!boost::filesystem::exists(file_location)) {
+    BEAM_ERROR("invalid file path for matcher config, file path: {}",
+               file_location);
+    return MatcherType::UNKNOWN;
+  }
+
+  nlohmann::json J;
+  std::ifstream file(file_location);
+  file >> J;
+
+  if (!J.contains("matcher_type")) {
+    BEAM_ERROR("invalid matcher config file, no matcher_type field.");
+    return MatcherType::UNKNOWN;
+  }
+
+  std::string matcher_type = J["matcher_type"];
+
+  if (matcher_type == "ICP") {
+    return MatcherType::ICP;
+  } else if (matcher_type == "GICP") {
+    return MatcherType::GICP;
+  } else if (matcher_type == "NDT") {
+    return MatcherType::NDT;
+  } else if (matcher_type == "LOAM") {
+    return MatcherType::LOAM;
+  } else {
+    BEAM_ERROR("invalid matcher_type field");
+    return MatcherType::UNKNOWN;
+  }
+}
 
 /**
  * This class is inherited by each of the different matching algorithms.
@@ -47,10 +91,13 @@ public:
   Eigen::Affine3d GetResult() { return this->result_; };
 
   /**
-   * @brief returns the calculated information matrix. Make sure you call
-   * EstimateInfo() before
+   * @brief returns the calculated covariance matrix.
+   * Covariance has the form: 6x6 matrix [dx, dy, dz, dqx, dqy, dqz]
    */
-  Eigen::Matrix<double, 6, 6>& GetInfo() { return this->information_; };
+  Eigen::Matrix<double, 6, 6>& GetCovariance() {
+    if (covariance_.isIdentity()) { CalculateCovariance(); }
+    return this->covariance_;
+  };
 
   float GetRes() { return this->resolution_; };
 
@@ -76,10 +123,6 @@ public:
    */
   virtual bool Match() = 0;
 
-  virtual void EstimateInfo() {
-    this->information_ = Eigen::Matrix<double, 6, 6>::Identity(6, 6);
-  }
-
   /**
    * @brief Pure virtual function for saving results. Stores the results as 3
    * separate clouds:
@@ -99,6 +142,8 @@ public:
                            const std::string& prefix = "cloud") = 0;
 
 protected:
+  virtual void CalculateCovariance() = 0;
+
   /**
    * @brief for pcl::PointCloud<pcl::PointXYZ> (which is most of the case for
    * matchers) this function can be called as an implementation to the above
@@ -169,13 +214,11 @@ protected:
   Eigen::Affine3d result_;
 
   /**
-   * The information matrix calculated by the scan-matching algorithm. The
-   * diagonal elements correpond to translational perturbations in the x, y,
-   * and z directions and angular perturbations on the 3-2-1 euler angles, in
-   * that order and in the frame of the reference pointcloud. This may change
-   * as the kinematics module of libbeam progresses.
+   * The information matrix calculated by the scan-matching algorithm. (6x6
+   * matrix: dx, dy, dz, dqx, dqy, dqz)
    */
-  Eigen::Matrix<double, 6, 6> information_;
+  Eigen::Matrix<double, 6, 6> covariance_{
+      Eigen::Matrix<double, 6, 6>::Identity()};
 };
 
 /** @} group matching */

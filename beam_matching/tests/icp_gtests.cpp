@@ -125,7 +125,6 @@ TEST(IcpMatcher, MultiScaleDownsampling) {
                                   1, 0.05));
 }
 
-/*
 TEST(IcpMatcher, Covariances) {
   PointCloud::Ptr ref = std::make_shared<PointCloud>(*data_.cloud1);
   PointCloud::Ptr target = std::make_shared<PointCloud>();
@@ -150,38 +149,20 @@ TEST(IcpMatcher, Covariances) {
 
   IcpMatcherParams params = data_.params;
   params.res = 0.05f;
-  params.covar_estimator = IcpMatcherParams::covar_method::LUMold;
+  params.covar_estimator = IcpMatcherParams::CovarMethod::CENSI;
   IcpMatcher matcher1(params);
 
   matcher1.Setup(ref, target);
   matcher1.Match();
-  matcher1.EstimateInfo();
-  auto info1 = matcher1.GetInfo();
-  Eigen::Matrix<double, 6, 6> expected_info1;
-  expected_info1 << 78.5015, 0, 0, 0, -80.0395, -45.9599, 0, 78.5015, 0,
-      45.9599, -16.7882, 0, 0, 0, 78.5015, 80.0395, 0, 16.7882, 0, 45.9599,
-      80.0395, 1740.08, 37.3178, 527.515, -80.0395, -16.7882, 0, 37.3178,
-      9518.46, -9.33379, -45.9599, 0, 16.7882, 527.515, -9.33379, 8061.41;
+  auto cov1 = matcher1.GetCovariance();
+  EXPECT_TRUE(!cov1.isIdentity());
 
-  params.covar_estimator = IcpMatcherParams::covar_method::LUM;
+  params.covar_estimator = IcpMatcherParams::CovarMethod::LUM;
   IcpMatcher matcher2(params);
   matcher2.Setup(ref, target);
   matcher2.Match();
-  matcher2.EstimateInfo();
-  auto info2 = matcher2.GetInfo();
-  Eigen::Matrix<double, 6, 6> expected_info2;
-  expected_info2 << 78.0082, 0, 0, 0, -79.588, -45.6311, 0, 78.0082, 0, 45.6311,
-      -16.9183, 0, 0, 0, 78.0082, 79.588, 0, 16.9183, 0, 45.6311, 79.588,
-      1729.19, 36.857, 524.577, -79.588, -16.9183, 0, 36.857, 9458.81, -9.24851,
-      -45.6311, 0, 16.9183, 524.577, -9.24851, 8010.75;
-
-  double diff1 = (info1 - expected_info1).norm();
-  double diff2 = (info2 - expected_info2).norm();
-  EXPECT_TRUE(info1(0, 0) > 0);
-  EXPECT_TRUE(info2(0, 0) > 0);
-  EXPECT_TRUE(diff1 < 0.01);
-  EXPECT_TRUE(diff2 < 0.01);
+  auto cov2 = matcher2.GetCovariance();
+  EXPECT_TRUE(!cov2.isIdentity());
 }
-*/
 
 } // namespace beam_matching
