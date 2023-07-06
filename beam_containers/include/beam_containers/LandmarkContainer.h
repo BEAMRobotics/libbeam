@@ -215,12 +215,12 @@ public:
   /**
    * @brief Return a const reference to the measurement times set
    */
-  const std::set<uint64_t>& GetMeasurementTimes() const;
+  const std::set<ros::Time>& GetMeasurementTimes() const;
 
   /**
    * @brief Return an ordered vector of measurement times
    */
-  const std::vector<uint64_t> GetMeasurementTimesVector() const;
+  const std::vector<ros::Time> GetMeasurementTimesVector() const;
 
   /**
    * @brief Return the timestamp at the start of the container
@@ -278,7 +278,7 @@ protected:
   // Internal multi_index_container
   typename landmark_container::type storage;
 
-  std::set<uint64_t> measurement_times_;
+  std::set<ros::Time> measurement_times_;
 };
 
 } // namespace beam_containers

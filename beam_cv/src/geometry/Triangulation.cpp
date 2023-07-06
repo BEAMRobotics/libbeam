@@ -8,7 +8,8 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     const std::shared_ptr<beam_calibration::CameraModel>& cam1,
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
-    const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, double max_dist) {
+    const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const double max_dist,
+    const double reprojection_threshold) {
   // we triangulate back projected points to be camera model invariant
   Eigen::Vector3d m1;
   Eigen::Vector3d m2;
@@ -43,6 +44,24 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
       T_cam2_world_x[2] > max_dist || T_cam1_world_x[2] > max_dist) {
     return {};
   }
+
+  // check reprojection
+  if (reprojection_threshold > 0.0) {
+    Eigen::Vector2d reproj_pixel1;
+    cam1->ProjectPoint(T_cam1_world_x, reproj_pixel1);
+    Eigen::Vector2i reproj_pixel1i = reproj_pixel1.cast<int>();
+    if (beam::distance(reproj_pixel1i, p1) > reprojection_threshold) {
+      return {};
+    }
+
+    Eigen::Vector2d reproj_pixel2;
+    cam2->ProjectPoint(T_cam2_world_x, reproj_pixel2);
+    Eigen::Vector2i reproj_pixel2i = reproj_pixel2.cast<int>();
+    if (beam::distance(reproj_pixel2i, p2) > reprojection_threshold) {
+      return {};
+    }
+  }
+
   return xp;
 }
 
@@ -50,7 +69,7 @@ beam::opt<Eigen::Vector3d> Triangulation::TriangulatePoint(
     const std::shared_ptr<beam_calibration::CameraModel>& cam,
     const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& T_cam_world,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-    double max_dist, double reprojection_threshold) {
+    const double max_dist, const double reprojection_threshold) {
   if (pixels.size() != T_cam_world.size()) { return {}; }
   int rows = pixels.size() * 2;
   Eigen::MatrixXd A(rows, 4);
@@ -95,12 +114,14 @@ std::vector<beam::opt<Eigen::Vector3d>> Triangulation::TriangulatePoints(
     const std::shared_ptr<beam_calibration::CameraModel>& cam2,
     const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
     const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
-    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v) {
+    const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
+    const double max_dist, const double reprojection_threshold) {
   // loop through point vector and perform single point triangulation
   std::vector<beam::opt<Eigen::Vector3d>> result_pts3d;
   for (uint32_t i = 0; i < p1_v.size(); i++) {
     beam::opt<Eigen::Vector3d> pt3d = Triangulation::TriangulatePoint(
-        cam1, cam2, T_cam1_world, T_cam2_world, p1_v[i], p2_v[i]);
+        cam1, cam2, T_cam1_world, T_cam2_world, p1_v[i], p2_v[i], max_dist,
+        reprojection_threshold);
     result_pts3d.push_back(pt3d);
   }
   return result_pts3d;

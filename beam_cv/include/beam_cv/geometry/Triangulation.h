@@ -36,7 +36,7 @@ public:
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
       const Eigen::Vector2i& p1, const Eigen::Vector2i& p2,
-      double max_dist = 100);
+      const double max_dist = 100, const double reprojection_threshold = -1);
 
   /**
    * @brief Triangulates single point given a single camera model and multiple
@@ -53,7 +53,7 @@ public:
       const std::shared_ptr<beam_calibration::CameraModel>& cam,
       const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& T_cam_world,
       const std::vector<Eigen::Vector2i, beam::AlignVec2i>& pixels,
-      double max_dist = 100, double reprojection_threshold = -1);
+      const double max_dist = 100, const double reprojection_threshold = -1);
 
   /**
    * @brief Triangulates a list of points given two camera models and
@@ -70,7 +70,8 @@ public:
       const std::shared_ptr<beam_calibration::CameraModel>& cam2,
       const Eigen::Matrix4d& T_cam1_world, const Eigen::Matrix4d& T_cam2_world,
       const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p1_v,
-      const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v);
+      const std::vector<Eigen::Vector2i, beam::AlignVec2i>& p2_v,
+      const double max_dist = 100, const double reprojection_threshold = -1);
 };
 
 } // namespace beam_cv

@@ -18,7 +18,7 @@ void LandmarkContainer::clear() {
 }
 
 bool LandmarkContainer::Insert(const MeasurementType& m) {
-  measurement_times_.insert(m.time_point.toNSec());
+  measurement_times_.insert(m.time_point);
   auto [it, flag] = composite().insert(m);
   return flag;
 }
@@ -150,7 +150,7 @@ void LandmarkContainer::RemoveMeasurementsAtTime(const TimeType& time) {
   // Delete all landmarks in the container at this time.
   for (const auto& l : landmarks) { Erase(time, l); }
   // erase time from time set
-  measurement_times_.erase(time.toNSec());
+  measurement_times_.erase(time);
 }
 
 double LandmarkContainer::ComputeParallax(const TimeType& t1,
@@ -183,26 +183,26 @@ double LandmarkContainer::ComputeParallax(const TimeType& t1,
   }
 }
 
-const std::set<uint64_t>& LandmarkContainer::GetMeasurementTimes() const {
+const std::set<ros::Time>& LandmarkContainer::GetMeasurementTimes() const {
   return measurement_times_;
 }
 
-const std::vector<uint64_t>
+const std::vector<ros::Time>
     LandmarkContainer::GetMeasurementTimesVector() const {
-  std::vector<uint64_t> img_times;
+  std::vector<ros::Time> img_times;
   std::for_each(measurement_times_.begin(), measurement_times_.end(),
-                [&](const uint64_t& time) { img_times.push_back(time); });
+                [&](const ros::Time& time) { img_times.push_back(time); });
   return img_times;
 }
 
 TimeType LandmarkContainer::FrontTimestamp() const {
   const auto first_time = *(measurement_times_.begin());
-  return beam::NSecToRos(first_time);
+  return first_time;
 }
 
 TimeType LandmarkContainer::BackTimestamp() const {
   const auto last_time = *(measurement_times_.rbegin());
-  return beam::NSecToRos(last_time);
+  return last_time;
 }
 
 void LandmarkContainer::PopFront() {
