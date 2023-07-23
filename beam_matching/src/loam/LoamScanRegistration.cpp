@@ -357,7 +357,6 @@ bool LoamScanRegistration::Solve(int iteration) {
   double covariance_arr[7 * 7];
   covariance.GetCovarianceBlock(&(pose[0]), &(pose[0]), covariance_arr);
   covariance_ = Eigen::Matrix<double, 7, 7>(covariance_arr);
-
   return ceres_summary.IsSolutionUsable();
 }
 

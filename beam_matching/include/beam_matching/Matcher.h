@@ -95,7 +95,7 @@ public:
    * Covariance has the form: 6x6 matrix [dx, dy, dz, dqx, dqy, dqz]
    */
   Eigen::Matrix<double, 6, 6>& GetCovariance() {
-    if (covariance_.isIdentity()) { CalculateCovariance(); }
+    CalculateCovariance();
     return this->covariance_;
   };
 
