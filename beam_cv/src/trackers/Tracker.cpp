@@ -144,7 +144,11 @@ cv::Mat Tracker::GetDescriptor(const ros::Time& stamp,
 
 cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
                             const cv::Mat& image) const {
-  cv::Mat out_img = image;
+  cv::Mat out_img = image.clone();
+  if (out_img.type() == CV_8UC1) {
+    cv::cvtColor(out_img, out_img, cv::COLOR_GRAY2RGB);
+  }
+
   // Define colour for arrows
   cv::Scalar colour(0, 255, 255); // yellow
 
