@@ -13,7 +13,6 @@
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
 #include <beam_cv/Utils.h>
-#include <beam_utils/utils.h>
 
 namespace beam_cv {
 
