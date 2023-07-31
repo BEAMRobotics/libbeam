@@ -48,6 +48,7 @@ bool LoamMatcher::Match() {
       loam_scan_registration_->RegisterScans(ref_, target_);
   const Eigen::Matrix4d& T_REF_TGT = loam_scan_registration_->GetT_REF_TGT();
   result_ = Eigen::Affine3d(beam::InvertTransform(T_REF_TGT));
+
   return registration_successful;
 }
 
@@ -59,7 +60,6 @@ void LoamMatcher::SaveResults(const std::string& output_dir,
 void LoamMatcher::CalculateCovariance() {
   Eigen::Matrix<double, 7, 7> covariance_full =
       loam_scan_registration_->GetCovariance();
-
   // loam scan registration returns a covariance of form:
   // [dqw, dqx, dqy, dqz, dx, dy, dz]
   // whereas Matcher base class requires the form: [dx, dy, dz, dqx, dqy, dqz]
