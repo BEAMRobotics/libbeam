@@ -176,6 +176,12 @@ public:
    */
   void SetSensorID(uint8_t sensor_id);
 
+  /**
+   * @brief Gets all descriptors and their keypoints in a given image
+   */
+  std::pair<cv::Mat, std::vector<cv::KeyPoint>>
+      GetDescriptors(const ros::Time& stamp);
+
 protected:
   /**
    * @brief Generate a new ID for each newly detected feature.

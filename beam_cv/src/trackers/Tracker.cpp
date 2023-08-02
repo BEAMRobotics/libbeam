@@ -183,4 +183,22 @@ void Tracker::SetSensorID(uint8_t sensor_id) {
   sensor_id_ = sensor_id;
 }
 
+std::pair<cv::Mat, std::vector<cv::KeyPoint>>
+    Tracker::GetDescriptors(const ros::Time& stamp) {
+  std::vector<cv::KeyPoint> keypoints;
+  cv::Mat descriptors;
+
+  auto ids = GetLandmarkIDsInImage(stamp);
+  for (const auto id : ids) {
+    auto m = landmarks_.GetMeasurement(stamp, id);
+    cv::KeyPoint kp;
+    kp.pt.x = m.value.x();
+    kp.pt.y = m.value.y();
+
+    keypoints.push_back(kp);
+    descriptors.push_back(m.descriptor);
+  }
+  return std::make_pair(descriptors, keypoints);
+}
+
 } // namespace beam_cv
