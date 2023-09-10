@@ -96,6 +96,7 @@ public:
    * @return time_stamps
    */
   std::vector<ros::Time> GetTimeStamps() const;
+  const std::vector<ros::Time>& GetTimeStamps() const;
 
   /**
    * @brief for adding a single time stamp
@@ -115,6 +116,7 @@ public:
    * fixed frame
    */
   std::vector<Eigen::Matrix4d, beam::AlignMat4d> GetPoses() const;
+  const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& GetPoses() const;
 
   /**
    * @brief for adding a single pose
