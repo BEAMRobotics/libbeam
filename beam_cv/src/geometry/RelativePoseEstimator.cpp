@@ -237,7 +237,6 @@ beam::opt<Eigen::Matrix4d> RelativePoseEstimator::RANSACEstimator(
       }
     }
   }
-
   if (found_valid) {
     return current_pose;
   } else {

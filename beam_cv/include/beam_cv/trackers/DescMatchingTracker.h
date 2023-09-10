@@ -16,7 +16,6 @@
 #include <beam_cv/detectors/Detector.h>
 #include <beam_cv/matchers/Matcher.h>
 #include <beam_cv/trackers/Tracker.h>
-#include <beam_utils/utils.h>
 
 namespace beam_cv {
 

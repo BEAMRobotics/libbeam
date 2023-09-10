@@ -13,7 +13,6 @@
 #include <beam_containers/LandmarkContainer.h>
 #include <beam_containers/LandmarkMeasurement.h>
 #include <beam_cv/Utils.h>
-#include <beam_utils/utils.h>
 
 namespace beam_cv {
 
@@ -176,6 +175,12 @@ public:
    * @brief Sets the sensor id
    */
   void SetSensorID(uint8_t sensor_id);
+
+  /**
+   * @brief Gets all descriptors and their keypoints in a given image
+   */
+  std::pair<cv::Mat, std::vector<cv::KeyPoint>>
+      GetDescriptors(const ros::Time& stamp);
 
 protected:
   /**

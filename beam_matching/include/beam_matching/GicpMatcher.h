@@ -69,6 +69,11 @@ public:
   void SaveResults(const std::string& output_dir,
                    const std::string& prefix = "cloud") override;
 
+  /**
+   * @brief Gets the resulting fitness score
+   */
+  double GetFitnessScore() { return gicp_.getFitnessScore(); }
+
 private:
   /**
    * @brief configures the gicp matcher

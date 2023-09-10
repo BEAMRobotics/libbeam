@@ -144,7 +144,11 @@ cv::Mat Tracker::GetDescriptor(const ros::Time& stamp,
 
 cv::Mat Tracker::DrawTracks(const std::vector<FeatureTrack>& feature_tracks,
                             const cv::Mat& image) const {
-  cv::Mat out_img = image;
+  cv::Mat out_img = image.clone();
+  if (out_img.type() == CV_8UC1) {
+    cv::cvtColor(out_img, out_img, cv::COLOR_GRAY2RGB);
+  }
+
   // Define colour for arrows
   cv::Scalar colour(0, 255, 255); // yellow
 
@@ -177,6 +181,24 @@ double Tracker::ComputeParallax(const ros::Time& frame1,
 
 void Tracker::SetSensorID(uint8_t sensor_id) {
   sensor_id_ = sensor_id;
+}
+
+std::pair<cv::Mat, std::vector<cv::KeyPoint>>
+    Tracker::GetDescriptors(const ros::Time& stamp) {
+  std::vector<cv::KeyPoint> keypoints;
+  cv::Mat descriptors;
+
+  auto ids = GetLandmarkIDsInImage(stamp);
+  for (const auto id : ids) {
+    auto m = landmarks_.GetMeasurement(stamp, id);
+    cv::KeyPoint kp;
+    kp.pt.x = m.value.x();
+    kp.pt.y = m.value.y();
+
+    keypoints.push_back(kp);
+    descriptors.push_back(m.descriptor);
+  }
+  return std::make_pair(descriptors, keypoints);
 }
 
 } // namespace beam_cv
