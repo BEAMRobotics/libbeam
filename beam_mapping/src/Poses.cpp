@@ -66,10 +66,6 @@ void Poses::SetTimeStamps(const std::vector<ros::Time>& time_stamps) {
   time_stamps_ = time_stamps;
 }
 
-std::vector<ros::Time> Poses::GetTimeStamps() const {
-  return time_stamps_;
-}
-
 const std::vector<ros::Time>& Poses::GetTimeStamps() const {
   return time_stamps_;
 }
@@ -81,10 +77,6 @@ void Poses::AddSingleTimeStamp(const ros::Time& time_stamp) {
 void Poses::SetPoses(
     const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& poses) {
   poses_ = poses;
-}
-
-std::vector<Eigen::Matrix4d, beam::AlignMat4d> Poses::GetPoses() const {
-  return poses_;
 }
 
 const std::vector<Eigen::Matrix4d, beam::AlignMat4d>& Poses::GetPoses() const {
