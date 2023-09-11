@@ -916,11 +916,10 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
     }
   } else if (path_msg != NULL) {
     BEAM_INFO("Loading path messages from bag");
-    boost::shared_ptr<nav_msgs::Path> path_msg;
     // get last path message
-    for (auto iter = view.begin(); iter != view.end(); iter++) {
-      path_msg = iter->instantiate<nav_msgs::Path>();
-    }
+    auto iter = view.begin();
+    std::advance(iter, view.size() - 1);
+    path_msg = iter->instantiate<nav_msgs::Path>();
 
     if (path_msg == NULL) {
       throw std::runtime_error{"Cannot instantiate path msg."};
