@@ -226,8 +226,14 @@ void MapBuilder::GenerateMap(uint8_t sensor_number) {
 
 void MapBuilder::SaveMaps() {
   for (uint8_t i = 0; i < maps_.size(); i++) {
-    std::string save_path =
-        save_dir_ + dateandtime_ + "/" + sensors_[i].frame + ".pcd";
+    std::string save_path = beam::CombinePaths(save_dir_, dateandtime_);
+    if (maps_.size() > 1) {
+      save_path =
+          beam::CombinePaths(save_path, "map_" + sensors_[i].frame + ".pcd");
+    } else {
+      save_path = beam::CombinePaths(save_path, "map.pcd");
+    }
+
     BEAM_INFO("Saving map to: {}", save_path);
     std::string error_message{};
     if (!beam::SavePointCloud<pcl::PointXYZ>(
@@ -236,7 +242,7 @@ void MapBuilder::SaveMaps() {
       BEAM_ERROR("Unable to save cloud. Reason: {}", error_message);
     }
   }
-  if (combine_sensor_data_) {
+  if (combine_sensor_data_ && maps_.size() > 1) {
     PointCloud::Ptr combined_map = std::make_shared<PointCloud>();
     for (uint8_t i = 0; i < maps_.size(); i++) { *combined_map += *maps_[i]; }
     std::string save_path = save_dir_ + dateandtime_ + "/combined.pcd";
