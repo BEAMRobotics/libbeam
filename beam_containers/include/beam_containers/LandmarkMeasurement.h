@@ -34,6 +34,11 @@ struct LandmarkMeasurement {
   cv::Mat descriptor;
 
   /**
+   * @brief default constructor
+   */
+  LandmarkMeasurement() {}
+
+  /**
    * @brief constructor that takes in all values of the measurement
    */
   LandmarkMeasurement(const ros::Time& t, const uint8_t& s, const uint64_t& id,
