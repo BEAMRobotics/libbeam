@@ -7,26 +7,11 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::filtering
     rosbag::rosbag
   SOURCES
-    src/MapBuilder.cpp
     src/Poses.cpp
     src/Utils.cpp
 )
 
 ################ tests ##################
-
-add_executable(${PROJECT_NAME}_map_builder_tests
-  tests/MapBuilderTest.cpp
-)
-
-target_include_directories(${PROJECT_NAME}_map_builder_tests
-  PUBLIC
-    include
-)
-
-target_link_libraries(${PROJECT_NAME}_map_builder_tests
-  ${PROJECT_NAME}
-  Catch2::Catch2
-)
 
 add_executable(${PROJECT_NAME}_poses_test
   tests/PosesTest.cpp
