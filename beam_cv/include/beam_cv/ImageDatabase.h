@@ -33,6 +33,14 @@ public:
    */
   ImageDatabase(const beam_cv::ORBDetector::Params& detector_params,
                 const beam_cv::ORBDescriptor::Params& descriptor_params);
+  /**
+   * @brief Constructor to initialize with a custom vocabulary
+   * @param voc custom vocabulary to use
+   * @param timestamps_file_path path to timestamp to Result id json file
+   */
+  ImageDatabase(const beam_cv::ORBDetector::Params& detector_params,
+                const beam_cv::ORBDescriptor::Params& descriptor_params,
+                const DBoW3::Vocabulary& voc);
 
   /**
    * @brief Constructor to initialize with already created dbow db

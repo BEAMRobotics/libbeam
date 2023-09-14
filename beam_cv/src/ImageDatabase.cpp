@@ -28,6 +28,19 @@ ImageDatabase::ImageDatabase(
   index_to_timestamp_map_ = json::object();
 }
 
+ImageDatabase::ImageDatabase(
+    const beam_cv::ORBDetector::Params& detector_params,
+    const beam_cv::ORBDescriptor::Params& descriptor_params,
+    const DBoW3::Vocabulary& voc) {
+  // construct detector and descriptor
+  detector_ = beam_cv::ORBDetector(detector_params);
+  descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
+
+  // construct database
+  dbow_db_ = std::make_shared<DBoW3::Database>(voc);
+  index_to_timestamp_map_ = json::object();
+}
+
 ImageDatabase::ImageDatabase(const std::string& dbow_file_path,
                              const std::string& timestamps_file_path) {
   // construct detector and descriptor
