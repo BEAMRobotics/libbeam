@@ -1,4 +1,5 @@
 #include <beam_cv/ImageDatabase.h>
+#include <beam_utils/time.h>
 
 namespace beam_cv {
 
@@ -82,15 +83,15 @@ void ImageDatabase::AddImage(const cv::Mat& image, const ros::Time& timestamp) {
   std::vector<cv::KeyPoint> kps = detector_.DetectFeatures(image);
   cv::Mat features = descriptor_.ExtractDescriptors(image, kps);
   DBoW3::EntryId idx = dbow_db_->add(features);
-  index_to_timestamp_map_[std::to_string(idx)] = timestamp.toSec();
+  index_to_timestamp_map_[std::to_string(idx)] = timestamp.toNSec();
 }
 
 beam::opt<ros::Time>
     ImageDatabase::GetImageTimestamp(const DBoW3::EntryId& entry_id) {
   std::string index_str = std::to_string(entry_id);
   if (!index_to_timestamp_map_.contains(index_str)) { return {}; }
-  double time = index_to_timestamp_map_[std::to_string(entry_id)];
-  return ros::Time(time);
+  uint64_t time = index_to_timestamp_map_[std::to_string(entry_id)];
+  return beam::NSecToRos(time);
 }
 
 } // namespace beam_cv
