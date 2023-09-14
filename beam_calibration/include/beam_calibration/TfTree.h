@@ -34,6 +34,10 @@ public:
    */
   ~TfTree() = default;
 
+  ros::Time GetStartTime() const;
+
+  ros::Time GetEndTime() const;
+
   /**
    * @brief Method for loading a tf tree from a .json file
    * @param file_location absolute path to json file
@@ -117,8 +121,6 @@ public:
    */
   void SetCalibrationDate(const std::string& calibration_date);
 
-  ros::Time start_time{0};
-
   /**
    * @brief Method for getting all the frames in TfTree
    * @return Return unordered_map. First strings are from (parent) frames and
@@ -197,6 +199,8 @@ private:
   tf2::BufferCore Tree_{ros::Duration(1000)};
   std::string calibration_date_;
   bool is_calibration_date_set_ = false;
+  ros::Time start_time_{0};
+  ros::Time end_time_{0};
 
   // Stores all frame names. Key: Parent frame Value: Vector of child frames
   std::unordered_map<std::string, std::vector<std::string>> frames_;
