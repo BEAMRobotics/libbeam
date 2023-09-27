@@ -82,8 +82,15 @@ public:
    * @brief Return list of N image id's best matching query image
    * @param query_image to query database with
    */
-  std::vector<DBoW3::Result> QueryDatabase(const cv::Mat& query_image,
-                                           int N = 2);
+  std::vector<DBoW3::Result> QueryDatabaseWithImage(const cv::Mat& query_image,
+                                                    int N = 2);
+
+  /**
+   * @brief Return list of N image id's best matching query image
+   * @param features extracted orb features from an image
+   */
+  std::vector<DBoW3::Result> QueryDatabaseWithFeatures(const cv::Mat& features,
+                                                       int N = 2);
 
   /**
    * @brief Add an image to the database

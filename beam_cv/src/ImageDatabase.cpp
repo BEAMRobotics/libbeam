@@ -84,9 +84,16 @@ cv::Mat ImageDatabase::GetWord(const cv::Mat& descriptor) {
 }
 
 std::vector<DBoW3::Result>
-    ImageDatabase::QueryDatabase(const cv::Mat& query_image, int N) {
+    ImageDatabase::QueryDatabaseWithImage(const cv::Mat& query_image, int N) {
   std::vector<cv::KeyPoint> kps = detector_.DetectFeatures(query_image);
   cv::Mat features = descriptor_.ExtractDescriptors(query_image, kps);
+  DBoW3::QueryResults results;
+  dbow_db_->query(features, results, N);
+  return results;
+}
+
+std::vector<DBoW3::Result>
+    ImageDatabase::QueryDatabaseWithFeatures(const cv::Mat& features, int N) {
   DBoW3::QueryResults results;
   dbow_db_->query(features, results, N);
   return results;
