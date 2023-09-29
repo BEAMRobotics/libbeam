@@ -1,4 +1,4 @@
-![libbeam_logo](https://github.com/BEAMRobotics/libbeam/assets/25440002/3517e87e-13bf-4ca2-8a1b-a50dbcf3c872)
+![libbeam_logo](https://github.com/BEAMRobotics/libbeam/assets/25440002/15b466e6-a966-4765-9c3d-5ccda7d2611a)
 
 # libbeam
 [![Build Status](https://travis-ci.com/BEAMRobotics/libbeam.svg?token=zshhVvp9R3DJ7YGGYs6z&branch=master)](https://travis-ci.com/BEAMRobotics/libbeam)
