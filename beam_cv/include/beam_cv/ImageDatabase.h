@@ -89,8 +89,14 @@ public:
    * @brief Return list of N image id's best matching query image
    * @param features extracted orb features from an image
    */
-  std::vector<DBoW3::Result> QueryDatabaseWithFeatures(const cv::Mat& features,
-                                                       int N = 2);
+  std::vector<DBoW3::Result>
+      QueryDatabaseWithBowVector(const DBoW3::BowVector& bow_vec, int N = 2);
+
+  /**
+   * @brief Computes the bow vector given features in an image
+   * @param features extracted orb features from an image
+   */
+  DBoW3::BowVector ComputeBowVector(const cv::Mat& features);
 
   /**
    * @brief Add an image to the database

@@ -93,10 +93,17 @@ std::vector<DBoW3::Result>
 }
 
 std::vector<DBoW3::Result>
-    ImageDatabase::QueryDatabaseWithFeatures(const cv::Mat& features, int N) {
+    ImageDatabase::QueryDatabaseWithBowVector(const DBoW3::BowVector& bow_vec,
+                                              int N) {
   DBoW3::QueryResults results;
-  dbow_db_->query(features, results, N);
+  dbow_db_->query(bow_vec, results, N);
   return results;
+}
+
+DBoW3::BowVector ImageDatabase::ComputeBowVector(const cv::Mat& features) {
+  DBoW3::BowVector bow_vec;
+  dbow_db_->getVocabulary()->transform(features, bow_vec);
+  return bow_vec;
 }
 
 void ImageDatabase::AddImage(const cv::Mat& image, const ros::Time& timestamp) {
