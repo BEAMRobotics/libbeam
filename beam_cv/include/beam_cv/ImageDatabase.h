@@ -33,6 +33,14 @@ public:
    */
   ImageDatabase(const beam_cv::ORBDetector::Params& detector_params,
                 const beam_cv::ORBDescriptor::Params& descriptor_params);
+  /**
+   * @brief Constructor to initialize with a custom vocabulary
+   * @param voc custom vocabulary to use
+   * @param timestamps_file_path path to timestamp to Result id json file
+   */
+  ImageDatabase(const beam_cv::ORBDetector::Params& detector_params,
+                const beam_cv::ORBDescriptor::Params& descriptor_params,
+                const DBoW3::Vocabulary& voc);
 
   /**
    * @brief Constructor to initialize with already created dbow db
@@ -74,8 +82,21 @@ public:
    * @brief Return list of N image id's best matching query image
    * @param query_image to query database with
    */
-  std::vector<DBoW3::Result> QueryDatabase(const cv::Mat& query_image,
-                                           int N = 2);
+  std::vector<DBoW3::Result> QueryDatabaseWithImage(const cv::Mat& query_image,
+                                                    int N = 2);
+
+  /**
+   * @brief Return list of N image id's best matching query image
+   * @param features extracted orb features from an image
+   */
+  std::vector<DBoW3::Result>
+      QueryDatabaseWithBowVector(const DBoW3::BowVector& bow_vec, int N = 2);
+
+  /**
+   * @brief Computes the bow vector given features in an image
+   * @param features extracted orb features from an image
+   */
+  DBoW3::BowVector ComputeBowVector(const cv::Mat& features);
 
   /**
    * @brief Add an image to the database

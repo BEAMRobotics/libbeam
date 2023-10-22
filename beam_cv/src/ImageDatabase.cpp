@@ -1,4 +1,5 @@
 #include <beam_cv/ImageDatabase.h>
+#include <beam_utils/time.h>
 
 namespace beam_cv {
 
@@ -24,6 +25,19 @@ ImageDatabase::ImageDatabase(
   // construct database
   DBoW3::Vocabulary default_vocab(DEFAULT_VOCAB_PATH);
   dbow_db_ = std::make_shared<DBoW3::Database>(default_vocab);
+  index_to_timestamp_map_ = json::object();
+}
+
+ImageDatabase::ImageDatabase(
+    const beam_cv::ORBDetector::Params& detector_params,
+    const beam_cv::ORBDescriptor::Params& descriptor_params,
+    const DBoW3::Vocabulary& voc) {
+  // construct detector and descriptor
+  detector_ = beam_cv::ORBDetector(detector_params);
+  descriptor_ = beam_cv::ORBDescriptor(descriptor_params);
+
+  // construct database
+  dbow_db_ = std::make_shared<DBoW3::Database>(voc);
   index_to_timestamp_map_ = json::object();
 }
 
@@ -70,7 +84,7 @@ cv::Mat ImageDatabase::GetWord(const cv::Mat& descriptor) {
 }
 
 std::vector<DBoW3::Result>
-    ImageDatabase::QueryDatabase(const cv::Mat& query_image, int N) {
+    ImageDatabase::QueryDatabaseWithImage(const cv::Mat& query_image, int N) {
   std::vector<cv::KeyPoint> kps = detector_.DetectFeatures(query_image);
   cv::Mat features = descriptor_.ExtractDescriptors(query_image, kps);
   DBoW3::QueryResults results;
@@ -78,19 +92,33 @@ std::vector<DBoW3::Result>
   return results;
 }
 
+std::vector<DBoW3::Result>
+    ImageDatabase::QueryDatabaseWithBowVector(const DBoW3::BowVector& bow_vec,
+                                              int N) {
+  DBoW3::QueryResults results;
+  dbow_db_->query(bow_vec, results, N);
+  return results;
+}
+
+DBoW3::BowVector ImageDatabase::ComputeBowVector(const cv::Mat& features) {
+  DBoW3::BowVector bow_vec;
+  dbow_db_->getVocabulary()->transform(features, bow_vec);
+  return bow_vec;
+}
+
 void ImageDatabase::AddImage(const cv::Mat& image, const ros::Time& timestamp) {
   std::vector<cv::KeyPoint> kps = detector_.DetectFeatures(image);
   cv::Mat features = descriptor_.ExtractDescriptors(image, kps);
   DBoW3::EntryId idx = dbow_db_->add(features);
-  index_to_timestamp_map_[std::to_string(idx)] = timestamp.toSec();
+  index_to_timestamp_map_[std::to_string(idx)] = timestamp.toNSec();
 }
 
 beam::opt<ros::Time>
     ImageDatabase::GetImageTimestamp(const DBoW3::EntryId& entry_id) {
   std::string index_str = std::to_string(entry_id);
   if (!index_to_timestamp_map_.contains(index_str)) { return {}; }
-  double time = index_to_timestamp_map_[std::to_string(entry_id)];
-  return ros::Time(time);
+  uint64_t time = index_to_timestamp_map_[std::to_string(entry_id)];
+  return beam::NSecToRos(time);
 }
 
 } // namespace beam_cv

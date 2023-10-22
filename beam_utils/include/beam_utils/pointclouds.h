@@ -9,11 +9,11 @@
 
 #define PCL_NO_PRECOMPILE
 #include <geometry_msgs/Vector3.h>
+#include <pcl/common/distances.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/common/distances.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <beam_utils/filesystem.h>
@@ -708,94 +708,38 @@ void ExtractEuclideanClusters(const pcl::PointCloud<PointT>& cloud,
 }
 
 template <typename PointT>
-float pointCloudError(const pcl::PointCloud<PointT>& cloud_source,
-                      const pcl::PointCloud<PointT>& cloud_target,
-                      const std::string& correspondence_type) {
+float PointCloudError(const pcl::PointCloud<PointT>& cloud_source,
+                      const pcl::PointCloud<PointT>& cloud_target) {
   pcl::PointCloud<pcl::PointXYZ>::Ptr xyz_source(
       new pcl::PointCloud<pcl::PointXYZ>());
-  pcl::copyPointCloud(cloud_source, xyz_source);
+  pcl::copyPointCloud(cloud_source, *xyz_source);
   pcl::PointCloud<pcl::PointXYZ>::Ptr xyz_target(
       new pcl::PointCloud<pcl::PointXYZ>());
-  pcl::copyPointCloud(cloud_target, xyz_target);
+  pcl::copyPointCloud(cloud_target, *xyz_target);
 
   float rmse = 0.0f;
 
-  if (correspondence_type == "index") {
-    if (xyz_source->size() != xyz_target->size()) {
-      BEAM_ERROR(
-          "Source and target clouds do not have the same number of points.");
-      return -1;
-    }
+  beam::KdTree<pcl::PointXYZ> tree(*xyz_target);
 
-    for (std::size_t point_i = 0; point_i < xyz_source->size(); ++point_i) {
-      const auto source_point = xyz_source->points[point_i];
-      const auto target_point = xyz_target->points[point_i];
-      if (!std::isfinite(source_point.x) || !std::isfinite(source_point.y) ||
-          !std::isfinite(source_point.z))
-        continue;
-      if (!std::isfinite(target_point.x) || !std::isfinite(target_point.y) ||
-          !std::isfinite(target_point.z))
-        continue;
+  for (std::size_t point_i = 0; point_i < xyz_source->size(); ++point_i) {
+    const auto source_point = xyz_source->points[point_i];
+    if (!std::isfinite(source_point.x) || !std::isfinite(source_point.y) ||
+        !std::isfinite(source_point.z))
+      continue;
 
-      float dist = pcl::squaredEuclideanDistance(source_point, target_point);
-      rmse += dist;
-    }
-    rmse = std::sqrt(rmse / static_cast<float>(xyz_source->size()));
-    return rmse;
-  } else if (correspondence_type == "nn") {
-    beam::KdTree<pcl::PointXYZ> tree(*xyz_target);
+    std::vector<uint32_t> nn_indices(1);
+    std::vector<float> nn_distances(1);
+    if (!tree.nearestKSearch(source_point, 1, nn_indices, nn_distances))
+      continue;
 
-    for (std::size_t point_i = 0; point_i < xyz_source->size(); ++point_i) {
-      const auto source_point = xyz_source->points[point_i];
-      if (!std::isfinite(source_point.x) || !std::isfinite(source_point.y) ||
-          !std::isfinite(source_point.z))
-        continue;
+    std::size_t point_nn_i = nn_indices[0];
+    const auto target_point = xyz_target->points[point_nn_i];
 
-      std::vector<uint32_t> nn_indices(1);
-      std::vector<float> nn_distances(1);
-      if (!tree.nearestKSearch(source_point, 1, nn_indices, nn_distances)) continue;
-
-      std::size_t point_nn_i = nn_indices[0];
-      const auto target_point = xyz_target->points[point_nn_i];
-
-      float dist = pcl::squaredEuclideanDistance(source_point, target_point);
-      rmse += dist;
-    }
-    rmse = std::sqrt(rmse / static_cast<float>(xyz_source->size()));
-    return rmse;
-  } else if (correspondence_type == "nnplane") {
-    pcl::PointCloud<pcl::Normal>::Ptr normals_target(
-        new pcl::PointCloud<pcl::Normal>());
-    pcl::copyPointCloud(cloud_target, normals_target);
-
-    beam::KdTree<pcl::PointXYZ> tree(*xyz_target);
-
-    for (std::size_t point_i = 0; point_i < xyz_source->size(); ++point_i) {
-      const auto source_point = xyz_source->points[point_i];
-      if (!std::isfinite(source_point.x) || !std::isfinite(source_point.y) ||
-          !std::isfinite(source_point.z))
-        continue;
-
-      std::vector<uint32_t> nn_indices(1);
-      std::vector<float> nn_distances(1);
-      if (!tree.nearestKSearch(source_point, 1, nn_indices, nn_distances))
-        continue;
-
-      std::size_t point_nn_i = nn_indices[0];
-      const auto target_point = xyz_target->points[point_nn_i];
-
-      Eigen::Vector3f normal_target =
-          normals_target->points[point_nn_i].getNormalVector3fMap();
-      Eigen::Vector3f point_source = source_point.getVector3fMap();
-      Eigen::Vector3f point_target = target_point.getVector3fMap();
-
-      float dist = normal_target.dot(point_source - point_target);
-      rmse += dist * dist;
-    }
-    rmse = std::sqrt(rmse / static_cast<float>(xyz_source->size()));
-    return rmse;
+    float dist = pcl::squaredEuclideanDistance(source_point, target_point);
+    rmse += dist;
   }
-  return -1;
+  rmse = std::sqrt(rmse / static_cast<float>(xyz_source->size()));
+  return rmse;
 }
 
 /** @} group utils */
