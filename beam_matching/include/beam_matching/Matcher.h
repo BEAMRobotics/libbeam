@@ -169,7 +169,7 @@ protected:
 
     // color pointclouds and add frames
     PointCloudCol ref_col = beam::ColorPointCloud(*ref, 0, 0, 255);
-    PointCloudCol tgt_init_col = beam::ColorPointCloud(*ref, 255, 0, 0);
+    PointCloudCol tgt_init_col = beam::ColorPointCloud(*target, 255, 0, 0);
     PointCloudCol tgt_align_col = beam::ColorPointCloud(tgt_aligned, 0, 255, 0);
 
     // add frames to clouds
