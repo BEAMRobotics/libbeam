@@ -5,6 +5,7 @@ BEAM_ADD_MODULE(${PROJECT_NAME}
     beam::utils
     beam::optimization
   SOURCES
+    src/Scancontext.cpp
     src/IcpMatcher.cpp
     src/NdtMatcher.cpp
     src/GicpMatcher.cpp
