@@ -170,8 +170,15 @@ public:
 
   // User-side API
   void makeAndSaveScancontextAndKeys(pcl::PointCloud<SCPointType>& _scan_down);
+
+  // find loop closure using last added scan
   std::pair<int, float>
       detectLoopClosureID(void); // int: nearest node index, float: relative yaw
+
+  // find loop closure given new query scan
+  std::pair<int, float>
+      detectLoopClosureID(pcl::PointCloud<SCPointType>& _query_scan,
+                          size_t _num_exclude_recent = 0);
 
 public:
   // hyper parameters ()

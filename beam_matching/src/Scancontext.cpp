@@ -322,4 +322,112 @@ std::pair<int, float> SCManager::detectLoopClosureID(void) {
 
 } // SCManager::detectLoopClosureID
 
+std::pair<int, float>
+    SCManager::detectLoopClosureID(pcl::PointCloud<SCPointType>& _query_scan,
+                                   size_t _num_exclude_recent) {
+  int loop_id{-1}; // init with -1, -1 means no loop (== LeGO-LOAM's variable
+                   // "closestHistoryFrameID")
+
+  Eigen::MatrixXd curr_desc = makeScancontext(_query_scan); // v1
+  Eigen::MatrixXd ringkey = makeRingkeyFromScancontext(curr_desc);
+  std::vector<float> curr_key = eig2stdvec(ringkey);
+
+  /*
+   * step 1: candidates from ringkey tree_
+   */
+  if (polarcontext_invkeys_mat_.size() < _num_exclude_recent + 1) {
+    std::pair<int, float> result{loop_id, 0.0};
+    return result; // Early return
+  }
+
+  // tree_ reconstruction (not mandatory to make everytime)
+  if (tree_making_period_conter % TREE_MAKING_PERIOD_ ==
+      0) // to save computation cost
+  {
+    beam::TicToc t_tree_construction;
+
+    polarcontext_invkeys_to_search_.clear();
+    polarcontext_invkeys_to_search_.assign(polarcontext_invkeys_mat_.begin(),
+                                           polarcontext_invkeys_mat_.end() -
+                                               _num_exclude_recent);
+
+    polarcontext_tree_.reset();
+    polarcontext_tree_ = std::make_unique<InvKeyTree>(
+        PC_NUM_RING /* dim */, polarcontext_invkeys_to_search_,
+        10 /* max leaf */);
+    // tree_ptr_->index->buildIndex(); // inernally called in the constructor of
+    // InvKeyTree (for detail, refer the nanoflann and
+    // KDtreeVectorOfVectorsAdaptor)
+    t_tree_construction.toc("Tree construction");
+  }
+  tree_making_period_conter = tree_making_period_conter + 1;
+
+  double min_dist = 10000000; // init with somthing large
+  int nn_align = 0;
+  int nn_idx = 0;
+
+  // knn search
+  std::vector<size_t> candidate_indexes(NUM_CANDIDATES_FROM_TREE);
+  std::vector<float> out_dists_sqr(NUM_CANDIDATES_FROM_TREE);
+
+  beam::TicToc t_tree_search;
+  beam::nanoflann::KNNResultSet<float> knnsearch_result(
+      NUM_CANDIDATES_FROM_TREE);
+  knnsearch_result.init(&candidate_indexes[0], &out_dists_sqr[0]);
+  polarcontext_tree_->index->findNeighbors(knnsearch_result,
+                                           &curr_key[0] /* query */,
+                                           beam::nanoflann::SearchParams(10));
+  t_tree_search.toc("Tree search");
+
+  /*
+   *  step 2: pairwise distance (find optimal columnwise best-fit using cosine
+   * distance)
+   */
+  beam::TicToc t_calc_dist;
+  for (int candidate_iter_idx = 0;
+       candidate_iter_idx < NUM_CANDIDATES_FROM_TREE; candidate_iter_idx++) {
+    MatrixXd polarcontext_candidate =
+        polarcontexts_[candidate_indexes[candidate_iter_idx]];
+    std::pair<double, int> sc_dist_result =
+        distanceBtnScanContext(curr_desc, polarcontext_candidate);
+
+    double candidate_dist = sc_dist_result.first;
+    int candidate_align = sc_dist_result.second;
+
+    if (candidate_dist < min_dist) {
+      min_dist = candidate_dist;
+      nn_align = candidate_align;
+
+      nn_idx = candidate_indexes[candidate_iter_idx];
+    }
+  }
+  t_calc_dist.toc("Distance calc");
+
+  /*
+   * loop threshold check
+   */
+  if (min_dist < SC_DIST_THRES) {
+    loop_id = nn_idx;
+
+    // std::cout.precision(3);
+    cout << "[Loop found] Nearest distance: " << min_dist << " btn "
+         << polarcontexts_.size() - 1 << " and " << nn_idx << "." << endl;
+    cout << "[Loop found] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE
+         << " deg." << endl;
+  } else {
+    std::cout.precision(3);
+    cout << "[Not loop] Nearest distance: " << min_dist << " btn "
+         << polarcontexts_.size() - 1 << " and " << nn_idx << "." << endl;
+    cout << "[Not loop] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE << " deg."
+         << endl;
+  }
+
+  // To do: return also nn_align (i.e., yaw diff)
+  float yaw_diff_rad = deg2rad(nn_align * PC_UNIT_SECTORANGLE);
+  std::pair<int, float> result{loop_id, yaw_diff_rad};
+
+  return result;
+
+} // SCManager::detectLoopClosureID
+
 // } // namespace SC2
