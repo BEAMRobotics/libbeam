@@ -31,10 +31,10 @@
 
 /** @brief Point label options. */
 enum PointLabel {
-  CORNER_SHARP = 255,      // sharp corner point
-  CORNER_LESS_SHARP = 170, // less sharp corner point
-  SURFACE_LESS_FLAT = 85,  // less flat surface point
-  SURFACE_FLAT = 0         // flat surface point
+  CORNER_SHARP = 0,      // sharp corner point
+  CORNER_LESS_SHARP = 1, // less sharp corner point
+  SURFACE_LESS_FLAT = 2,  // less flat surface point
+  SURFACE_FLAT = 3         // flat surface point
 };
 
 struct PointLoam {
