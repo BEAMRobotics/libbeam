@@ -128,7 +128,7 @@ void LoamPointCloud::TransformPointCloud(const Eigen::Matrix4d& T) {
 
 void LoamPointCloud::SaveCombined(const std::string& output_path,
                                   const std::string& filename, uint8_t r,
-                                  uint8_t g, uint8_t b) const {
+                                  uint8_t g, uint8_t b, bool verbose) const {
   if (!boost::filesystem::exists(output_path)) {
     BEAM_ERROR("File path ({}) does not exist, not saving loam cloud.",
                output_path);
@@ -142,8 +142,11 @@ void LoamPointCloud::SaveCombined(const std::string& output_path,
   }
 
   std::string output_final = beam::CombinePaths(output_path, filename);
-  BEAM_INFO("Saving Loam point cloud with {} points to: {}",
-            cloud_combined.size(), output_final);
+  if (verbose) {
+    BEAM_INFO("Saving Loam point cloud with {} points to: {}",
+              cloud_combined.size(), output_final);
+  }
+
   std::string error_message{};
   if (r == 255 && g == 255 && b == 255) {
     if (!beam::SavePointCloud<PointLoam>(output_final, cloud_combined,
@@ -179,7 +182,7 @@ void LoamPointCloud::SaveCombined(const std::string& output_path,
 
 void LoamPointCloud::Save(const std::string& output_path,
                           const std::string& prefix, uint8_t r, uint8_t g,
-                          uint8_t b) const {
+                          uint8_t b, bool verbose) const {
   if (!boost::filesystem::exists(output_path)) {
     BEAM_ERROR("File path ({}) does not exist, not saving loam cloud.",
                output_path);
@@ -187,7 +190,10 @@ void LoamPointCloud::Save(const std::string& output_path,
   }
 
   std::string path_final = beam::CombinePaths(output_path, prefix);
-  BEAM_INFO("Saving Loam point clouds to: {}", path_final + "*");
+  if (verbose) {
+    BEAM_INFO("Saving Loam point clouds to: {}", path_final + "*");
+  }
+
   std::string error_message{};
   // output all as white if colors not specified
   if (r == 255 && g == 255 && b == 255) {

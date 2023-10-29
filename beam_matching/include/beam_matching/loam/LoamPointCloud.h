@@ -33,8 +33,8 @@
 enum PointLabel {
   CORNER_SHARP = 0,      // sharp corner point
   CORNER_LESS_SHARP = 1, // less sharp corner point
-  SURFACE_LESS_FLAT = 2,  // less flat surface point
-  SURFACE_FLAT = 3         // flat surface point
+  SURFACE_LESS_FLAT = 2, // less flat surface point
+  SURFACE_FLAT = 3       // flat surface point
 };
 
 struct PointLoam {
@@ -214,7 +214,8 @@ public:
    * @param b blue color
    */
   void Save(const std::string& output_path, const std::string& prefix = "cloud",
-            uint8_t r = 255, uint8_t g = 255, uint8_t b = 255) const;
+            uint8_t r = 255, uint8_t g = 255, uint8_t b = 255,
+            bool verbose = true) const;
 
   /**
    * @brief method for saving a loam pointcloud. It will combine into a
@@ -228,7 +229,8 @@ public:
    */
   void SaveCombined(const std::string& output_path,
                     const std::string& filename = "combined_features.pcd",
-                    uint8_t r = 255, uint8_t g = 255, uint8_t b = 255) const;
+                    uint8_t r = 255, uint8_t g = 255, uint8_t b = 255,
+                    bool verbose = true) const;
 
   /**
    * @brief add a new loam pointcloud to this cloud. This will also clear
@@ -275,7 +277,6 @@ public:
    * use */
   LoamFeatures surfaces;
 };
-
 
 using LoamPointCloudPtr = std::shared_ptr<LoamPointCloud>;
 
