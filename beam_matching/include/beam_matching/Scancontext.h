@@ -178,7 +178,7 @@ public:
   // find loop closure given new query scan
   std::pair<int, float>
       detectLoopClosureID(pcl::PointCloud<SCPointType>& _query_scan,
-                          size_t _num_exclude_recent = 0);
+                          size_t _num_exclude_recent = 0, bool verbose = false);
 
 public:
   // hyper parameters ()
@@ -204,7 +204,7 @@ public:
   const double SEARCH_RATIO =
       0.1; // for fast comparison, no Brute-force, but search 10 % is okay. //
            // not was in the original conf paper, but improved ver.
-  const double SC_DIST_THRES =
+  double SC_DIST_THRES =
       0.13; // empirically 0.1-0.2 is fine (rare false-alarms) for 20x60 polar
             // context (but for 0.15 <, DCS or ICP fit score check (e.g., in
             // LeGO-LOAM) should be required for robustness)

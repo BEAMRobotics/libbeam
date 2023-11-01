@@ -324,7 +324,7 @@ std::pair<int, float> SCManager::detectLoopClosureID(void) {
 
 std::pair<int, float>
     SCManager::detectLoopClosureID(pcl::PointCloud<SCPointType>& _query_scan,
-                                   size_t _num_exclude_recent) {
+                                   size_t _num_exclude_recent, bool verbose) {
   int loop_id{-1}; // init with -1, -1 means no loop (== LeGO-LOAM's variable
                    // "closestHistoryFrameID")
 
@@ -337,6 +337,10 @@ std::pair<int, float>
    */
   if (polarcontext_invkeys_mat_.size() < _num_exclude_recent + 1) {
     std::pair<int, float> result{loop_id, 0.0};
+    if (verbose) {
+      std::cout << "not enough scan context results, skipping loop closure "
+                   "detection\n";
+    }
     return result; // Early return
   }
 
@@ -408,18 +412,20 @@ std::pair<int, float>
    */
   if (min_dist < SC_DIST_THRES) {
     loop_id = nn_idx;
+    if (verbose) {
+      cout << "[Loop found] Nearest distance: " << min_dist
+           << " between query and " << nn_idx << "." << endl;
+      cout << "[Loop found] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE
+           << " deg." << endl;
+    }
 
-    // std::cout.precision(3);
-    cout << "[Loop found] Nearest distance: " << min_dist << " btn "
-         << polarcontexts_.size() - 1 << " and " << nn_idx << "." << endl;
-    cout << "[Loop found] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE
-         << " deg." << endl;
   } else {
-    std::cout.precision(3);
-    cout << "[Not loop] Nearest distance: " << min_dist << " btn "
-         << polarcontexts_.size() - 1 << " and " << nn_idx << "." << endl;
-    cout << "[Not loop] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE << " deg."
-         << endl;
+    if (verbose) {
+      cout << "[Not loop] Nearest distance: " << min_dist
+           << " between query and " << nn_idx << "." << endl;
+      cout << "[Not loop] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE
+           << " deg." << endl;
+    }
   }
 
   // To do: return also nn_align (i.e., yaw diff)
