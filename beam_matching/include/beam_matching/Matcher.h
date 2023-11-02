@@ -88,7 +88,29 @@ public:
   /**
    * @brief Returns T_TARGET_REF
    */
-  Eigen::Affine3d GetResult() { return this->result_; };
+  Eigen::Affine3d GetResult() { return result_; };
+
+  /**
+   * @brief Use this if you transformed your target cloud into the reference
+   * frame already with an estimated transform: T_RefEst_Target
+   * @return T_TARGET_REF
+   */
+  Eigen::Affine3d ApplyResult(const Eigen::Affine3d& T_RefEst_Target) const {
+    // in this case, target was transformed into the ref estimated, so we can
+    // replace target with ref est.
+    const auto& T_RefEst_Ref = result_;
+    Eigen::Affine3d T_TARGET_REF = T_RefEst_Target.inverse() * T_RefEst_Ref;
+    return T_TARGET_REF;
+  };
+
+  /**
+   * @brief Use this if you transformed your target cloud into the reference
+   * frame already with an estimated transform: T_RefEst_Target
+   * @return T_TARGET_REF
+   */
+  Eigen::Matrix4d ApplyResult(const Eigen::Matrix4d& T_RefEst_Target) const {
+    return ApplyResult(Eigen::Affine3d(T_RefEst_Target)).matrix();
+  };
 
   /**
    * @brief returns the calculated covariance matrix.
@@ -96,10 +118,10 @@ public:
    */
   Eigen::Matrix<double, 6, 6>& GetCovariance() {
     CalculateCovariance();
-    return this->covariance_;
+    return covariance_;
   };
 
-  float GetRes() { return this->resolution_; };
+  float GetRes() { return resolution_; };
 
   /**
    * @brief `setRef` and `setTarget` are implemented for each specific matching
@@ -113,8 +135,8 @@ public:
   virtual void SetRef(const T& ref) = 0;
   virtual void SetTarget(const T& target) = 0;
   void Setup(const T& ref, const T& target) {
-    this->SetRef(ref);
-    this->SetTarget(target);
+    SetRef(ref);
+    SetTarget(target);
   };
 
   /**
