@@ -50,9 +50,9 @@ std::string LibbeamRoot();
 
 /**
  * @brief remove duplicate file separators in a string filepath
- * 
- * @param path 
- * @return std::string 
+ *
+ * @param path
+ * @return std::string
  */
 std::string RemoveDuplicateFileSeparators(const std::string& path);
 
@@ -123,6 +123,9 @@ bool ReadJson(const std::string& filename, nlohmann::json& J,
 bool StringToNumericValues(const std::string& deliminator,
                            std::string& input_string,
                            std::vector<double>& values);
+
+void ValidateJsonKeysOrThrow(const std::vector<std::string>& required_keys,
+                             const nlohmann::json& J);
 
 /** @} group utils */
 } // namespace beam
