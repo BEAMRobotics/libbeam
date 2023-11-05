@@ -98,10 +98,6 @@ public:
   Eigen::Affine3d ApplyResult(const Eigen::Affine3d& T_RefEst_Target) const {
     // in this case, target was transformed into the ref estimated, so we can
     // replace target with ref est.
-    // const auto& T_RefEst_Ref = result_;
-    // Eigen::Affine3d T_TARGET_REF = T_RefEst_Target.inverse() * T_RefEst_Ref;
-    // const auto& T_Ref_RefEst = result_;
-    // Eigen::Affine3d T_REF_TARGET = T_Ref_RefEst * T_RefEst_Target;
     const auto& T_RefEst_Ref = result_;
     Eigen::Affine3d T_REF_TARGET = T_RefEst_Ref.inverse() * T_RefEst_Target;
     return T_REF_TARGET;
