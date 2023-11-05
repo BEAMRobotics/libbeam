@@ -25,6 +25,13 @@ void GetScreenResolution(int& width, int& height) {
 }
 
 cv::Mat AdaptiveHistogram(const cv::Mat& input) {
+  if (input.type() == CV_8UC1) {
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+    clahe->setClipLimit(3);
+    cv::Mat dst;
+    clahe->apply(input, dst);
+    return dst;
+  }
   cv::Mat lab_image;
   cv::cvtColor(input, lab_image, cv::COLOR_BGR2Lab);
   std::vector<cv::Mat> lab_planes(6);
