@@ -18,26 +18,20 @@ struct CeresPointToPlaneCostFunction {
    * @param P_REF2 reference surface point 2
    * @param P_REF3 reference surface point 2
    */
-  CeresPointToPlaneCostFunction(const Eigen::Vector3d P_TGT,
-                               const Eigen::Vector3d P_REF1,
-                               const Eigen::Vector3d P_REF2,
-                               const Eigen::Vector3d P_REF3)
+  CeresPointToPlaneCostFunction(const Eigen::Vector3d& P_TGT,
+                                const Eigen::Vector3d& P_REF1,
+                                const Eigen::Vector3d& P_REF2,
+                                const Eigen::Vector3d& P_REF3)
       : P_TGT_(P_TGT), P_REF1_(P_REF1), P_REF2_(P_REF2), P_REF3_(P_REF3) {}
 
   // T_REF_TGT is [qw, qx, qy, qz, tx, ty, tz]
   template <typename T>
   bool operator()(const T* const T_REF_TGT, T* residuals) const {
-    // cast member variables
-    Eigen::Matrix<T,3,1> _P_TGT = P_TGT_.cast<T>();
-    Eigen::Matrix<T,3,1> _P_REF1 = P_REF1_.cast<T>();
-    Eigen::Matrix<T,3,1> _P_REF2 = P_REF2_.cast<T>();
-    Eigen::Matrix<T,3,1> _P_REF3 = P_REF3_.cast<T>();
-
     // get pointer of type T to current point
     T P_TGT[3];
-    P_TGT[0] = _P_TGT[0];
-    P_TGT[1] = _P_TGT[1];
-    P_TGT[2] = _P_TGT[2];
+    P_TGT[0] = static_cast<T>(P_TGT_[0]);
+    P_TGT[1] = static_cast<T>(P_TGT_[1]);
+    P_TGT[2] = static_cast<T>(P_TGT_[2]);
 
     // rotate and translate point
     T P_REF[3];
@@ -60,18 +54,17 @@ struct CeresPointToPlaneCostFunction {
      *
      */
     T d12[3], d13[3], dR1[3];
-    d12[0] = _P_REF1[0] - _P_REF2[0];
-    d12[1] = _P_REF1[1] - _P_REF2[1];
-    d12[2] = _P_REF1[2] - _P_REF2[2];
+    d12[0] = static_cast<T>(P_REF1_[0]) - static_cast<T>(P_REF2_[0]);
+    d12[1] = static_cast<T>(P_REF1_[1]) - static_cast<T>(P_REF2_[1]);
+    d12[2] = static_cast<T>(P_REF1_[2]) - static_cast<T>(P_REF2_[2]);
 
-    d13[0] = _P_REF1[0] - _P_REF3[0];
-    d13[1] = _P_REF1[1] - _P_REF3[1];
-    d13[2] = _P_REF1[2] - _P_REF3[2];
+    d13[0] = static_cast<T>(P_REF1_[0]) - static_cast<T>(P_REF3_[0]);
+    d13[1] = static_cast<T>(P_REF1_[1]) - static_cast<T>(P_REF3_[1]);
+    d13[2] = static_cast<T>(P_REF1_[2]) - static_cast<T>(P_REF3_[2]);
 
-    dR1[0] = P_REF[0] - _P_REF1[0];
-    dR1[1] = P_REF[1] - _P_REF1[1];
-    dR1[2] = P_REF[2] - _P_REF1[2];
-
+    dR1[0] = P_REF[0] - static_cast<T>(P_REF1_[0]);
+    dR1[1] = P_REF[1] - static_cast<T>(P_REF1_[1]);
+    dR1[2] = P_REF[2] - static_cast<T>(P_REF1_[2]);
 
     T cross[3];
     ceres::CrossProduct(d12, d13, cross);
@@ -85,12 +78,13 @@ struct CeresPointToPlaneCostFunction {
 
   // Factory to hide the construction of the CostFunction object from
   // the client code.
-  static ceres::CostFunction* Create(const Eigen::Vector3d P_TGT,
-                                     const Eigen::Vector3d P_REF1,
-                                     const Eigen::Vector3d P_REF2,
-                                     const Eigen::Vector3d P_REF3) {
-    return (new ceres::AutoDiffCostFunction<CeresPointToPlaneCostFunction, 1, 7>(
-        new CeresPointToPlaneCostFunction(P_TGT, P_REF1, P_REF2, P_REF3)));
+  static ceres::CostFunction* Create(const Eigen::Vector3d& P_TGT,
+                                     const Eigen::Vector3d& P_REF1,
+                                     const Eigen::Vector3d& P_REF2,
+                                     const Eigen::Vector3d& P_REF3) {
+    return (
+        new ceres::AutoDiffCostFunction<CeresPointToPlaneCostFunction, 1, 7>(
+            new CeresPointToPlaneCostFunction(P_TGT, P_REF1, P_REF2, P_REF3)));
   }
 
   Eigen::Vector3d P_TGT_;
