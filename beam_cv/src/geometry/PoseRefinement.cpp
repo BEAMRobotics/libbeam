@@ -100,7 +100,11 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
   ceres::Solve(ceres_solver_options_, problem.get(), &ceres_summary);
   report = ceres_summary.FullReport();
 
-  if (A_out && ceres_summary.IsSolutionUsable()) {
+  if (!ceres_summary.IsSolutionUsable()) {
+    throw std::runtime_error("Invalid pose refinement solution.");
+  }
+
+  if (A_out) {
     // compute covariance
     ceres::Covariance::Options cov_options;
     ceres::Covariance covariance(cov_options);
@@ -113,8 +117,6 @@ Eigen::Matrix4d PoseRefinement::RefinePose(
     covariance.GetCovarianceBlock(&(results[0]), &(results[0]), covariance_arr);
     Eigen::Matrix<double, 7, 7> covariance_eig(covariance_arr);
     A_out->block<6, 6>(0, 0) = covariance_eig.block<6, 6>(1, 1);
-  } else if (A_out && !ceres_summary.IsSolutionUsable()) {
-    A_out->block<6, 6>(0, 0) = Eigen::Matrix<double, 6, 6>::Zero();
   }
 
   // recover pose from optimization results
