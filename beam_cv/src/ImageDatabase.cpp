@@ -77,6 +77,11 @@ void ImageDatabase::SaveDatabase(const std::string& dbow_file_path,
   timestamps_file << std::setw(4) << index_to_timestamp_map_ << std::endl;
 }
 
+uint64_t ImageDatabase::GetWordID(const cv::Mat& descriptor) {
+  return static_cast<uint64_t>(
+      dbow_db_->getVocabulary()->transform(descriptor));
+}
+
 cv::Mat ImageDatabase::GetWord(const cv::Mat& descriptor) {
   auto vocab = dbow_db_->getVocabulary();
   auto word_id = vocab->transform(descriptor);
