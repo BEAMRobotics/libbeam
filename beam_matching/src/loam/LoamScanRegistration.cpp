@@ -270,54 +270,6 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
   return true;
 }
 
-static void TestCost(const Eigen::Vector3d& _P_TGT,
-                     const Eigen::Vector3d& _P_REF1,
-                     const Eigen::Vector3d& _P_REF2,
-                     const std::vector<double>& _qt_REF_TGT) {
-  double P_TGT[3];
-  P_TGT[0] = _P_TGT[0];
-  P_TGT[1] = _P_TGT[1];
-  P_TGT[2] = _P_TGT[2];
-  double P_REF[3];
-  double qt_REF_TGT[7];
-  qt_REF_TGT[0] = _qt_REF_TGT[0];
-  qt_REF_TGT[1] = _qt_REF_TGT[1];
-  qt_REF_TGT[2] = _qt_REF_TGT[2];
-  qt_REF_TGT[3] = _qt_REF_TGT[3];
-  qt_REF_TGT[4] = _qt_REF_TGT[4];
-  qt_REF_TGT[5] = _qt_REF_TGT[5];
-  qt_REF_TGT[6] = _qt_REF_TGT[6];
-  ceres::QuaternionRotatePoint(qt_REF_TGT, P_TGT, P_REF);
-  P_REF[0] += qt_REF_TGT[4];
-  P_REF[1] += qt_REF_TGT[5];
-  P_REF[2] += qt_REF_TGT[6];
-
-  double d1[3], d2[3], d12[3];
-  d1[0] = P_REF[0] - _P_REF1[0];
-  d1[1] = P_REF[1] - _P_REF1[1];
-  d1[2] = P_REF[2] - _P_REF1[2];
-
-  d2[0] = P_REF[0] - _P_REF2[0];
-  d2[1] = P_REF[1] - _P_REF2[1];
-  d2[2] = P_REF[2] - _P_REF2[2];
-
-  d12[0] = _P_REF1[0] - _P_REF2[0];
-  d12[1] = _P_REF1[1] - _P_REF2[1];
-  d12[2] = _P_REF1[2] - _P_REF2[2];
-
-  double cross[3];
-  ceres::CrossProduct(d1, d2, cross);
-
-  double norm =
-      sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
-  double norm12 = sqrt(d12[0] * d12[0] + d12[1] * d12[1] + d12[2] * d12[2]);
-
-  double residual = norm / norm12;
-
-  std::cout << "norm12: " << norm12 << "\n";
-  std::cout << "residual: " << residual << "\n";
-}
-
 bool LoamScanRegistration::Solve(int iteration) {
   if (params_->min_number_measurements >
       edge_measurements_.size() + surface_measurements_.size()) {
@@ -403,17 +355,19 @@ bool LoamScanRegistration::Solve(int iteration) {
     optimization_summary_.edge_measurements = edge_measurements_.size();
   }
 
-  // compute covariance
-  ceres::Covariance::Options cov_options;
-  ceres::Covariance covariance(cov_options);
-  std::vector<const double*> covariance_block;
-  covariance_block.push_back(&(pose[0]));
-  covariance.Compute(covariance_block, problem.get());
+  if (ceres_summary.IsSolutionUsable()) {
+    // compute covariance
+    ceres::Covariance::Options cov_options;
+    ceres::Covariance covariance(cov_options);
+    std::vector<const double*> covariance_block;
+    covariance_block.push_back(&(pose[0]));
+    covariance.Compute(covariance_block, problem.get());
 
-  // setup covariance to return as eigen matrix
-  double covariance_arr[7 * 7];
-  covariance.GetCovarianceBlock(&(pose[0]), &(pose[0]), covariance_arr);
-  covariance_ = Eigen::Matrix<double, 7, 7>(covariance_arr);
+    // setup covariance to return as eigen matrix
+    double covariance_arr[7 * 7];
+    covariance.GetCovarianceBlock(&(pose[0]), &(pose[0]), covariance_arr);
+    covariance_ = Eigen::Matrix<double, 7, 7>(covariance_arr);
+  }
   return ceres_summary.IsSolutionUsable();
 }
 
