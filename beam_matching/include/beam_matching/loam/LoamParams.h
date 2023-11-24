@@ -217,6 +217,9 @@ public:
   /** set to true to cout optimization summaries for each iteration */
   bool output_optimization_summary{false};
 
+  /** PARAMS ONLY SETABLE HERE */
+  bool check_strong_features_first{false};
+
 private:
   std::vector<double> beam_angle_bins_;
 };
