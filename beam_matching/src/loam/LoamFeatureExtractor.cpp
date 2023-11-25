@@ -66,6 +66,16 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
   Reset();
   GetSortedScan(scan_lines);
 
+  PointCloudIRT corner_points_sharp;
+  PointCloudIRT corner_points_less_sharp;
+  PointCloudIRT surface_points_flat;
+  PointCloudIRT surface_points_less_flat;
+
+  std::vector<float> corner_curvatures_sharp;
+  std::vector<float> corner_curvatures_less_sharp;
+  std::vector<float> surface_curvatures_flat;
+  std::vector<float> surface_curvatures_less_flat;
+
   // extract features from individual scans
   for (size_t i = 0; i < scan_indices_.size(); i++) {
     PointCloudIRT::Ptr surf_points_less_flat_scan =
@@ -115,11 +125,13 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
           largest_picked_num++;
           if (largest_picked_num <= params_->max_corner_sharp) {
             region_label_[region_idx] = PointLabel::CORNER_SHARP;
-            corner_points_sharp_.push_back(sorted_scan_[idx]);
+            corner_points_sharp.push_back(sorted_scan_[idx]);
+            corner_curvatures_sharp.push_back(region_curvature_[region_idx]);
           } else {
             region_label_[region_idx] = PointLabel::CORNER_LESS_SHARP;
           }
-          corner_points_less_sharp_.push_back(sorted_scan_[idx]);
+          corner_points_less_sharp.push_back(sorted_scan_[idx]);
+          corner_curvatures_less_sharp.push_back(region_curvature_[region_idx]);
 
           MarkAsPicked(idx, scan_idx);
         }
@@ -139,7 +151,8 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
                 params_->surface_curvature_threshold) {
           smallest_picked_num++;
           region_label_[region_idx] = PointLabel::SURFACE_FLAT;
-          surface_points_flat_.push_back(sorted_scan_[idx]);
+          surface_points_flat.push_back(sorted_scan_[idx]);
+          surface_curvatures_flat.push_back(region_curvature_[region_idx]);
 
           MarkAsPicked(idx, scan_idx);
         }
@@ -149,6 +162,8 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
       for (size_t k = 0; k < region_size; k++) {
         if (region_label_[k] <= PointLabel::SURFACE_LESS_FLAT) {
           surf_points_less_flat_scan->push_back(sorted_scan_[sp + k]);
+          // TODO: fix this
+          // surf_features_less_flat_scan.push_back(region_curvature_[region_idx]);
         }
       }
     }
@@ -162,18 +177,18 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
                                  params_->less_flat_filter_size);
     down_size_filter.filter(surf_points_less_flat_scanDS);
 
-    surface_points_less_flat_ += surf_points_less_flat_scanDS;
+    surface_points_less_flat += surf_points_less_flat_scanDS;
   }
 
-  if (corner_points_sharp_.empty()) {
+  if (corner_points_sharp.empty()) {
     BEAM_WARN("Unable to extract sharp edge features from cloud.");
   }
-  if (surface_points_flat_.empty()) {
+  if (surface_points_flat.empty()) {
     BEAM_WARN("Unable to extract flat surface features from cloud.");
   }
 
-  return LoamPointCloud(corner_points_sharp_, surface_points_flat_,
-                        corner_points_less_sharp_, surface_points_less_flat_);
+  return LoamPointCloud(corner_points_sharp, surface_points_flat,
+                        corner_points_less_sharp, surface_points_less_flat);
 }
 
 void LoamFeatureExtractor::Reset() {
@@ -183,10 +198,6 @@ void LoamFeatureExtractor::Reset() {
   region_label_.clear();
   region_sort_indices_.clear();
   scan_neighbor_picked_.clear();
-  corner_points_sharp_.clear();
-  corner_points_less_sharp_.clear();
-  surface_points_flat_.clear();
-  surface_points_less_flat_.clear();
 }
 
 std::vector<PointCloudIRT>

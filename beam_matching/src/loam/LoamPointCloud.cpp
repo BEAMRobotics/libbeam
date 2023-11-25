@@ -39,6 +39,10 @@ LoamPointCloud::LoamPointCloud(const LoamPointCloud& cloud,
   for (const auto& p : cloud.surfaces.weak.cloud) {
     surfaces.weak.cloud.push_back(pcl::transformPoint(p, TA));
   }
+  edges.strong.curvatures = cloud.edges.strong.curvatures;
+  edges.weak.curvatures = cloud.edges.weak.curvatures;
+  surfaces.strong.curvatures = cloud.surfaces.strong.curvatures;
+  surfaces.weak.curvatures = cloud.surfaces.weak.curvatures;
 }
 
 void LoamFeatureCloud::BuildKDTree(bool override_tree) {
@@ -49,62 +53,23 @@ void LoamFeatureCloud::BuildKDTree(bool override_tree) {
   kdtree_empty = false;
 }
 
-LoamPointCloud::LoamPointCloud(const PointCloudIRT& edge_features_strong,
-                               const PointCloudIRT& surface_features_strong,
-                               const PointCloudIRT& edge_features_weak,
-                               const PointCloudIRT& surface_features_weak) {
+LoamPointCloud::LoamPointCloud(
+    const PointCloudIRT& edge_features_strong,
+    const PointCloudIRT& surface_features_strong,
+    const PointCloudIRT& edge_features_weak,
+    const PointCloudIRT& surface_features_weak,
+    const std::vector<float>& edge_curvatures_strong,
+    const std::vector<float>& surface_curvatures_strong,
+    const std::vector<float>& edge_curvatures_weak,
+    const std::vector<float>& surface_curvatures_weak) {
   edges.strong.cloud = edge_features_strong;
   surfaces.strong.cloud = surface_features_strong;
   edges.weak.cloud = edge_features_weak;
   surfaces.weak.cloud = surface_features_weak;
-}
-
-void LoamPointCloud::AddSurfaceFeaturesStrong(const PointCloudIRT& new_features,
-                                              const Eigen::Matrix4d& T) {
-  if (!T.isIdentity()) {
-    PointCloudIRT new_features_transformed;
-    pcl::transformPointCloud(new_features, new_features_transformed, T);
-    surfaces.strong.cloud += new_features_transformed;
-    return;
-  }
-  surfaces.strong.cloud += new_features;
-  return;
-}
-
-void LoamPointCloud::AddEdgeFeaturesStrong(const PointCloudIRT& new_features,
-                                           const Eigen::Matrix4d& T) {
-  if (!T.isIdentity()) {
-    PointCloudIRT new_features_transformed;
-    pcl::transformPointCloud(new_features, new_features_transformed, T);
-    edges.strong.cloud += new_features_transformed;
-    return;
-  }
-  edges.strong.cloud += new_features;
-  return;
-}
-
-void LoamPointCloud::AddSurfaceFeaturesWeak(const PointCloudIRT& new_features,
-                                            const Eigen::Matrix4d& T) {
-  if (!T.isIdentity()) {
-    PointCloudIRT new_features_transformed;
-    pcl::transformPointCloud(new_features, new_features_transformed, T);
-    surfaces.weak.cloud += new_features_transformed;
-    return;
-  }
-  surfaces.weak.cloud += new_features;
-  return;
-}
-
-void LoamPointCloud::AddEdgeFeaturesWeak(const PointCloudIRT& new_features,
-                                         const Eigen::Matrix4d& T) {
-  if (!T.isIdentity()) {
-    PointCloudIRT new_features_transformed;
-    pcl::transformPointCloud(new_features, new_features_transformed, T);
-    edges.weak.cloud += new_features_transformed;
-    return;
-  }
-  edges.weak.cloud += new_features;
-  return;
+  edges.strong.curvatures = edge_curvatures_strong;
+  edges.weak.curvatures = edge_curvatures_weak;
+  surfaces.strong.curvatures = surface_curvatures_strong;
+  surfaces.weak.curvatures = surface_curvatures_weak;
 }
 
 void LoamPointCloud::TransformPointCloud(const Eigen::Matrix4d& T) {
@@ -168,6 +133,7 @@ void LoamPointCloud::SaveCombined(const std::string& output_path,
     pc.ring = p.ring;
     pc.time = p.time;
     pc.type = p.type;
+    pc.curvature = p.curvature;
     pc.r = r;
     pc.g = g;
     pc.b = b;
@@ -251,16 +217,27 @@ void LoamPointCloud::Merge(const LoamPointCloud& cloud) {
   if (cloud.Size() == 0) { return; }
 
   edges.strong.cloud += cloud.edges.strong.cloud;
-  edges.strong.ClearKDTree();
-
   edges.weak.cloud += cloud.edges.weak.cloud;
-  edges.weak.ClearKDTree();
-
   surfaces.strong.cloud += cloud.surfaces.strong.cloud;
-  surfaces.strong.ClearKDTree();
-
   surfaces.weak.cloud += cloud.surfaces.weak.cloud;
+
+  edges.strong.ClearKDTree();
+  edges.weak.ClearKDTree();
+  surfaces.strong.ClearKDTree();
   surfaces.weak.ClearKDTree();
+
+  for (float c : cloud.edges.strong.curvatures) {
+    edges.strong.curvatures.push_back(c);
+  }
+  for (float c : cloud.edges.weak.curvatures) {
+    edges.weak.curvatures.push_back(c);
+  }
+  for (float c : cloud.surfaces.strong.curvatures) {
+    surfaces.strong.curvatures.push_back(c);
+  }
+  for (float c : cloud.surfaces.weak.curvatures) {
+    surfaces.weak.curvatures.push_back(c);
+  }
 }
 
 void LoamPointCloud::Print(std::ostream& stream) const {
@@ -299,12 +276,16 @@ void LoamPointCloud::LoadFromCombined(const LoamPointCloudCombined& cloud) {
     pnew.time = p.time;
     if (p.type == PointLabel::CORNER_SHARP) {
       edges.strong.cloud.push_back(pnew);
+      edges.strong.curvatures.push_back(p.curvature);
     } else if (p.type == PointLabel::CORNER_LESS_SHARP) {
       edges.weak.cloud.push_back(pnew);
+      edges.weak.curvatures.push_back(p.curvature);
     } else if (p.type == PointLabel::SURFACE_FLAT) {
       surfaces.strong.cloud.push_back(pnew);
+      surfaces.strong.curvatures.push_back(p.curvature);
     } else if (p.type == PointLabel::SURFACE_LESS_FLAT) {
       surfaces.weak.cloud.push_back(pnew);
+      surfaces.weak.curvatures.push_back(p.curvature);
     } else {
       BEAM_ERROR("invalid type parameter in cloud.");
       throw std::runtime_error{"invalid type parameter in cloud"};
@@ -314,51 +295,34 @@ void LoamPointCloud::LoadFromCombined(const LoamPointCloudCombined& cloud) {
 
 LoamPointCloudCombined LoamPointCloud::GetCombinedCloud() const {
   LoamPointCloudCombined cloud;
-  for (const PointXYZIRT& p : edges.strong.cloud.points) {
-    PointLoam pnew;
-    pnew.x = p.x;
-    pnew.y = p.y;
-    pnew.z = p.z;
-    pnew.intensity = p.intensity;
-    pnew.ring = p.ring;
-    pnew.time = p.time;
-    pnew.type = PointLabel::CORNER_SHARP;
-    cloud.push_back(pnew);
-  }
-  for (const PointXYZIRT& p : edges.weak.cloud.points) {
-    PointLoam pnew;
-    pnew.x = p.x;
-    pnew.y = p.y;
-    pnew.z = p.z;
-    pnew.intensity = p.intensity;
-    pnew.ring = p.ring;
-    pnew.time = p.time;
-    pnew.type = PointLabel::CORNER_LESS_SHARP;
-    cloud.push_back(pnew);
-  }
-  for (const PointXYZIRT& p : surfaces.strong.cloud.points) {
-    PointLoam pnew;
-    pnew.x = p.x;
-    pnew.y = p.y;
-    pnew.z = p.z;
-    pnew.intensity = p.intensity;
-    pnew.ring = p.ring;
-    pnew.time = p.time;
-    pnew.type = PointLabel::SURFACE_FLAT;
-    cloud.push_back(pnew);
-  }
-  for (const PointXYZIRT& p : surfaces.weak.cloud.points) {
-    PointLoam pnew;
-    pnew.x = p.x;
-    pnew.y = p.y;
-    pnew.z = p.z;
-    pnew.intensity = p.intensity;
-    pnew.ring = p.ring;
-    pnew.time = p.time;
-    pnew.type = PointLabel::SURFACE_LESS_FLAT;
-    cloud.push_back(pnew);
-  }
+  AddPointsToLoamCloudCombined(cloud, edges.strong, PointLabel::CORNER_SHARP);
+  AddPointsToLoamCloudCombined(cloud, edges.weak,
+                               PointLabel::CORNER_LESS_SHARP);
+  AddPointsToLoamCloudCombined(cloud, surfaces.strong,
+                               PointLabel::SURFACE_FLAT);
+  AddPointsToLoamCloudCombined(cloud, surfaces.weak,
+                               PointLabel::SURFACE_LESS_FLAT);
   return cloud;
+}
+
+void LoamPointCloud::AddPointsToLoamCloudCombined(
+    LoamPointCloudCombined& cloud_combined, const LoamFeatureCloud& features,
+    PointLabel label) const {
+  bool curvatures_exist =
+      features.curvatures.size() == features.cloud.points.size();
+  for (size_t i = 0; i < features.cloud.points.size(); i++) {
+    const PointXYZIRT& p = features.cloud.points[i];
+    PointLoam pnew;
+    pnew.x = p.x;
+    pnew.y = p.y;
+    pnew.z = p.z;
+    pnew.intensity = p.intensity;
+    pnew.ring = p.ring;
+    pnew.time = p.time;
+    pnew.type = label;
+    if (curvatures_exist) { pnew.type = features.curvatures[i]; }
+    cloud_combined.push_back(pnew);
+  }
 }
 
 } // namespace beam_matching

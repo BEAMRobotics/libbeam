@@ -31,10 +31,10 @@
 
 /** @brief Point label options. */
 enum PointLabel {
-  CORNER_SHARP = 0,      // sharp corner point
+  CORNER_SHARP = 2,      // sharp corner point
   CORNER_LESS_SHARP = 1, // less sharp corner point
-  SURFACE_LESS_FLAT = 2, // less flat surface point
-  SURFACE_FLAT = 3       // flat surface point
+  SURFACE_LESS_FLAT = 0, // less flat surface point
+  SURFACE_FLAT = -1      // flat surface point
 };
 
 struct PointLoam {
@@ -43,6 +43,7 @@ struct PointLoam {
   std::uint16_t ring;
   float time;
   std::int8_t type; // see PointLabel
+  float curvature;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
@@ -50,7 +51,7 @@ struct PointLoam {
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     PointLoam, (float, x, x)(float, y, y)(float, z, z)
     (float, intensity, intensity)(std::uint16_t, ring, ring)(float, time, time)
-    (std::int8_t, type, type))
+    (std::int8_t, type, type)(float, curvature, curvature))
 // clang-format on
 
 struct PointLoamColored {
@@ -60,6 +61,7 @@ struct PointLoamColored {
   std::uint16_t ring;
   float time;
   std::int8_t type; // see PointLabel
+  float curvature;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
@@ -67,7 +69,7 @@ struct PointLoamColored {
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     PointLoamColored, (float, x, x)(float, y, y)(float, z, z)
     (float, intensity, intensity)(float, rgb, rgb)(std::uint16_t, ring, ring)
-    (float, time, time)(std::int8_t, type, type))
+    (float, time, time)(std::int8_t, type, type)(float, curvature, curvature))
 // clang-format on
 
 namespace beam_matching {
@@ -103,6 +105,8 @@ public:
   /** Bool to determine if kdtree is built or not. Helps us make sure we don't
    * keep rebuilding a tree that's already built because this takes time. */
   bool kdtree_empty{true};
+
+  std::vector<float> curvatures;
 };
 
 /**
@@ -141,13 +145,17 @@ public:
    * @param edge_features_strong required strong edge (sharp) features
    * @param surface_features_strong required strong surface (flat or planar)
    * features
-   * @param edge_features_weak defaults to zero (weak features not required)
-   * @param surface_features_weak defaults to zero (weak features not required)
+   * @param edge_features_weak required weak edge (sharp) features
+   * @param surface_features_weak required weak surface (flat or planar)
    */
   LoamPointCloud(const PointCloudIRT& edge_features_strong,
                  const PointCloudIRT& surface_features_strong,
-                 const PointCloudIRT& edge_features_weak = PointCloudIRT(),
-                 const PointCloudIRT& surface_features_weak = PointCloudIRT());
+                 const PointCloudIRT& edge_features_weak,
+                 const PointCloudIRT& surface_features_weak,
+                 const std::vector<float>& edge_curvatures_strong = {},
+                 const std::vector<float>& surface_curvatures_strong = {},
+                 const std::vector<float>& edge_curvatures_weak = {},
+                 const std::vector<float>& surface_curvatures_weak = {});
 
   /**
    * @brief load this loam pointcloud from a combined loam cloud. See
@@ -155,46 +163,6 @@ public:
    * @param cloud
    */
   void LoadFromCombined(const LoamPointCloudCombined& cloud);
-
-  /**
-   * @brief Add a new set of strong surface features
-   * @param new_features strong surface features
-   * @param T if specified, new features will be transformed using T before
-   * added to the cloud.
-   */
-  void AddSurfaceFeaturesStrong(
-      const PointCloudIRT& new_features,
-      const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
-
-  /**
-   * @brief Add a new set of weak (less flat) surface features
-   * @param new_features weak surface features
-   * @param T if specified, new features will be transformed using T before
-   * added to the cloud.
-   */
-  void AddSurfaceFeaturesWeak(
-      const PointCloudIRT& new_features,
-      const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
-
-  /**
-   * @brief Add a new set of strong edge features
-   * @param new_features strong edge features
-   * @param T if specified, new features will be transformed using T before
-   * added to the cloud.
-   */
-  void AddEdgeFeaturesStrong(
-      const PointCloudIRT& new_features,
-      const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
-
-  /**
-   * @brief Add a new set of weak (less sharp) edge features
-   * @param new_features weak edge features
-   * @param T if specified, new features will be transformed using T before
-   * added to the cloud.
-   */
-  void AddEdgeFeaturesWeak(
-      const PointCloudIRT& new_features,
-      const Eigen::Matrix4d& T = Eigen::Matrix4d::Identity());
 
   /**
    * @brief transforms a loam point cloud including all feature clouds (strong
@@ -276,6 +244,11 @@ public:
   /** Surface (or planar or flat) features are directly accessible for ease of
    * use */
   LoamFeatures surfaces;
+
+private:
+  void AddPointsToLoamCloudCombined(LoamPointCloudCombined& cloud_combined,
+                                    const LoamFeatureCloud& features,
+                                    PointLabel label) const;
 };
 
 using LoamPointCloudPtr = std::shared_ptr<LoamPointCloud>;

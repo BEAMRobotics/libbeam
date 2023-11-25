@@ -128,18 +128,6 @@ private:
   /** @brief flag if neighboring point was already picked */
   std::vector<int> scan_neighbor_picked_;
 
-  /** @brief sharp corner points cloud */
-  PointCloudIRT corner_points_sharp_;
-
-  /** @brief less sharp corner points cloud */
-  PointCloudIRT corner_points_less_sharp_;
-
-  /** @brief flat surface points cloud */
-  PointCloudIRT surface_points_flat_;
-
-  /** @brief less flat surface points cloud */
-  PointCloudIRT surface_points_less_flat_;
-
   // DEBUG TOOLS
   std::string debug_output_path_;
 };
