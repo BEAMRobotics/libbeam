@@ -73,7 +73,7 @@ public:
   void SaveDatabase(const std::string& dbow_file_path,
                     const std::string& timestamps_file_path);
 
-    /**
+  /**
    * @brief Gets the word for a given descriptor
    */
   uint64_t GetWordID(const cv::Mat& descriptor);
@@ -112,6 +112,11 @@ public:
    * @brief Gets the timestamp associated to image with index in the database
    */
   beam::opt<ros::Time> GetImageTimestamp(const DBoW3::EntryId& entry_id);
+
+  /**
+   * @brief clears the database
+   */
+  void Clear();
 
 private:
   json index_to_timestamp_map_;

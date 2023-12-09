@@ -126,4 +126,9 @@ beam::opt<ros::Time>
   return beam::NSecToRos(time);
 }
 
+void ImageDatabase::Clear() {
+  dbow_db_->clear();
+  index_to_timestamp_map_.clear();
+}
+
 } // namespace beam_cv
