@@ -98,77 +98,36 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
   }
 
   // build kdtrees if not already done
-  if (ref_->edges.strong.cloud.size() > 0) {
-    ref_->edges.strong.BuildKDTree(false);
-  } else {
-    BEAM_ERROR("Reference cloud has no edge features, aborting registration.");
-    return false;
+  if (params_->check_strong_features_first) {
+    if (ref_->edges.strong.cloud.size() > 0) {
+      ref_->edges.strong.BuildKDTree(false);
+    } else {
+      BEAM_ERROR(
+          "Reference cloud has no edge features, aborting registration.");
+      return false;
+    }
   }
 
   for (size_t tgt_iter = 0; tgt_iter < tgt_features.size(); tgt_iter++) {
-    auto& search_pt = tgt_features.points.at(tgt_iter);
-    auto& query_pt = tgt_->edges.strong.cloud.at(tgt_iter);
+    const auto& search_pt = tgt_features.points.at(tgt_iter);
+    const auto& query_pt = tgt_->edges.strong.cloud.at(tgt_iter);
 
-    // search for correspondence in strong fetures
-    std::vector<uint32_t> point_search_ind;
-    std::vector<float> point_search_sq_dist;
-    int num_returned = ref_->edges.strong.kdtree->nearestKSearch(
-        search_pt, 2, point_search_ind, point_search_sq_dist);
-
-    // if both correspondences are close enough, add measurement, else check in
-    // weak features
-    if (num_returned != 2) {
-      // do nothing, we will check weak features
-    } else if (point_search_sq_dist.at(0) <
-                   params_->max_correspondence_distance &&
-               point_search_sq_dist.at(1) <
-                   params_->max_correspondence_distance) {
-      EdgeMeasurement measurement;
-
-      measurement.query_pt =
-          Eigen::Vector3d(query_pt.x, query_pt.y, query_pt.z);
-
-      auto& ref_pt1 =
-          ref_->edges.strong.cloud.points.at(point_search_ind.at(0));
-      measurement.ref_pt1 = Eigen::Vector3d(ref_pt1.x, ref_pt1.y, ref_pt1.z);
-
-      auto& ref_pt2 =
-          ref_->edges.strong.cloud.points.at(point_search_ind.at(1));
-      measurement.ref_pt2 = Eigen::Vector3d(ref_pt2.x, ref_pt2.y, ref_pt2.z);
-
-      edge_measurements_.push_back(measurement);
-      continue;
+    bool success = false;
+    EdgeMeasurement measurement;
+    if (params_->check_strong_features_first) {
+      // search for correspondence in strong features
+      success = GetEdgePointMeasurement(measurement, search_pt, query_pt,
+                                        ref_->edges.strong);
+    }
+    if (!success) {
+      ref_->edges.weak.BuildKDTree(false);
+      success = GetEdgePointMeasurement(measurement, search_pt, query_pt,
+                                        ref_->edges.weak);
     }
 
-    // check if weak features exist, if not then skip feature
-    if (ref_->edges.weak.cloud.empty()) { continue; }
-    ref_->edges.weak.BuildKDTree(false);
-
-    // search for correspondence in weak features
-    point_search_ind.clear();
-    point_search_sq_dist.clear();
-    num_returned = ref_->edges.weak.kdtree->nearestKSearch(
-        search_pt, 2, point_search_ind, point_search_sq_dist);
-
-    if (num_returned != 2) { continue; }
-
-    // if both correspondences are close enough, add measurement, else skip
-    // feature
-    if (point_search_sq_dist.at(0) < params_->max_correspondence_distance &&
-        point_search_sq_dist.at(1) < params_->max_correspondence_distance) {
-      EdgeMeasurement measurement;
-      measurement.query_pt =
-          Eigen::Vector3d(query_pt.x, query_pt.y, query_pt.z);
-
-      auto& ref_pt1 = ref_->edges.weak.cloud.points.at(point_search_ind.at(0));
-      measurement.ref_pt1 = Eigen::Vector3d(ref_pt1.x, ref_pt1.y, ref_pt1.z);
-
-      auto& ref_pt2 = ref_->edges.weak.cloud.points.at(point_search_ind.at(1));
-      measurement.ref_pt2 = Eigen::Vector3d(ref_pt2.x, ref_pt2.y, ref_pt2.z);
-
-      edge_measurements_.push_back(measurement);
-    }
+    if (success) { edge_measurements_.push_back(measurement); }
   }
+
   return true;
 }
 
@@ -184,138 +143,110 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
                              T_REF_TGT_);
   }
 
-  // build kdtrees if not already done
-  if (ref_->surfaces.strong.cloud.size() > 0) {
-    ref_->surfaces.strong.BuildKDTree(false);
-  } else {
-    BEAM_ERROR(
-        "Reference cloud has no surface features, aborting registration.");
-    return false;
+  // build kdtree if not already done
+  if (params_->check_strong_features_first) {
+    if (ref_->surfaces.strong.cloud.size() > 0) {
+      ref_->surfaces.strong.BuildKDTree(false);
+    } else {
+      BEAM_ERROR(
+          "Reference cloud has no surface features, aborting registration.");
+      return false;
+    }
   }
 
   for (size_t tgt_iter = 0; tgt_iter < tgt_features.size(); tgt_iter++) {
-    auto search_pt = tgt_features.points.at(tgt_iter);
-    auto& query_pt = tgt_->surfaces.strong.cloud.at(tgt_iter);
+    const auto& search_pt = tgt_features.points.at(tgt_iter);
+    const auto& query_pt = tgt_->surfaces.strong.cloud.at(tgt_iter);
 
-    // search for correspondence in strong fetures
-    std::vector<uint32_t> point_search_ind;
-    std::vector<float> point_search_sq_dist;
-    size_t num_returned = ref_->surfaces.strong.kdtree->nearestKSearch(
-        search_pt, 3, point_search_ind, point_search_sq_dist);
-
-    // if both correspondences are close enough, add measurement, else check in
-    // weak features
-    if (num_returned != 3) {
-      // do nothing, we will check weak features
-    } else if (point_search_sq_dist.at(0) <
-                   params_->max_correspondence_distance &&
-               point_search_sq_dist.at(1) <
-                   params_->max_correspondence_distance) {
-      SurfaceMeasurement measurement;
-      measurement.query_pt =
-          Eigen::Vector3d(query_pt.x, query_pt.y, query_pt.z);
-
-      auto& ref_pt1 =
-          ref_->surfaces.strong.cloud.points.at(point_search_ind.at(0));
-      measurement.ref_pt1 = Eigen::Vector3d(ref_pt1.x, ref_pt1.y, ref_pt1.z);
-
-      auto& ref_pt2 =
-          ref_->surfaces.strong.cloud.points.at(point_search_ind.at(1));
-      measurement.ref_pt2 = Eigen::Vector3d(ref_pt2.x, ref_pt2.y, ref_pt2.z);
-
-      auto& ref_pt3 =
-          ref_->surfaces.strong.cloud.points.at(point_search_ind.at(2));
-      measurement.ref_pt3 = Eigen::Vector3d(ref_pt3.x, ref_pt3.y, ref_pt3.z);
-
-      surface_measurements_.push_back(measurement);
-      continue;
+    bool success = false;
+    SurfaceMeasurement measurement;
+    if (params_->check_strong_features_first) {
+      // search for correspondence in strong features
+      success = GetSurfacePointMeasurement(measurement, search_pt, query_pt,
+                                           ref_->surfaces.strong);
+    }
+    if (!success) {
+      ref_->surfaces.weak.BuildKDTree(false);
+      success = GetSurfacePointMeasurement(measurement, search_pt, query_pt,
+                                           ref_->surfaces.weak);
     }
 
-    // check weak features exist, if not then skip feature
-    if (ref_->surfaces.weak.cloud.empty()) { continue; }
-    ref_->surfaces.weak.BuildKDTree(false);
-
-    // search for correspondence in weak fetures
-    point_search_ind.clear();
-    point_search_sq_dist.clear();
-    num_returned = ref_->surfaces.weak.kdtree->nearestKSearch(
-        search_pt, 3, point_search_ind, point_search_sq_dist);
-
-    if (num_returned != 3) { continue; }
-
-    // if both correspondences are close enough, add measurement, else skip
-    // feature
-    if (point_search_sq_dist.at(0) < params_->max_correspondence_distance &&
-        point_search_sq_dist.at(1) < params_->max_correspondence_distance) {
-      SurfaceMeasurement measurement;
-
-      measurement.query_pt =
-          Eigen::Vector3d(query_pt.x, query_pt.y, query_pt.z);
-
-      auto& ref_pt1 =
-          ref_->surfaces.weak.cloud.points.at(point_search_ind.at(0));
-      measurement.ref_pt1 = Eigen::Vector3d(ref_pt1.x, ref_pt1.y, ref_pt1.z);
-
-      auto& ref_pt2 =
-          ref_->surfaces.weak.cloud.points.at(point_search_ind.at(1));
-      measurement.ref_pt2 = Eigen::Vector3d(ref_pt2.x, ref_pt2.y, ref_pt2.z);
-
-      auto& ref_pt3 =
-          ref_->surfaces.weak.cloud.points.at(point_search_ind.at(2));
-      measurement.ref_pt3 = Eigen::Vector3d(ref_pt3.x, ref_pt3.y, ref_pt3.z);
-
-      surface_measurements_.push_back(measurement);
-    }
+    if (success) { surface_measurements_.push_back(measurement); }
   }
+
   return true;
 }
 
-static void TestCost(const Eigen::Vector3d& _P_TGT,
-                     const Eigen::Vector3d& _P_REF1,
-                     const Eigen::Vector3d& _P_REF2,
-                     const std::vector<double>& _qt_REF_TGT) {
-  double P_TGT[3];
-  P_TGT[0] = _P_TGT[0];
-  P_TGT[1] = _P_TGT[1];
-  P_TGT[2] = _P_TGT[2];
-  double P_REF[3];
-  double qt_REF_TGT[7];
-  qt_REF_TGT[0] = _qt_REF_TGT[0];
-  qt_REF_TGT[1] = _qt_REF_TGT[1];
-  qt_REF_TGT[2] = _qt_REF_TGT[2];
-  qt_REF_TGT[3] = _qt_REF_TGT[3];
-  qt_REF_TGT[4] = _qt_REF_TGT[4];
-  qt_REF_TGT[5] = _qt_REF_TGT[5];
-  qt_REF_TGT[6] = _qt_REF_TGT[6];
-  ceres::QuaternionRotatePoint(qt_REF_TGT, P_TGT, P_REF);
-  P_REF[0] += qt_REF_TGT[4];
-  P_REF[1] += qt_REF_TGT[5];
-  P_REF[2] += qt_REF_TGT[6];
+bool LoamScanRegistration::GetSurfacePointMeasurement(
+    SurfaceMeasurement& measurement, const PointXYZIRT& search_point_in_ref,
+    const PointXYZIRT& search_point_in_tgt,
+    const LoamFeatureCloud& search_features) const {
+  std::vector<uint32_t> point_search_ind;
+  std::vector<float> point_search_sq_dist;
+  size_t num_returned = search_features.kdtree->nearestKSearch(
+      search_point_in_ref, 3, point_search_ind, point_search_sq_dist);
 
-  double d1[3], d2[3], d12[3];
-  d1[0] = P_REF[0] - _P_REF1[0];
-  d1[1] = P_REF[1] - _P_REF1[1];
-  d1[2] = P_REF[2] - _P_REF1[2];
+  if (num_returned != 3) { return false; }
 
-  d2[0] = P_REF[0] - _P_REF2[0];
-  d2[1] = P_REF[1] - _P_REF2[1];
-  d2[2] = P_REF[2] - _P_REF2[2];
+  if (point_search_sq_dist.at(0) > params_->max_correspondence_distance &&
+      point_search_sq_dist.at(1) > params_->max_correspondence_distance &&
+      point_search_sq_dist.at(2) > params_->max_correspondence_distance) {
+    return false;
+  }
 
-  d12[0] = _P_REF1[0] - _P_REF2[0];
-  d12[1] = _P_REF1[1] - _P_REF2[1];
-  d12[2] = _P_REF1[2] - _P_REF2[2];
+  measurement.query_pt[0] = search_point_in_tgt.x;
+  measurement.query_pt[1] = search_point_in_tgt.y;
+  measurement.query_pt[2] = search_point_in_tgt.z;
 
-  double cross[3];
-  ceres::CrossProduct(d1, d2, cross);
+  const auto& ref_pt1 = search_features.cloud.points.at(point_search_ind.at(0));
+  measurement.ref_pt1[0] = ref_pt1.x;
+  measurement.ref_pt1[1] = ref_pt1.y;
+  measurement.ref_pt1[2] = ref_pt1.z;
 
-  double norm =
-      sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
-  double norm12 = sqrt(d12[0] * d12[0] + d12[1] * d12[1] + d12[2] * d12[2]);
+  const auto& ref_pt2 = search_features.cloud.points.at(point_search_ind.at(1));
+  measurement.ref_pt2[0] = ref_pt2.x;
+  measurement.ref_pt2[1] = ref_pt2.y;
+  measurement.ref_pt2[2] = ref_pt2.z;
 
-  double residual = norm / norm12;
+  const auto& ref_pt3 = search_features.cloud.points.at(point_search_ind.at(2));
+  measurement.ref_pt3[0] = ref_pt3.x;
+  measurement.ref_pt3[1] = ref_pt3.y;
+  measurement.ref_pt3[2] = ref_pt3.z;
 
-  std::cout << "norm12: " << norm12 << "\n";
-  std::cout << "residual: " << residual << "\n";
+  return true;
+}
+
+bool LoamScanRegistration::GetEdgePointMeasurement(
+    EdgeMeasurement& measurement, const PointXYZIRT& search_point_in_ref,
+    const PointXYZIRT& search_point_in_tgt,
+    const LoamFeatureCloud& search_features) const {
+  std::vector<uint32_t> point_search_ind;
+  std::vector<float> point_search_sq_dist;
+  size_t num_returned = search_features.kdtree->nearestKSearch(
+      search_point_in_ref, 2, point_search_ind, point_search_sq_dist);
+
+  if (num_returned != 2) { return false; }
+
+  if (point_search_sq_dist.at(0) > params_->max_correspondence_distance &&
+      point_search_sq_dist.at(1) > params_->max_correspondence_distance) {
+    return false;
+  }
+
+  measurement.query_pt[0] = search_point_in_tgt.x;
+  measurement.query_pt[1] = search_point_in_tgt.y;
+  measurement.query_pt[2] = search_point_in_tgt.z;
+
+  const auto& ref_pt1 = search_features.cloud.points.at(point_search_ind.at(0));
+  measurement.ref_pt1[0] = ref_pt1.x;
+  measurement.ref_pt1[1] = ref_pt1.y;
+  measurement.ref_pt1[2] = ref_pt1.z;
+
+  const auto& ref_pt2 = search_features.cloud.points.at(point_search_ind.at(1));
+  measurement.ref_pt2[0] = ref_pt2.x;
+  measurement.ref_pt2[1] = ref_pt2.y;
+  measurement.ref_pt2[2] = ref_pt2.z;
+
+  return true;
 }
 
 bool LoamScanRegistration::Solve(int iteration) {
@@ -403,17 +334,19 @@ bool LoamScanRegistration::Solve(int iteration) {
     optimization_summary_.edge_measurements = edge_measurements_.size();
   }
 
-  // compute covariance
-  ceres::Covariance::Options cov_options;
-  ceres::Covariance covariance(cov_options);
-  std::vector<const double*> covariance_block;
-  covariance_block.push_back(&(pose[0]));
-  covariance.Compute(covariance_block, problem.get());
+  if (ceres_summary.IsSolutionUsable()) {
+    // compute covariance
+    ceres::Covariance::Options cov_options;
+    ceres::Covariance covariance(cov_options);
+    std::vector<const double*> covariance_block;
+    covariance_block.push_back(&(pose[0]));
+    covariance.Compute(covariance_block, problem.get());
 
-  // setup covariance to return as eigen matrix
-  double covariance_arr[7 * 7];
-  covariance.GetCovarianceBlock(&(pose[0]), &(pose[0]), covariance_arr);
-  covariance_ = Eigen::Matrix<double, 7, 7>(covariance_arr);
+    // setup covariance to return as eigen matrix
+    double covariance_arr[7 * 7];
+    covariance.GetCovarianceBlock(&(pose[0]), &(pose[0]), covariance_arr);
+    covariance_ = Eigen::Matrix<double, 7, 7>(covariance_arr);
+  }
   return ceres_summary.IsSolutionUsable();
 }
 

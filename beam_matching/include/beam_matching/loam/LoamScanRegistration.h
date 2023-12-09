@@ -91,18 +91,6 @@ public:
   Eigen::Matrix<double, 7, 7> GetCovariance() const;
 
 private:
-  void Setup();
-
-  bool GetEdgeMeasurements();
-
-  bool GetSurfaceMeasurements();
-
-  bool Solve(int iteration);
-
-  bool HasConverged(int iteration);
-
-  void OutputResults(int iteration);
-
   /** Simple struct for storing an edge measurement which contains a query point
    * for the target cloud and two reference points from the reference cloud */
   struct EdgeMeasurement {
@@ -137,6 +125,29 @@ private:
 
     void Print();
   };
+
+  void Setup();
+
+  bool GetEdgeMeasurements();
+
+  bool GetSurfaceMeasurements();
+
+  bool Solve(int iteration);
+
+  bool HasConverged(int iteration);
+
+  void OutputResults(int iteration);
+
+  bool GetEdgePointMeasurement(EdgeMeasurement& measurement,
+                               const PointXYZIRT& search_point_in_ref,
+                               const PointXYZIRT& search_point_in_tgt,
+                               const LoamFeatureCloud& search_features) const;
+
+  bool
+      GetSurfacePointMeasurement(SurfaceMeasurement& measurement,
+                                 const PointXYZIRT& search_point_in_ref,
+                                 const PointXYZIRT& search_point_in_tgt,
+                                 const LoamFeatureCloud& search_features) const;
 
   LoamParamsPtr params_;
 
