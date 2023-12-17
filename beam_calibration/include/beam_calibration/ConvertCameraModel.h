@@ -86,7 +86,7 @@ public:
   /**
    * @brief Upsamples the input image to the dimensions of the source camera
    * model. This is useful if converting images produced from a source model
-   * that have been compressed/downsampled in some other process.
+   * that have been downsampled in some other process.
    * @param image image to be upsampled
    * @param interpolation_method interpolation method used. See opencv resize
    * function. Default is bilinear interpolation
@@ -98,7 +98,7 @@ public:
   /**
    * @brief Downsamples the image.
    * This is useful if converting images produced from a source model
-   * that have been compressed/downsampled in some other process. You will first
+   * that have been downsampled in some other process. You will first
    * need to upsample these images, run the conversion, then if you want to
    * original input image size, you need to call this downsample function.
    * @param image image to be downsampled

@@ -3,6 +3,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <boost/make_shared.hpp>
+#include <sensor_msgs/CompressedImage.h>
 #include <sensor_msgs/Image.h>
 
 namespace beam_cv { namespace OpenCVConversions {
