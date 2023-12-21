@@ -86,8 +86,16 @@ void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
     }
   }
 
-  if (points.empty()) { return; }
+  if (points.size() < 2) { return; }
 
+  // calculate average change in depth
+  double delta_d_sum = 0;
+  for (auto it = std::next(points.begin()); it != points.end(); it++) {
+    double delta_d = it->first - std::prev(it)->first;
+    delta_d_sum += delta_d;
+  }
+  double delta_d_avg = delta_d_sum / (points.size() - 1);
+  std::cout << "delta_d_avg: " << delta_d_avg << "\n";
   // add the first point as we know it'll have the lowest depth
   projection_map_to_keep.Add(points.begin()->second.u, points.begin()->second.v,
                              points.begin()->second.id, points.begin()->first);
@@ -98,7 +106,8 @@ void ProjectionOcclusionSafe::CheckOcclusionsInWindow(
   for (auto curr_iter = std::next(points.begin()); curr_iter != points.end();
        curr_iter++) {
     auto prev_iter = std::prev(curr_iter);
-    if (curr_iter->first - prev_iter->first < depth_seg_thresh_m_) {
+    if (curr_iter->first - prev_iter->first <
+        delta_depth_avg_multiplier_ * delta_d_avg) {
       projection_map.Erase(curr_iter->second.u, curr_iter->second.v);
       projection_map_to_keep.Add(curr_iter->second.u, curr_iter->second.v,
                                  curr_iter->second.id, curr_iter->second.depth);
@@ -114,10 +123,6 @@ void ProjectionOcclusionSafe::SetWindowSize(uint8_t window_size) {
 
 void ProjectionOcclusionSafe::SetWindowStride(uint8_t window_stride) {
   window_stride_ = window_stride;
-}
-
-void ProjectionOcclusionSafe::SetDepthThreshold(double depth_seg_thresh_m) {
-  depth_seg_thresh_m_ = depth_seg_thresh_m;
 }
 
 } // namespace beam_colorize

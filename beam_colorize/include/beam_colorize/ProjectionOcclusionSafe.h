@@ -41,8 +41,6 @@ public:
 
   void SetWindowStride(uint8_t window_stride);
 
-  void SetDepthThreshold(double depth_seg_thresh_m);
-
 private:
   struct ProjectedPoint {
     uint64_t u;
@@ -60,7 +58,7 @@ private:
 
   uint8_t window_size_{90};
   uint8_t window_stride_{67};
-  double depth_seg_thresh_m_{0.15};
+  double delta_depth_avg_multiplier_{20};
 };
 /** @} group colorizer */
 

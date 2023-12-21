@@ -135,12 +135,10 @@ TEST_CASE("Test on full datasets") {
   colorizer2.SetIntrinsics(camera_model);
   //   colorizer2.SetWindowSize(10);
   //   colorizer2.SetWindowStride(4);
-  //   colorizer2.SetDepthThreshold(0.3);
   // these were picked from the params search's best result from the commented
   // out code below
   colorizer2.SetWindowSize(90);
   colorizer2.SetWindowStride(67);
-  colorizer2.SetDepthThreshold(0.2);
 
   // colorize map
   map_colored = std::make_shared<PointCloudCol>();
@@ -208,7 +206,6 @@ TEST_CASE("column occlusion") {
   // out code below
   colorizer.SetWindowSize(90);
   colorizer.SetWindowStride(67);
-  colorizer.SetDepthThreshold(0.2);
 
   // colorize map
   auto map_colored = std::make_shared<PointCloudCol>();
@@ -298,12 +295,10 @@ TEST_CASE("Test mask colorization") {
   colorizer.SetIntrinsics(camera_model);
   //   colorizer.SetWindowSize(10);
   //   colorizer.SetWindowStride(4);
-  //   colorizer.SetDepthThreshold(0.3);
   // these were picked from the params search's best result from the commented
   // out code below
   colorizer.SetWindowSize(90);
   colorizer.SetWindowStride(67);
-  colorizer.SetDepthThreshold(0.2);
 
   // colorize map
   pcl::PointCloud<beam_containers::PointBridge>::Ptr defect_map =
@@ -386,7 +381,6 @@ TEST_CASE("param searching") {
         count++;
         colorizer.SetWindowSize(window_size);
         colorizer.SetWindowStride(stride);
-        colorizer.SetDepthThreshold(depth_thres);
 
         // colorize map
         auto map_colored = std::make_shared<PointCloudCol>();
