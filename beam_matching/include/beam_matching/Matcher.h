@@ -186,7 +186,7 @@ protected:
 
     // transform tgt cloud
     PointCloud tgt_aligned;
-    Eigen::Matrix4d T_REF_TGT = result_.matrix();
+    Eigen::Matrix4d T_REF_TGT = result_.inverse().matrix();
     pcl::transformPointCloud(*target, tgt_aligned, T_REF_TGT);
 
     // color pointclouds and add frames
@@ -231,7 +231,7 @@ protected:
    * The transformation calculated by the scan registration algorithm. It is
    * the transformation needed to transform the target pointcloud to the
    * reference pointcloud in the reference frame of the reference pointcloud
-   * (T_REF_TGT).
+   * (T_TGT_REF).
    */
   Eigen::Affine3d result_;
 
