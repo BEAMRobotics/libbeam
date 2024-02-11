@@ -28,24 +28,21 @@ void PrintFilterParamsOptions() {
 
 bool LoadDRORParams(const nlohmann::json& J, std::vector<double>& params) {
   params.clear();
+
+  beam::ValidateJsonKeysOrThrow({"radius_multiplier", "azimuth_angle",
+                                 "min_neighbors", "min_search_radius"},
+                                J);
+
   double radius_multiplier, azimuth_angle, min_neighbors, min_search_radius;
 
-  try {
-    radius_multiplier = J["radius_multiplier"];
-    azimuth_angle = J["azimuth_angle"];
-    min_neighbors = J["min_neighbors"];
-    min_search_radius = J["min_search_radius"];
-    params.push_back(radius_multiplier);
-    params.push_back(azimuth_angle);
-    params.push_back(min_neighbors);
-    params.push_back(min_search_radius);
-  } catch (const nlohmann::json::exception& e) {
-    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
-               "Reason: {}",
-               e.what());
-    PrintFilterParamsOptions();
-    return false;
-  }
+  radius_multiplier = J["radius_multiplier"];
+  azimuth_angle = J["azimuth_angle"];
+  min_neighbors = J["min_neighbors"];
+  min_search_radius = J["min_search_radius"];
+  params.push_back(radius_multiplier);
+  params.push_back(azimuth_angle);
+  params.push_back(min_neighbors);
+  params.push_back(min_search_radius);
 
   if (!(radius_multiplier >= 1)) {
     BEAM_ERROR("Invalid radius_multiplier parameter in config");
@@ -70,20 +67,14 @@ bool LoadDRORParams(const nlohmann::json& J, std::vector<double>& params) {
 bool LoadRORParams(const nlohmann::json& J, std::vector<double>& params) {
   params.clear();
 
-  double search_radius, min_neighbors;
+  beam::ValidateJsonKeysOrThrow(
+      {"search_radius", "min_neighbors", "remove_outside_points"}, J);
 
-  try {
-    search_radius = J["search_radius"];
-    min_neighbors = J["min_neighbors"];
-    params.push_back(search_radius);
-    params.push_back(min_neighbors);
-  } catch (const nlohmann::json::exception& e) {
-    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
-               "Reason: {}",
-               e.what());
-    PrintFilterParamsOptions();
-    return false;
-  }
+  double search_radius, min_neighbors;
+  search_radius = J["search_radius"];
+  min_neighbors = J["min_neighbors"];
+  params.push_back(search_radius);
+  params.push_back(min_neighbors);
 
   if (!(search_radius > 0)) {
     BEAM_ERROR("Invalid search_radius parameter in config");
@@ -103,23 +94,16 @@ bool LoadCropBoxParams(const nlohmann::json& J, std::vector<double>& params) {
   std::vector<double> min, max;
   bool remove_outside_points;
 
-  try {
-    std::vector<double> min_tmp = J["min"];
-    min = min_tmp;
-    std::vector<double> max_tmp = J["max"];
-    max = max_tmp;
-    remove_outside_points = J["remove_outside_points"];
-  } catch (const nlohmann::json::exception& e) {
-    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
-               "Reason: {}",
-               e.what());
-    PrintFilterParamsOptions();
-    return false;
-  }
+  beam::ValidateJsonKeysOrThrow({"min", "max", "remove_outside_points"}, J);
+  std::vector<double> min_tmp = J["min"];
+  min = min_tmp;
+  std::vector<double> max_tmp = J["max"];
+  max = max_tmp;
+  remove_outside_points = J["remove_outside_points"];
 
   if (min.size() != 3 || max.size() != 3) {
     BEAM_ERROR(
-        "Invalid min or max parameter in cropbox from map builder config");
+        "Invalid size min or max parameter in cropbox from map builder config");
     return false;
   }
 
@@ -135,12 +119,35 @@ bool LoadCropBoxParams(const nlohmann::json& J, std::vector<double>& params) {
     params.push_back(0);
   }
 
+  if (J.contains("quaternion_wxyz") && J.contains("translation_xyz")) {
+    std::vector<double> q = J["quaternion_wxyz"];
+    std::vector<double> t = J["translation_xyz"];
+    if (q.size() != 4) {
+      BEAM_ERROR("Invalid size quaternion parameter in cropbox from map "
+                 "builder config");
+      return false;
+    }
+    if (t.size() != 3) {
+      BEAM_ERROR("Invalid size for translation parameter in cropbox from map "
+                 "builder config");
+      return false;
+    }
+    params.push_back(q[0]);
+    params.push_back(q[1]);
+    params.push_back(q[2]);
+    params.push_back(q[3]);
+    params.push_back(t[0]);
+    params.push_back(t[1]);
+    params.push_back(t[2]);
+  }
   return true;
 }
 
 bool LoadVoxelDownsamplingParams(const nlohmann::json& J,
                                  std::vector<double>& params) {
   params.clear();
+
+  beam::ValidateJsonKeysOrThrow({"cell_size"}, J);
 
   std::vector<double> cell_size;
   for (const auto param : J["cell_size"]) { cell_size.push_back(param); }
@@ -155,29 +162,14 @@ bool LoadVoxelDownsamplingParams(const nlohmann::json& J,
   }
   params = cell_size;
 
-  try {
-  } catch (const nlohmann::json::exception& e) {
-    BEAM_ERROR("Unable to load json, one or more missing or invalid params. "
-               "Reason: {}",
-               e.what());
-    PrintFilterParamsOptions();
-    return false;
-  }
-
   return true;
 }
 
 FilterParamsType GetFilterParams(const nlohmann::json& J) {
   std::string filter_type_str;
-  try {
-    filter_type_str = J["filter_type"];
-  } catch (const nlohmann::json::exception& e) {
-    BEAM_CRITICAL("Unable to load json, one or more missing or invalid params. "
-                  "Reason: {}",
-                  e.what());
-    std::cout << "Json Dump: " << J.dump() << "\n";
-    throw std::invalid_argument{"Invalid filter params."};
-  }
+
+  beam::ValidateJsonKeysOrThrow({"filter_type"}, J);
+
   std::map<std::string, FilterType>::iterator filter_type_iter =
       FilterTypeStringMap.find(filter_type_str);
 
