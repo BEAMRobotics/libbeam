@@ -175,8 +175,9 @@ FilterParamsType GetFilterParams(const nlohmann::json& J) {
 
   if (filter_type_iter == FilterTypeStringMap.end()) {
     std::string filter_options = GetFilterTypes();
-    BEAM_CRITICAL("Invalid filter type. Input: {}, options: {}",
-                  J["filter_type"], filter_options);
+    std::string type = J["filter_type"];
+    BEAM_CRITICAL("Invalid filter type. Input: {}, options: {}", type,
+                  filter_options);
     PrintFilterParamsOptions();
     throw std::invalid_argument{"Invalid filter params."};
   }
