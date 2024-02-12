@@ -166,17 +166,17 @@ bool LoadVoxelDownsamplingParams(const nlohmann::json& J,
 }
 
 FilterParamsType GetFilterParams(const nlohmann::json& J) {
-  std::string filter_type_str;
+  std::cout << J.dump() << "\n";
 
   beam::ValidateJsonKeysOrThrow({"filter_type"}, J);
-
+  std::string filter_type_str = J["filter_type"];
   std::map<std::string, FilterType>::iterator filter_type_iter =
       FilterTypeStringMap.find(filter_type_str);
 
   if (filter_type_iter == FilterTypeStringMap.end()) {
     std::string filter_options = GetFilterTypes();
     BEAM_CRITICAL("Invalid filter type. Input: {}, options: {}",
-                  J["filter_type"], filter_options);
+                  filter_type_str, filter_options);
     PrintFilterParamsOptions();
     throw std::invalid_argument{"Invalid filter params."};
   }
