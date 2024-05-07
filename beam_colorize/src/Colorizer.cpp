@@ -120,9 +120,17 @@ std::unique_ptr<Colorizer> Colorizer::Create(ColorizerType type) {
 
 void Colorizer::ColorizePointCloud(
     DefectCloud::Ptr& cloud_in_camera_frame) const {
-  if (!image_initialized_ || camera_model_ == nullptr ||
-      cloud_in_camera_frame->size() == 0) {
-    BEAM_CRITICAL("Colorizer not properly initialized.");
+  if (!image_initialized_) {
+    BEAM_CRITICAL("Colorizer not properly initialized: Image not initialized");
+    throw std::runtime_error{"Colorizer not properly initialized."};
+  }
+  if (cloud_in_camera_frame->size() == 0) {
+    BEAM_CRITICAL("Colorizer not properly initialized: empty cloud");
+    throw std::runtime_error{"Colorizer not properly initialized."};
+  }
+  if (camera_model_ == nullptr) {
+    BEAM_CRITICAL(
+        "Colorizer not properly initialized: camera model not initialized");
     throw std::runtime_error{"Colorizer not properly initialized."};
   }
 
