@@ -533,7 +533,11 @@ void Poses::LoadLoopClosedPaths(const std::string& bag_file_path,
   // load loop closed poses
   rosbag::View view_loop_closed(bag, rosbag::TopicQuery(topic_loop_closed),
                                 ros::TIME_MIN, ros::TIME_MAX, true);
-
+  if (view_loop_closed.size() == 0){
+    BEAM_ERROR("No loop closed poses in bag");
+    return;
+  }
+  
   // first, check if input topic is path
   BEAM_INFO("Loading loop closed path messages from topic {}",
             topic_loop_closed);
@@ -665,6 +669,10 @@ void Poses::LoadLoopClosedPathsInterpolated(
   // load loop closed (LC) poses
   rosbag::View view_loop_closed(bag, rosbag::TopicQuery(topic_loop_closed),
                                 ros::TIME_MIN, ros::TIME_MAX, true);
+  if (view_loop_closed.size() == 0){
+    BEAM_ERROR("No loop closed poses in bag");
+    return;
+  }
 
   // first, check if LC topic is path
   BEAM_INFO("Loading loop closed path messages from topic {}",
@@ -894,6 +902,11 @@ void Poses::LoadFromBAG(const std::string& bag_file_path,
 
   rosbag::View view(bag, rosbag::TopicQuery(topic), ros::TIME_MIN,
                     ros::TIME_MAX, true);
+  if (view.size() == 0){
+    BEAM_ERROR("No messages with topic: {} ", topic);
+    return;
+  }
+
   auto iter = view.begin();
   auto odom_msg = iter->instantiate<nav_msgs::Odometry>();
   auto path_msg = iter->instantiate<nav_msgs::Path>();
