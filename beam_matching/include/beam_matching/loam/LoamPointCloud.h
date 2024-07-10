@@ -213,9 +213,9 @@ public:
    * @param g green color
    * @param b blue color
    */
-  void Save(const std::string& output_path, const std::string& prefix = "cloud",
-            uint8_t r = 255, uint8_t g = 255, uint8_t b = 255,
-            bool verbose = true) const;
+  void Save(const std::string& output_path,
+            const std::string& prefix = "cloud_", uint8_t r = 255,
+            uint8_t g = 255, uint8_t b = 255, bool verbose = true) const;
 
   /**
    * @brief method for saving a loam pointcloud. It will combine into a

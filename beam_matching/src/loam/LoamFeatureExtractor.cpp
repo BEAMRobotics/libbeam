@@ -140,7 +140,7 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
           smallest_picked_num++;
           region_label_[region_idx] = PointLabel::SURFACE_FLAT;
           surface_points_flat_.push_back(sorted_scan_[idx]);
-
+          surf_points_less_flat_scan->push_back(sorted_scan_[idx]);
           MarkAsPicked(idx, scan_idx);
         }
       }
@@ -153,16 +153,19 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
       }
     }
 
-    // down size less flat surface point cloud of current scan
-    PointCloudIRT surf_points_less_flat_scanDS;
-    pcl::VoxelGrid<PointXYZIRT> down_size_filter;
-    down_size_filter.setInputCloud(surf_points_less_flat_scan);
-    down_size_filter.setLeafSize(params_->less_flat_filter_size,
-                                 params_->less_flat_filter_size,
-                                 params_->less_flat_filter_size);
-    down_size_filter.filter(surf_points_less_flat_scanDS);
-
-    surface_points_less_flat_ += surf_points_less_flat_scanDS;
+    if (params_->downsample_less_flat_features) {
+      // down size less flat surface point cloud of current scan
+      PointCloudIRT surf_points_less_flat_scanDS;
+      pcl::VoxelGrid<PointXYZIRT> down_size_filter;
+      down_size_filter.setInputCloud(surf_points_less_flat_scan);
+      down_size_filter.setLeafSize(params_->less_flat_filter_size,
+                                   params_->less_flat_filter_size,
+                                   params_->less_flat_filter_size);
+      down_size_filter.filter(surf_points_less_flat_scanDS);
+      surface_points_less_flat_ += surf_points_less_flat_scanDS;
+    } else {
+      surface_points_less_flat_ += *surf_points_less_flat_scan;
+    }
   }
 
   if (corner_points_sharp_.empty()) {

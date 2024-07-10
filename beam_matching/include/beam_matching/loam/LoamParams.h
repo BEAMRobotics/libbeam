@@ -88,7 +88,9 @@ public:
                                  "max_correspondence_iterations",
                                  "output_ceres_summary",
                                  "output_optimization_summary",
-                                 "ceres_config"},
+                                 "ceres_config",
+                                 "downsample_less_flat_features",
+                                 "check_strong_features_first"},
         J);
 
     number_of_beams = J["number_of_beams"];
@@ -99,7 +101,9 @@ public:
     max_corner_less_sharp = J["max_corner_less_sharp"];
     max_surface_flat = J["max_surface_flat"];
     less_flat_filter_size = J["less_flat_filter_size"];
+    downsample_less_flat_features = J["downsample_less_flat_features"];
     surface_curvature_threshold = J["surface_curvature_threshold"];
+    check_strong_features_first = J["check_strong_features_first"];
     vertical_axis = J["vertical_axis"];
     max_correspondence_distance = J["max_correspondence_distance"];
     validate_correspondences = J["validate_correspondences"];
@@ -165,10 +169,6 @@ public:
   /** The maximum number of flat surface points per feature region. */
   int max_surface_flat{4};
 
-  /** The voxel size used for down sizing the remaining less flat surface
-   * points. */
-  float less_flat_filter_size{0.2};
-
   /** The curvature threshold below / above a point is considered a flat /
    * corner point. */
   float surface_curvature_threshold{0.1};
@@ -217,8 +217,15 @@ public:
   /** set to true to cout optimization summaries for each iteration */
   bool output_optimization_summary{false};
 
-  /** PARAMS ONLY SETABLE HERE */
-  bool check_strong_features_first{false};
+  /** If set to true, we look for correspondences in strong features and only go
+   * to weak features if we don't have enough. If set to false, we immediately
+   * look at weak features which is a combination of strong and weak */
+  bool check_strong_features_first{true};
+
+  /** Runs voxel filter on less flat (weak surface) features using voxel size:
+   * less_flat_filter_size */
+  bool downsample_less_flat_features{false};
+  float less_flat_filter_size{0.2};
 
 private:
   std::vector<double> beam_angle_bins_;
