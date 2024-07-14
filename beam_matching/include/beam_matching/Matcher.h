@@ -161,7 +161,7 @@ public:
    *
    */
   virtual void SaveResults(const std::string& output_dir,
-                           const std::string& prefix = "cloud") = 0;
+                           const std::string& prefix = "cloud_") = 0;
 
 protected:
   virtual void CalculateCovariance() = 0;

@@ -67,8 +67,7 @@ bool LoadDRORParams(const nlohmann::json& J, std::vector<double>& params) {
 bool LoadRORParams(const nlohmann::json& J, std::vector<double>& params) {
   params.clear();
 
-  beam::ValidateJsonKeysOrThrow(
-      {"search_radius", "min_neighbors", "remove_outside_points"}, J);
+  beam::ValidateJsonKeysOrThrow({"search_radius", "min_neighbors"}, J);
 
   double search_radius, min_neighbors;
   search_radius = J["search_radius"];

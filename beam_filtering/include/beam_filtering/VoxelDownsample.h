@@ -123,8 +123,8 @@ private:
       // Split cloud along max axis until integer overflow does not occur.
       int max_axis;
       axis_dimensions.maxCoeff(&max_axis);
-      std::pair<PointCloudTypePtr, PointCloudTypePtr>
-          split_clouds = SplitCloudInTwo(input_cloud, max_axis);
+      std::pair<PointCloudTypePtr, PointCloudTypePtr> split_clouds =
+          SplitCloudInTwo(input_cloud, max_axis);
 
       // Recursively call BreakUpPointCloud on each split.
       std::vector<PointCloudTypePtr> cloud_1 =
@@ -149,8 +149,7 @@ private:
    * @return A pair of the split clouds.
    */
   inline std::pair<PointCloudTypePtr, PointCloudTypePtr>
-      SplitCloudInTwo(const PointCloudType& input_cloud,
-                      int max_axis) {
+      SplitCloudInTwo(const PointCloudType& input_cloud, int max_axis) {
     // Get mid point of cloud.
     PointT min;
     PointT max;
@@ -160,10 +159,8 @@ private:
     float midpoint = (eigen_max[max_axis] + eigen_min[max_axis]) / 2;
 
     // Create clouds for points (1) < than midpoint (2) > than midpoint.
-    PointCloudTypePtr cloud_1 =
-        std::make_shared<PointCloudType>();
-    PointCloudTypePtr cloud_2 =
-        std::make_shared<PointCloudType>();
+    PointCloudTypePtr cloud_1 = std::make_shared<PointCloudType>();
+    PointCloudTypePtr cloud_2 = std::make_shared<PointCloudType>();
     for (const PointT& point : input_cloud) {
       Eigen::Vector3f eigen_point(point.x, point.y, point.z);
       if (eigen_point[max_axis] < midpoint) {
@@ -173,8 +170,7 @@ private:
       }
     }
 
-    return std::pair<PointCloudTypePtr,
-                     PointCloudTypePtr>(cloud_1, cloud_2);
+    return std::pair<PointCloudTypePtr, PointCloudTypePtr>(cloud_1, cloud_2);
   }
 
   Eigen::Vector3f voxel_size_{0.05, 0.05, 0.05};
