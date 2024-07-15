@@ -107,6 +107,7 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
       return false;
     }
   }
+  bool weak_kd_tree_built = false;
 
   for (size_t tgt_iter = 0; tgt_iter < tgt_features.size(); tgt_iter++) {
     const auto& search_pt = tgt_features.points.at(tgt_iter);
@@ -120,7 +121,10 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
                                         ref_->edges.strong);
     }
     if (!success) {
-      ref_->edges.weak.BuildKDTree(false);
+      if (!weak_kd_tree_built) {
+        ref_->edges.weak.BuildKDTree(false);
+        weak_kd_tree_built = true;
+      }
       success = GetEdgePointMeasurement(measurement, search_pt, query_pt,
                                         ref_->edges.weak);
     }
@@ -153,6 +157,7 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
       return false;
     }
   }
+  bool weak_kd_tree_built = false;
 
   for (size_t tgt_iter = 0; tgt_iter < tgt_features.size(); tgt_iter++) {
     const auto& search_pt = tgt_features.points.at(tgt_iter);
@@ -166,7 +171,10 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
                                            ref_->surfaces.strong);
     }
     if (!success) {
-      ref_->surfaces.weak.BuildKDTree(false);
+      if (!weak_kd_tree_built) {
+        ref_->surfaces.weak.BuildKDTree(false);
+        weak_kd_tree_built = true;
+      }
       success = GetSurfacePointMeasurement(measurement, search_pt, query_pt,
                                            ref_->surfaces.weak);
     }
