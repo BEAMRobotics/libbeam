@@ -119,7 +119,9 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
           } else {
             region_label_[region_idx] = PointLabel::CORNER_LESS_SHARP;
           }
-          corner_points_less_sharp_.push_back(sorted_scan_[idx]);
+          if (!params_->ignore_weak_features) {
+            corner_points_less_sharp_.push_back(sorted_scan_[idx]);
+          }
 
           MarkAsPicked(idx, scan_idx);
         }
@@ -140,20 +142,25 @@ LoamPointCloud LoamFeatureExtractor::ExtractFeaturesFromScanLines(
           smallest_picked_num++;
           region_label_[region_idx] = PointLabel::SURFACE_FLAT;
           surface_points_flat_.push_back(sorted_scan_[idx]);
-          surf_points_less_flat_scan->push_back(sorted_scan_[idx]);
+          if (!params_->ignore_weak_features) {
+            surf_points_less_flat_scan->push_back(sorted_scan_[idx]);
+          }
           MarkAsPicked(idx, scan_idx);
         }
       }
 
       // extract less flat surface features
-      for (size_t k = 0; k < region_size; k++) {
-        if (region_label_[k] <= PointLabel::SURFACE_LESS_FLAT) {
-          surf_points_less_flat_scan->push_back(sorted_scan_[sp + k]);
+      if (!params_->ignore_weak_features) {
+        for (size_t k = 0; k < region_size; k++) {
+          if (region_label_[k] <= PointLabel::SURFACE_LESS_FLAT) {
+            surf_points_less_flat_scan->push_back(sorted_scan_[sp + k]);
+          }
         }
       }
     }
 
-    if (params_->downsample_less_flat_features) {
+    if (params_->downsample_less_flat_features &&
+        !params_->ignore_weak_features) {
       // down size less flat surface point cloud of current scan
       PointCloudIRT surf_points_less_flat_scanDS;
       pcl::VoxelGrid<PointXYZIRT> down_size_filter;

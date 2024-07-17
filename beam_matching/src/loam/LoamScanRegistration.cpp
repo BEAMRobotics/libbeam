@@ -120,7 +120,7 @@ bool LoamScanRegistration::GetEdgeMeasurements() {
       success = GetEdgePointMeasurement(measurement, search_pt, query_pt,
                                         ref_->edges.strong);
     }
-    if (!success) {
+    if (!success && !params_->ignore_weak_features) {
       if (!weak_kd_tree_built) {
         ref_->edges.weak.BuildKDTree(false);
         weak_kd_tree_built = true;
@@ -170,7 +170,7 @@ bool LoamScanRegistration::GetSurfaceMeasurements() {
       success = GetSurfacePointMeasurement(measurement, search_pt, query_pt,
                                            ref_->surfaces.strong);
     }
-    if (!success) {
+    if (!success && !params_->ignore_weak_features) {
       if (!weak_kd_tree_built) {
         ref_->surfaces.weak.BuildKDTree(false);
         weak_kd_tree_built = true;

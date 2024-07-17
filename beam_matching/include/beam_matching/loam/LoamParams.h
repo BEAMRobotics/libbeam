@@ -90,7 +90,8 @@ public:
                                  "output_optimization_summary",
                                  "ceres_config",
                                  "downsample_less_flat_features",
-                                 "check_strong_features_first"},
+                                 "check_strong_features_first",
+                                 "ignore_weak_features"},
         J);
 
     number_of_beams = J["number_of_beams"];
@@ -104,6 +105,7 @@ public:
     downsample_less_flat_features = J["downsample_less_flat_features"];
     surface_curvature_threshold = J["surface_curvature_threshold"];
     check_strong_features_first = J["check_strong_features_first"];
+    ignore_weak_features = J["ignore_weak_features"];
     vertical_axis = J["vertical_axis"];
     max_correspondence_distance = J["max_correspondence_distance"];
     validate_correspondences = J["validate_correspondences"];
@@ -116,6 +118,12 @@ public:
     output_ceres_summary = J["output_ceres_summary"];
     output_optimization_summary = J["output_optimization_summary"];
 
+    if (!check_strong_features_first && ignore_weak_features) {
+      BEAM_WARN(
+          "If ignore_weak_features is set to true, check_strong_features_first "
+          "must be set to true. Changing check_strong_features_first to true.");
+      check_strong_features_first = true;
+    }
     if (ceres_config.empty()) {
       std::string ceres_config_read = J["ceres_config"];
       optimizer_params = beam_optimization::CeresParams(ceres_config_read);
@@ -221,6 +229,10 @@ public:
    * to weak features if we don't have enough. If set to false, we immediately
    * look at weak features which is a combination of strong and weak */
   bool check_strong_features_first{true};
+
+  /** If set to true, we will only extract strong features and use them for
+   * registration */
+  bool ignore_weak_features{false};
 
   /** Runs voxel filter on less flat (weak surface) features using voxel size:
    * less_flat_filter_size */
