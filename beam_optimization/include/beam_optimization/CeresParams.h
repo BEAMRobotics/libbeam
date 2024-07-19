@@ -62,60 +62,80 @@ public:
       BEAM_ERROR("Using default ceres params.");
     }
 
-    try {
-      nlohmann::json J_solver_options = J["solver_options"];
-      solver_options_.minimizer_progress_to_stdout =
-          J_solver_options["minimizer_progress_to_stdout"];
-      solver_options_.max_num_iterations =
-          J_solver_options["max_num_iterations"];
-      solver_options_.max_solver_time_in_seconds =
-          J_solver_options["max_solver_time_in_seconds"];
-      solver_options_.function_tolerance =
-          J_solver_options["function_tolerance"];
-      solver_options_.gradient_tolerance =
-          J_solver_options["gradient_tolerance"];
-      solver_options_.parameter_tolerance =
-          J_solver_options["parameter_tolerance"];
+    beam::ValidateJsonKeysOrThrow(
+        {"solver_options", "minimizer_progress_to_stdout", "max_num_iterations",
+         "max_solver_time_in_seconds", "function_tolerance",
+         "gradient_tolerance", "parameter_tolerance", "number_of_threads",
+         "max_thread_use_percent"},
+        J);
+    nlohmann::json J_solver_options = J["solver_options"];
+    solver_options_.minimizer_progress_to_stdout =
+        J_solver_options["minimizer_progress_to_stdout"];
+    solver_options_.max_num_iterations = J_solver_options["max_num_iterations"];
+    solver_options_.max_solver_time_in_seconds =
+        J_solver_options["max_solver_time_in_seconds"];
+    solver_options_.function_tolerance = J_solver_options["function_tolerance"];
+    solver_options_.gradient_tolerance = J_solver_options["gradient_tolerance"];
+    solver_options_.parameter_tolerance =
+        J_solver_options["parameter_tolerance"];
 
-      std::string linear_solver_type = J_solver_options["linear_solver_type"];
-      if (linear_solver_map_.find(linear_solver_type) ==
-          linear_solver_map_.end()) {
-        BEAM_ERROR(
-            "Invalid linear_solver_type param. Using default (SPARSE_SCHUR). "
-            "Options: DENSE_NORMAL_CHOLESKY, DENSE_QR, SPARSE_NORMAL_CHOLESKY, "
-            "DENSE_SCHUR, SPARSE_SCHUR, ITERATIVE_SCHUR, CGNR");
-        solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
-      } else {
-        solver_options_.linear_solver_type =
-            linear_solver_map_[linear_solver_type];
-      }
+    int num_threads = J_solver_options["number_of_threads"];
+    double max_thread_use_percent = J_solver_options["max_thread_use_percent"];
+    if (max_thread_use_percent < 0 || max_thread_use_percent > 1) {
+      throw std::invalid_argument{
+          "Invalid max_thread_use_percent parameter, must be between 0 and 1"};
+    }
 
-      std::string preconditioner_type = J_solver_options["preconditioner_type"];
-      if (preconditioner_type_map_.find(preconditioner_type) ==
-          preconditioner_type_map_.end()) {
-        BEAM_ERROR(
-            "Invalid preconditioner_type param. Using default (SCHUR_JACOBI). "
-            "Options: IDENTITY, JACOBI, SCHUR_JACOBI");
-        solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
-      } else {
-        solver_options_.preconditioner_type =
-            preconditioner_type_map_[preconditioner_type];
-      }
+    int max_threads = std::floor(std::thread::hardware_concurrency() *
+                                 max_thread_use_percent);
+    if (num_threads <= max_threads) {
+      solver_options_.num_threads = num_threads;
+    } else {
+      solver_options_.num_threads = max_threads;
+    }
 
-      nlohmann::json J_loss_function = J["loss_function"];
-      loss_function_type_ = J_loss_function["type"];
-      loss_function_scaling_ = J_loss_function["scaling"];
-      if (loss_function_types_.find(loss_function_type_) ==
-          loss_function_types_.end()) {
-        LOG_ERROR("Invalid loss function type, Options: HUBER, CAUCHY, NULL. "
-                  "Using default: HUBER");
-        loss_function_type_ = "HUBER";
-      }
-    } catch (const nlohmann::json::exception& e) {
+    beam::ValidateJsonKeysOrThrow(
+        {"solver_options", "minimizer_progress_to_stdout", "max_num_iterations",
+         "max_solver_time_in_seconds", "function_tolerance",
+         "gradient_tolerance", "parameter_tolerance", "loss_function"},
+        J);
+
+    beam::ValidateJsonKeysOrThrow({"linear_solver_type", "preconditioner_type"},
+                                  J_solver_options);
+    std::string linear_solver_type = J_solver_options["linear_solver_type"];
+    if (linear_solver_map_.find(linear_solver_type) ==
+        linear_solver_map_.end()) {
       BEAM_ERROR(
-          "Cannot load json config file for CeresParams, one or more "
-          "params are missing or invalid. Using default parameters. Reason: {}",
-          e.what());
+          "Invalid linear_solver_type param. Using default (SPARSE_SCHUR). "
+          "Options: DENSE_NORMAL_CHOLESKY, DENSE_QR, SPARSE_NORMAL_CHOLESKY, "
+          "DENSE_SCHUR, SPARSE_SCHUR, ITERATIVE_SCHUR, CGNR");
+      solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
+    } else {
+      solver_options_.linear_solver_type =
+          linear_solver_map_[linear_solver_type];
+    }
+
+    std::string preconditioner_type = J_solver_options["preconditioner_type"];
+    if (preconditioner_type_map_.find(preconditioner_type) ==
+        preconditioner_type_map_.end()) {
+      BEAM_ERROR(
+          "Invalid preconditioner_type param. Using default (SCHUR_JACOBI). "
+          "Options: IDENTITY, JACOBI, SCHUR_JACOBI");
+      solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
+    } else {
+      solver_options_.preconditioner_type =
+          preconditioner_type_map_[preconditioner_type];
+    }
+
+    nlohmann::json J_loss_function = J["loss_function"];
+    beam::ValidateJsonKeysOrThrow({"type", "scaling"}, J_loss_function);
+    loss_function_type_ = J_loss_function["type"];
+    loss_function_scaling_ = J_loss_function["scaling"];
+    if (loss_function_types_.find(loss_function_type_) ==
+        loss_function_types_.end()) {
+      LOG_ERROR("Invalid loss function type, Options: HUBER, CAUCHY, NULL. "
+                "Using default: HUBER");
+      loss_function_type_ = "HUBER";
     }
   }
 
@@ -145,8 +165,8 @@ public:
   double LossFunctionScaling() { return loss_function_scaling_; }
 
   /**
-   * @brief get a unique pointer to a loss function based on the type specified
-   * herein
+   * @brief get a unique pointer to a loss function based on the type
+   * specified herein
    *
    * IMPORTANT NOTE: When using this, you
    * must store the unique pointer in your class before calling ptr.get() when
@@ -167,9 +187,9 @@ public:
   }
 
   /**
-   * @brief get a unique pointer to an SE3 parameterization, parameterized based
-   * on the combination of a quaternion (w x y z) parameterization plus an
-   * identity (x y z) parameterization.
+   * @brief get a unique pointer to an SE3 parameterization, parameterized
+   * based on the combination of a quaternion (w x y z) parameterization plus
+   * an identity (x y z) parameterization.
    *
    * IMPORTANT NOTE: When using this, you
    * must store the unique pointer in your class before calling ptr.get() when
@@ -201,14 +221,15 @@ private:
     solver_options_.minimizer_progress_to_stdout = false;
     solver_options_.max_num_iterations = 50;
     solver_options_.max_solver_time_in_seconds = 1e6;
+    solver_options_.num_threads = 1;
     solver_options_.function_tolerance = 1e-8;
     solver_options_.gradient_tolerance = 1e-10;
     solver_options_.parameter_tolerance = 1e-8;
     solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
     solver_options_.preconditioner_type = ceres::SCHUR_JACOBI;
 
-    // set these here, these cannot be overridden because of the way this class
-    // returns loss functino and parameterization
+    // set these here, these cannot be overridden because of the way this
+    // class returns loss functino and parameterization
     problem_options_.loss_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
     problem_options_.local_parameterization_ownership =
         ceres::DO_NOT_TAKE_OWNERSHIP;
