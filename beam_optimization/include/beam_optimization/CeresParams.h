@@ -62,8 +62,7 @@ public:
       BEAM_ERROR("Using default ceres params.");
     }
 
-    beam::ValidateJsonKeysOrThrow(
-        {"solver_options", "problem_options", "loss_function"}, J);
+    beam::ValidateJsonKeysOrThrow({"solver_options", "loss_function"}, J);
     nlohmann::json J_solver_options = J["solver_options"];
 
     beam::ValidateJsonKeysOrThrow(
