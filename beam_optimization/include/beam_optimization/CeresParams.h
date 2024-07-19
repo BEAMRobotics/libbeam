@@ -63,12 +63,16 @@ public:
     }
 
     beam::ValidateJsonKeysOrThrow(
-        {"solver_options", "minimizer_progress_to_stdout", "max_num_iterations",
+        {"solver_options", "problem_options", "loss_function"}, J);
+    nlohmann::json J_solver_options = J["solver_options"];
+
+    beam::ValidateJsonKeysOrThrow(
+        {"minimizer_progress_to_stdout", "max_num_iterations",
          "max_solver_time_in_seconds", "function_tolerance",
          "gradient_tolerance", "parameter_tolerance", "number_of_threads",
-         "max_thread_use_percent"},
-        J);
-    nlohmann::json J_solver_options = J["solver_options"];
+         "max_thread_use_percent", "linear_solver_type", "preconditioner_type"},
+        J_solver_options);
+
     solver_options_.minimizer_progress_to_stdout =
         J_solver_options["minimizer_progress_to_stdout"];
     solver_options_.max_num_iterations = J_solver_options["max_num_iterations"];
@@ -94,14 +98,6 @@ public:
       solver_options_.num_threads = max_threads;
     }
 
-    beam::ValidateJsonKeysOrThrow(
-        {"solver_options", "minimizer_progress_to_stdout", "max_num_iterations",
-         "max_solver_time_in_seconds", "function_tolerance",
-         "gradient_tolerance", "parameter_tolerance", "loss_function"},
-        J);
-
-    beam::ValidateJsonKeysOrThrow({"linear_solver_type", "preconditioner_type"},
-                                  J_solver_options);
     std::string linear_solver_type = J_solver_options["linear_solver_type"];
     if (linear_solver_map_.find(linear_solver_type) ==
         linear_solver_map_.end()) {
