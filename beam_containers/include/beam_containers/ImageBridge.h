@@ -274,16 +274,19 @@ public:
    */
   void Write(const std::string& output_directory) const {
     if (is_bgr_image_set_) {
-      cv::imwrite(output_directory + "/BGRImage.jpg", bgr_image_);
+      cv::imwrite(beam::CombinePaths(output_directory, "BGRImage.jpg"),
+                  bgr_image_);
     }
     if (is_bgr_mask_set_) {
-      cv::imwrite(output_directory + "/BGRMask.jpg", bgr_mask_);
+      cv::imwrite(beam::CombinePaths(output_directory, "BGRMask.png"),
+                  bgr_mask_);
     }
     if (is_ir_image_set_) {
-      cv::imwrite(output_directory + "/IRImage.jpg", ir_image_);
+      cv::imwrite(beam::CombinePaths(output_directory, "IRImage.jpg"),
+                  ir_image_);
     }
     if (is_ir_mask_set_) {
-      cv::imwrite(output_directory + "/IRMask.jpg", ir_mask_);
+      cv::imwrite(beam::CombinePaths(output_directory, "IRMask.png"), ir_mask_);
     }
 
     nlohmann::json J = {{"image_container_type", "ImageBridge"},
@@ -300,8 +303,8 @@ public:
                         {"is_bgr_mask_set", is_bgr_mask_set_},
                         {"is_ir_image_set", is_ir_image_set_},
                         {"is_ir_mask_set", is_ir_mask_set_}};
-                        
-    std::ofstream file(output_directory + "/ImageInfo.json");
+
+    std::ofstream file(beam::CombinePaths(output_directory, "ImageInfo.json"));
     file << std::setw(4) << J << std::endl;
   }
 
@@ -338,15 +341,18 @@ public:
     }
     if (is_bgr_mask_set_) {
       cv::Mat bgr_mask =
-          cv::imread(path_to_json + "/BGRMask.jpg", cv::IMREAD_GRAYSCALE);
+          cv::imread(beam::CombinePaths(path_to_json, "BGRMask.png"),
+                     cv::IMREAD_GRAYSCALE);
       SetBGRMask(bgr_mask);
     }
     if (is_ir_image_set_) {
-      cv::Mat ir_img = cv::imread(path_to_json + "/IRImage.jpg");
+      cv::Mat ir_img =
+          cv::imread(beam::CombinePaths(path_to_json, "IRImage.jpg"));
       SetIRImage(ir_img);
     }
     if (is_ir_mask_set_) {
-      cv::Mat ir_mask = cv::imread(path_to_json + "/IRMask.jpg");
+      cv::Mat ir_mask =
+          cv::imread(beam::CombinePaths(path_to_json, "IRMask.png"));
       SetIRMask(ir_mask);
     }
   }

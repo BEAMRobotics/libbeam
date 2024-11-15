@@ -250,14 +250,23 @@ void Colorizer::ColorizeMask(DefectCloud::Ptr& cloud_in_camera_frame) const {
       if (color_scale == 0) {
         continue;
       } else if (color_scale == 1) {
+        BEAM_ERROR("crack: {}", color_scale);
         cloud_in_camera_frame->points[u_iter->second.id].crack = 1;
         counter++;
       } else if (color_scale == 2) {
+        BEAM_ERROR("delam: {}", color_scale);
         cloud_in_camera_frame->points[u_iter->second.id].delam = 1;
         counter++;
       } else if (color_scale == 3) {
+        BEAM_ERROR("corrosion: {}", color_scale);
         cloud_in_camera_frame->points[u_iter->second.id].corrosion = 1;
         counter++;
+      } else if (color_scale == 4) {
+        cloud_in_camera_frame->points[u_iter->second.id].spall = 1;
+        counter++;
+      } else {
+        BEAM_ERROR("Mask value ({}) not suppored. Only 0-4 are supported",
+                   color_scale);
       }
     }
   }
@@ -295,6 +304,12 @@ DefectCloud::Ptr Colorizer::ColorizeMask(
       } else if (color_scale == 3) {
         defect_cloud->points[u_iter->second.id].corrosion = 1;
         counter++;
+      } else if (color_scale == 4) {
+        defect_cloud->points[u_iter->second.id].spall = 1;
+        counter++;
+      } else {
+        BEAM_ERROR("Mask value ({}) not suppored. Only 0-4 are supported",
+                   color_scale);
       }
     }
   }
@@ -321,7 +336,7 @@ DefectCloud::Ptr Colorizer::ColorizeMask(
        v_iter++) {
     const auto& u_map = v_iter->second;
     for (auto u_iter = u_map.begin(); u_iter != u_map.end(); u_iter++) {
-      uchar color_scale = image_->at<uchar>(v_iter->first, u_iter->first);
+      int8_t color_scale = image_->at<int8_t>(v_iter->first, u_iter->first);
       if (color_scale == 0) {
         continue;
       } else if (color_scale == 1) {
@@ -333,6 +348,12 @@ DefectCloud::Ptr Colorizer::ColorizeMask(
       } else if (color_scale == 3) {
         defect_cloud->points[u_iter->second.id].corrosion = 1;
         counter++;
+      } else if (color_scale == 4) {
+        defect_cloud->points[u_iter->second.id].spall = 1;
+        counter++;
+      } else {
+        BEAM_ERROR("Mask value ({}) not suppored. Only 0-4 are supported",
+                   color_scale);
       }
     }
   }

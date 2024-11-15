@@ -56,12 +56,12 @@ TEST_CASE("Testing building image from scratch") {
                            file_location_root.end());
   file_location_root = file_location_root + "test_data/ImageBridge2/";
   std::string bgr_path = file_location_root + "BGRImage.jpg";
-  std::string bgr_mask_path = file_location_root + "BGRMask.jpg";
+  std::string bgr_mask_path = file_location_root + "BGRMask.png";
   std::string ir_path = file_location_root + "IRImage.jpg";
-  std::string ir_mask_path = file_location_root + "IRMask.jpg";
+  std::string ir_mask_path = file_location_root + "IRMask.png";
 
   std::string bagname = "bagname", frame1 = "F1_link", frame2 = "F2_link",
-  mask_method1 = "deep_learning1", mask_method2 = "deep_learning2";
+              mask_method1 = "deep_learning1", mask_method2 = "deep_learning2";
   int seq = 2;
   bool bool_true = true, bool_false = false;
   img_container.SetBagName(bagname);
