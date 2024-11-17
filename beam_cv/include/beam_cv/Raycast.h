@@ -38,11 +38,13 @@ public:
    */
   Raycast(typename pcl::PointCloud<PointType>::Ptr cloud_i,
           std::shared_ptr<beam_calibration::CameraModel> model_i,
-          std::shared_ptr<cv::Mat> image_i, int max_ray_extensions = 20)
+          std::shared_ptr<cv::Mat> image_i, int max_ray_extensions = 20,
+          double max_ray_dist_m = 15)
       : cloud_(cloud_i),
         model_(model_i),
         image_(image_i),
-        max_ray_extensions_(max_ray_extensions) {}
+        max_ray_extensions_(max_ray_extensions),
+        max_ray_dist_m_(max_ray_dist_m) {}
 
   /**
    * @brief Default destructor
@@ -113,7 +115,7 @@ public:
 
         // while loop to ray trace
         uint16_t raypt = 0;
-        while (raypt <= max_ray_extensions_) {
+        while (raypt <= max_ray_extensions_ and ray.norm() < max_ray_dist_m_) {
           // get point at end of ray
           pcl::PointXYZ search_point;
           search_point.x = ray(0, 0);
@@ -124,7 +126,7 @@ public:
           std::vector<uint32_t> point_idx(1);
           std::vector<float> point_distance(1);
           kdtree.nearestKSearch(search_point, 1, point_idx, point_distance);
-          float distance = sqrt(point_distance[0]);
+          float distance = point_distance[0];
 
           // if the point is within threshold then call behaviour
           if (distance < threshold) {
@@ -188,5 +190,6 @@ protected:
   std::shared_ptr<beam_calibration::CameraModel> model_;
   std::shared_ptr<cv::Mat> image_;
   int max_ray_extensions_;
+  double max_ray_dist_m_;
 };
 } // namespace beam_cv

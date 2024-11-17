@@ -16,12 +16,10 @@ ProjectionMap RayTrace::CreateProjectionMap(
                  [&](std::shared_ptr<cv::Mat>& image,
                      pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,
                      const int* position, int index) -> void {
-                   Pixel& pixel = image->at<Pixel>(position[0], position[1]);
-                   if (pixel.z + pixel.y + pixel.x != 0) {
-                     double depth = beam::CalculatePointNorm<pcl::PointXYZRGB>(
-                         cloud->points[index]);
-                     projection_map.Add(position[0], position[1], index, depth);
-                   }
+                   Pixel& pixel = image->at<Pixel>(position[1], position[0]);
+                   double depth = beam::CalculatePointNorm<pcl::PointXYZRGB>(
+                       cloud->points[index]);
+                   projection_map.Add(position[0], position[1], index, depth);
                  });
   return projection_map;
 }
@@ -36,13 +34,11 @@ ProjectionMap RayTrace::CreateProjectionMap(
                  [&](std::shared_ptr<cv::Mat>& image,
                      pcl::PointCloud<beam_containers::PointBridge>::Ptr& cloud,
                      const int* position, int index) -> void {
-                   Pixel& pixel = image->at<Pixel>(position[0], position[1]);
-                   if (pixel.z + pixel.y + pixel.x != 0) {
-                     double depth =
-                         beam::CalculatePointNorm<beam_containers::PointBridge>(
-                             cloud->points[index]);
-                     projection_map.Add(position[0], position[1], index, depth);
-                   }
+                   Pixel& pixel = image->at<Pixel>(position[1], position[0]);
+                   double depth =
+                       beam::CalculatePointNorm<beam_containers::PointBridge>(
+                           cloud->points[index]);
+                   projection_map.Add(position[1], position[0], index, depth);
                  });
   return projection_map;
 }

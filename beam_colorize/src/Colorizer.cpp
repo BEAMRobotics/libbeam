@@ -180,7 +180,7 @@ PointCloudCol::Ptr Colorizer::ColorizePointCloud(
       uchar blue = colors.val[0];
       uchar green = colors.val[1];
       uchar red = colors.val[2];
-      // ignore black colors, this happens at edges when images are undistored
+      // ignore black colors, this happens at edges when images are undistorted
       if (red == 0 && green == 0 && blue == 0) {
         continue;
       } else {
@@ -217,7 +217,7 @@ PointCloudCol::Ptr Colorizer::ColorizePointCloud(
       uchar blue = colors.val[0];
       uchar green = colors.val[1];
       uchar red = colors.val[2];
-      // ignore black colors, this happens at edges when images are undistored
+      // ignore black colors, this happens at edges when images are undistorted
       if (red == 0 && green == 0 && blue == 0) {
         continue;
       } else {
@@ -250,15 +250,12 @@ void Colorizer::ColorizeMask(DefectCloud::Ptr& cloud_in_camera_frame) const {
       if (color_scale == 0) {
         continue;
       } else if (color_scale == 1) {
-        BEAM_ERROR("crack: {}", color_scale);
         cloud_in_camera_frame->points[u_iter->second.id].crack = 1;
         counter++;
       } else if (color_scale == 2) {
-        BEAM_ERROR("delam: {}", color_scale);
         cloud_in_camera_frame->points[u_iter->second.id].delam = 1;
         counter++;
       } else if (color_scale == 3) {
-        BEAM_ERROR("corrosion: {}", color_scale);
         cloud_in_camera_frame->points[u_iter->second.id].corrosion = 1;
         counter++;
       } else if (color_scale == 4) {
@@ -270,6 +267,7 @@ void Colorizer::ColorizeMask(DefectCloud::Ptr& cloud_in_camera_frame) const {
       }
     }
   }
+
   BEAM_INFO("Coloured {} of {} total points using mask.", counter,
             cloud_in_camera_frame->points.size());
 }
@@ -284,7 +282,6 @@ DefectCloud::Ptr Colorizer::ColorizeMask(
 
   auto defect_cloud = std::make_shared<DefectCloud>();
   pcl::copyPointCloud(*cloud_in_camera_frame, *defect_cloud);
-
   ProjectionMap projection_map = CreateProjectionMap(defect_cloud);
 
   int counter{0};
@@ -328,7 +325,6 @@ DefectCloud::Ptr Colorizer::ColorizeMask(
 
   auto defect_cloud = std::make_shared<DefectCloud>();
   pcl::copyPointCloud(*cloud_in_camera_frame, *defect_cloud);
-
   ProjectionMap projection_map = CreateProjectionMap(defect_cloud);
 
   int counter{0};
