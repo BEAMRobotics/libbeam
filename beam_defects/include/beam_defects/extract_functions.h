@@ -79,7 +79,7 @@ pcl::PointCloud<pcl::PointXYZ> IsolateCorrosionPoints(
  * @return Returns a vector of defect point clouds
  */
 std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>
-    GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
+    GetExtractedClouds(const pcl::PointCloud<pcl::PointXYZ>& input_cloud,
                        float tolerance = 0.075, int min_size = 100,
                        int max_size = 50000);
 
