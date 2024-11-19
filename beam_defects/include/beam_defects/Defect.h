@@ -42,7 +42,7 @@ public:
    * @brief Construct with a point cloud
    * @param pc
    */
-  explicit Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+  explicit Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float alpha = 0.1);
 
   /**
    * @brief Default destructor
@@ -117,13 +117,13 @@ public:
   virtual DefectOSIMSeverity GetOSIMSeverity() = 0;
 
 protected:
-  // Variable for storing the defect point cloud
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_ =
       std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr defect_cloud_hull_ =
       std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   float alpha_ = 0.1;
-  bool defect_cloud_initialized_ = false, cloud_hull_calculated_ = false;
+  bool defect_cloud_initialized_ = false;
+  bool cloud_hull_calculated_ = false;
 };
 
 /** @} group defects */

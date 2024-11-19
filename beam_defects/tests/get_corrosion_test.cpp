@@ -158,11 +158,11 @@ TEST_CASE("Corrosion (xz-plane and yz-plane) extraction, size calculation, and "
 
   // Generate vector of delam objects to test GetCorrosion
   auto cloud_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-  float threshold = 0.5, tolerance = 0.2;
-  int min_points = 5, max_points = 1000;
+  float threshold = 0.5;
+  float tolerance = 0.2;
+  int min_points = 5;
   std::vector<beam_defects::Defect::Ptr> corrosion_vector =
-      beam_defects::GetCorrosion(cloud, threshold, tolerance, min_points,
-                                 max_points);
+      beam_defects::GetCorrosion(cloud, threshold, tolerance, min_points);
   REQUIRE(corrosion_vector[0]->GetSize() == Approx(0.1));
   REQUIRE(corrosion_vector[0]->GetOSIMSeverity() ==
           beam_defects::DefectOSIMSeverity::SEVERE);

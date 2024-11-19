@@ -2,6 +2,7 @@
 #include "beam_defects/defect_functions.h"
 
 #include <beam_utils/log.h>
+#include <beam_utils/pointclouds.h>
 
 #include <pcl/common/common.h>
 #include <pcl/common/distances.h>
@@ -11,10 +12,8 @@
 namespace beam_defects {
 
 // Common code will go here
-Defect::Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
-  defect_cloud_ = pc;
-  defect_cloud_initialized_ = true;
-}
+Defect::Defect(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float alpha)
+    : defect_cloud_(pc), alpha_(alpha), defect_cloud_initialized_(true) {}
 
 void Defect::SetPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
   defect_cloud_ = pc;
@@ -51,7 +50,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr Defect::GetHull2D() {
   *cloud_hull = ConcaveHull(calc_cloud, alpha_);
   std::vector<float> plane_norm_vect = PlaneNormalVector(cloud_hull);
   *calc_cloud = Project2Plane(cloud_hull, plane_norm_vect);
-
   cloud_hull_calculated_ = true;
   return cloud_hull;
 };
